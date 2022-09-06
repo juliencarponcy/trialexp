@@ -19,9 +19,9 @@ from math import ceil
 from scipy.signal import butter, filtfilt, decimate
 from scipy.stats import linregress
 
-from pycontrol_utilities import *
-from rsync import *
-from trial_dataset_classes import *
+from trialexp.utils.pycontrol_utilities import *
+from trialexp.utils.rsync import *
+from trialexp.dataset_classes.trial_dataset_classes import *
 
 Event = namedtuple('Event', ['time','name'])
 
