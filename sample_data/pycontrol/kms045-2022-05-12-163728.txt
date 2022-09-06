@@ -1,0 +1,1516 @@
+I Experiment name  : reaching_go_spout_cued_uncued
+I Task name : reaching_go_spout_cued_uncued
+I Task file hash : 2077916856
+I Setup ID : COM9
+I Subject ID : kms045
+I Start date : 2022/05/12 16:37:28
+
+S {"long_refrac_period": 4, "hold_start": 1, "CS_Go": 2, "short_refrac_period": 3}
+
+E {"bar_on_timer": 8, "button_release": 18, "bar_off": 6, "cue_delay_timer": 12, "spout_off": 10, "rsync": 19, "free_reward_timer": 14, "US_end_timer": 13, "bar": 5, "sound_off_timer": 11, "spout": 9, "solenoid_off": 7, "block_timer": 15, "uncued_timer": 16, "button_press": 17}
+
+
+D 0 19
+P 0 Starting block: Cued
+D 0 1
+P 1 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0
+D 4539 2
+P 6392 reward free
+D 7625 19
+P 8540 Timestamp:4539 Go:bar Success:False Free_rew:True Light:False Latency:4000
+P 8542 Summary: T#:1 Tot_rate:0.00 Cued#:1 Uncued#:0 Cued_rate:0.00 Uncued_rate:0.00
+P 8542 4 trials moving ave success rate: 0.00
+D 8543 4
+D 13001 19
+D 14375 1
+P 14376 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.0
+D 15417 19
+D 18126 2
+D 18636 19
+P 20222 reward free
+D 21456 6
+D 21497 5
+P 22127 Timestamp:18126 Go:bar Success:False Free_rew:True Light:False Latency:4000
+P 22129 Summary: T#:2 Tot_rate:0.00 Cued#:2 Uncued#:0 Cued_rate:0.00 Uncued_rate:0.00
+P 22129 4 trials moving ave success rate: 0.00
+D 22130 4
+D 25823 19
+D 28125 1
+P 28126 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.0
+D 28918 19
+D 31251 2
+P 32011 reward free
+D 32100 9
+P 32101 reward bar cued
+P 32103 Timestamp:31251 Go:bar Success:True Free_rew:True Light:False Latency:850
+P 32104 Summary: T#:3 Tot_rate:0.33 Cued#:3 Uncued#:0 Cued_rate:0.33 Uncued_rate:0.00
+P 32105 4 trials moving ave success rate: 0.22
+D 32105 3
+D 32115 10
+D 35134 1
+P 35135 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.2211992
+D 35779 19
+D 37759 2
+P 38511 reward free
+D 38708 9
+P 38709 reward bar cued
+P 38711 Timestamp:37759 Go:bar Success:True Free_rew:True Light:False Latency:950
+P 38712 Summary: T#:4 Tot_rate:0.50 Cued#:4 Uncued#:0 Cued_rate:0.50 Uncued_rate:0.00
+P 38712 4 trials moving ave success rate: 0.39
+D 38713 3
+D 38867 10
+D 40779 19
+D 42469 1
+P 42470 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.3934693
+D 46981 2
+D 47232 19
+P 50982 Timestamp:46981 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 50984 Summary: T#:5 Tot_rate:0.40 Cued#:5 Uncued#:0 Cued_rate:0.40 Uncued_rate:0.00
+P 50984 4 trials moving ave success rate: 0.31
+D 50985 4
+D 55133 9
+D 55149 10
+D 55198 9
+D 55213 10
+D 55327 6
+D 55447 9
+D 55465 19
+D 55730 10
+D 55730 17
+D 55770 5
+D 55860 18
+D 56054 17
+D 56143 9
+D 56158 10
+D 56191 18
+D 56819 6
+D 56862 5
+D 56913 6
+D 56941 5
+D 56962 6
+D 56978 5
+D 57026 6
+D 57060 5
+D 57104 6
+D 57130 5
+D 57336 6
+D 57414 5
+D 57429 6
+D 58038 5
+D 58185 1
+P 58186 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.3064342
+D 62129 2
+D 62941 19
+D 63492 6
+P 63493 reward bar_off
+D 63526 5
+D 63543 6
+D 63575 5
+D 63762 6
+D 63792 5
+D 64505 9
+P 64506 reward bar cued
+P 64508 Timestamp:62129 Go:bar Success:True Free_rew:False Light:False Latency:2378
+P 64509 Summary: T#:6 Tot_rate:0.50 Cued#:6 Uncued#:0 Cued_rate:0.50 Uncued_rate:0.00
+P 64510 4 trials moving ave success rate: 0.46
+D 64511 3
+D 64521 10
+D 65358 19
+D 67087 1
+P 67088 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.4598504
+D 67446 9
+D 67461 10
+D 68747 6
+D 68776 5
+D 68892 19
+D 72915 2
+D 73432 6
+P 73433 reward bar_off
+D 73471 5
+D 73494 6
+D 73532 5
+D 76174 6
+D 76212 5
+P 76916 Timestamp:72915 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 76922 Summary: T#:7 Tot_rate:0.43 Cued#:7 Uncued#:0 Cued_rate:0.43 Uncued_rate:0.00
+P 76923 4 trials moving ave success rate: 0.36
+D 76924 4
+D 78026 6
+D 78067 5
+D 78469 19
+D 81907 6
+D 81950 5
+D 82337 1
+P 82338 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.3581319
+D 82860 19
+D 83124 9
+D 83139 10
+D 83149 9
+D 83165 10
+D 84214 6
+D 84260 9
+D 84278 10
+D 84294 9
+D 84300 10
+D 84315 9
+D 84321 10
+D 84360 9
+D 84786 17
+D 84907 10
+D 84935 18
+D 84959 5
+D 84986 6
+D 85017 5
+D 85079 17
+D 85190 18
+D 85255 6
+D 85272 5
+D 85288 6
+D 85348 5
+D 85415 17
+D 85496 6
+D 85511 5
+D 85515 18
+D 86395 19
+D 87490 19
+D 88570 9
+D 88591 6
+D 88610 5
+D 88652 10
+D 89060 9
+D 89075 10
+D 89085 9
+D 89100 10
+D 89130 9
+D 89409 10
+D 90540 19
+D 92324 2
+D 94538 19
+P 96325 Timestamp:92324 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 96327 Summary: T#:8 Tot_rate:0.38 Cued#:8 Uncued#:0 Cued_rate:0.38 Uncued_rate:0.00
+P 96327 4 trials moving ave success rate: 0.28
+D 96328 4
+D 98265 19
+D 102967 6
+D 102989 5
+D 103010 6
+D 103043 5
+D 103293 6
+D 103304 1
+P 103305 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.2789134
+D 103328 5
+D 104336 19
+D 107560 19
+D 107582 2
+D 109364 19
+P 111583 Timestamp:107582 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 111585 Summary: T#:9 Tot_rate:0.33 Cued#:9 Uncued#:0 Cued_rate:0.33 Uncued_rate:0.00
+P 111585 4 trials moving ave success rate: 0.22
+D 111586 4
+D 112792 19
+D 113539 6
+D 113601 5
+D 113616 6
+D 113683 5
+D 113742 6
+D 113753 9
+D 114467 5
+D 114482 6
+D 114519 5
+D 114560 6
+D 114583 5
+D 114591 17
+D 114605 10
+D 114718 6
+D 114729 18
+D 114753 5
+D 115065 6
+D 115104 5
+D 118414 1
+P 118414 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.217218
+D 120448 19
+D 122069 2
+D 123486 19
+P 123648 reward free
+D 123817 6
+D 123833 5
+D 125339 19
+P 126070 Timestamp:122069 Go:bar Success:False Free_rew:True Light:False Latency:4000
+P 126072 Summary: T#:10 Tot_rate:0.30 Cued#:10 Uncued#:0 Cued_rate:0.30 Uncued_rate:0.00
+P 126072 4 trials moving ave success rate: 0.17
+D 126073 4
+D 126539 19
+D 128760 19
+D 132505 1
+P 132506 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.1691695
+D 135322 6
+D 135339 5
+D 137845 2
+D 137950 19
+P 138991 reward free
+P 141846 Timestamp:137845 Go:bar Success:False Free_rew:True Light:False Latency:4000
+P 141848 Summary: T#:11 Tot_rate:0.27 Cued#:11 Uncued#:0 Cued_rate:0.27 Uncued_rate:0.00
+P 141848 4 trials moving ave success rate: 0.13
+D 141849 4
+D 145465 9
+D 145548 10
+D 146305 19
+D 146360 6
+D 146375 5
+D 148654 1
+P 148655 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.1317494
+D 151921 2
+P 152424 reward free
+D 152513 9
+P 152514 reward bar cued
+P 152516 Timestamp:151921 Go:bar Success:True Free_rew:True Light:False Latency:593
+P 152517 Summary: T#:12 Tot_rate:0.33 Cued#:12 Uncued#:0 Cued_rate:0.33 Uncued_rate:0.00
+P 152518 4 trials moving ave success rate: 0.32
+D 152521 3
+D 152528 10
+D 152823 9
+D 152926 10
+D 152940 19
+D 153661 6
+D 153686 5
+D 153745 6
+D 153773 5
+D 153796 6
+D 153811 5
+D 153814 6
+D 153849 5
+D 154594 6
+D 154630 5
+D 155429 1
+P 155430 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.3238057
+D 159323 19
+D 159485 2
+P 162081 reward free
+D 162431 9
+P 162431 reward bar cued
+P 162433 Timestamp:159485 Go:bar Success:True Free_rew:True Light:False Latency:2947
+P 162435 Summary: T#:13 Tot_rate:0.38 Cued#:13 Uncued#:0 Cued_rate:0.38 Uncued_rate:0.00
+P 162435 4 trials moving ave success rate: 0.47
+D 162436 3
+D 162523 10
+D 163100 6
+D 163115 5
+D 165150 1
+P 165151 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.4733794
+D 168506 19
+D 169731 2
+D 170178 6
+P 170179 reward bar_off
+D 170203 5
+D 170240 6
+D 170263 5
+D 170465 6
+D 170482 5
+D 170525 6
+D 170549 5
+D 170597 6
+D 170614 5
+D 170968 6
+D 170994 5
+D 171038 6
+D 171055 5
+D 171113 6
+D 171145 5
+D 171188 6
+D 171209 5
+D 171230 9
+P 171230 reward bar cued
+P 171232 Timestamp:169731 Go:bar Success:True Free_rew:False Light:False Latency:1500
+P 171234 Summary: T#:14 Tot_rate:0.43 Cued#:14 Uncued#:0 Cued_rate:0.43 Uncued_rate:0.00
+P 171234 4 trials moving ave success rate: 0.59
+D 171235 3
+D 171235 6
+D 171421 5
+D 172339 10
+D 172594 9
+D 172632 10
+D 173227 19
+D 173806 1
+P 173807 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.5898675
+D 175252 19
+D 176901 2
+D 176912 9
+P 176912 reward bar cued
+P 176914 Timestamp:176901 Go:bar Success:True Free_rew:False Light:False Latency:12
+P 176916 Summary: T#:15 Tot_rate:0.47 Cued#:15 Uncued#:0 Cued_rate:0.47 Uncued_rate:0.00
+P 176916 4 trials moving ave success rate: 0.68
+D 176917 3
+D 176976 19
+D 176986 10
+D 180526 1
+P 180527 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.6805885
+D 183779 6
+D 183794 5
+D 184816 6
+D 184834 5
+D 185588 6
+D 185610 5
+D 186559 19
+D 187274 19
+D 190217 2
+P 194218 Timestamp:190217 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 194220 Summary: T#:16 Tot_rate:0.44 Cued#:16 Uncued#:0 Cued_rate:0.44 Uncued_rate:0.00
+P 194220 4 trials moving ave success rate: 0.53
+D 194221 4
+D 195010 19
+D 198319 9
+D 198337 10
+D 199286 6
+D 199315 5
+D 199507 6
+D 199540 5
+D 200588 19
+D 201538 1
+P 201539 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.5300428
+D 205487 2
+D 208995 19
+P 209488 Timestamp:205487 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 209490 Summary: T#:17 Tot_rate:0.41 Cued#:17 Uncued#:0 Cued_rate:0.41 Uncued_rate:0.00
+P 209490 4 trials moving ave success rate: 0.41
+D 209491 4
+D 213644 19
+D 216451 1
+P 216452 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.4127978
+D 220156 2
+D 221300 6
+P 221301 reward bar_off
+D 221397 9
+P 221398 reward bar cued
+P 221400 Timestamp:220156 Go:bar Success:True Free_rew:False Light:False Latency:1242
+P 221401 Summary: T#:18 Tot_rate:0.44 Cued#:18 Uncued#:0 Cued_rate:0.44 Uncued_rate:0.00
+P 221402 4 trials moving ave success rate: 0.54
+D 221402 3
+D 222448 5
+D 222483 6
+D 222509 5
+D 222865 6
+D 222891 5
+D 223075 19
+D 224141 1
+P 224142 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.5426865
+D 226639 6
+D 226656 5
+D 226769 6
+D 226789 5
+D 226975 6
+D 226995 5
+D 227278 6
+D 227300 5
+D 229653 19
+D 231314 2
+D 234425 6
+P 234425 reward bar_off
+D 234453 5
+D 234468 6
+D 234470 5
+D 234486 6
+D 235136 5
+D 235151 6
+D 235194 5
+P 235315 Timestamp:231314 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 235317 Summary: T#:19 Tot_rate:0.42 Cued#:19 Uncued#:0 Cued_rate:0.42 Uncued_rate:0.00
+P 235317 4 trials moving ave success rate: 0.42
+D 235318 4
+D 235991 10
+D 236157 19
+D 236882 19
+D 242324 1
+P 242325 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.4226447
+D 243233 6
+D 243256 5
+D 243734 6
+D 243759 5
+D 243814 6
+D 243854 5
+D 243896 6
+D 243939 5
+D 246357 19
+D 248017 2
+D 250232 9
+P 250233 reward bar cued
+P 250235 Timestamp:248017 Go:bar Success:True Free_rew:False Light:False Latency:2216
+P 250236 Summary: T#:20 Tot_rate:0.45 Cued#:20 Uncued#:0 Cued_rate:0.45 Uncued_rate:0.00
+P 250237 4 trials moving ave success rate: 0.55
+D 250237 3
+D 250325 6
+D 250342 5
+D 250913 6
+D 250951 5
+D 251613 6
+D 251639 5
+D 253504 1
+P 253505 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.5503552
+D 253898 19
+D 256978 19
+D 257251 2
+D 259703 6
+P 259704 reward bar_off
+D 259728 5
+D 259759 6
+D 260131 10
+D 260156 5
+D 260182 6
+D 260210 5
+D 260217 19
+D 260602 6
+D 260634 5
+P 261252 Timestamp:257251 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 261254 Summary: T#:21 Tot_rate:0.43 Cued#:21 Uncued#:0 Cued_rate:0.43 Uncued_rate:0.00
+P 261254 4 trials moving ave success rate: 0.43
+D 261255 4
+D 262942 19
+D 264719 19
+D 266808 1
+P 266809 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.428617
+D 269786 6
+D 269801 5
+D 270110 6
+D 270125 5
+D 270236 6
+D 270252 5
+D 270543 6
+D 270558 5
+D 270662 6
+D 270677 5
+D 270922 6
+D 270938 5
+D 271403 6
+D 271421 5
+D 271717 6
+D 271735 5
+D 274036 19
+D 274353 6
+D 274368 5
+D 279040 2
+D 279094 19
+D 282423 6
+P 282423 reward bar_off
+D 282450 5
+D 282513 9
+P 282513 reward bar cued
+P 282515 Timestamp:279040 Go:bar Success:True Free_rew:False Light:False Latency:3474
+P 282517 Summary: T#:22 Tot_rate:0.45 Cued#:22 Uncued#:0 Cued_rate:0.45 Uncued_rate:0.00
+P 282517 4 trials moving ave success rate: 0.56
+D 282518 3
+D 282528 10
+D 283043 9
+D 283133 10
+D 283510 9
+D 283555 10
+D 284420 9
+D 284450 10
+D 285064 1
+P 285065 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.5550065
+D 285289 6
+D 285305 5
+D 285353 6
+D 285369 5
+D 285552 6
+D 285576 5
+D 285731 19
+D 285972 6
+D 286007 5
+D 286128 6
+D 286158 5
+D 286360 6
+D 286375 5
+D 289836 2
+D 291677 19
+D 293176 6
+P 293177 reward bar_off
+D 293204 5
+D 293248 6
+D 293291 5
+D 293307 6
+D 293355 5
+P 293837 Timestamp:289836 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 293839 Summary: T#:23 Tot_rate:0.43 Cued#:23 Uncued#:0 Cued_rate:0.43 Uncued_rate:0.00
+P 293839 4 trials moving ave success rate: 0.43
+D 293840 4
+D 296197 6
+D 296205 9
+D 296361 10
+D 296404 5
+D 296713 6
+D 296729 5
+D 296778 6
+D 296807 5
+D 296884 6
+D 296899 5
+D 297374 6
+D 297394 5
+D 297573 6
+D 297606 5
+D 297930 6
+D 297962 5
+D 300474 19
+D 300790 1
+P 300791 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.4322395
+D 301690 19
+D 302970 19
+D 303342 2
+P 307343 Timestamp:303342 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 307345 Summary: T#:24 Tot_rate:0.42 Cued#:24 Uncued#:0 Cued_rate:0.42 Uncued_rate:0.00
+P 307345 4 trials moving ave success rate: 0.34
+D 307346 4
+D 309632 19
+D 312226 6
+D 312241 5
+D 313001 6
+D 313004 1
+P 313005 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.3366285
+D 313023 5
+D 313328 6
+D 313333 9
+D 313355 5
+D 313389 6
+D 313423 5
+D 313812 6
+D 313845 5
+D 313911 6
+D 313927 5
+D 314230 6
+D 314306 10
+D 314322 9
+D 314379 10
+D 314454 5
+D 314757 6
+D 314781 5
+D 314946 6
+D 314993 5
+D 318054 2
+D 319139 19
+D 320554 19
+D 321676 19
+P 322055 Timestamp:318054 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 322057 Summary: T#:25 Tot_rate:0.40 Cued#:25 Uncued#:0 Cued_rate:0.40 Uncued_rate:0.00
+P 322057 4 trials moving ave success rate: 0.26
+D 322058 4
+D 322447 6
+D 322462 5
+D 326467 19
+D 327925 1
+P 327926 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.2621665
+D 330839 19
+D 332273 2
+D 333590 19
+P 336274 Timestamp:332273 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 336276 Summary: T#:26 Tot_rate:0.38 Cued#:26 Uncued#:0 Cued_rate:0.38 Uncued_rate:0.00
+P 336276 4 trials moving ave success rate: 0.20
+D 336277 4
+D 336700 6
+D 336722 5
+D 337470 6
+D 337491 5
+D 337777 6
+D 337801 5
+D 338243 6
+D 338258 5
+D 338303 6
+D 338322 5
+D 338623 6
+D 338640 5
+D 338889 6
+D 338904 5
+D 339014 6
+D 339032 19
+D 339032 5
+D 339236 6
+D 339289 5
+D 339366 6
+D 339382 5
+D 339406 6
+D 339442 5
+D 339501 6
+D 342549 1
+P 342549 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.2041755
+D 346941 19
+D 351903 5
+D 351951 6
+D 351991 5
+D 352013 6
+D 352072 5
+D 352206 6
+D 352235 5
+D 352276 6
+D 352316 5
+D 353065 6
+D 353097 5
+D 354127 19
+D 356429 2
+D 359809 19
+P 360430 Timestamp:356429 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 360432 Summary: T#:27 Tot_rate:0.37 Cued#:27 Uncued#:0 Cued_rate:0.37 Uncued_rate:0.00
+P 360432 4 trials moving ave success rate: 0.16
+D 360433 4
+D 364930 6
+D 364964 5
+D 365535 19
+D 365597 1
+P 365598 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.159012
+D 370386 2
+D 373841 19
+P 374387 Timestamp:370386 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 374389 Summary: T#:28 Tot_rate:0.36 Cued#:28 Uncued#:0 Cued_rate:0.36 Uncued_rate:0.00
+P 374389 4 trials moving ave success rate: 0.12
+D 374390 4
+D 375371 6
+D 375386 5
+D 375417 19
+D 379594 1
+P 379595 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.1238387
+D 382325 19
+D 384317 2
+P 388318 Timestamp:384317 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 388320 Summary: T#:29 Tot_rate:0.34 Cued#:29 Uncued#:0 Cued_rate:0.34 Uncued_rate:0.00
+P 388320 4 trials moving ave success rate: 0.10
+D 388321 4
+D 388462 19
+D 390587 6
+D 390608 5
+D 390785 9
+D 390800 10
+D 390805 9
+D 390820 10
+D 390825 9
+D 390840 10
+D 394679 1
+P 394680 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.09644567
+D 396102 19
+D 398080 2
+P 399958 reward free
+D 401617 6
+D 401647 5
+P 402081 Timestamp:398080 Go:bar Success:False Free_rew:True Light:False Latency:4000
+P 402083 Summary: T#:30 Tot_rate:0.33 Cued#:30 Uncued#:0 Cued_rate:0.33 Uncued_rate:0.00
+P 402083 4 trials moving ave success rate: 0.08
+D 402084 4
+D 402258 6
+D 402284 5
+D 402695 6
+D 402730 5
+D 402789 6
+D 402821 5
+D 403054 6
+D 403117 5
+D 403566 19
+D 407306 1
+P 407307 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.07511196
+D 410982 2
+D 412672 19
+P 413364 reward free
+D 413555 6
+D 413571 5
+P 414983 Timestamp:410982 Go:bar Success:False Free_rew:True Light:False Latency:4000
+P 414985 Summary: T#:31 Tot_rate:0.32 Cued#:31 Uncued#:0 Cued_rate:0.32 Uncued_rate:0.00
+P 414985 4 trials moving ave success rate: 0.06
+D 414986 4
+D 417939 19
+D 419999 1
+P 420000 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.05849726
+D 424063 2
+P 424819 reward free
+D 424908 9
+P 424908 reward bar cued
+P 424911 Timestamp:424063 Go:bar Success:True Free_rew:True Light:False Latency:846
+P 424912 Summary: T#:32 Tot_rate:0.34 Cued#:32 Uncued#:0 Cued_rate:0.34 Uncued_rate:0.00
+P 424912 4 trials moving ave success rate: 0.27
+D 424913 3
+D 424923 10
+D 424961 6
+D 424989 5
+D 426205 19
+D 429015 1
+P 429016 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.2667569
+D 432651 19
+D 433520 2
+P 435389 reward free
+D 435556 6
+D 435590 5
+D 435845 9
+P 435845 reward bar cued
+P 435847 Timestamp:433520 Go:bar Success:True Free_rew:True Light:False Latency:2326
+P 435849 Summary: T#:33 Tot_rate:0.36 Cued#:33 Uncued#:0 Cued_rate:0.36 Uncued_rate:0.00
+P 435849 4 trials moving ave success rate: 0.43
+D 435850 3
+D 435860 10
+D 435865 9
+D 435880 10
+D 435885 9
+D 435900 10
+D 436025 9
+D 436040 10
+D 436045 9
+D 436060 10
+D 436065 9
+D 436080 10
+D 436085 9
+D 436100 10
+D 436105 9
+D 436120 10
+D 438732 1
+P 438733 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.4289497
+D 440705 19
+D 443070 2
+D 445289 19
+D 445770 6
+P 445770 reward bar_off
+D 445803 5
+D 445860 9
+P 445860 reward bar cued
+P 445862 Timestamp:443070 Go:bar Success:True Free_rew:False Light:False Latency:2791
+P 445864 Summary: T#:34 Tot_rate:0.38 Cued#:34 Uncued#:0 Cued_rate:0.38 Uncued_rate:0.00
+P 445864 4 trials moving ave success rate: 0.56
+D 445865 3
+D 445866 6
+D 445875 10
+D 445900 5
+D 446145 6
+D 446166 5
+D 446258 6
+D 446273 5
+D 446742 6
+D 446769 5
+D 447226 6
+D 447263 5
+D 447500 6
+D 447545 5
+D 447688 6
+D 447720 5
+D 447770 6
+D 447802 5
+D 448305 6
+D 448339 5
+D 448463 6
+D 448515 5
+D 448831 9
+D 448846 10
+D 448855 9
+D 449205 1
+P 449206 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.5552655
+D 449266 6
+D 449291 5
+D 449492 6
+D 449526 5
+D 449585 6
+D 449620 5
+D 449745 6
+D 449785 5
+D 449945 19
+D 450578 6
+D 450627 5
+D 454670 2
+D 457907 19
+P 458671 Timestamp:454670 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 458673 Summary: T#:35 Tot_rate:0.37 Cued#:35 Uncued#:0 Cued_rate:0.37 Uncued_rate:0.00
+P 458673 4 trials moving ave success rate: 0.43
+D 458674 4
+D 460789 19
+D 462099 19
+D 462727 6
+D 462760 5
+D 465446 1
+P 465447 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.4324412
+D 468074 19
+D 468978 6
+D 469079 5
+D 469094 6
+D 469125 5
+D 469161 6
+D 469188 5
+D 470861 19
+D 473899 2
+D 477003 19
+P 477900 Timestamp:473899 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 477902 Summary: T#:36 Tot_rate:0.36 Cued#:36 Uncued#:0 Cued_rate:0.36 Uncued_rate:0.00
+P 477902 4 trials moving ave success rate: 0.34
+D 477903 4
+D 483866 1
+P 483867 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.3367856
+D 484259 19
+D 487294 2
+P 491295 Timestamp:487294 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 491297 Summary: T#:37 Tot_rate:0.35 Cued#:37 Uncued#:0 Cued_rate:0.35 Uncued_rate:0.00
+P 491297 4 trials moving ave success rate: 0.26
+D 491298 4
+D 492152 19
+D 497600 1
+P 497601 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.2622889
+D 497911 6
+D 497953 5
+D 497984 6
+D 498017 5
+D 498062 6
+D 498087 5
+D 498465 6
+D 498487 5
+D 498746 6
+D 498766 5
+D 498958 6
+D 498996 5
+D 499747 6
+D 499765 5
+D 499803 6
+D 499840 5
+D 500233 6
+D 500278 5
+D 500312 6
+D 500342 5
+D 500823 19
+D 505103 2
+D 505388 19
+P 509104 Timestamp:505103 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 509106 Summary: T#:38 Tot_rate:0.34 Cued#:38 Uncued#:0 Cued_rate:0.34 Uncued_rate:0.00
+P 509106 4 trials moving ave success rate: 0.20
+D 509107 4
+D 511864 19
+D 516060 1
+P 516061 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.2042708
+D 517301 19
+D 520292 2
+D 521686 6
+P 521686 reward bar_off
+D 521710 5
+D 522018 6
+D 522051 5
+D 522098 6
+D 522123 5
+D 522995 10
+D 523416 6
+D 523454 5
+D 523517 6
+D 523556 5
+D 523866 6
+D 523899 5
+D 523962 6
+D 523993 5
+P 524293 Timestamp:520292 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 524295 Summary: T#:39 Tot_rate:0.33 Cued#:39 Uncued#:0 Cued_rate:0.33 Uncued_rate:0.00
+P 524295 4 trials moving ave success rate: 0.16
+D 524296 4
+D 524299 6
+D 524344 5
+D 524618 6
+D 524662 5
+D 525252 6
+D 525282 5
+D 526391 19
+D 529579 1
+P 529580 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.1590862
+D 531083 19
+D 532926 2
+P 535544 reward free
+D 535746 6
+D 535761 5
+P 536927 Timestamp:532926 Go:bar Success:False Free_rew:True Light:False Latency:4000
+P 536929 Summary: T#:40 Tot_rate:0.33 Cued#:40 Uncued#:0 Cued_rate:0.33 Uncued_rate:0.00
+P 536929 4 trials moving ave success rate: 0.12
+D 536930 4
+D 539774 19
+D 541665 19
+D 542551 1
+P 542552 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.1238965
+D 545539 2
+D 546104 6
+P 546105 reward bar_off
+D 546120 5
+D 546194 9
+P 546195 reward bar cued
+P 546197 Timestamp:545539 Go:bar Success:True Free_rew:False Light:False Latency:656
+P 546198 Summary: T#:41 Tot_rate:0.34 Cued#:41 Uncued#:0 Cued_rate:0.34 Uncued_rate:0.00
+P 546199 4 trials moving ave success rate: 0.32
+D 546199 3
+D 546209 10
+D 546236 6
+D 546251 5
+D 546284 6
+D 546303 5
+D 546356 6
+D 546358 19
+D 546371 5
+D 546484 6
+D 546499 5
+D 546529 6
+D 546550 5
+D 546590 6
+D 546606 5
+D 546900 6
+D 547011 9
+D 547075 10
+D 547282 9
+D 547352 10
+D 547431 5
+D 547446 6
+D 547508 9
+D 547523 10
+D 547535 9
+D 547550 10
+D 547581 9
+D 547622 10
+D 547644 9
+D 547659 10
+D 547667 9
+D 547817 10
+D 547842 9
+D 547889 10
+D 547945 9
+D 548091 5
+D 548106 6
+D 548329 10
+D 548460 5
+D 548610 6
+D 548625 5
+D 548799 9
+D 548836 10
+D 548846 1
+P 548846 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.3176899
+D 548844 6
+D 548862 5
+D 548888 9
+D 548999 10
+D 549014 9
+D 549030 10
+D 549035 9
+D 549050 10
+D 549055 9
+D 549070 10
+D 549075 9
+D 549090 10
+D 549095 9
+D 549097 6
+D 549110 10
+D 549119 5
+D 549382 6
+D 549417 5
+D 550553 6
+D 551325 5
+D 552400 19
+D 553884 2
+P 554543 reward free
+D 554543 19
+D 554894 6
+D 554910 5
+D 555909 19
+P 557885 Timestamp:553884 Go:bar Success:False Free_rew:True Light:False Latency:4000
+P 557887 Summary: T#:42 Tot_rate:0.33 Cued#:42 Uncued#:0 Cued_rate:0.33 Uncued_rate:0.00
+P 557887 4 trials moving ave success rate: 0.25
+D 557888 4
+D 560855 19
+D 562940 1
+P 562941 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.2474171
+D 565761 19
+D 567400 2
+P 569320 reward free
+D 569409 9
+P 569410 reward bar cued
+P 569412 Timestamp:567400 Go:bar Success:True Free_rew:True Light:False Latency:2010
+P 569413 Summary: T#:43 Tot_rate:0.35 Cued#:43 Uncued#:0 Cued_rate:0.35 Uncued_rate:0.00
+P 569414 4 trials moving ave success rate: 0.41
+D 569414 3
+D 569425 10
+D 569578 6
+D 569683 5
+D 569716 6
+D 569823 5
+D 570228 6
+D 570250 5
+D 570309 6
+D 570332 5
+D 570579 6
+D 570620 5
+D 570751 6
+D 570767 5
+D 571323 19
+D 572355 1
+P 572356 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.4138879
+D 574617 19
+D 575399 19
+D 577001 2
+D 577903 6
+P 577903 reward bar_off
+D 577918 5
+D 578196 6
+D 578224 5
+D 578609 6
+D 578660 5
+D 580969 19
+P 581002 Timestamp:577001 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 581004 Summary: T#:44 Tot_rate:0.34 Cued#:44 Uncued#:0 Cued_rate:0.34 Uncued_rate:0.00
+P 581004 4 trials moving ave success rate: 0.32
+D 581005 4
+D 582236 19
+D 584722 19
+D 586675 1
+P 586676 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.3223362
+D 591617 2
+D 593194 19
+P 593487 reward free
+D 594199 6
+D 594221 5
+D 594435 6
+D 594475 5
+D 594589 6
+D 594606 5
+D 594888 6
+D 594930 5
+P 595618 Timestamp:591617 Go:bar Success:False Free_rew:True Light:False Latency:4000
+P 595620 Summary: T#:45 Tot_rate:0.33 Cued#:45 Uncued#:0 Cued_rate:0.33 Uncued_rate:0.00
+P 595620 4 trials moving ave success rate: 0.25
+D 595621 4
+D 599431 19
+D 600778 1
+P 600779 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.2510357
+D 604897 2
+P 607575 reward free
+D 607940 19
+P 608898 Timestamp:604897 Go:bar Success:False Free_rew:True Light:False Latency:4000
+P 608900 Summary: T#:46 Tot_rate:0.33 Cued#:46 Uncued#:0 Cued_rate:0.33 Uncued_rate:0.00
+P 608900 4 trials moving ave success rate: 0.20
+D 608901 4
+D 609426 19
+D 613006 19
+D 614842 1
+P 614843 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.1955068
+D 616371 19
+D 619317 2
+D 620825 19
+P 622263 reward free
+P 623318 Timestamp:619317 Go:bar Success:False Free_rew:True Light:False Latency:4000
+P 623320 Summary: T#:47 Tot_rate:0.32 Cued#:47 Uncued#:0 Cued_rate:0.32 Uncued_rate:0.00
+P 623320 4 trials moving ave success rate: 0.15
+D 623321 4
+D 623490 6
+D 623523 5
+D 623582 6
+D 623611 5
+D 623689 6
+D 623706 5
+D 624125 6
+D 624148 5
+D 624846 6
+D 624894 5
+D 625350 19
+D 628774 1
+P 628775 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.1522608
+D 631924 2
+P 632890 reward free
+D 632979 9
+P 632980 reward bar cued
+P 632982 Timestamp:631924 Go:bar Success:True Free_rew:True Light:False Latency:1056
+P 632983 Summary: T#:48 Tot_rate:0.33 Cued#:48 Uncued#:0 Cued_rate:0.33 Uncued_rate:0.00
+P 632984 4 trials moving ave success rate: 0.34
+D 632984 3
+D 632994 10
+D 633059 19
+D 633078 6
+D 633093 5
+D 633661 6
+D 633676 5
+D 634084 6
+D 634118 5
+D 634572 6
+D 634609 5
+D 636388 1
+P 636389 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.3397801
+D 639103 19
+D 639721 2
+P 641356 reward free
+D 642046 6
+D 642061 5
+P 643722 Timestamp:639721 Go:bar Success:False Free_rew:True Light:False Latency:4000
+P 643724 Summary: T#:49 Tot_rate:0.33 Cued#:49 Uncued#:0 Cued_rate:0.33 Uncued_rate:0.00
+P 643724 4 trials moving ave success rate: 0.26
+D 643725 4
+D 644242 19
+D 644846 19
+D 648007 19
+D 649853 1
+P 649854 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.264621
+D 650793 19
+D 652890 2
+P 653674 reward free
+D 653848 6
+D 653863 5
+D 654956 6
+D 654974 5
+D 655123 6
+D 655138 5
+D 655230 6
+D 655253 5
+D 655529 6
+D 655553 5
+P 656891 Timestamp:652890 Go:bar Success:False Free_rew:True Light:False Latency:4000
+P 656893 Summary: T#:50 Tot_rate:0.32 Cued#:50 Uncued#:0 Cued_rate:0.32 Uncued_rate:0.00
+P 656893 4 trials moving ave success rate: 0.21
+D 656894 4
+D 658430 19
+D 663167 1
+P 663168 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.206087
+D 665916 19
+D 666672 2
+P 668348 reward free
+D 668713 6
+D 668729 5
+D 668801 6
+D 668820 5
+D 669552 6
+D 669573 5
+P 670673 Timestamp:666672 Go:bar Success:False Free_rew:True Light:False Latency:4000
+P 670675 Summary: T#:51 Tot_rate:0.31 Cued#:51 Uncued#:0 Cued_rate:0.31 Uncued_rate:0.00
+P 670675 4 trials moving ave success rate: 0.16
+D 670676 4
+D 674846 19
+D 676044 6
+D 676059 5
+D 677869 1
+P 677870 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.1605008
+D 680097 19
+D 680575 2
+P 682920 reward free
+D 683010 9
+P 683010 reward bar cued
+P 683012 Timestamp:680575 Go:bar Success:True Free_rew:True Light:False Latency:2436
+P 683013 Summary: T#:52 Tot_rate:0.33 Cued#:52 Uncued#:0 Cued_rate:0.33 Uncued_rate:0.00
+P 683014 4 trials moving ave success rate: 0.35
+D 683015 3
+D 683025 10
+D 683121 6
+D 683136 5
+D 685376 6
+D 685418 5
+D 685464 6
+D 685503 5
+D 685878 6
+D 685915 5
+D 686488 19
+D 686727 1
+P 686728 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.3461973
+D 689665 2
+D 690800 19
+D 691744 6
+P 691744 reward bar_off
+D 691784 5
+D 691823 6
+D 691856 5
+D 692979 6
+D 693026 5
+D 693145 6
+D 693162 5
+P 693666 Timestamp:689665 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 693668 Summary: T#:53 Tot_rate:0.32 Cued#:53 Uncued#:0 Cued_rate:0.32 Uncued_rate:0.00
+P 693668 4 trials moving ave success rate: 0.27
+D 693669 4
+D 695083 19
+D 700701 1
+P 700702 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.2696187
+D 702506 19
+D 704045 2
+P 705568 reward free
+D 705730 6
+D 705746 5
+D 706263 6
+D 706287 5
+D 706872 6
+D 706921 5
+P 708046 Timestamp:704045 Go:bar Success:False Free_rew:True Light:False Latency:4000
+P 708048 Summary: T#:54 Tot_rate:0.31 Cued#:54 Uncued#:0 Cued_rate:0.31 Uncued_rate:0.00
+P 708048 4 trials moving ave success rate: 0.21
+D 708049 4
+D 711927 19
+D 713583 6
+D 713599 5
+D 714520 6
+D 714555 5
+D 715056 6
+D 715110 5
+D 715445 6
+D 715470 5
+D 715479 1
+P 715480 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.2099793
+D 715749 19
+D 718136 19
+D 720324 2
+D 722733 19
+P 723241 reward free
+D 723430 6
+D 723446 5
+P 724325 Timestamp:720324 Go:bar Success:False Free_rew:True Light:False Latency:4000
+P 724327 Summary: T#:55 Tot_rate:0.31 Cued#:55 Uncued#:0 Cued_rate:0.31 Uncued_rate:0.00
+P 724327 4 trials moving ave success rate: 0.16
+D 724328 4
+D 725872 19
+D 730750 1
+P 730751 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.163532
+D 731626 19
+D 733058 19
+D 734839 2
+D 735032 19
+P 736443 reward free
+D 736661 6
+D 736676 5
+D 737669 6
+D 737697 5
+D 737813 19
+D 738079 6
+D 738115 5
+P 738840 Timestamp:734839 Go:bar Success:False Free_rew:True Light:False Latency:4000
+P 738842 Summary: T#:56 Tot_rate:0.30 Cued#:56 Uncued#:0 Cued_rate:0.30 Uncued_rate:0.00
+P 738842 4 trials moving ave success rate: 0.13
+D 738843 4
+D 742861 19
+D 744182 19
+D 744269 1
+P 744270 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.1273589
+D 746221 6
+D 746237 5
+D 748356 19
+D 749070 2
+P 751110 reward free
+D 752411 6
+D 752638 5
+D 752994 6
+D 753026 5
+P 753071 Timestamp:749070 Go:bar Success:False Free_rew:True Light:False Latency:4000
+P 753077 Summary: T#:57 Tot_rate:0.30 Cued#:57 Uncued#:0 Cued_rate:0.30 Uncued_rate:0.00
+P 753078 4 trials moving ave success rate: 0.10
+D 753078 4
+D 753255 6
+D 753282 5
+D 753837 6
+D 753875 5
+D 753923 6
+D 753959 5
+D 754136 6
+D 754169 5
+D 754324 6
+D 754357 5
+D 754440 6
+D 754464 5
+D 754684 19
+D 754852 6
+D 754882 5
+D 757091 19
+D 758713 19
+D 759422 1
+P 759423 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.09918719
+D 764057 2
+D 764544 19
+P 765402 reward free
+D 765618 6
+D 765633 5
+P 768058 Timestamp:764057 Go:bar Success:False Free_rew:True Light:False Latency:4000
+P 768060 Summary: T#:58 Tot_rate:0.29 Cued#:58 Uncued#:0 Cued_rate:0.29 Uncued_rate:0.00
+P 768060 4 trials moving ave success rate: 0.08
+D 768061 4
+D 768529 19
+D 770176 19
+D 774227 1
+P 774228 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.07724707
+D 774662 19
+D 777291 2
+P 777931 reward free
+D 778433 6
+D 778458 5
+D 778980 6
+D 779030 5
+D 779126 6
+D 779176 5
+P 781292 Timestamp:777291 Go:bar Success:False Free_rew:True Light:False Latency:4000
+P 781294 Summary: T#:59 Tot_rate:0.29 Cued#:59 Uncued#:0 Cued_rate:0.29 Uncued_rate:0.00
+P 781294 4 trials moving ave success rate: 0.06
+D 781295 4
+D 783277 19
+D 788275 1
+P 788276 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.06016007
+D 792863 19
+D 792932 2
+P 794488 reward free
+D 794670 6
+D 794685 5
+D 795312 6
+D 795341 5
+D 795389 6
+D 795429 5
+P 796933 Timestamp:792932 Go:bar Success:False Free_rew:True Light:False Latency:4000
+P 796935 Summary: T#:60 Tot_rate:0.28 Cued#:60 Uncued#:0 Cued_rate:0.28 Uncued_rate:0.00
+P 796935 4 trials moving ave success rate: 0.05
+D 796936 4
+D 798964 19
+D 802541 1
+P 802542 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.04685271
+D 803866 19
+D 807178 2
+P 807726 reward free
+D 807925 6
+D 807940 5
+D 808099 6
+D 808104 19
+D 808121 5
+D 808288 6
+D 808317 5
+D 809157 6
+D 809198 5
+D 809371 6
+D 809424 5
+P 811179 Timestamp:807178 Go:bar Success:False Free_rew:True Light:False Latency:4000
+P 811181 Summary: T#:61 Tot_rate:0.28 Cued#:61 Uncued#:0 Cued_rate:0.28 Uncued_rate:0.00
+P 811181 4 trials moving ave success rate: 0.04
+D 811182 4
+D 812299 19
+D 816812 1
+P 816813 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.03648893
+D 818782 19
+D 821787 2
+D 822471 6
+P 822472 reward bar_off
+D 822491 5
+D 823072 6
+D 823124 5
+D 823165 6
+D 823195 5
+D 824321 19
+P 825788 Timestamp:821787 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 825790 Summary: T#:62 Tot_rate:0.27 Cued#:62 Uncued#:0 Cued_rate:0.27 Uncued_rate:0.00
+P 825790 4 trials moving ave success rate: 0.03
+D 825791 4
+D 826598 19
+D 830055 19
+D 832544 19
+D 833169 1
+P 833170 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.02841761
+D 835761 6
+D 835798 5
+D 836042 6
+D 836081 5
+D 836340 6
+D 836365 5
+D 836408 6
+D 836443 5
+D 836803 6
+D 836842 5
+D 836891 6
+D 836937 5
+D 837387 6
+D 837412 5
+D 837808 6
+D 837824 5
+D 838499 6
+D 838530 5
+D 839712 19
+D 841672 19
+D 841817 2
+P 842913 reward free
+D 843002 9
+P 843002 reward bar cued
+P 843004 Timestamp:841817 Go:bar Success:True Free_rew:True Light:False Latency:1186
+P 843006 Summary: T#:63 Tot_rate:0.29 Cued#:63 Uncued#:0 Cued_rate:0.29 Uncued_rate:0.00
+P 843006 4 trials moving ave success rate: 0.24
+D 843007 3
+D 843017 10
+D 843169 6
+D 843186 5
+D 845848 1
+P 845849 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.2433309
+D 846052 19
+D 849944 2
+P 851749 reward free
+D 852294 6
+D 852336 5
+D 852805 6
+D 852853 5
+D 853187 6
+D 853221 5
+D 853359 6
+D 853374 5
+D 853578 6
+D 853633 5
+D 853649 6
+D 853695 5
+P 853945 Timestamp:849944 Go:bar Success:False Free_rew:True Light:False Latency:4000
+P 853947 Summary: T#:64 Tot_rate:0.28 Cued#:64 Uncued#:0 Cued_rate:0.28 Uncued_rate:0.00
+P 853947 4 trials moving ave success rate: 0.19
+D 853948 4
+D 855466 19
+D 860825 1
+P 860826 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.1895063
+D 861371 19
+D 862453 19
+D 863816 19
+D 864134 2
+P 866140 reward free
+P 868135 Timestamp:864134 Go:bar Success:False Free_rew:True Light:False Latency:4000
+P 868137 Summary: T#:65 Tot_rate:0.28 Cued#:65 Uncued#:0 Cued_rate:0.28 Uncued_rate:0.00
+P 868137 4 trials moving ave success rate: 0.15
+D 868138 4
+D 872628 19
+D 873809 19
+D 875576 1
+P 875577 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.1475876
+D 876807 19
+D 878590 2
+P 880227 reward free
+D 880317 9
+P 880317 reward bar cued
+P 880319 Timestamp:878590 Go:bar Success:True Free_rew:True Light:False Latency:1728
+P 880320 Summary: T#:66 Tot_rate:0.29 Cued#:66 Uncued#:0 Cued_rate:0.29 Uncued_rate:0.00
+P 880321 4 trials moving ave success rate: 0.34
+D 880322 3
+D 880332 10
+D 880923 6
+D 880952 5
+D 881172 6
+D 881211 5
+D 881354 6
+D 881382 5
+D 881439 6
+D 881484 5
+D 882097 6
+D 882150 5
+D 883178 1
+P 883179 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.3361406
+D 885771 19
+D 886946 19
+D 887856 2
+P 889378 reward free
+D 889467 9
+P 889468 reward bar cued
+P 889469 Timestamp:887856 Go:bar Success:True Free_rew:True Light:False Latency:1612
+P 889471 Summary: T#:67 Tot_rate:0.30 Cued#:67 Uncued#:0 Cued_rate:0.30 Uncued_rate:0.00
+P 889472 4 trials moving ave success rate: 0.48
+D 889472 3
+D 889482 10
+D 889589 6
+D 889604 5
+D 890448 6
+D 890489 5
+D 890551 6
+D 890591 5
+D 890767 6
+D 890783 5
+D 891123 6
+D 891148 5
+D 891377 6
+D 891410 5
+D 892045 6
+D 892085 5
+D 892228 1
+P 892229 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.4829858
+D 894432 19
+D 894821 2
+P 896096 reward free
+D 896247 6
+D 896270 5
+D 896418 19
+P 898822 Timestamp:894821 Go:bar Success:False Free_rew:True Light:False Latency:4000
+P 898824 Summary: T#:68 Tot_rate:0.29 Cued#:68 Uncued#:0 Cued_rate:0.29 Uncued_rate:0.00
+P 898824 4 trials moving ave success rate: 0.38
+D 898825 4
+D 900393 19
+D 903340 19
+D 904728 1
+P 904729 v.trial_type = bar, v.success_rate_cued_Go_mov_ave.value = 0.3761497

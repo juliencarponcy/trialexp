@@ -1,0 +1,135 @@
+I Experiment name  : go_nogo_touch_spout
+I Task name : pycontrol_share\pycontrol_share\tasks\reaching_go_nogo_touch_spout
+I Task file hash : 367135802
+I Setup ID : COM9
+I Subject ID : JC282LS
+I Start date : 2021/11/10 12:05:42
+
+S {"CS_Go": 3, "short_refrac_period": 4, "CS_NoGo": 2, "long_refrac_period": 5, "hold_start": 1}
+
+E {"bar_on_timer": 9, "button_release": 18, "bar_off": 7, "cue_delay_timer": 13, "spout_off": 11, "go_hold_start": 16, "rsync": 19, "free_reward_timer": 15, "button_press": 17, "bar": 6, "sound_off_timer": 12, "spout": 10, "US_end_timer": 14, "solenoid_off": 8}
+
+
+D 0 19
+D 0 1
+D 1619 19
+D 3724 2
+P 7724 Timestamp:3723 Go:False Success:True Free_rew:False Light:True Latency:4000
+P 7726 Summary: T#:1 Tot_rate:1.00 Go#:0 NoGo#:1 Go_rate:0.00 NoGo_rate:1.00
+P 7727 8 trials moving ave Go success rate: 0.50
+D 7727 4
+D 9273 19
+D 10169 1
+D 13631 19
+D 15076 3
+D 15591 7
+D 16682 10
+D 16721 11
+D 16738 10
+D 16852 11
+D 17070 10
+D 17093 11
+D 17098 10
+D 17098 11
+D 17105 10
+D 17111 11
+D 17242 10
+D 17257 11
+D 17391 10
+D 17410 11
+D 17447 10
+D 17531 11
+D 17550 19
+D 17760 6
+P 19076 Timestamp:15075 Go:True Success:False Free_rew:False Light:True Latency:4000
+P 19078 Summary: T#:2 Tot_rate:0.50 Go#:1 NoGo#:1 Go_rate:0.00 NoGo_rate:1.00
+P 19079 8 trials moving ave Go success rate: 0.44
+D 19079 5
+D 22281 1
+D 25101 7
+D 25106 6
+D 25111 7
+D 25116 6
+D 25121 7
+D 25126 6
+D 25131 7
+D 25386 6
+D 25825 19
+D 27767 19
+D 28032 2
+D 31959 19
+P 32032 Timestamp:28031 Go:False Success:True Free_rew:False Light:True Latency:4000
+P 32034 Summary: T#:3 Tot_rate:0.67 Go#:1 NoGo#:2 Go_rate:0.00 NoGo_rate:1.00
+P 32035 8 trials moving ave Go success rate: 0.44
+D 32035 4
+D 33703 1
+D 37602 3
+D 37936 7
+D 39033 10
+D 39052 11
+D 39092 10
+D 39109 11
+D 39351 10
+D 39377 11
+D 39748 10
+D 39781 11
+D 39826 19
+D 40230 10
+D 40244 11
+D 40329 10
+D 40374 11
+D 40709 6
+D 40830 7
+D 40835 6
+D 40861 7
+D 40891 6
+D 40981 7
+D 40989 6
+D 40994 7
+D 41017 19
+D 41021 6
+D 41027 7
+D 41032 6
+D 41149 7
+D 41172 6
+P 41602 Timestamp:37601 Go:True Success:False Free_rew:False Light:True Latency:4000
+P 41604 Summary: T#:4 Tot_rate:0.50 Go#:2 NoGo#:2 Go_rate:0.00 NoGo_rate:1.00
+P 41604 8 trials moving ave Go success rate: 0.39
+D 41605 5
+D 46226 19
+D 46335 1
+D 51005 3
+D 51441 7
+D 52144 6
+D 52149 7
+D 52151 6
+D 52156 7
+D 52413 10
+D 52419 11
+D 52424 10
+D 52435 11
+D 52566 10
+D 52571 11
+D 52592 10
+D 52598 11
+D 52606 10
+D 52801 11
+D 53153 10
+D 53316 11
+D 53935 10
+D 54067 11
+D 54531 10
+D 54536 11
+D 54581 6
+P 55005 Timestamp:51004 Go:True Success:False Free_rew:False Light:True Latency:4000
+P 55007 Summary: T#:5 Tot_rate:0.40 Go#:3 NoGo#:2 Go_rate:0.00 NoGo_rate:1.00
+P 55008 8 trials moving ave Go success rate: 0.34
+D 55008 5
+D 55462 7
+D 55491 6
+D 55503 19
+D 59124 1
+D 60295 7
+D 60317 6
+D 60481 7
+D 60533 6

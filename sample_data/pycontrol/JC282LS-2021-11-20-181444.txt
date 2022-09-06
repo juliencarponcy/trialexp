@@ -1,0 +1,8132 @@
+I Experiment name  : Reaching_GoNoGo_stim_continuous_mixed
+I Task name : pycontrol_share\tasks\reaching_go_nogo_opto_continuous
+I Task file hash : 3012745753
+I Setup ID : COM9
+I Subject ID : JC282LS
+I Start date : 2021/11/20 18:14:44
+
+S {"CS_Go": 3, "short_refrac_period": 4, "CS_NoGo": 2, "long_refrac_period": 5, "hold_start": 1}
+
+E {"bar_on_timer": 9, "light_off_timer": 14, "bar_off": 7, "cue_delay_timer": 13, "spout_off": 11, "go_hold_start": 17, "button_release": 19, "free_reward_timer": 16, "US_end_timer": 15, "bar": 6, "sound_off_timer": 12, "spout": 10, "solenoid_off": 8, "button_press": 18, "rsync": 20}
+
+
+D 0 20
+P 2 ['s_nogo_sham', 's_nogo_sham', 's_nogo_sham', 's_nogo_sham', 's_nogo_sham', 's_nogo_sham', 's_nogo_sham', 's_nogo_sham', 's_nogo_sham', 's_nogo_sham', 's_nogo_sham', 's_nogo_sham', 's_nogo_sham', 's_nogo_sham', 's_nogo_sham', 's_nogo_cs_onset', 's_nogo_cs_onset', 's_nogo_cs_onset', 's_nogo_cs_onset', 's_nogo_cs_onset', 's_nogo_cs_onset', 's_nogo_cs_onset', 's_nogo_cs_onset', 's_nogo_cs_onset', 's_nogo_cs_onset', 's_nogo_cs_onset', 's_nogo_cs_onset', 's_nogo_cs_onset', 's_nogo_cs_onset', 's_nogo_cs_onset', 's_go_sham', 's_go_sham', 's_go_sham', 's_go_sham', 's_go_sham', 's_go_sham', 's_go_sham', 's_go_sham', 's_go_sham', 's_go_sham', 's_go_sham', 's_go_sham', 's_go_sham', 's_go_sham', 's_go_sham', 's_go_cs_onset', 's_go_cs_onset', 's_go_cs_onset', 's_go_cs_onset', 's_go_cs_onset', 's_go_cs_onset', 's_go_cs_onset', 's_go_cs_onset', 's_go_cs_onset', 's_go_cs_onset', 's_go_cs_onset', 's_go_cs_onset', 's_go_cs_onset', 's_go_cs_onset', 's_go_cs_onset', 's_go_bar_off', 's_go_bar_off', 's_go_bar_off', 's_go_bar_off', 's_go_bar_off', 's_go_bar_off', 's_go_bar_off', 's_go_bar_off', 's_go_bar_off', 's_go_bar_off', 's_go_bar_off', 's_go_bar_off', 's_go_bar_off', 's_go_bar_off', 's_go_bar_off', 's_go_spout', 's_go_spout', 's_go_spout', 's_go_spout', 's_go_spout', 's_go_spout', 's_go_spout', 's_go_spout', 's_go_spout', 's_go_spout', 's_go_spout', 's_go_spout', 's_go_spout', 's_go_spout', 's_go_spout', 's_go_error_sham', 's_go_error_sham', 's_go_error_sham', 's_go_error_sham', 's_go_error_sham', 's_go_error_bar_off', 's_go_error_bar_off', 's_go_error_bar_off', 's_go_error_bar_off', 's_go_error_bar_off']
+P 7 100
+P 8 total proba = 1.0
+D 9 1
+P 4580 s_nogo_sham
+D 4581 2
+D 5655 20
+D 7203 20
+D 8381 6
+P 8582 Timestamp:4581 Go:0 Success:True Free_rew:False Light:0 Latency:4000
+P 8584 Summary: T#:1 Tot_rate:1.00 Go#:0 NoGo#:1 Go_rate:0.00 NoGo_rate:1.00
+P 8584 4 trials moving ave Go success rate: 0.00
+D 8585 4
+D 8609 7
+D 8624 6
+D 8904 7
+D 8909 6
+D 8911 7
+D 8917 6
+D 8922 7
+D 10323 1
+D 11672 20
+D 15156 20
+D 16489 20
+D 17635 20
+D 22397 20
+D 25902 20
+D 34880 20
+D 36810 10
+D 37155 11
+D 40585 20
+D 45159 10
+D 45177 11
+D 45351 10
+D 45546 11
+D 45598 10
+D 45914 11
+D 46216 10
+D 46236 11
+D 46438 10
+D 46608 11
+D 46662 6
+D 46903 7
+D 47408 6
+D 47413 7
+D 48677 6
+D 48682 7
+D 48981 6
+D 48989 7
+D 49102 10
+D 49117 11
+D 49122 10
+D 49324 11
+D 49335 10
+D 49340 11
+D 49466 10
+D 49496 11
+D 49509 10
+D 49514 11
+D 49576 10
+D 49690 11
+D 49720 10
+D 49816 11
+D 49901 10
+D 49906 11
+D 49922 10
+D 50065 20
+D 50238 11
+D 50243 10
+D 50471 11
+D 50615 10
+D 50620 11
+D 50658 10
+D 50990 11
+D 51230 10
+D 51302 11
+D 51392 10
+D 51429 11
+D 51557 10
+D 51613 11
+D 51827 10
+D 51888 11
+D 52240 10
+D 52265 11
+D 52631 10
+D 52642 11
+D 52801 6
+D 52809 7
+D 59137 20
+D 60771 10
+D 60908 11
+D 60980 10
+D 60986 11
+D 61007 10
+D 61376 11
+D 61554 10
+D 61584 11
+D 61589 10
+D 61593 11
+D 61820 10
+D 62867 11
+D 63040 10
+D 63084 11
+D 63089 10
+D 63128 11
+D 63493 6
+D 64083 7
+D 64090 6
+D 64244 7
+D 64255 6
+D 65044 7
+D 65050 6
+D 66567 20
+D 67111 7
+D 67176 10
+D 67309 11
+D 67578 10
+D 67675 11
+D 67721 10
+D 68107 11
+D 69170 10
+D 69204 11
+D 69210 10
+D 69217 11
+D 69230 10
+D 69845 11
+D 69856 10
+D 69867 11
+D 69873 10
+D 69967 11
+D 69987 10
+D 70840 11
+D 70985 10
+D 71095 11
+D 71155 10
+D 71207 11
+D 71324 10
+D 71440 11
+D 71496 10
+D 71781 11
+D 72258 10
+D 72311 11
+D 72353 10
+D 73550 11
+D 73631 6
+D 74424 20
+D 74838 7
+D 75172 6
+D 75182 7
+D 75393 6
+D 75489 7
+D 75501 6
+D 75995 7
+D 76005 6
+D 77934 20
+P 79435 s_go_cs_onset
+P 79436 light_on
+D 79437 3
+P 80195 free_reward
+P 83438 Timestamp:79436 Go:0 Success:False Free_rew:True Light:0 Latency:4000
+P 83439 Summary: T#:2 Tot_rate:0.50 Go#:1 NoGo#:1 Go_rate:0.00 NoGo_rate:1.00
+P 83439 4 trials moving ave Go success rate: 0.00
+D 83440 5
+P 83440 light_off
+D 85993 20
+D 87052 1
+D 87444 7
+D 87450 6
+D 87558 7
+D 87564 6
+D 87588 7
+D 87748 6
+D 87806 7
+D 87825 6
+D 87846 7
+D 88050 6
+D 89822 7
+D 89827 6
+D 91753 20
+P 93718 s_nogo_sham
+D 93719 2
+D 94374 7
+P 94376 Timestamp:93718 Go:0 Success:False Free_rew:False Light:0 Latency:656
+P 94377 Summary: T#:3 Tot_rate:0.33 Go#:1 NoGo#:2 Go_rate:0.00 NoGo_rate:0.50
+P 94378 4 trials moving ave Go success rate: 0.00
+D 94379 5
+D 94379 6
+D 94918 7
+D 95205 6
+D 95213 7
+D 95654 6
+D 96181 7
+D 96795 6
+D 97212 7
+D 97416 1
+D 97809 6
+D 97832 7
+D 100638 20
+D 103856 6
+D 103867 7
+D 103889 6
+D 104345 7
+D 104509 6
+D 106926 20
+P 107435 s_go_sham
+D 107436 3
+D 108974 20
+P 109572 free_reward
+D 110042 7
+P 110043 reward bar_off
+D 110047 6
+D 110305 7
+P 111437 Timestamp:107435 Go:0 Success:False Free_rew:True Light:0 Latency:4001
+P 111439 Summary: T#:4 Tot_rate:0.25 Go#:2 NoGo#:2 Go_rate:0.00 NoGo_rate:0.50
+P 111439 4 trials moving ave Go success rate: 0.00
+D 111440 5
+D 111781 10
+D 111786 11
+D 111819 10
+D 111836 11
+D 111861 10
+D 111869 11
+D 111887 10
+D 111897 11
+D 111902 10
+D 111907 11
+D 111913 10
+D 112191 11
+D 112282 10
+D 112444 11
+D 112450 10
+D 112455 11
+D 112496 10
+D 112504 11
+D 113032 10
+D 113157 11
+D 113262 10
+D 114336 11
+D 114419 10
+D 114428 11
+D 114435 10
+D 114780 11
+D 114870 6
+D 114892 1
+D 114984 20
+D 115921 7
+D 115934 6
+D 116051 7
+D 116266 6
+D 116326 7
+D 116339 6
+D 116345 7
+D 117268 6
+D 117392 7
+D 118189 20
+D 119325 20
+D 125516 6
+D 125536 7
+D 125634 20
+D 128199 10
+D 128658 11
+D 128716 20
+D 129435 20
+D 130101 10
+D 130106 11
+D 130110 10
+D 130160 11
+D 130296 10
+D 130302 11
+D 130304 10
+D 130319 11
+D 131153 10
+D 131189 11
+D 131309 10
+D 131317 11
+D 131322 10
+D 131448 11
+D 132185 10
+D 135421 11
+D 135480 6
+D 136182 7
+D 136248 10
+D 136256 11
+D 136362 10
+D 136367 11
+D 136367 10
+D 136552 11
+D 137352 10
+D 137357 11
+D 137364 10
+D 137656 20
+D 137760 11
+D 137942 10
+D 137948 11
+D 138054 10
+D 138063 11
+D 138077 10
+D 138178 11
+D 138368 10
+D 139005 11
+D 139174 10
+D 139187 11
+D 139192 10
+D 139199 11
+D 139968 6
+D 140084 7
+D 140112 6
+D 140654 7
+D 140663 6
+D 140736 7
+D 140938 6
+D 140956 7
+D 141136 6
+D 141265 7
+D 141276 6
+D 141373 7
+D 141386 6
+D 141479 7
+D 142116 6
+D 142132 7
+D 142330 6
+D 145684 7
+D 145751 10
+D 145837 11
+D 145930 10
+D 145956 11
+D 146382 10
+D 146408 11
+D 146420 20
+D 146425 10
+D 146435 11
+D 146515 10
+D 146614 11
+D 146787 10
+D 146882 11
+D 146956 10
+D 147251 11
+D 147366 10
+D 147373 11
+D 147391 10
+D 147397 11
+D 147404 10
+D 147410 11
+D 147416 10
+D 147545 11
+D 147804 10
+D 148088 11
+D 148293 10
+D 148442 11
+D 150164 20
+D 151329 20
+D 152196 6
+D 152868 7
+D 153071 6
+P 156702 s_go_spout
+D 156703 3
+P 157352 free_reward
+D 157380 7
+P 157381 reward bar_off
+D 157479 10
+P 157480 light_on
+P 157482 Timestamp:156702 Go:0 Success:True Free_rew:True Light:0 Latency:778
+P 157483 Summary: T#:5 Tot_rate:0.40 Go#:3 NoGo#:2 Go_rate:0.33 NoGo_rate:0.50
+P 157484 4 trials moving ave Go success rate: 0.22
+D 157484 4
+D 157493 11
+D 157594 10
+D 157693 11
+D 157710 10
+D 158578 20
+D 159070 1
+D 161082 11
+D 161140 6
+P 161480 light_off
+D 162368 7
+D 163188 6
+D 163442 20
+D 163862 7
+D 165444 20
+D 166693 20
+D 168018 6
+D 168042 7
+D 168112 6
+D 168247 7
+D 168260 6
+D 171171 20
+P 172526 s_nogo_sham
+D 172527 2
+D 176366 7
+P 176369 Timestamp:172526 Go:0 Success:False Free_rew:False Light:0 Latency:3841
+P 176370 Summary: T#:6 Tot_rate:0.33 Go#:3 NoGo#:3 Go_rate:0.33 NoGo_rate:0.33
+P 176371 4 trials moving ave Go success rate: 0.22
+D 176371 5
+D 176576 6
+D 176590 7
+D 176628 6
+D 177144 7
+D 177149 6
+D 177276 7
+D 177283 6
+D 180181 1
+D 180411 20
+D 182584 7
+D 183287 6
+D 183304 7
+D 183323 6
+D 183465 7
+D 183476 6
+D 184169 7
+D 184177 6
+D 185607 7
+D 185617 6
+D 185896 7
+D 185908 6
+D 185974 20
+D 187281 7
+D 187287 6
+D 187779 7
+D 187789 6
+D 189009 20
+D 189819 20
+D 190611 20
+P 190931 s_go_spout
+D 190932 3
+D 191479 7
+P 191479 reward bar_off
+D 191488 6
+D 192303 7
+D 192587 10
+P 192588 light_on
+P 192590 Timestamp:190931 Go:0 Success:True Free_rew:False Light:0 Latency:1657
+P 192591 Summary: T#:7 Tot_rate:0.43 Go#:4 NoGo#:3 Go_rate:0.50 NoGo_rate:0.33
+P 192591 4 trials moving ave Go success rate: 0.39
+D 192592 4
+D 192651 11
+D 194117 1
+P 196588 light_off
+D 196743 20
+D 196798 10
+D 196907 11
+D 196933 10
+D 197996 11
+D 198060 6
+D 198495 20
+P 201593 s_go_error_bar_off
+D 201594 3
+D 202170 7
+P 202170 light_on
+D 202380 10
+P 202382 Timestamp:201593 Go:0 Success:True Free_rew:False Light:0 Latency:787
+P 202383 Summary: T#:8 Tot_rate:0.50 Go#:5 NoGo#:3 Go_rate:0.60 NoGo_rate:0.33
+P 202384 4 trials moving ave Go success rate: 0.53
+D 202384 4
+D 202444 11
+D 202511 10
+D 202627 11
+D 203670 20
+D 203950 1
+P 206171 light_off
+D 206731 6
+D 207818 7
+D 207824 6
+D 207997 7
+D 208014 6
+D 208211 7
+D 208219 6
+D 208781 20
+P 210905 s_go_bar_off
+D 210906 3
+D 211563 7
+P 211563 light_on
+P 211563 reward bar_off
+D 211618 10
+P 211620 Timestamp:210906 Go:0 Success:True Free_rew:False Light:0 Latency:712
+P 211622 Summary: T#:9 Tot_rate:0.56 Go#:6 NoGo#:3 Go_rate:0.67 NoGo_rate:0.33
+P 211622 4 trials moving ave Go success rate: 0.63
+D 211623 4
+D 211749 11
+D 211783 10
+D 213558 1
+P 215563 light_off
+D 215782 11
+D 215851 6
+D 217321 20
+P 220034 s_nogo_cs_onset
+P 220035 light_on
+D 220035 2
+D 221430 20
+P 224037 Timestamp:220034 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 224038 Summary: T#:10 Tot_rate:0.60 Go#:6 NoGo#:4 Go_rate:0.67 NoGo_rate:0.50
+P 224038 4 trials moving ave Go success rate: 0.63
+D 224039 4
+P 224039 light_off
+D 225315 7
+D 225448 6
+D 225535 7
+D 225857 6
+D 226569 1
+D 226693 7
+D 226700 6
+D 226844 7
+D 226857 6
+D 227809 20
+P 230445 s_nogo_sham
+D 230446 2
+P 234447 Timestamp:230445 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 234449 Summary: T#:11 Tot_rate:0.64 Go#:6 NoGo#:5 Go_rate:0.67 NoGo_rate:0.60
+P 234449 4 trials moving ave Go success rate: 0.63
+D 234450 4
+D 235605 20
+D 236704 1
+P 241432 s_nogo_cs_onset
+P 241433 light_on
+D 241433 2
+D 243371 20
+D 245049 20
+P 245434 Timestamp:241432 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 245436 Summary: T#:12 Tot_rate:0.67 Go#:6 NoGo#:6 Go_rate:0.67 NoGo_rate:0.67
+P 245436 4 trials moving ave Go success rate: 0.63
+D 245437 4
+P 245437 light_off
+D 246454 7
+D 246459 6
+D 246566 7
+D 246983 6
+D 247013 7
+D 247038 6
+D 247191 1
+D 251004 20
+P 251299 s_go_sham
+D 251300 3
+D 251850 7
+P 251850 reward bar_off
+D 251953 10
+P 251956 Timestamp:251299 Go:0 Success:True Free_rew:False Light:0 Latency:655
+P 251957 Summary: T#:13 Tot_rate:0.69 Go#:7 NoGo#:6 Go_rate:0.71 NoGo_rate:0.67
+P 251958 4 trials moving ave Go success rate: 0.71
+D 251958 4
+D 252068 11
+D 252116 10
+D 252283 11
+D 253631 1
+D 255001 10
+D 255072 11
+D 255084 10
+D 257183 20
+D 258001 11
+D 258619 10
+D 258635 11
+D 258969 10
+D 259004 11
+D 261003 10
+D 261042 11
+D 261055 10
+D 261060 11
+D 261134 10
+D 261516 11
+D 261643 6
+D 261649 7
+D 261653 6
+D 262746 7
+D 262751 6
+D 262890 7
+D 262899 6
+D 263087 7
+D 263106 6
+D 265681 20
+P 266945 s_go_cs_onset
+P 266946 light_on
+D 266946 3
+P 270947 Timestamp:266946 Go:0 Success:False Free_rew:False Light:0 Latency:4000
+P 270949 Summary: T#:14 Tot_rate:0.64 Go#:8 NoGo#:6 Go_rate:0.63 NoGo_rate:0.67
+P 270949 4 trials moving ave Go success rate: 0.56
+D 270950 5
+P 270951 light_off
+D 271557 7
+D 271718 10
+D 271779 11
+D 271803 10
+D 271820 11
+D 271989 10
+D 272965 11
+D 273854 6
+D 274317 20
+D 274647 1
+D 274756 7
+D 274766 6
+D 274873 7
+D 274881 6
+D 275091 7
+D 275098 6
+P 278681 s_go_spout
+D 278682 3
+D 279382 7
+P 279383 reward bar_off
+D 279417 10
+P 279418 light_on
+P 279420 Timestamp:278681 Go:0 Success:True Free_rew:False Light:0 Latency:737
+P 279421 Summary: T#:15 Tot_rate:0.67 Go#:9 NoGo#:6 Go_rate:0.67 NoGo_rate:0.67
+P 279422 4 trials moving ave Go success rate: 0.65
+D 279422 4
+D 279518 11
+D 279556 10
+D 279680 11
+D 280591 20
+D 282019 1
+P 283418 light_off
+D 283677 6
+D 284251 7
+D 284260 6
+D 284347 20
+D 284669 7
+D 284681 6
+P 287439 s_go_cs_onset
+P 287440 light_on
+D 287440 3
+P 291442 Timestamp:287439 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 291443 Summary: T#:16 Tot_rate:0.63 Go#:10 NoGo#:6 Go_rate:0.60 NoGo_rate:0.67
+P 291443 4 trials moving ave Go success rate: 0.51
+D 291444 5
+P 291444 light_off
+D 292057 7
+D 292391 20
+D 292509 6
+D 292530 7
+D 292672 6
+D 293866 7
+D 293875 6
+D 295256 1
+D 298924 20
+P 299334 s_go_bar_off
+D 299335 3
+D 300344 7
+P 300344 light_on
+P 300345 reward bar_off
+D 300408 10
+P 300411 Timestamp:299334 Go:0 Success:True Free_rew:False Light:0 Latency:1075
+P 300412 Summary: T#:17 Tot_rate:0.65 Go#:11 NoGo#:6 Go_rate:0.64 NoGo_rate:0.67
+P 300413 4 trials moving ave Go success rate: 0.62
+D 300413 4
+D 300570 11
+D 300726 10
+D 302341 1
+D 302891 11
+D 302939 6
+D 303024 7
+D 303033 6
+D 303773 7
+D 303785 6
+P 304344 light_off
+D 305738 20
+D 307083 7
+D 307278 10
+D 307294 11
+D 307299 10
+D 307508 11
+D 307615 10
+D 307703 11
+D 307755 10
+D 307952 11
+D 309080 6
+D 309370 20
+D 310261 7
+D 310277 6
+P 313544 s_go_spout
+D 313545 3
+D 314361 7
+P 314362 reward bar_off
+D 314415 10
+P 314416 light_on
+P 314418 Timestamp:313544 Go:0 Success:True Free_rew:False Light:0 Latency:872
+P 314419 Summary: T#:18 Tot_rate:0.67 Go#:12 NoGo#:6 Go_rate:0.67 NoGo_rate:0.67
+P 314420 4 trials moving ave Go success rate: 0.70
+D 314420 4
+D 314553 11
+D 314587 10
+D 314779 11
+D 316220 1
+D 318059 20
+P 318416 light_off
+D 318810 10
+D 318876 11
+D 318969 10
+D 319025 11
+D 319192 10
+D 319200 11
+D 319329 10
+D 319337 11
+D 319356 10
+D 320778 11
+D 320836 6
+D 320895 20
+D 321383 7
+D 321395 6
+D 324119 20
+D 324184 7
+D 324190 6
+D 324406 7
+D 324423 6
+P 326944 s_nogo_cs_onset
+P 326945 light_on
+D 326945 2
+P 330947 Timestamp:326944 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 330948 Summary: T#:19 Tot_rate:0.68 Go#:12 NoGo#:7 Go_rate:0.67 NoGo_rate:0.71
+P 330948 4 trials moving ave Go success rate: 0.70
+D 330949 4
+P 330949 light_off
+D 331569 7
+D 331683 10
+D 331688 11
+D 331723 20
+D 331774 10
+D 331886 11
+D 331988 10
+D 332367 11
+D 332489 10
+D 332813 1
+D 333103 11
+D 333202 10
+D 333321 11
+D 333638 6
+D 334109 7
+D 334120 6
+D 334340 20
+D 334892 7
+D 334900 6
+D 336033 20
+D 336785 20
+D 338903 20
+P 339094 s_nogo_sham
+D 339095 2
+P 343097 Timestamp:339094 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 343098 Summary: T#:20 Tot_rate:0.70 Go#:12 NoGo#:8 Go_rate:0.67 NoGo_rate:0.75
+P 343098 4 trials moving ave Go success rate: 0.70
+D 343099 4
+D 344809 20
+D 344939 7
+D 345007 10
+D 345084 1
+D 345110 11
+D 345176 10
+D 345704 11
+D 345814 10
+D 345877 11
+D 346038 10
+D 346062 11
+D 346128 6
+D 346133 7
+D 346140 6
+D 346162 7
+D 346179 6
+D 346608 7
+D 346622 6
+D 347411 7
+D 347423 6
+D 348314 7
+D 348322 6
+D 348518 20
+P 350830 s_nogo_sham
+D 350834 2
+D 354110 20
+D 354187 7
+P 354190 Timestamp:350830 Go:0 Success:False Free_rew:False Light:0 Latency:3358
+P 354191 Summary: T#:21 Tot_rate:0.67 Go#:12 NoGo#:9 Go_rate:0.67 NoGo_rate:0.67
+P 354192 4 trials moving ave Go success rate: 0.70
+D 354192 5
+D 354200 6
+D 357271 7
+D 357276 6
+D 357877 7
+D 357889 6
+D 357986 7
+D 358000 6
+D 358025 1
+D 358403 7
+D 358409 6
+D 358515 7
+D 358523 6
+D 358700 7
+D 358711 6
+D 358978 7
+D 358984 6
+D 359218 7
+D 359231 6
+D 359860 7
+D 359871 6
+D 360537 7
+D 360543 6
+D 361151 7
+D 361161 6
+D 361580 20
+D 361606 7
+D 361619 6
+D 361756 7
+D 361768 6
+D 363001 7
+D 363014 6
+D 363098 7
+D 363113 6
+D 363283 7
+D 363299 6
+D 366381 20
+D 367360 20
+P 367459 s_go_bar_off
+D 367460 3
+D 367887 7
+P 367887 light_on
+P 367887 reward bar_off
+D 367900 6
+D 367911 7
+D 367981 10
+P 367984 Timestamp:367459 Go:0 Success:True Free_rew:False Light:0 Latency:523
+P 367985 Summary: T#:22 Tot_rate:0.68 Go#:13 NoGo#:9 Go_rate:0.69 NoGo_rate:0.67
+P 367986 4 trials moving ave Go success rate: 0.77
+D 367986 4
+D 368102 11
+D 368493 10
+D 368605 11
+D 368619 10
+D 368819 11
+D 369567 1
+P 371887 light_off
+D 372235 6
+D 374885 20
+P 375439 s_nogo_sham
+D 375440 2
+D 375690 20
+D 376694 20
+P 379442 Timestamp:375439 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 379443 Summary: T#:23 Tot_rate:0.70 Go#:13 NoGo#:10 Go_rate:0.69 NoGo_rate:0.70
+P 379443 4 trials moving ave Go success rate: 0.77
+D 379444 4
+D 381386 1
+P 384195 s_nogo_cs_onset
+P 384196 light_on
+D 384196 2
+D 384463 20
+P 388197 Timestamp:384195 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 388199 Summary: T#:24 Tot_rate:0.71 Go#:13 NoGo#:11 Go_rate:0.69 NoGo_rate:0.73
+P 388199 4 trials moving ave Go success rate: 0.77
+D 388200 4
+P 388200 light_off
+D 390123 7
+D 390133 6
+D 390327 1
+D 390404 20
+D 390443 7
+D 390448 6
+D 391279 7
+D 391461 6
+D 392387 7
+D 392393 6
+D 393271 20
+P 396541 s_nogo_sham
+D 396542 2
+D 396572 20
+D 399347 20
+P 400543 Timestamp:396541 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 400545 Summary: T#:25 Tot_rate:0.72 Go#:13 NoGo#:12 Go_rate:0.69 NoGo_rate:0.75
+P 400545 4 trials moving ave Go success rate: 0.77
+D 400546 4
+D 400857 7
+D 400870 6
+D 402623 1
+D 403924 20
+P 407173 s_go_sham
+D 407174 3
+D 407219 20
+D 407737 7
+P 407738 reward bar_off
+D 407800 10
+P 407802 Timestamp:407173 Go:0 Success:True Free_rew:False Light:0 Latency:627
+P 407803 Summary: T#:26 Tot_rate:0.73 Go#:14 NoGo#:12 Go_rate:0.71 NoGo_rate:0.75
+P 407804 4 trials moving ave Go success rate: 0.82
+D 407804 4
+D 407805 11
+D 408134 10
+D 408320 11
+D 410224 10
+D 410273 1
+D 410412 11
+D 410595 10
+D 411563 11
+D 411606 6
+D 411623 7
+D 411641 6
+D 412154 7
+D 412159 6
+D 412301 7
+D 412858 6
+D 412865 7
+D 412879 6
+D 413490 7
+D 413497 6
+D 413503 7
+D 413703 6
+D 413772 20
+D 415240 20
+D 416796 7
+D 416808 6
+D 419412 7
+D 419580 6
+D 421919 7
+D 421926 6
+D 422804 20
+D 425576 20
+P 426080 s_go_bar_off
+D 426081 3
+D 426591 7
+P 426591 light_on
+P 426591 reward bar_off
+D 426603 6
+D 426614 7
+D 427114 10
+P 427117 Timestamp:426081 Go:0 Success:True Free_rew:False Light:0 Latency:1034
+P 427118 Summary: T#:27 Tot_rate:0.74 Go#:15 NoGo#:12 Go_rate:0.73 NoGo_rate:0.75
+P 427119 4 trials moving ave Go success rate: 0.86
+D 427119 4
+D 428271 20
+D 429724 1
+P 430591 light_off
+D 431515 11
+D 431537 10
+D 431596 11
+D 431625 10
+D 431822 11
+D 431934 10
+D 432213 20
+D 432237 11
+D 432309 6
+D 432418 7
+D 432428 6
+D 432434 7
+D 432790 6
+D 432813 7
+D 432874 20
+D 433071 6
+D 433818 7
+D 433832 6
+D 433969 7
+D 433978 6
+D 434161 7
+D 434167 6
+D 434368 7
+D 434382 6
+P 437149 s_nogo_cs_onset
+P 437150 light_on
+D 437150 2
+D 439391 20
+P 441152 Timestamp:437149 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 441153 Summary: T#:28 Tot_rate:0.75 Go#:15 NoGo#:13 Go_rate:0.73 NoGo_rate:0.77
+P 441153 4 trials moving ave Go success rate: 0.86
+D 441154 4
+P 441154 light_off
+D 441812 7
+D 441866 10
+D 441939 11
+D 441997 10
+D 442002 11
+D 442021 10
+D 442431 11
+D 442601 10
+D 442707 11
+D 442756 10
+D 442766 1
+D 443037 11
+D 443814 10
+D 443869 11
+D 443921 10
+D 444146 11
+D 444463 6
+D 444831 7
+D 444836 6
+D 444901 7
+D 445273 6
+D 445283 7
+D 445510 6
+D 445515 7
+D 445535 6
+D 445566 20
+D 445655 7
+D 445669 6
+D 445845 7
+D 445874 6
+P 449053 s_go_bar_off
+D 449054 3
+D 449161 7
+P 449161 light_on
+P 449162 reward bar_off
+D 449198 10
+P 449200 Timestamp:449053 Go:0 Success:True Free_rew:False Light:0 Latency:145
+P 449201 Summary: T#:29 Tot_rate:0.76 Go#:16 NoGo#:13 Go_rate:0.75 NoGo_rate:0.77
+P 449202 4 trials moving ave Go success rate: 0.89
+D 449202 4
+D 449279 11
+D 449342 10
+D 449393 11
+D 449434 10
+D 450152 11
+D 451157 1
+D 453017 20
+P 453161 light_off
+D 453332 10
+D 453422 11
+D 453472 10
+D 453531 11
+D 453583 10
+D 453843 11
+D 454447 10
+D 454562 11
+D 455745 10
+D 455838 11
+D 455888 10
+D 456628 11
+D 456859 6
+D 457193 7
+D 457207 6
+D 457347 7
+D 457358 6
+D 457376 7
+D 457535 6
+D 457600 7
+D 457618 6
+D 457755 20
+D 459935 7
+D 459942 6
+D 461885 7
+D 461890 6
+D 461955 20
+D 461997 7
+D 462223 10
+D 462319 11
+D 462389 10
+D 462943 11
+D 462972 10
+D 462990 11
+D 462995 10
+D 463737 11
+D 463803 6
+D 464151 7
+D 464164 6
+D 464328 7
+D 464337 6
+D 464544 7
+D 464763 6
+D 464868 7
+D 464888 6
+D 465483 20
+D 466851 7
+D 466862 6
+D 468712 7
+D 468737 6
+D 469595 7
+D 469662 10
+D 469679 11
+D 469849 10
+D 469883 11
+D 470508 10
+D 470650 11
+D 470729 10
+D 471053 11
+D 471201 10
+D 471225 11
+D 471483 6
+D 471502 7
+D 471517 6
+D 471520 20
+D 471948 7
+D 471961 6
+D 472094 7
+D 472111 6
+D 472269 7
+D 472286 6
+D 472427 7
+D 472445 6
+D 472653 7
+D 472677 6
+D 475119 20
+P 476287 s_go_cs_onset
+P 476288 light_on
+D 476288 3
+P 480289 Timestamp:476287 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 480291 Summary: T#:30 Tot_rate:0.73 Go#:17 NoGo#:13 Go_rate:0.71 NoGo_rate:0.77
+P 480292 4 trials moving ave Go success rate: 0.69
+D 480292 5
+P 480292 light_off
+D 482516 20
+D 484961 1
+P 488836 s_nogo_sham
+D 488837 2
+D 489835 20
+D 492644 7
+P 492646 Timestamp:488836 Go:0 Success:False Free_rew:False Light:0 Latency:3808
+P 492648 Summary: T#:31 Tot_rate:0.71 Go#:17 NoGo#:14 Go_rate:0.71 NoGo_rate:0.71
+P 492648 4 trials moving ave Go success rate: 0.69
+D 492649 5
+D 492655 6
+D 493687 7
+D 493699 6
+D 494052 7
+D 494087 6
+D 494170 7
+D 494225 6
+D 494617 20
+D 497107 1
+D 500125 20
+P 501564 s_go_error_sham
+D 501565 3
+D 502210 7
+D 502487 10
+P 502489 Timestamp:501564 Go:0 Success:True Free_rew:False Light:0 Latency:923
+P 502490 Summary: T#:32 Tot_rate:0.72 Go#:18 NoGo#:14 Go_rate:0.72 NoGo_rate:0.71
+P 502491 4 trials moving ave Go success rate: 0.76
+D 502492 4
+D 502585 11
+D 502663 10
+D 502730 11
+D 502890 10
+D 502947 11
+D 503213 10
+D 503368 11
+D 503644 6
+D 503649 7
+D 503662 6
+D 504350 7
+D 504362 6
+D 504511 1
+D 504851 7
+D 504862 6
+D 505639 20
+D 505921 7
+D 505932 6
+D 506130 7
+D 506144 6
+D 507089 7
+D 507101 6
+P 510390 s_go_bar_off
+D 510391 3
+D 510738 7
+P 510738 light_on
+P 510739 reward bar_off
+D 510814 10
+P 510817 Timestamp:510391 Go:0 Success:True Free_rew:False Light:0 Latency:424
+P 510818 Summary: T#:33 Tot_rate:0.73 Go#:19 NoGo#:14 Go_rate:0.74 NoGo_rate:0.71
+P 510819 4 trials moving ave Go success rate: 0.81
+D 510819 4
+D 511099 11
+D 511104 10
+D 511629 11
+D 512572 1
+P 514738 light_off
+D 515172 20
+D 516131 10
+D 516194 11
+D 516202 10
+D 516236 11
+D 516279 10
+D 516461 11
+D 516836 10
+D 520455 11
+D 520743 10
+D 521024 11
+D 522520 10
+D 522585 11
+D 522608 10
+D 522618 11
+D 522623 10
+D 523343 20
+D 524907 11
+D 525008 10
+D 525018 11
+D 525027 10
+D 525033 11
+D 525574 10
+D 525631 11
+D 525655 10
+D 526839 11
+D 526991 6
+D 527007 7
+D 527013 6
+D 527122 7
+D 528000 6
+D 528078 7
+D 528094 6
+D 528254 7
+D 528276 6
+D 528924 7
+D 528933 6
+D 529393 7
+D 529403 6
+D 531667 20
+P 531927 s_go_cs_onset
+P 531928 light_on
+D 531928 3
+P 535929 Timestamp:531927 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 535931 Summary: T#:34 Tot_rate:0.71 Go#:20 NoGo#:14 Go_rate:0.70 NoGo_rate:0.71
+P 535932 4 trials moving ave Go success rate: 0.63
+D 535932 5
+P 535932 light_off
+D 538099 20
+D 540017 20
+D 541230 1
+D 545463 20
+P 545733 s_go_bar_off
+D 545734 3
+D 546413 7
+P 546414 light_on
+P 546414 reward bar_off
+D 546474 10
+P 546477 Timestamp:545733 Go:0 Success:True Free_rew:False Light:0 Latency:742
+P 546478 Summary: T#:35 Tot_rate:0.71 Go#:21 NoGo#:14 Go_rate:0.71 NoGo_rate:0.71
+P 546479 4 trials moving ave Go success rate: 0.71
+D 546479 4
+D 546480 11
+D 546496 6
+D 546501 7
+D 546515 6
+D 546650 7
+D 546933 10
+D 547025 11
+D 547046 10
+D 548203 1
+P 550414 light_off
+D 551037 11
+D 551802 10
+D 551869 11
+D 551911 10
+D 552293 11
+D 552347 20
+D 552947 10
+D 553003 11
+D 553082 10
+D 553208 11
+D 553408 10
+D 553511 11
+D 554006 6
+D 554622 7
+D 554636 6
+D 554711 7
+D 554816 6
+D 554834 7
+D 554878 6
+D 554944 7
+D 554949 6
+D 554998 7
+D 555367 6
+D 555424 7
+D 555440 6
+D 555557 7
+D 555584 6
+D 559692 20
+P 560123 s_nogo_sham
+D 560124 2
+D 561465 7
+P 561467 Timestamp:560123 Go:0 Success:False Free_rew:False Light:0 Latency:1343
+P 561469 Summary: T#:36 Tot_rate:0.69 Go#:21 NoGo#:15 Go_rate:0.71 NoGo_rate:0.67
+P 561469 4 trials moving ave Go success rate: 0.71
+D 561470 5
+D 561482 6
+D 564205 20
+D 566267 1
+P 568977 s_go_spout
+D 568978 3
+D 569103 7
+P 569103 reward bar_off
+D 569109 6
+D 569180 7
+D 569185 6
+D 569203 7
+D 569208 6
+D 569248 7
+D 569254 6
+D 569264 7
+D 569282 6
+D 569313 7
+D 569352 6
+D 569502 7
+D 569544 6
+D 569549 7
+D 569709 10
+P 569709 light_on
+P 569711 Timestamp:568977 Go:0 Success:True Free_rew:False Light:0 Latency:733
+P 569713 Summary: T#:37 Tot_rate:0.70 Go#:22 NoGo#:15 Go_rate:0.73 NoGo_rate:0.67
+P 569713 4 trials moving ave Go success rate: 0.78
+D 569714 4
+D 570109 11
+D 571651 1
+D 573560 20
+D 573702 6
+P 573709 light_off
+D 574148 7
+D 574181 6
+D 574186 7
+D 574204 10
+D 574217 11
+D 574377 10
+D 575122 11
+D 575127 10
+D 575199 11
+D 575212 10
+D 576312 11
+D 576400 6
+D 576442 7
+D 576447 6
+D 576447 7
+D 576992 6
+D 577003 7
+D 577470 6
+D 577494 7
+D 577532 6
+D 577981 7
+D 577994 6
+D 578134 7
+D 578157 6
+D 578669 20
+P 580713 s_go_spout
+D 580714 3
+D 581128 7
+P 581128 reward bar_off
+D 581181 10
+P 581182 light_on
+P 581184 Timestamp:580713 Go:0 Success:True Free_rew:False Light:0 Latency:469
+P 581185 Summary: T#:38 Tot_rate:0.71 Go#:23 NoGo#:15 Go_rate:0.74 NoGo_rate:0.67
+P 581186 4 trials moving ave Go success rate: 0.83
+D 581187 4
+D 581251 11
+D 581327 10
+D 581475 11
+D 581832 20
+D 582851 1
+P 585182 light_off
+D 585561 10
+D 585577 11
+D 585598 20
+D 585648 10
+D 585880 11
+D 587407 10
+D 587465 11
+D 587486 10
+D 587566 11
+D 587588 10
+D 587867 11
+D 588626 10
+D 588654 11
+D 589451 10
+D 589559 11
+D 589588 10
+D 589729 11
+D 590352 10
+D 590477 11
+D 590494 10
+D 590856 11
+D 591369 10
+D 591468 11
+D 591492 10
+D 591567 11
+D 591576 10
+D 591625 11
+D 592603 10
+D 592655 11
+D 592913 20
+D 593546 10
+D 593566 11
+D 593571 10
+D 593578 11
+D 593635 10
+D 593666 11
+D 593807 10
+D 593978 11
+D 594078 10
+D 594160 11
+D 594165 10
+D 594194 11
+D 594298 10
+D 595537 20
+D 596044 11
+D 597395 20
+D 597662 10
+D 597677 11
+D 597721 10
+D 597727 11
+D 597734 10
+D 597814 11
+D 597881 10
+D 600471 11
+D 600628 10
+D 600634 11
+D 600639 10
+D 600647 11
+D 601925 10
+D 602128 11
+D 602475 10
+D 602552 11
+D 602603 10
+D 602645 11
+D 602699 10
+D 602735 11
+D 604326 10
+D 604388 11
+D 604426 10
+D 604492 11
+D 604713 20
+D 607339 6
+D 608110 7
+D 608312 6
+D 610166 20
+P 612144 s_nogo_sham
+D 612145 2
+D 612855 7
+P 612857 Timestamp:612144 Go:0 Success:False Free_rew:False Light:0 Latency:712
+P 612858 Summary: T#:39 Tot_rate:0.69 Go#:23 NoGo#:16 Go_rate:0.74 NoGo_rate:0.63
+P 612859 4 trials moving ave Go success rate: 0.83
+D 612860 5
+D 612888 6
+D 612892 20
+D 614871 7
+D 614881 6
+D 615029 7
+D 615034 6
+D 615193 7
+D 615209 6
+D 615871 1
+P 620518 s_go_cs_onset
+P 620519 light_on
+D 620519 3
+D 621973 20
+D 622829 20
+P 624521 Timestamp:620518 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 624522 Summary: T#:40 Tot_rate:0.68 Go#:24 NoGo#:16 Go_rate:0.71 NoGo_rate:0.63
+P 624522 4 trials moving ave Go success rate: 0.64
+D 624523 5
+P 624523 light_off
+D 626340 7
+D 626681 6
+D 628798 1
+D 630762 20
+P 632712 s_nogo_sham
+D 632713 2
+D 634888 20
+P 636714 Timestamp:632712 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 636716 Summary: T#:41 Tot_rate:0.68 Go#:24 NoGo#:17 Go_rate:0.71 NoGo_rate:0.65
+P 636716 4 trials moving ave Go success rate: 0.64
+D 636717 4
+D 638407 1
+P 642074 s_go_sham
+D 642075 3
+D 642186 20
+D 642886 7
+P 642887 reward bar_off
+D 643166 10
+P 643168 Timestamp:642074 Go:0 Success:True Free_rew:False Light:0 Latency:1093
+P 643170 Summary: T#:42 Tot_rate:0.69 Go#:25 NoGo#:17 Go_rate:0.72 NoGo_rate:0.65
+P 643170 4 trials moving ave Go success rate: 0.72
+D 643171 4
+D 643190 11
+D 643580 10
+D 643823 11
+D 645148 1
+D 645170 10
+D 645508 11
+D 645936 10
+D 646053 11
+D 646120 10
+D 646438 11
+D 646823 10
+D 646860 11
+D 646943 10
+D 646966 11
+D 646991 10
+D 647521 11
+D 647689 10
+D 648209 11
+D 648859 6
+D 648884 7
+D 649233 20
+D 649417 6
+D 649434 7
+D 649453 6
+D 649471 7
+D 649496 6
+D 649628 7
+D 649648 6
+D 649806 7
+D 649816 6
+D 649940 7
+D 649951 6
+D 650370 7
+D 650385 6
+D 652571 20
+P 654527 s_go_spout
+D 654528 3
+D 655148 7
+P 655149 reward bar_off
+D 655215 10
+P 655215 light_on
+P 655217 Timestamp:654527 Go:0 Success:True Free_rew:False Light:0 Latency:689
+P 655219 Summary: T#:43 Tot_rate:0.70 Go#:26 NoGo#:17 Go_rate:0.73 NoGo_rate:0.65
+P 655219 4 trials moving ave Go success rate: 0.78
+D 655220 4
+D 655260 11
+D 655456 10
+D 655639 11
+D 655768 10
+D 655839 11
+D 657033 1
+D 657404 10
+D 657412 11
+D 657571 10
+D 657705 11
+D 658663 6
+P 659215 light_off
+D 659713 7
+D 659724 6
+D 659810 7
+D 659828 6
+D 659986 7
+D 659998 6
+D 660386 7
+D 660395 6
+D 660653 20
+D 662348 20
+P 662909 s_go_cs_onset
+P 662910 light_on
+D 662910 3
+P 666912 Timestamp:662909 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 666913 Summary: T#:44 Tot_rate:0.68 Go#:27 NoGo#:17 Go_rate:0.70 NoGo_rate:0.65
+P 666914 4 trials moving ave Go success rate: 0.61
+D 666914 5
+P 666914 light_off
+D 667729 7
+D 667778 10
+D 667864 11
+D 669500 10
+D 669525 11
+D 669602 10
+D 669977 11
+D 670112 10
+D 671093 1
+D 671261 11
+D 671513 20
+D 672673 10
+D 672737 11
+D 672753 10
+D 674807 11
+D 675960 10
+D 676383 11
+D 676842 10
+D 676851 11
+D 677462 20
+D 678004 10
+D 678145 11
+D 680124 6
+D 680635 7
+D 680652 6
+D 681001 7
+D 681009 6
+D 681190 7
+D 681200 6
+D 682043 7
+D 682061 6
+P 684944 s_nogo_sham
+D 684945 2
+D 685002 20
+D 685499 7
+P 685502 Timestamp:684944 Go:0 Success:False Free_rew:False Light:0 Latency:556
+P 685503 Summary: T#:45 Tot_rate:0.67 Go#:27 NoGo#:18 Go_rate:0.70 NoGo_rate:0.61
+P 685504 4 trials moving ave Go success rate: 0.61
+D 685504 5
+D 685506 6
+D 690306 1
+D 692783 20
+P 694812 s_go_spout
+D 694813 3
+D 695459 7
+P 695460 reward bar_off
+D 696024 10
+P 696024 light_on
+P 696027 Timestamp:694812 Go:0 Success:True Free_rew:False Light:0 Latency:1213
+P 696028 Summary: T#:46 Tot_rate:0.67 Go#:28 NoGo#:18 Go_rate:0.71 NoGo_rate:0.61
+P 696029 4 trials moving ave Go success rate: 0.70
+D 696029 4
+D 696069 11
+D 696194 10
+D 696375 11
+D 698399 1
+D 698595 20
+D 698673 6
+D 699272 7
+D 699282 6
+D 699608 7
+D 699626 6
+P 700025 light_off
+P 703654 s_nogo_cs_onset
+P 703655 light_on
+D 703655 2
+D 703958 20
+P 707657 Timestamp:703654 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 707658 Summary: T#:47 Tot_rate:0.68 Go#:28 NoGo#:19 Go_rate:0.71 NoGo_rate:0.63
+P 707658 4 trials moving ave Go success rate: 0.70
+D 707659 4
+P 707659 light_off
+D 708311 7
+D 708569 10
+D 708700 11
+D 708751 20
+D 709073 10
+D 709158 11
+D 709189 10
+D 709462 11
+D 709845 10
+D 710030 1
+D 710294 11
+D 710414 10
+D 710641 11
+D 711886 10
+D 711971 11
+D 712038 10
+D 712283 11
+D 714169 6
+D 714642 7
+D 714659 6
+D 715501 7
+D 715513 6
+D 715801 7
+D 715818 6
+D 716517 7
+D 716534 6
+D 717688 20
+P 719882 s_go_spout
+D 719883 3
+D 720544 7
+P 720545 reward bar_off
+D 720607 10
+P 720607 light_on
+P 720609 Timestamp:719882 Go:0 Success:True Free_rew:False Light:0 Latency:725
+P 720610 Summary: T#:48 Tot_rate:0.69 Go#:29 NoGo#:19 Go_rate:0.72 NoGo_rate:0.63
+P 720611 4 trials moving ave Go success rate: 0.76
+D 720612 4
+D 720637 11
+D 720863 10
+D 720919 11
+D 721046 10
+D 721168 11
+D 722607 1
+D 724537 6
+P 724607 light_off
+D 725256 7
+D 725425 6
+D 725430 7
+D 725732 10
+D 725778 11
+D 726036 10
+D 726236 11
+D 726397 20
+D 726481 10
+D 726610 11
+D 727249 10
+D 727259 11
+D 727280 10
+D 727486 11
+D 727613 10
+D 727628 11
+D 728506 10
+D 729154 20
+D 730562 20
+D 731051 11
+D 732146 10
+D 732152 11
+D 732164 10
+D 732215 11
+D 732300 10
+D 732593 11
+D 733191 10
+D 733215 11
+D 733227 10
+D 733252 11
+D 734755 6
+D 734825 7
+D 734833 6
+D 735329 7
+D 735777 6
+D 736126 7
+D 736146 6
+D 736666 7
+D 736672 6
+D 736697 7
+D 737179 6
+D 737412 7
+D 737426 6
+D 737480 7
+D 737496 6
+D 737512 20
+D 737582 7
+D 737593 6
+P 740774 s_nogo_sham
+D 740775 2
+D 743545 20
+P 744777 Timestamp:740774 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 744778 Summary: T#:49 Tot_rate:0.69 Go#:29 NoGo#:20 Go_rate:0.72 NoGo_rate:0.65
+P 744778 4 trials moving ave Go success rate: 0.76
+D 744779 4
+D 747068 1
+D 748206 20
+D 750632 20
+P 751054 s_nogo_cs_onset
+P 751055 light_on
+D 751055 2
+D 753853 20
+P 755057 Timestamp:751054 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 755058 Summary: T#:50 Tot_rate:0.70 Go#:29 NoGo#:21 Go_rate:0.72 NoGo_rate:0.67
+P 755058 4 trials moving ave Go success rate: 0.76
+D 755059 4
+P 755059 light_off
+D 755101 7
+D 756631 20
+D 757106 1
+D 757330 6
+D 757335 7
+D 757747 6
+D 757754 7
+D 757795 6
+D 758497 7
+D 758606 6
+D 758617 7
+D 758869 6
+D 758926 7
+D 758995 10
+D 759142 11
+D 759581 10
+D 759695 11
+D 759897 10
+D 759980 11
+D 760058 6
+D 760082 7
+D 760094 6
+D 760749 7
+D 761105 20
+D 761386 6
+D 761391 7
+D 761399 6
+D 761426 7
+D 761443 6
+D 761611 7
+D 761634 6
+P 764343 s_go_bar_off
+D 764344 3
+D 764826 7
+P 764827 light_on
+P 764827 reward bar_off
+D 765080 20
+D 765122 10
+P 765124 Timestamp:764343 Go:0 Success:True Free_rew:False Light:0 Latency:779
+P 765125 Summary: T#:51 Tot_rate:0.71 Go#:30 NoGo#:21 Go_rate:0.73 NoGo_rate:0.67
+P 765126 4 trials moving ave Go success rate: 0.82
+D 765126 4
+D 765240 11
+D 766697 10
+D 767042 1
+P 768827 light_off
+D 769177 11
+D 769234 6
+D 769240 7
+D 769249 6
+D 769273 7
+D 769292 6
+D 769472 7
+D 769481 6
+D 769557 7
+D 769633 6
+D 769654 7
+D 769680 6
+D 769817 7
+D 769890 10
+D 769916 11
+D 770030 10
+D 770548 20
+D 771311 11
+D 772202 10
+D 772266 11
+D 772310 10
+D 772441 11
+D 772677 10
+D 773035 11
+D 773172 6
+D 773252 7
+D 773279 6
+D 773420 7
+D 773430 6
+D 773435 7
+D 773711 20
+D 775293 6
+D 775298 7
+D 775993 6
+D 776006 7
+D 776396 6
+D 776599 7
+D 776616 6
+D 778374 20
+D 779010 7
+D 779236 10
+D 779255 11
+D 779385 10
+D 779404 11
+D 779546 10
+D 779552 11
+D 779557 10
+D 779728 11
+D 780020 10
+D 780129 11
+D 781337 6
+D 781940 7
+D 781953 6
+D 782112 7
+D 782119 6
+D 782439 7
+D 782452 6
+D 782832 7
+D 782843 6
+D 783134 7
+D 783145 6
+D 784072 7
+D 784077 6
+D 784235 7
+D 784240 6
+D 784315 7
+D 784325 6
+D 785067 7
+D 785081 6
+D 785360 7
+D 785371 6
+D 785913 20
+D 786859 7
+D 786876 6
+D 787497 7
+D 787521 6
+D 787749 7
+D 787773 6
+D 787780 7
+D 787843 6
+D 787848 7
+D 787870 6
+P 790572 s_go_error_sham
+D 790573 3
+D 790979 7
+D 790986 6
+D 790998 7
+D 791014 6
+D 791445 7
+D 791505 10
+P 791508 Timestamp:790572 Go:0 Success:True Free_rew:False Light:0 Latency:934
+P 791509 Summary: T#:52 Tot_rate:0.71 Go#:31 NoGo#:21 Go_rate:0.74 NoGo_rate:0.67
+P 791510 4 trials moving ave Go success rate: 0.86
+D 791510 4
+D 791581 11
+D 791698 10
+D 791854 11
+D 792004 20
+D 792053 10
+D 792118 11
+D 792147 10
+D 792152 11
+D 792390 6
+D 792461 7
+D 793517 6
+D 793521 1
+D 793527 7
+D 793624 6
+D 793812 7
+D 793840 6
+D 793886 7
+D 793903 6
+D 794541 20
+P 796570 s_go_bar_off
+D 796571 3
+D 797144 7
+P 797144 light_on
+P 797144 reward bar_off
+D 797214 10
+P 797216 Timestamp:796570 Go:0 Success:True Free_rew:False Light:0 Latency:644
+P 797218 Summary: T#:53 Tot_rate:0.72 Go#:32 NoGo#:21 Go_rate:0.75 NoGo_rate:0.67
+P 797218 4 trials moving ave Go success rate: 0.89
+D 797219 4
+D 797317 11
+D 797448 10
+D 798407 11
+D 798615 6
+D 799162 7
+D 799191 1
+D 799217 6
+D 800736 20
+P 801144 light_off
+D 803472 7
+D 804126 6
+D 804281 7
+D 804303 6
+D 804361 7
+D 804428 10
+D 804534 11
+D 806615 10
+D 806632 11
+D 807060 10
+D 807181 11
+D 807344 10
+D 807360 11
+D 807369 10
+D 807410 11
+D 807438 10
+D 807467 11
+D 807793 10
+D 807800 11
+D 807920 10
+D 807944 11
+D 807976 10
+D 808001 11
+D 808009 10
+D 808070 11
+D 808236 10
+D 808290 11
+D 808296 10
+D 808336 11
+D 808474 20
+D 808499 10
+D 808681 11
+D 809136 10
+D 809217 11
+D 809764 6
+D 809902 7
+D 809908 6
+D 809938 7
+D 810304 6
+D 813196 20
+P 814051 s_go_error_sham
+D 814052 3
+D 814662 7
+D 814721 10
+P 814723 Timestamp:814051 Go:0 Success:True Free_rew:False Light:0 Latency:670
+P 814724 Summary: T#:54 Tot_rate:0.72 Go#:33 NoGo#:21 Go_rate:0.76 NoGo_rate:0.67
+P 814725 4 trials moving ave Go success rate: 0.91
+D 814725 4
+D 814744 11
+D 814824 10
+D 814840 11
+D 814856 10
+D 815057 11
+D 815572 10
+D 815670 11
+D 815986 10
+D 816002 11
+D 816007 10
+D 816010 11
+D 816015 10
+D 816123 11
+D 816257 1
+D 817221 20
+D 818116 10
+D 818246 11
+D 818289 10
+D 818420 11
+D 820143 6
+D 820784 7
+D 820790 6
+D 820928 7
+D 820971 6
+P 824563 s_go_spout
+D 824564 3
+D 825655 20
+D 825681 7
+P 825681 reward bar_off
+D 825735 10
+P 825736 light_on
+P 825738 Timestamp:824563 Go:0 Success:True Free_rew:False Light:0 Latency:1173
+P 825739 Summary: T#:55 Tot_rate:0.73 Go#:34 NoGo#:21 Go_rate:0.76 NoGo_rate:0.67
+P 825740 4 trials moving ave Go success rate: 0.93
+D 825740 4
+D 825891 11
+D 826036 10
+D 826178 11
+D 826349 10
+D 826407 11
+D 827790 1
+P 829736 light_off
+D 830647 20
+D 832013 20
+D 832060 10
+D 832136 11
+D 832197 10
+D 832478 11
+D 833378 10
+D 833617 11
+D 833758 10
+D 833962 11
+D 837229 10
+D 837850 20
+D 839215 11
+D 839301 6
+D 839332 7
+D 839844 6
+D 839849 7
+D 839897 6
+D 840416 7
+D 840426 6
+D 840437 7
+D 840442 6
+D 840443 7
+D 840595 6
+D 840652 7
+D 840668 6
+D 840774 7
+D 840794 6
+D 841236 20
+P 844291 s_go_spout
+D 844292 3
+D 844871 7
+P 844871 reward bar_off
+D 844938 10
+P 844938 light_on
+P 844940 Timestamp:844291 Go:0 Success:True Free_rew:False Light:0 Latency:647
+P 844941 Summary: T#:56 Tot_rate:0.73 Go#:35 NoGo#:21 Go_rate:0.77 NoGo_rate:0.67
+P 844942 4 trials moving ave Go success rate: 0.95
+D 844943 4
+D 845009 11
+D 846223 20
+D 846708 1
+D 848391 20
+P 848938 light_off
+D 849881 10
+D 849921 11
+D 850530 10
+D 850562 11
+D 852932 20
+D 853572 10
+D 853974 11
+D 854843 6
+D 855302 20
+D 855591 7
+D 855602 6
+D 855916 20
+D 856410 7
+D 856422 6
+P 859297 s_go_spout
+D 859298 3
+D 859883 7
+P 859883 reward bar_off
+D 860071 6
+D 860164 7
+D 860249 10
+P 860249 light_on
+P 860251 Timestamp:859297 Go:0 Success:True Free_rew:False Light:0 Latency:953
+P 860253 Summary: T#:57 Tot_rate:0.74 Go#:36 NoGo#:21 Go_rate:0.78 NoGo_rate:0.67
+P 860253 4 trials moving ave Go success rate: 0.96
+D 860254 4
+D 860361 11
+D 860449 10
+D 861779 20
+D 862900 11
+D 862988 6
+D 863246 1
+D 863928 7
+D 863951 6
+P 864249 light_off
+P 867962 s_go_spout
+D 867963 3
+D 868503 7
+P 868503 reward bar_off
+D 868548 10
+P 868548 light_on
+P 868550 Timestamp:867962 Go:0 Success:True Free_rew:False Light:0 Latency:587
+P 868552 Summary: T#:58 Tot_rate:0.74 Go#:37 NoGo#:21 Go_rate:0.78 NoGo_rate:0.67
+P 868552 4 trials moving ave Go success rate: 0.97
+D 868553 4
+D 868618 11
+D 868662 10
+D 868766 11
+D 868797 10
+D 868909 11
+D 870502 1
+D 871140 20
+P 872548 light_off
+D 872788 10
+D 872824 11
+D 873019 10
+D 873219 11
+D 875142 10
+D 875268 11
+D 875278 10
+D 875839 11
+D 878296 10
+D 878330 11
+D 878339 10
+D 878467 11
+D 878500 10
+D 878508 11
+D 878513 10
+D 880186 20
+D 880196 11
+D 883054 10
+D 883122 11
+D 883137 10
+D 883173 11
+D 883222 10
+D 883622 11
+D 883787 10
+D 883833 11
+D 885171 20
+D 887147 6
+D 887892 7
+D 888047 6
+D 888053 7
+D 888072 6
+D 888096 7
+D 888110 6
+D 888503 7
+D 888651 6
+D 888657 7
+D 888700 6
+D 889457 7
+D 889469 6
+D 889985 7
+D 890076 20
+D 890214 6
+D 893176 20
+P 893344 s_go_bar_off
+D 893345 3
+D 894057 7
+P 894058 light_on
+P 894058 reward bar_off
+D 894112 10
+P 894114 Timestamp:893344 Go:0 Success:True Free_rew:False Light:0 Latency:768
+P 894115 Summary: T#:59 Tot_rate:0.75 Go#:38 NoGo#:21 Go_rate:0.79 NoGo_rate:0.67
+P 894116 4 trials moving ave Go success rate: 0.98
+D 894117 4
+D 894174 11
+D 894375 10
+D 894399 11
+D 894565 10
+D 894588 11
+D 894679 10
+D 895199 11
+D 895624 1
+P 898058 light_off
+D 898968 20
+D 899113 6
+D 899123 7
+D 899123 10
+D 899242 11
+D 899414 10
+D 899784 11
+D 900941 10
+D 900971 11
+D 901244 20
+D 902034 10
+D 902044 11
+D 902051 10
+D 902295 11
+D 902796 20
+D 903648 6
+D 903676 7
+D 904200 6
+D 904205 7
+D 904448 6
+D 904469 7
+D 904485 6
+D 904851 7
+D 909012 10
+D 909037 11
+D 909202 10
+D 909260 11
+D 909363 10
+D 909813 11
+D 911408 10
+D 911450 11
+D 911949 20
+D 912525 20
+D 916374 6
+D 916406 7
+D 917032 20
+D 917226 10
+D 917368 11
+D 917702 10
+D 917718 11
+D 917739 10
+D 918309 11
+D 918894 10
+D 918924 11
+D 918951 6
+D 918956 7
+D 918983 10
+D 919006 11
+D 919012 10
+D 919059 11
+D 919145 10
+D 919410 11
+D 919501 10
+D 919710 11
+D 919727 20
+D 922520 6
+D 923023 7
+D 923181 6
+D 923277 7
+D 923293 6
+D 923526 7
+D 923541 6
+D 923548 7
+D 924291 6
+D 924360 7
+D 924398 6
+D 924847 7
+D 924860 6
+D 925031 7
+D 925045 6
+D 925910 20
+P 928691 s_go_spout
+D 928692 3
+D 929140 7
+P 929141 reward bar_off
+D 929201 10
+P 929201 light_on
+P 929203 Timestamp:928691 Go:0 Success:True Free_rew:False Light:0 Latency:510
+P 929204 Summary: T#:60 Tot_rate:0.75 Go#:39 NoGo#:21 Go_rate:0.79 NoGo_rate:0.67
+P 929205 4 trials moving ave Go success rate: 0.98
+D 929206 4
+D 929280 11
+D 929613 10
+D 929641 11
+D 929646 10
+D 929807 11
+D 930557 20
+D 930848 1
+P 933201 light_off
+D 934232 10
+D 934342 11
+D 934398 10
+D 934613 11
+D 935359 10
+D 935390 11
+D 935876 10
+D 935983 11
+D 936135 10
+D 936205 20
+D 936252 11
+D 936876 10
+D 936913 11
+D 938269 20
+D 938928 20
+D 940321 10
+D 940330 11
+D 945377 6
+D 945953 20
+D 946143 7
+D 946310 6
+D 946883 7
+D 946900 6
+D 947548 7
+D 947558 6
+D 947880 7
+D 947890 6
+D 950800 7
+D 950852 10
+D 950864 11
+D 951074 10
+D 951210 11
+D 951360 10
+D 951464 11
+D 951652 10
+D 951692 11
+D 951833 10
+D 952067 11
+D 952330 10
+D 952340 11
+D 952345 10
+D 952426 11
+D 952508 10
+D 953036 11
+D 953711 10
+D 953895 11
+D 954162 10
+D 954215 11
+D 954233 10
+D 954278 11
+D 954824 20
+D 956300 20
+D 956973 6
+D 957547 7
+D 957557 6
+D 957699 7
+D 957715 6
+D 958243 7
+D 958253 6
+D 958737 7
+D 958752 6
+P 961491 s_go_cs_onset
+P 961492 light_on
+D 961492 3
+D 961810 7
+P 961810 reward bar_off
+D 961871 10
+P 961874 Timestamp:961491 Go:0 Success:True Free_rew:False Light:0 Latency:381
+P 961875 Summary: T#:61 Tot_rate:0.75 Go#:40 NoGo#:21 Go_rate:0.80 NoGo_rate:0.67
+P 961876 4 trials moving ave Go success rate: 0.98
+D 961876 4
+D 961896 11
+D 961901 10
+D 962115 11
+D 963313 20
+D 963699 1
+P 965492 light_off
+D 965829 10
+D 965838 11
+D 966875 10
+D 966887 11
+D 967023 10
+D 967195 11
+D 967401 10
+D 967414 11
+D 967419 10
+D 967424 11
+D 967708 10
+D 967806 11
+D 967842 10
+D 967966 11
+D 968137 10
+D 968264 11
+D 968322 10
+D 968550 11
+D 970114 20
+D 970716 10
+D 970740 11
+D 971500 10
+D 972464 11
+D 975129 6
+D 975601 7
+D 975615 6
+D 976046 7
+D 976180 6
+D 977115 20
+D 978908 20
+P 979274 s_go_spout
+D 979275 3
+D 979800 7
+P 979800 reward bar_off
+D 979868 10
+P 979868 light_on
+P 979871 Timestamp:979274 Go:0 Success:True Free_rew:False Light:0 Latency:595
+P 979872 Summary: T#:62 Tot_rate:0.76 Go#:41 NoGo#:21 Go_rate:0.80 NoGo_rate:0.67
+P 979872 4 trials moving ave Go success rate: 0.99
+D 979873 4
+D 979943 11
+D 981826 1
+P 983868 light_off
+D 986558 20
+D 988017 6
+D 988492 7
+D 988557 10
+D 988582 11
+D 988713 10
+D 988730 11
+D 988744 10
+D 988959 11
+D 989135 10
+D 989170 11
+D 989206 20
+D 989450 10
+D 989529 11
+D 989617 10
+D 989865 11
+D 991496 20
+D 993716 6
+D 994554 7
+D 994596 6
+D 994601 7
+D 994610 6
+D 994619 7
+D 994659 6
+D 994822 7
+D 995036 6
+D 999045 20
+P 999515 s_go_bar_off
+D 999516 3
+D 999870 7
+P 999870 light_on
+P 999871 reward bar_off
+D 999875 6
+D 1000114 7
+D 1000564 10
+P 1000566 Timestamp:999516 Go:0 Success:True Free_rew:False Light:0 Latency:1048
+P 1000567 Summary: T#:63 Tot_rate:0.76 Go#:42 NoGo#:21 Go_rate:0.81 NoGo_rate:0.67
+P 1000568 4 trials moving ave Go success rate: 0.99
+D 1000569 4
+D 1000658 11
+D 1000747 10
+D 1000853 11
+D 1002399 1
+P 1003870 light_off
+D 1003952 6
+D 1003960 7
+D 1003994 6
+D 1004505 7
+D 1004518 6
+D 1004870 7
+D 1004880 6
+D 1005596 20
+D 1006451 20
+P 1008078 s_nogo_cs_onset
+P 1008079 light_on
+D 1008079 2
+P 1012081 Timestamp:1008078 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 1012082 Summary: T#:64 Tot_rate:0.77 Go#:42 NoGo#:22 Go_rate:0.81 NoGo_rate:0.68
+P 1012082 4 trials moving ave Go success rate: 0.99
+D 1012083 4
+P 1012083 light_off
+D 1012791 7
+D 1012852 10
+D 1012938 11
+D 1014444 1
+D 1014994 20
+D 1015252 10
+D 1015383 11
+D 1016077 10
+D 1016304 11
+D 1016423 10
+D 1016467 11
+D 1017161 10
+D 1017262 11
+D 1017274 10
+D 1017635 11
+D 1018364 10
+D 1018778 11
+D 1019672 10
+D 1019701 11
+D 1019720 20
+D 1019737 10
+D 1020154 11
+D 1020241 10
+D 1020298 11
+D 1020335 10
+D 1020342 11
+D 1020355 10
+D 1020455 11
+D 1021038 10
+D 1021136 11
+D 1021245 6
+D 1021250 7
+D 1021254 6
+D 1021762 7
+D 1022123 6
+D 1022132 7
+D 1022173 6
+D 1022258 7
+D 1022272 6
+D 1022372 7
+D 1022385 6
+D 1022655 7
+D 1022667 6
+D 1023051 7
+D 1023067 6
+D 1023218 7
+D 1023238 6
+P 1026687 s_go_cs_onset
+P 1026688 light_on
+D 1026688 3
+D 1029065 20
+P 1030689 Timestamp:1026687 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 1030691 Summary: T#:65 Tot_rate:0.75 Go#:43 NoGo#:22 Go_rate:0.79 NoGo_rate:0.68
+P 1030691 4 trials moving ave Go success rate: 0.77
+D 1030692 5
+P 1030692 light_off
+D 1031516 7
+D 1031583 10
+D 1031691 11
+D 1032306 10
+D 1032499 11
+D 1032688 10
+D 1033373 11
+D 1033415 6
+D 1033963 1
+D 1034156 7
+D 1034173 6
+D 1034316 7
+D 1034405 6
+D 1034418 7
+D 1034465 6
+D 1036360 20
+P 1037175 s_nogo_cs_onset
+P 1037176 light_on
+D 1037176 2
+D 1040578 20
+P 1041177 Timestamp:1037175 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 1041179 Summary: T#:66 Tot_rate:0.76 Go#:43 NoGo#:23 Go_rate:0.79 NoGo_rate:0.70
+P 1041179 4 trials moving ave Go success rate: 0.77
+D 1041180 4
+P 1041180 light_off
+D 1042673 7
+D 1042846 6
+D 1042858 7
+D 1043024 6
+D 1043031 7
+D 1043062 6
+D 1043537 1
+D 1043783 7
+D 1043793 6
+P 1046912 s_go_sham
+D 1046913 3
+D 1047582 7
+P 1047583 reward bar_off
+D 1047645 10
+P 1047647 Timestamp:1046912 Go:0 Success:True Free_rew:False Light:0 Latency:733
+P 1047649 Summary: T#:67 Tot_rate:0.76 Go#:44 NoGo#:23 Go_rate:0.80 NoGo_rate:0.70
+P 1047649 4 trials moving ave Go success rate: 0.82
+D 1047650 4
+D 1047753 11
+D 1049645 20
+D 1049723 1
+D 1050863 10
+D 1051061 11
+D 1051665 10
+D 1051674 11
+D 1051803 10
+D 1051846 11
+D 1051901 10
+D 1052058 11
+D 1052252 10
+D 1052321 11
+D 1052728 6
+D 1052735 7
+D 1052746 6
+D 1053180 7
+D 1053189 6
+D 1053294 7
+D 1053567 6
+D 1053645 7
+D 1053666 6
+D 1057415 20
+P 1057427 s_go_spout
+D 1057428 3
+D 1058184 7
+P 1058185 reward bar_off
+D 1058244 10
+P 1058245 light_on
+P 1058247 Timestamp:1057427 Go:0 Success:True Free_rew:False Light:0 Latency:818
+P 1058248 Summary: T#:68 Tot_rate:0.76 Go#:45 NoGo#:23 Go_rate:0.80 NoGo_rate:0.70
+P 1058249 4 trials moving ave Go success rate: 0.86
+D 1058249 4
+D 1058302 11
+D 1060060 1
+D 1061770 20
+P 1062245 light_off
+D 1063797 20
+D 1064332 10
+D 1064359 11
+D 1064367 10
+D 1064464 11
+D 1064474 10
+D 1064711 11
+D 1064933 10
+D 1065035 11
+D 1065853 6
+D 1066522 7
+D 1066538 6
+D 1067369 7
+D 1067390 6
+D 1067620 7
+D 1067631 6
+D 1070318 7
+D 1070818 6
+D 1070825 7
+D 1070856 6
+D 1071113 7
+D 1071123 6
+D 1071288 7
+D 1071311 6
+D 1071508 7
+D 1071528 6
+D 1071639 7
+D 1071663 6
+D 1073251 20
+P 1075442 s_go_spout
+D 1075443 3
+D 1075927 7
+P 1075927 reward bar_off
+D 1075983 10
+P 1075983 light_on
+P 1075990 Timestamp:1075442 Go:0 Success:True Free_rew:False Light:0 Latency:542
+P 1075991 Summary: T#:69 Tot_rate:0.77 Go#:46 NoGo#:23 Go_rate:0.80 NoGo_rate:0.70
+P 1075992 4 trials moving ave Go success rate: 0.89
+D 1075993 4
+D 1076040 11
+D 1076223 10
+D 1076301 11
+D 1076637 10
+D 1076709 11
+D 1076931 20
+D 1076972 10
+D 1077001 11
+D 1077576 1
+D 1078026 6
+D 1078425 7
+D 1078437 6
+D 1078493 7
+D 1078500 6
+D 1078512 7
+P 1079983 light_off
+D 1080275 20
+D 1083114 6
+D 1084165 7
+D 1085858 6
+D 1085863 7
+D 1085924 6
+D 1085934 7
+D 1085976 6
+D 1088530 20
+P 1089804 s_go_sham
+D 1089805 3
+D 1090365 7
+P 1090366 reward bar_off
+D 1090389 6
+D 1090548 7
+D 1090723 20
+D 1090816 10
+P 1090819 Timestamp:1089804 Go:0 Success:True Free_rew:False Light:0 Latency:1013
+P 1090820 Summary: T#:70 Tot_rate:0.77 Go#:47 NoGo#:23 Go_rate:0.81 NoGo_rate:0.70
+P 1090821 4 trials moving ave Go success rate: 0.92
+D 1090821 4
+D 1090822 11
+D 1090968 10
+D 1091152 11
+D 1091362 20
+D 1092668 1
+D 1093058 10
+D 1093076 11
+D 1093082 10
+D 1093087 11
+D 1093090 10
+D 1093315 11
+D 1095699 10
+D 1095761 11
+D 1095792 10
+D 1095825 11
+D 1095832 20
+D 1095841 10
+D 1097018 11
+D 1097790 10
+D 1097804 11
+D 1097809 10
+D 1097851 11
+D 1099363 20
+D 1099607 10
+D 1099639 11
+D 1099774 10
+D 1099835 11
+D 1100049 10
+D 1100109 11
+D 1100219 10
+D 1100251 11
+D 1100797 10
+D 1100844 11
+D 1100849 10
+D 1100858 11
+D 1100876 10
+D 1100882 11
+D 1101436 10
+D 1101505 11
+D 1101589 10
+D 1103511 11
+D 1104243 10
+D 1104298 11
+D 1104507 10
+D 1104549 11
+D 1106543 20
+D 1107383 20
+D 1111917 6
+D 1113050 7
+D 1113078 6
+D 1113290 20
+D 1113591 7
+D 1113608 6
+D 1114110 20
+P 1117372 s_go_bar_off
+D 1117373 3
+D 1118126 7
+P 1118127 light_on
+P 1118127 reward bar_off
+D 1118363 10
+P 1118365 Timestamp:1117372 Go:0 Success:True Free_rew:False Light:0 Latency:992
+P 1118367 Summary: T#:71 Tot_rate:0.77 Go#:48 NoGo#:23 Go_rate:0.81 NoGo_rate:0.70
+P 1118367 4 trials moving ave Go success rate: 0.93
+D 1118368 4
+D 1118499 11
+D 1120712 1
+D 1120859 6
+D 1121746 7
+D 1121767 6
+P 1122127 light_off
+D 1122859 20
+P 1125813 s_nogo_sham
+D 1125814 2
+D 1125912 7
+P 1125915 Timestamp:1125813 Go:0 Success:False Free_rew:False Light:0 Latency:100
+P 1125916 Summary: T#:72 Tot_rate:0.76 Go#:48 NoGo#:24 Go_rate:0.81 NoGo_rate:0.67
+P 1125917 4 trials moving ave Go success rate: 0.93
+D 1125917 5
+D 1125954 6
+D 1125975 7
+D 1126057 6
+D 1126396 7
+D 1126467 6
+D 1126473 7
+D 1126478 6
+D 1127315 20
+D 1127454 7
+D 1127466 6
+D 1128604 20
+D 1129263 1
+D 1131195 20
+P 1132565 s_go_cs_onset
+P 1132566 light_on
+D 1132566 3
+P 1136567 Timestamp:1132566 Go:0 Success:False Free_rew:False Light:0 Latency:4000
+P 1136569 Summary: T#:73 Tot_rate:0.75 Go#:49 NoGo#:24 Go_rate:0.80 NoGo_rate:0.67
+P 1136569 4 trials moving ave Go success rate: 0.73
+D 1136570 5
+P 1136570 light_off
+D 1138603 20
+D 1140260 1
+P 1144505 s_nogo_cs_onset
+P 1144506 light_on
+D 1144506 2
+D 1145662 20
+P 1148507 Timestamp:1144506 Go:0 Success:True Free_rew:False Light:0 Latency:4000
+P 1148509 Summary: T#:74 Tot_rate:0.76 Go#:49 NoGo#:25 Go_rate:0.80 NoGo_rate:0.68
+P 1148509 4 trials moving ave Go success rate: 0.73
+D 1148510 4
+P 1148510 light_off
+D 1150019 1
+D 1151187 7
+D 1151193 6
+D 1151343 7
+D 1151352 6
+P 1153883 s_nogo_cs_onset
+P 1153884 light_on
+D 1153884 2
+D 1154602 20
+P 1157886 Timestamp:1153883 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 1157887 Summary: T#:75 Tot_rate:0.76 Go#:49 NoGo#:26 Go_rate:0.80 NoGo_rate:0.69
+P 1157887 4 trials moving ave Go success rate: 0.73
+D 1157888 4
+P 1157888 light_off
+D 1158224 7
+D 1158245 6
+D 1158409 7
+D 1158471 10
+D 1158480 11
+D 1158644 10
+D 1158695 11
+D 1159086 10
+D 1159193 11
+D 1159270 10
+D 1159417 1
+D 1159419 11
+D 1160434 10
+D 1160444 11
+D 1160470 10
+D 1160531 20
+D 1160582 11
+D 1161063 6
+D 1161577 7
+D 1161592 6
+D 1162450 7
+D 1162462 6
+D 1163669 20
+P 1164964 s_nogo_sham
+D 1164965 2
+P 1168967 Timestamp:1164964 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 1168968 Summary: T#:76 Tot_rate:0.76 Go#:49 NoGo#:27 Go_rate:0.80 NoGo_rate:0.70
+P 1168968 4 trials moving ave Go success rate: 0.73
+D 1168969 4
+D 1169071 7
+D 1169085 6
+D 1170639 1
+D 1171900 20
+D 1173026 7
+D 1173042 6
+D 1175376 7
+D 1175389 6
+P 1179017 s_go_spout
+D 1179018 3
+D 1179298 20
+D 1179334 7
+P 1179335 reward bar_off
+D 1179352 6
+D 1179407 7
+D 1179615 10
+P 1179615 light_on
+P 1179618 Timestamp:1179017 Go:0 Success:True Free_rew:False Light:0 Latency:599
+P 1179619 Summary: T#:77 Tot_rate:0.77 Go#:50 NoGo#:27 Go_rate:0.80 NoGo_rate:0.70
+P 1179619 4 trials moving ave Go success rate: 0.79
+D 1179620 4
+D 1179667 11
+D 1179718 10
+D 1179808 11
+D 1181311 1
+P 1183615 light_off
+D 1184091 10
+D 1184122 11
+D 1184277 10
+D 1184393 11
+D 1184685 20
+D 1186243 10
+D 1187389 11
+D 1188328 10
+D 1188339 11
+D 1188492 10
+D 1188529 11
+D 1188721 10
+D 1188763 11
+D 1189445 10
+D 1189458 11
+D 1189601 10
+D 1189607 11
+D 1189612 10
+D 1189640 11
+D 1189878 10
+D 1189908 11
+D 1190380 10
+D 1190445 11
+D 1190481 10
+D 1190644 11
+D 1190967 10
+D 1191066 11
+D 1192431 20
+D 1192477 10
+D 1192572 11
+D 1194622 6
+D 1194628 7
+D 1195194 6
+D 1195199 7
+D 1195611 6
+D 1195736 7
+D 1195749 6
+D 1195764 7
+D 1195969 6
+D 1196166 7
+D 1196188 6
+D 1196524 7
+D 1196541 6
+P 1199319 s_nogo_cs_onset
+P 1199320 light_on
+D 1199320 2
+D 1200599 20
+D 1203134 20
+P 1203322 Timestamp:1199319 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 1203323 Summary: T#:78 Tot_rate:0.77 Go#:50 NoGo#:28 Go_rate:0.80 NoGo_rate:0.71
+P 1203323 4 trials moving ave Go success rate: 0.79
+D 1203324 4
+P 1203324 light_off
+D 1204011 7
+D 1204068 10
+D 1204144 11
+D 1204224 10
+D 1204283 11
+D 1204288 10
+D 1204292 11
+D 1204703 10
+D 1204729 11
+D 1204806 10
+D 1204914 11
+D 1205013 10
+D 1205186 11
+D 1205519 1
+D 1205545 6
+D 1206027 7
+D 1206043 6
+D 1206386 7
+D 1206402 6
+D 1207156 7
+D 1207161 6
+D 1207292 7
+D 1207301 6
+D 1209959 20
+P 1211206 s_go_sham
+D 1211207 3
+D 1211714 7
+P 1211715 reward bar_off
+D 1211763 10
+P 1211765 Timestamp:1211206 Go:0 Success:True Free_rew:False Light:0 Latency:558
+P 1211767 Summary: T#:79 Tot_rate:0.77 Go#:51 NoGo#:28 Go_rate:0.80 NoGo_rate:0.71
+P 1211767 4 trials moving ave Go success rate: 0.83
+D 1211768 4
+D 1211873 11
+D 1211948 10
+D 1212065 11
+D 1212694 20
+D 1212781 10
+D 1212787 11
+D 1212790 10
+D 1212887 11
+D 1213510 1
+D 1213800 10
+D 1213902 11
+D 1214801 10
+D 1214889 11
+D 1214925 10
+D 1215058 11
+D 1215366 10
+D 1215482 11
+D 1215853 10
+D 1215956 11
+D 1216134 10
+D 1216183 11
+D 1217130 10
+D 1217139 11
+D 1217183 10
+D 1217237 11
+D 1217353 10
+D 1217452 11
+D 1217466 10
+D 1217524 11
+D 1217554 10
+D 1217610 11
+D 1217638 10
+D 1217653 11
+D 1218013 10
+D 1218018 11
+D 1218024 10
+D 1218143 11
+D 1218302 10
+D 1218350 11
+D 1218383 10
+D 1218418 11
+D 1218688 20
+D 1219279 6
+D 1219288 7
+D 1219294 6
+D 1219814 7
+D 1219825 6
+D 1220060 7
+D 1220070 6
+D 1220155 7
+D 1220174 6
+D 1222449 20
+D 1223225 20
+P 1224789 s_go_sham
+D 1224790 3
+D 1225435 7
+P 1225436 reward bar_off
+D 1225486 10
+P 1225488 Timestamp:1224789 Go:0 Success:True Free_rew:False Light:0 Latency:697
+P 1225489 Summary: T#:80 Tot_rate:0.78 Go#:52 NoGo#:28 Go_rate:0.81 NoGo_rate:0.71
+P 1225490 4 trials moving ave Go success rate: 0.87
+D 1225491 4
+D 1225491 11
+D 1225492 10
+D 1225608 11
+D 1227477 1
+D 1228366 10
+D 1228469 11
+D 1228521 20
+D 1228625 10
+D 1230144 11
+D 1231535 10
+D 1231570 11
+D 1231699 10
+D 1232387 11
+D 1232544 10
+D 1232558 11
+D 1234826 10
+D 1234879 11
+D 1234902 10
+D 1234971 11
+D 1234983 10
+D 1235033 20
+D 1235054 11
+D 1235059 10
+D 1235170 11
+D 1235279 10
+D 1235438 11
+D 1236003 10
+D 1236008 11
+D 1236772 10
+D 1236785 11
+D 1238471 6
+D 1238625 7
+D 1240042 6
+D 1240308 7
+D 1240320 6
+D 1240527 7
+D 1240544 6
+D 1241139 7
+D 1241149 6
+D 1241394 7
+D 1241403 6
+D 1241582 20
+D 1243712 7
+D 1243779 10
+D 1243811 11
+D 1243969 10
+D 1244018 11
+D 1244175 10
+D 1244206 11
+D 1244447 6
+D 1244457 7
+D 1244481 6
+D 1244688 7
+D 1244854 6
+P 1247886 s_go_spout
+D 1247887 3
+D 1248251 7
+P 1248252 reward bar_off
+D 1248264 6
+D 1248490 7
+D 1248542 10
+P 1248542 light_on
+P 1248544 Timestamp:1247886 Go:0 Success:True Free_rew:False Light:0 Latency:656
+P 1248545 Summary: T#:81 Tot_rate:0.78 Go#:53 NoGo#:28 Go_rate:0.81 NoGo_rate:0.71
+P 1248546 4 trials moving ave Go success rate: 0.90
+D 1248547 4
+D 1248657 11
+D 1249559 20
+D 1250610 1
+D 1252118 20
+D 1252229 6
+D 1252295 7
+D 1252309 6
+P 1252542 light_off
+D 1253603 7
+D 1253636 6
+D 1254187 7
+D 1254197 6
+D 1254214 7
+D 1254220 6
+D 1254369 7
+D 1254380 6
+D 1254472 7
+D 1254605 6
+P 1257530 s_go_spout
+D 1257531 3
+D 1258160 7
+P 1258160 reward bar_off
+D 1258229 10
+P 1258230 light_on
+P 1258232 Timestamp:1257530 Go:0 Success:True Free_rew:False Light:0 Latency:700
+P 1258233 Summary: T#:82 Tot_rate:0.78 Go#:54 NoGo#:28 Go_rate:0.81 NoGo_rate:0.71
+P 1258234 4 trials moving ave Go success rate: 0.92
+D 1258234 4
+D 1258326 11
+D 1260344 1
+D 1260737 20
+P 1262230 light_off
+D 1262264 6
+D 1263015 7
+D 1263030 6
+D 1263399 7
+D 1263588 6
+D 1264399 7
+D 1264404 6
+D 1264541 7
+D 1264563 6
+D 1265616 20
+D 1267316 7
+D 1267589 10
+D 1267644 11
+D 1268228 10
+D 1268307 11
+D 1268337 10
+D 1268481 11
+D 1269238 10
+D 1269258 11
+D 1269273 10
+D 1269584 11
+D 1269755 10
+D 1269850 11
+D 1270129 10
+D 1270142 11
+D 1270291 10
+D 1270351 11
+D 1270445 10
+D 1270450 11
+D 1270455 10
+D 1270919 11
+D 1271729 10
+D 1271770 11
+D 1271775 10
+D 1271810 11
+D 1271936 10
+D 1271984 11
+D 1272086 20
+D 1272408 10
+D 1272445 11
+D 1272940 6
+D 1273088 7
+D 1273317 6
+D 1274148 7
+D 1274157 6
+D 1274705 7
+D 1274719 6
+D 1277387 20
+P 1278313 s_go_cs_onset
+P 1278314 light_on
+D 1278314 3
+D 1279401 7
+P 1279401 reward bar_off
+D 1281634 6
+D 1281651 7
+D 1281679 6
+P 1282316 Timestamp:1278313 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 1282317 Summary: T#:83 Tot_rate:0.77 Go#:55 NoGo#:28 Go_rate:0.80 NoGo_rate:0.71
+P 1282318 4 trials moving ave Go success rate: 0.72
+D 1282318 5
+P 1282318 light_off
+D 1282456 20
+D 1286291 1
+D 1286831 20
+D 1290370 7
+D 1290432 10
+D 1290477 11
+D 1290889 10
+D 1291113 20
+D 1293887 11
+D 1294337 10
+D 1294432 11
+D 1294523 10
+D 1294541 11
+D 1294913 10
+D 1294925 11
+D 1295435 6
+D 1295837 7
+D 1295845 6
+D 1295866 7
+D 1296033 6
+D 1296586 7
+D 1296603 6
+D 1297106 7
+D 1297136 6
+D 1297490 7
+D 1297506 6
+D 1298064 20
+D 1298946 7
+D 1298955 6
+D 1299330 7
+D 1299344 6
+D 1299641 7
+D 1299650 6
+P 1302943 s_nogo_cs_onset
+P 1302944 light_on
+D 1302944 2
+D 1303554 20
+P 1306946 Timestamp:1302943 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 1306947 Summary: T#:84 Tot_rate:0.77 Go#:55 NoGo#:29 Go_rate:0.80 NoGo_rate:0.72
+P 1306947 4 trials moving ave Go success rate: 0.72
+D 1306948 4
+P 1306948 light_off
+D 1307443 7
+D 1307484 10
+D 1307490 11
+D 1307698 10
+D 1307799 11
+D 1307896 10
+D 1308104 11
+D 1308240 10
+D 1308326 11
+D 1308482 10
+D 1308661 11
+D 1308921 1
+D 1308995 20
+D 1309752 10
+D 1309797 11
+D 1309918 10
+D 1310507 11
+D 1310633 10
+D 1310643 11
+D 1310817 10
+D 1310844 11
+D 1311817 6
+D 1311825 7
+D 1311841 6
+D 1312258 7
+D 1312357 6
+D 1312362 7
+D 1312363 6
+D 1312368 7
+D 1312369 6
+D 1312375 7
+D 1312405 6
+D 1312470 7
+D 1312485 6
+D 1313283 20
+D 1314886 20
+P 1315626 s_nogo_cs_onset
+P 1315627 light_on
+D 1315627 2
+P 1319628 Timestamp:1315626 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 1319630 Summary: T#:85 Tot_rate:0.78 Go#:55 NoGo#:30 Go_rate:0.80 NoGo_rate:0.73
+P 1319630 4 trials moving ave Go success rate: 0.72
+D 1319631 4
+P 1319631 light_off
+D 1320139 7
+D 1320154 6
+D 1321777 1
+D 1322181 20
+D 1322571 7
+D 1322628 10
+D 1322645 11
+D 1322666 10
+D 1322672 11
+D 1322804 10
+D 1322840 11
+D 1322845 10
+D 1322853 11
+D 1323013 10
+D 1323216 11
+D 1323500 10
+D 1323670 11
+D 1323916 6
+D 1324526 7
+D 1324548 6
+D 1324778 7
+D 1324793 6
+D 1325073 7
+D 1325087 6
+D 1325584 7
+D 1325648 6
+D 1325744 7
+D 1325750 6
+D 1326053 7
+D 1326066 6
+D 1326353 7
+D 1326364 6
+D 1326635 7
+D 1326649 6
+D 1327586 7
+D 1327602 6
+D 1328022 7
+D 1328038 6
+D 1328094 7
+D 1328103 6
+D 1328312 7
+D 1328322 6
+D 1328590 7
+D 1328604 6
+D 1330565 20
+P 1331238 s_nogo_cs_onset
+P 1331239 light_on
+D 1331239 2
+D 1331247 7
+P 1331249 Timestamp:1331238 Go:0 Success:False Free_rew:False Light:0 Latency:10
+P 1331251 Summary: T#:86 Tot_rate:0.77 Go#:55 NoGo#:31 Go_rate:0.80 NoGo_rate:0.71
+P 1331251 4 trials moving ave Go success rate: 0.72
+D 1331252 5
+D 1331252 6
+D 1331535 20
+D 1334310 20
+P 1335239 light_off
+D 1335703 20
+D 1336806 1
+P 1341692 s_nogo_sham
+D 1341693 2
+D 1342612 20
+P 1345694 Timestamp:1341692 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 1345696 Summary: T#:87 Tot_rate:0.77 Go#:55 NoGo#:32 Go_rate:0.80 NoGo_rate:0.72
+P 1345697 4 trials moving ave Go success rate: 0.72
+D 1345697 4
+D 1345969 7
+D 1346018 6
+D 1346172 7
+D 1346189 6
+D 1347853 1
+D 1348100 7
+D 1348129 6
+D 1348808 20
+P 1351840 s_go_cs_onset
+P 1351841 light_on
+D 1351841 3
+D 1352260 7
+P 1352261 reward bar_off
+D 1352556 6
+D 1352575 7
+D 1352580 6
+D 1352580 7
+D 1352586 6
+P 1355842 Timestamp:1351840 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 1355844 Summary: T#:88 Tot_rate:0.76 Go#:56 NoGo#:32 Go_rate:0.79 NoGo_rate:0.72
+P 1355844 4 trials moving ave Go success rate: 0.56
+D 1355845 5
+P 1355845 light_off
+D 1356479 7
+D 1356539 10
+D 1356606 11
+D 1356904 10
+D 1356918 11
+D 1357044 10
+D 1357138 11
+D 1358298 10
+D 1358318 20
+D 1358497 11
+D 1358887 10
+D 1358900 11
+D 1358949 1
+D 1359039 10
+D 1359217 11
+D 1360075 10
+D 1360307 11
+D 1361343 10
+D 1361428 11
+D 1361521 10
+D 1361535 11
+D 1361654 10
+D 1361691 11
+D 1362135 10
+D 1362547 11
+D 1363358 6
+D 1364072 7
+D 1364092 6
+D 1364213 7
+D 1364226 6
+D 1364271 7
+D 1364298 6
+D 1364480 7
+D 1364487 6
+D 1365419 7
+D 1365431 6
+D 1366513 20
+D 1367125 20
+P 1368861 s_go_cs_onset
+P 1368862 light_on
+D 1368862 3
+D 1369477 20
+D 1370168 20
+D 1372489 20
+P 1372863 Timestamp:1368861 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 1372865 Summary: T#:89 Tot_rate:0.75 Go#:57 NoGo#:32 Go_rate:0.77 NoGo_rate:0.72
+P 1372865 4 trials moving ave Go success rate: 0.44
+D 1372866 5
+P 1372866 light_off
+D 1374503 7
+D 1374543 10
+D 1374605 11
+D 1374726 10
+D 1374831 11
+D 1375204 10
+D 1375319 11
+D 1375467 10
+D 1375500 11
+D 1375505 10
+D 1375614 11
+D 1375656 10
+D 1375693 11
+D 1375704 10
+D 1375999 11
+D 1376249 10
+D 1376390 11
+D 1376537 10
+D 1376631 11
+D 1377311 20
+D 1377805 1
+D 1378035 6
+D 1379022 7
+D 1379030 6
+D 1379249 7
+D 1379255 6
+D 1379361 7
+D 1379368 6
+D 1379373 7
+D 1379373 6
+D 1379378 7
+D 1379558 6
+D 1379665 7
+D 1380004 6
+P 1383559 s_nogo_sham
+D 1383560 2
+D 1384370 20
+P 1387562 Timestamp:1383559 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 1387563 Summary: T#:90 Tot_rate:0.76 Go#:57 NoGo#:33 Go_rate:0.77 NoGo_rate:0.73
+P 1387564 4 trials moving ave Go success rate: 0.44
+D 1387564 4
+D 1389200 1
+D 1389721 20
+P 1392343 s_go_spout
+D 1392344 3
+D 1393077 7
+P 1393077 reward bar_off
+D 1393117 10
+P 1393118 light_on
+P 1393120 Timestamp:1392343 Go:0 Success:True Free_rew:False Light:0 Latency:775
+P 1393121 Summary: T#:91 Tot_rate:0.76 Go#:58 NoGo#:33 Go_rate:0.78 NoGo_rate:0.73
+P 1393122 4 trials moving ave Go success rate: 0.56
+D 1393122 4
+D 1393187 11
+D 1393495 10
+D 1393608 11
+D 1393891 10
+D 1394033 11
+D 1394636 6
+D 1395109 1
+D 1395201 7
+D 1395215 6
+D 1395711 7
+D 1395721 6
+D 1396038 7
+D 1396055 6
+D 1396306 20
+P 1397118 light_off
+P 1401289 s_nogo_cs_onset
+P 1401290 light_on
+D 1401290 2
+D 1401411 20
+D 1402257 20
+P 1405292 Timestamp:1401289 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 1405293 Summary: T#:92 Tot_rate:0.76 Go#:58 NoGo#:34 Go_rate:0.78 NoGo_rate:0.74
+P 1405293 4 trials moving ave Go success rate: 0.56
+D 1405294 4
+P 1405294 light_off
+D 1405934 7
+D 1406000 10
+D 1406064 11
+D 1406306 10
+D 1406359 11
+D 1406392 10
+D 1406541 11
+D 1407061 1
+D 1407923 10
+D 1407946 11
+D 1407992 10
+D 1408309 11
+D 1408356 10
+D 1408516 11
+D 1409268 10
+D 1409383 11
+D 1409680 20
+D 1409921 10
+D 1409945 11
+D 1410075 10
+D 1410163 11
+D 1410194 10
+D 1410321 11
+D 1410471 10
+D 1410588 11
+D 1410796 10
+D 1410801 11
+D 1410801 10
+D 1410910 11
+D 1411058 10
+D 1411068 11
+D 1411073 10
+D 1411184 11
+D 1411601 10
+D 1411613 11
+D 1411623 10
+D 1411736 11
+D 1411815 10
+D 1411944 11
+D 1414328 6
+D 1414357 7
+D 1414363 6
+D 1414775 7
+D 1414783 6
+D 1414852 7
+D 1414855 20
+D 1414863 6
+D 1414936 7
+D 1414962 6
+D 1415682 7
+D 1415688 6
+D 1416435 7
+D 1416444 6
+D 1416920 7
+D 1416942 6
+D 1417754 20
+D 1418187 7
+D 1418200 6
+P 1422103 s_nogo_cs_onset
+P 1422104 light_on
+D 1422104 2
+D 1424537 20
+P 1426106 Timestamp:1422103 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 1426107 Summary: T#:93 Tot_rate:0.76 Go#:58 NoGo#:35 Go_rate:0.78 NoGo_rate:0.74
+P 1426107 4 trials moving ave Go success rate: 0.56
+D 1426108 4
+P 1426108 light_off
+D 1426780 7
+D 1426791 6
+D 1427246 7
+D 1427298 10
+D 1427303 11
+D 1427321 10
+D 1427367 11
+D 1427668 10
+D 1427771 11
+D 1427848 10
+D 1427961 11
+D 1428124 1
+D 1428128 10
+D 1428672 11
+D 1428966 10
+D 1429228 11
+D 1429247 10
+D 1429287 11
+D 1429633 10
+D 1429663 20
+D 1429678 11
+D 1429890 6
+D 1430414 20
+D 1430707 7
+D 1430713 6
+D 1430879 7
+D 1430888 6
+D 1431119 7
+D 1431126 6
+P 1433652 s_go_bar_off
+D 1433653 3
+D 1434207 7
+P 1434207 light_on
+P 1434208 reward bar_off
+D 1434212 6
+D 1437121 20
+P 1437654 Timestamp:1433652 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 1437656 Summary: T#:94 Tot_rate:0.76 Go#:59 NoGo#:35 Go_rate:0.76 NoGo_rate:0.74
+P 1437657 4 trials moving ave Go success rate: 0.44
+D 1437657 5
+P 1438208 light_off
+D 1438858 7
+D 1438940 10
+D 1439024 11
+D 1439138 10
+D 1439262 11
+D 1439412 10
+D 1439595 11
+D 1440144 10
+D 1440467 11
+D 1441760 10
+D 1441765 11
+D 1441897 10
+D 1441989 11
+D 1442014 10
+D 1442265 11
+D 1442314 1
+D 1442842 10
+D 1442873 11
+D 1442902 10
+D 1442907 11
+D 1443604 10
+D 1443725 11
+D 1443775 10
+D 1444195 11
+D 1445132 10
+D 1445148 11
+D 1445178 10
+D 1445412 11
+D 1445725 20
+D 1445906 10
+D 1446432 11
+D 1447696 10
+D 1447723 11
+D 1448499 6
+D 1449322 7
+D 1449331 6
+P 1453569 s_go_bar_off
+D 1453570 3
+D 1453995 20
+D 1454352 7
+P 1454352 light_on
+P 1454352 reward bar_off
+D 1454428 10
+P 1454430 Timestamp:1453569 Go:0 Success:True Free_rew:False Light:0 Latency:860
+P 1454432 Summary: T#:95 Tot_rate:0.76 Go#:60 NoGo#:35 Go_rate:0.77 NoGo_rate:0.74
+P 1454432 4 trials moving ave Go success rate: 0.56
+D 1454433 4
+D 1454504 11
+D 1454870 10
+D 1454970 11
+D 1455013 10
+D 1455140 11
+D 1456325 10
+D 1456349 11
+D 1456476 10
+D 1456792 1
+D 1457010 11
+P 1458352 light_off
+D 1458539 10
+D 1458627 11
+D 1458678 10
+D 1458834 11
+D 1458871 10
+D 1459236 11
+D 1459700 10
+D 1459812 11
+D 1459853 10
+D 1460459 11
+D 1462041 10
+D 1462070 20
+D 1462626 11
+D 1463614 10
+D 1463648 11
+D 1463903 10
+D 1464013 11
+D 1464318 10
+D 1464356 11
+D 1466337 6
+D 1466393 7
+D 1466413 6
+D 1467135 7
+D 1467145 6
+D 1468295 7
+D 1468306 6
+D 1468381 7
+D 1468440 6
+D 1468449 7
+D 1468454 6
+D 1468467 7
+D 1468524 6
+D 1471429 20
+P 1472736 s_go_cs_onset
+P 1472737 light_on
+D 1472737 3
+D 1475080 20
+P 1476738 Timestamp:1472736 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 1476740 Summary: T#:96 Tot_rate:0.75 Go#:61 NoGo#:35 Go_rate:0.75 NoGo_rate:0.74
+P 1476740 4 trials moving ave Go success rate: 0.44
+D 1476741 5
+P 1476741 light_off
+D 1480396 1
+P 1483899 s_nogo_cs_onset
+P 1483900 light_on
+D 1483900 2
+D 1484006 20
+D 1485029 20
+P 1487902 Timestamp:1483899 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 1487903 Summary: T#:97 Tot_rate:0.75 Go#:61 NoGo#:36 Go_rate:0.75 NoGo_rate:0.75
+P 1487903 4 trials moving ave Go success rate: 0.44
+D 1487904 4
+P 1487904 light_off
+D 1489818 7
+D 1489918 10
+D 1489955 11
+D 1490188 1
+D 1490408 10
+D 1490500 11
+D 1490564 10
+D 1490657 11
+D 1490862 10
+D 1490916 11
+D 1490984 10
+D 1491079 11
+D 1491421 20
+D 1491670 6
+D 1491677 7
+D 1491688 6
+D 1491705 7
+D 1492061 6
+D 1492257 7
+D 1492298 6
+D 1492351 7
+D 1492356 6
+D 1492360 7
+D 1492365 6
+D 1492381 7
+D 1492448 10
+D 1492467 11
+D 1492477 10
+D 1492505 11
+D 1493011 10
+D 1493059 11
+D 1493193 10
+D 1493265 11
+D 1495611 6
+D 1495690 7
+D 1495701 6
+D 1495868 20
+D 1498124 7
+D 1498129 6
+D 1498202 7
+D 1498349 20
+D 1498449 6
+D 1498463 7
+D 1498491 6
+D 1498771 7
+D 1498791 6
+P 1501540 s_go_cs_onset
+P 1501541 light_on
+D 1501541 3
+D 1504280 20
+P 1505542 Timestamp:1501541 Go:0 Success:False Free_rew:False Light:0 Latency:4000
+P 1505544 Summary: T#:98 Tot_rate:0.74 Go#:62 NoGo#:36 Go_rate:0.74 NoGo_rate:0.75
+P 1505544 4 trials moving ave Go success rate: 0.34
+D 1505545 5
+P 1505545 light_off
+D 1506432 7
+D 1506449 6
+D 1506849 7
+D 1506862 6
+D 1507597 7
+D 1507611 6
+D 1509883 1
+D 1511201 20
+P 1513986 s_go_cs_onset
+P 1513987 light_on
+D 1513988 3
+P 1516086 free_reward
+D 1517151 7
+P 1517152 reward bar_off
+D 1517560 6
+D 1517849 7
+P 1517989 Timestamp:1513986 Go:0 Success:False Free_rew:True Light:0 Latency:4001
+P 1517990 Summary: T#:99 Tot_rate:0.74 Go#:63 NoGo#:36 Go_rate:0.73 NoGo_rate:0.75
+P 1517991 4 trials moving ave Go success rate: 0.27
+D 1517991 5
+P 1517991 light_off
+D 1518111 6
+D 1518558 7
+D 1518630 10
+D 1518794 11
+D 1519253 20
+D 1521352 10
+D 1521405 11
+D 1521571 10
+D 1521577 11
+D 1521581 10
+D 1521967 11
+D 1522277 1
+D 1523008 10
+D 1523013 11
+D 1523157 10
+D 1523166 11
+D 1523195 10
+D 1523247 11
+D 1523267 10
+D 1523282 11
+D 1523302 10
+D 1523886 11
+D 1526320 10
+D 1526579 11
+D 1526900 10
+D 1526921 11
+D 1526934 10
+D 1527107 11
+D 1527716 20
+D 1529263 6
+D 1529700 7
+D 1529721 6
+D 1530438 7
+D 1530452 6
+D 1530571 7
+D 1530576 6
+D 1530578 7
+D 1530695 6
+D 1531421 20
+P 1535476 s_go_cs_onset
+P 1535477 light_on
+D 1535477 3
+D 1536651 7
+P 1536651 reward bar_off
+D 1536660 6
+D 1536750 7
+D 1536760 6
+D 1536892 7
+D 1536953 6
+D 1537032 20
+P 1537761 free_reward
+P 1539479 Timestamp:1535476 Go:0 Success:False Free_rew:True Light:0 Latency:4001
+P 1539480 Summary: T#:100 Tot_rate:0.73 Go#:64 NoGo#:36 Go_rate:0.72 NoGo_rate:0.75
+P 1539481 4 trials moving ave Go success rate: 0.21
+D 1539481 5
+P 1539481 light_off
+D 1540673 7
+D 1541049 10
+D 1541183 11
+D 1543097 1
+D 1544768 10
+D 1544879 11
+D 1544919 10
+D 1545356 20
+D 1545621 11
+D 1547668 20
+D 1548267 10
+D 1548327 11
+D 1548349 10
+D 1548391 11
+D 1548417 10
+D 1548540 11
+D 1548830 10
+D 1548916 11
+D 1549103 10
+D 1549197 11
+D 1549242 10
+D 1549347 11
+D 1549775 10
+D 1549885 11
+D 1550419 10
+D 1550426 11
+D 1550724 10
+D 1550783 11
+D 1550809 10
+D 1550831 11
+D 1550903 10
+D 1551339 11
+D 1551683 6
+D 1553300 20
+D 1553363 7
+D 1553372 6
+P 1557460 s_nogo_sham
+D 1557461 2
+D 1559478 20
+D 1560080 7
+P 1560083 Timestamp:1557461 Go:0 Success:False Free_rew:False Light:0 Latency:2620
+P 1560084 Summary: T#:101 Tot_rate:0.72 Go#:64 NoGo#:37 Go_rate:0.72 NoGo_rate:0.73
+P 1560085 4 trials moving ave Go success rate: 0.21
+D 1560085 5
+D 1560112 6
+D 1560200 7
+D 1560224 6
+D 1560253 7
+D 1560262 6
+D 1560363 7
+D 1560574 6
+D 1560879 7
+D 1560889 6
+D 1561758 7
+D 1561764 6
+D 1561853 20
+D 1563072 7
+D 1563085 6
+D 1563461 1
+P 1567396 s_go_error_bar_off
+D 1567397 3
+D 1568383 7
+P 1568383 light_on
+D 1568615 10
+P 1568617 Timestamp:1567396 Go:0 Success:True Free_rew:False Light:0 Latency:1219
+P 1568618 Summary: T#:102 Tot_rate:0.73 Go#:65 NoGo#:37 Go_rate:0.72 NoGo_rate:0.73
+P 1568619 4 trials moving ave Go success rate: 0.38
+D 1568619 4
+D 1568713 11
+D 1568924 10
+D 1568967 11
+D 1569209 6
+D 1570837 20
+D 1570933 1
+D 1571973 20
+P 1572383 light_off
+D 1573354 20
+P 1575736 s_go_sham
+D 1575737 3
+D 1576455 7
+P 1576456 reward bar_off
+D 1576509 10
+P 1576511 Timestamp:1575736 Go:0 Success:True Free_rew:False Light:0 Latency:773
+P 1576512 Summary: T#:103 Tot_rate:0.73 Go#:66 NoGo#:37 Go_rate:0.73 NoGo_rate:0.73
+P 1576513 4 trials moving ave Go success rate: 0.52
+D 1576513 4
+D 1576580 11
+D 1578174 1
+D 1578795 10
+D 1578812 11
+D 1578826 10
+D 1578960 11
+D 1579118 10
+D 1579435 11
+D 1579624 10
+D 1579639 11
+D 1579916 10
+D 1579957 20
+D 1580694 20
+D 1580814 11
+D 1580920 10
+D 1580934 11
+D 1581031 10
+D 1581188 11
+D 1581268 10
+D 1581721 11
+D 1582603 6
+D 1582608 7
+D 1582619 6
+D 1583015 7
+D 1583023 6
+D 1583042 7
+D 1583211 6
+D 1583243 7
+D 1583254 6
+D 1583341 7
+D 1583503 6
+D 1583566 7
+D 1583581 6
+D 1583900 7
+D 1583917 6
+P 1588174 s_go_cs_onset
+P 1588175 light_on
+D 1588175 3
+D 1588768 20
+P 1592177 Timestamp:1588174 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 1592178 Summary: T#:104 Tot_rate:0.72 Go#:67 NoGo#:37 Go_rate:0.72 NoGo_rate:0.73
+P 1592179 4 trials moving ave Go success rate: 0.40
+D 1592179 5
+P 1592179 light_off
+D 1593270 7
+D 1593324 10
+D 1593329 11
+D 1593329 10
+D 1593342 11
+D 1593465 10
+D 1593470 11
+D 1593480 10
+D 1593564 11
+D 1593662 20
+D 1593742 10
+D 1593887 11
+D 1594009 10
+D 1594028 11
+D 1594349 10
+D 1594563 11
+D 1595045 6
+D 1595437 7
+D 1595453 6
+D 1596104 7
+D 1596118 6
+D 1596424 7
+D 1596436 6
+D 1596535 1
+D 1596578 7
+D 1596586 6
+D 1597642 20
+D 1598704 20
+P 1599292 s_go_bar_off
+D 1599293 3
+D 1599714 7
+P 1599714 light_on
+P 1599715 reward bar_off
+D 1599726 6
+P 1603295 Timestamp:1599292 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 1603296 Summary: T#:105 Tot_rate:0.71 Go#:68 NoGo#:37 Go_rate:0.71 NoGo_rate:0.73
+P 1603297 4 trials moving ave Go success rate: 0.31
+D 1603297 5
+P 1603714 light_off
+D 1604498 7
+D 1604503 6
+D 1604707 7
+D 1604718 6
+D 1604737 7
+D 1604806 6
+D 1604814 7
+D 1604873 10
+D 1604990 11
+D 1605139 10
+D 1605179 11
+D 1605284 10
+D 1605410 11
+D 1605445 10
+D 1606539 11
+D 1606594 6
+D 1606599 7
+D 1606616 6
+D 1607027 7
+D 1607198 1
+D 1607210 10
+D 1607257 11
+D 1607423 10
+D 1607441 20
+D 1607507 11
+D 1607596 10
+D 1607715 11
+D 1608993 10
+D 1608999 11
+D 1609002 10
+D 1609061 11
+D 1609110 10
+D 1609214 11
+D 1609482 10
+D 1609524 11
+D 1609667 10
+D 1609771 11
+D 1609957 10
+D 1610004 11
+D 1610047 10
+D 1610060 11
+D 1610264 10
+D 1610294 11
+D 1610473 10
+D 1610576 11
+D 1610718 10
+D 1611146 11
+D 1611716 6
+D 1612220 7
+D 1612235 6
+D 1613683 20
+D 1614866 20
+P 1615394 s_nogo_sham
+D 1615395 2
+D 1618509 20
+P 1619397 Timestamp:1615394 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 1619398 Summary: T#:106 Tot_rate:0.72 Go#:68 NoGo#:38 Go_rate:0.71 NoGo_rate:0.74
+P 1619398 4 trials moving ave Go success rate: 0.31
+D 1619399 4
+D 1622214 1
+D 1624685 20
+P 1626230 s_go_cs_onset
+P 1626231 light_on
+D 1626232 3
+D 1627084 20
+P 1627547 free_reward
+D 1628138 7
+P 1628139 reward bar_off
+D 1628151 6
+D 1628731 7
+D 1628867 10
+P 1628869 Timestamp:1626230 Go:0 Success:True Free_rew:True Light:0 Latency:2637
+P 1628870 Summary: T#:107 Tot_rate:0.72 Go#:69 NoGo#:38 Go_rate:0.71 NoGo_rate:0.74
+P 1628871 4 trials moving ave Go success rate: 0.47
+D 1628871 4
+D 1628938 11
+D 1629239 6
+P 1630231 light_off
+D 1630857 7
+D 1630862 6
+D 1630878 7
+D 1630887 6
+D 1630897 7
+D 1630930 6
+D 1630936 7
+D 1631123 1
+D 1632047 20
+D 1632316 10
+D 1632381 11
+D 1634840 10
+D 1635600 11
+D 1637858 10
+D 1637904 11
+D 1637944 10
+D 1637961 11
+D 1638915 10
+D 1638963 11
+D 1639049 10
+D 1639069 11
+D 1639080 10
+D 1639191 11
+D 1641003 20
+D 1641124 6
+D 1641143 7
+D 1641433 6
+D 1641483 7
+D 1641492 6
+D 1642028 7
+D 1642047 6
+D 1644687 20
+P 1645492 s_nogo_sham
+D 1645493 2
+P 1649494 Timestamp:1645492 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 1649496 Summary: T#:108 Tot_rate:0.72 Go#:69 NoGo#:39 Go_rate:0.71 NoGo_rate:0.74
+P 1649497 4 trials moving ave Go success rate: 0.47
+D 1649497 4
+D 1651416 1
+D 1653150 20
+P 1654168 s_go_sham
+D 1654169 3
+D 1654895 7
+P 1654895 reward bar_off
+D 1654937 10
+P 1654939 Timestamp:1654168 Go:0 Success:True Free_rew:False Light:0 Latency:769
+P 1654940 Summary: T#:109 Tot_rate:0.72 Go#:70 NoGo#:39 Go_rate:0.71 NoGo_rate:0.74
+P 1654941 4 trials moving ave Go success rate: 0.58
+D 1654941 4
+D 1655033 11
+D 1655066 10
+D 1655167 11
+D 1655778 20
+D 1656581 10
+D 1656682 11
+D 1656707 10
+D 1656840 1
+D 1656919 11
+D 1658984 10
+D 1659026 11
+D 1659043 10
+D 1659080 11
+D 1659455 10
+D 1659485 11
+D 1659500 10
+D 1659534 11
+D 1659745 10
+D 1659750 11
+D 1659752 10
+D 1659770 11
+D 1659901 10
+D 1659989 11
+D 1660536 10
+D 1660646 11
+D 1660728 10
+D 1660921 11
+D 1661215 10
+D 1661254 11
+D 1661577 6
+D 1661929 20
+D 1662565 7
+D 1662580 6
+D 1662842 7
+D 1662859 6
+P 1666921 s_go_spout
+D 1666922 3
+D 1667349 20
+D 1667665 7
+P 1667666 reward bar_off
+D 1667909 10
+P 1667910 light_on
+P 1667912 Timestamp:1666921 Go:0 Success:True Free_rew:False Light:0 Latency:989
+P 1667913 Summary: T#:110 Tot_rate:0.73 Go#:71 NoGo#:39 Go_rate:0.72 NoGo_rate:0.74
+P 1667914 4 trials moving ave Go success rate: 0.68
+D 1667914 4
+D 1667966 11
+D 1667978 10
+D 1667994 11
+D 1669499 1
+D 1671477 6
+P 1671910 light_off
+D 1672636 7
+D 1672641 6
+D 1672646 7
+D 1672822 6
+D 1672828 7
+D 1672931 10
+D 1673045 11
+D 1673840 10
+D 1673860 11
+D 1674032 10
+D 1674126 11
+D 1674183 10
+D 1675085 11
+D 1675137 10
+D 1675169 11
+D 1675235 20
+D 1675567 10
+D 1675732 11
+D 1676461 10
+D 1678111 11
+D 1680055 10
+D 1680096 11
+D 1680704 6
+D 1680721 7
+D 1680726 6
+D 1681482 7
+D 1681597 6
+D 1681675 20
+D 1682936 7
+D 1682954 6
+D 1683786 7
+D 1683984 6
+D 1684492 20
+D 1684572 7
+D 1684612 6
+D 1684914 7
+D 1684919 6
+D 1684929 7
+D 1685112 6
+D 1687901 20
+P 1688105 s_go_cs_onset
+P 1688106 light_on
+D 1688106 3
+D 1688626 7
+P 1688626 reward bar_off
+D 1689183 10
+P 1689186 Timestamp:1688105 Go:0 Success:True Free_rew:False Light:0 Latency:1079
+P 1689187 Summary: T#:111 Tot_rate:0.73 Go#:72 NoGo#:39 Go_rate:0.72 NoGo_rate:0.74
+P 1689188 4 trials moving ave Go success rate: 0.75
+D 1689188 4
+D 1689353 11
+D 1690710 1
+D 1691821 6
+P 1692106 light_off
+D 1692599 7
+D 1692621 6
+D 1693164 7
+D 1693224 10
+D 1693342 11
+D 1694643 20
+D 1695157 10
+D 1695173 11
+D 1695185 10
+D 1695200 11
+D 1695205 10
+D 1695332 11
+D 1696145 10
+D 1696171 11
+D 1696178 10
+D 1696288 11
+D 1697467 10
+D 1697500 11
+D 1697635 10
+D 1697733 11
+D 1698231 10
+D 1698275 11
+D 1699391 6
+D 1701162 7
+D 1701180 6
+D 1701869 20
+P 1703808 s_nogo_sham
+D 1703809 2
+D 1706120 20
+P 1707811 Timestamp:1703808 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 1707812 Summary: T#:112 Tot_rate:0.73 Go#:72 NoGo#:40 Go_rate:0.72 NoGo_rate:0.75
+P 1707812 4 trials moving ave Go success rate: 0.75
+D 1707813 4
+D 1709479 1
+D 1712280 7
+D 1712549 6
+D 1712554 7
+D 1712571 6
+D 1712745 7
+D 1712750 6
+D 1712846 7
+D 1712924 6
+D 1712942 7
+D 1712967 20
+D 1712970 6
+P 1715831 s_nogo_sham
+D 1715832 2
+D 1718311 7
+P 1718314 Timestamp:1715831 Go:0 Success:False Free_rew:False Light:0 Latency:2481
+P 1718315 Summary: T#:113 Tot_rate:0.73 Go#:72 NoGo#:41 Go_rate:0.72 NoGo_rate:0.73
+P 1718316 4 trials moving ave Go success rate: 0.75
+D 1718316 5
+D 1718327 6
+D 1719475 20
+D 1721433 1
+P 1725203 s_nogo_sham
+D 1725204 2
+D 1726163 20
+D 1727046 7
+P 1727048 Timestamp:1725203 Go:0 Success:False Free_rew:False Light:0 Latency:1844
+P 1727050 Summary: T#:114 Tot_rate:0.72 Go#:72 NoGo#:42 Go_rate:0.72 NoGo_rate:0.71
+P 1727050 4 trials moving ave Go success rate: 0.75
+D 1727051 5
+D 1727051 6
+D 1727061 7
+D 1727073 6
+D 1727837 7
+D 1727847 6
+D 1728536 7
+D 1728551 6
+D 1728567 7
+D 1728585 6
+D 1728597 7
+D 1728622 6
+D 1728698 20
+D 1729084 7
+D 1729100 6
+D 1729152 7
+D 1729163 6
+D 1729476 7
+D 1729485 6
+D 1730103 1
+D 1730155 7
+D 1730161 6
+D 1730677 7
+D 1730690 6
+D 1730764 7
+D 1730771 6
+D 1731977 7
+D 1732000 6
+D 1732519 7
+D 1732535 6
+D 1733487 7
+D 1733500 6
+D 1734606 7
+D 1734630 6
+P 1737665 s_go_spout
+D 1737666 3
+D 1737986 7
+P 1737986 reward bar_off
+D 1738002 6
+D 1738151 7
+D 1738236 20
+D 1738250 10
+P 1738251 light_on
+P 1738253 Timestamp:1737665 Go:0 Success:True Free_rew:False Light:0 Latency:586
+P 1738254 Summary: T#:115 Tot_rate:0.72 Go#:73 NoGo#:42 Go_rate:0.73 NoGo_rate:0.71
+P 1738255 4 trials moving ave Go success rate: 0.80
+D 1738255 4
+D 1738293 11
+D 1738407 10
+D 1738508 11
+D 1738624 10
+D 1738665 11
+D 1739160 6
+D 1739981 7
+D 1739992 6
+D 1740198 1
+P 1742251 light_off
+D 1745079 20
+P 1745651 s_nogo_cs_onset
+P 1745652 light_on
+D 1745652 2
+D 1748909 20
+P 1749653 Timestamp:1745651 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 1749655 Summary: T#:116 Tot_rate:0.72 Go#:73 NoGo#:43 Go_rate:0.73 NoGo_rate:0.72
+P 1749655 4 trials moving ave Go success rate: 0.80
+D 1749656 4
+P 1749656 light_off
+D 1751828 1
+D 1752821 20
+P 1754893 s_go_error_sham
+D 1754894 3
+D 1755632 7
+D 1755969 10
+P 1755972 Timestamp:1754893 Go:0 Success:True Free_rew:False Light:0 Latency:1077
+P 1755973 Summary: T#:117 Tot_rate:0.73 Go#:74 NoGo#:43 Go_rate:0.73 NoGo_rate:0.72
+P 1755974 4 trials moving ave Go success rate: 0.85
+D 1755974 4
+D 1756128 11
+D 1757271 10
+D 1757921 1
+D 1758208 11
+D 1758296 10
+D 1758329 11
+D 1758458 10
+D 1758598 11
+D 1758899 10
+D 1758932 11
+D 1759586 10
+D 1759750 11
+D 1760138 20
+D 1760596 10
+D 1760675 11
+D 1762902 10
+D 1762998 11
+D 1763061 10
+D 1763085 11
+D 1763092 10
+D 1763428 11
+D 1763637 10
+D 1763758 11
+D 1765431 10
+D 1765470 11
+D 1766016 10
+D 1766021 11
+D 1766025 10
+D 1766034 11
+D 1766339 6
+D 1766362 7
+D 1766368 6
+D 1767020 7
+D 1767086 6
+D 1767184 7
+D 1767215 6
+D 1768154 7
+D 1768167 6
+D 1768737 20
+D 1769780 7
+D 1769791 6
+P 1772309 s_nogo_sham
+D 1772310 2
+D 1772469 20
+D 1775595 20
+P 1776312 Timestamp:1772309 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 1776313 Summary: T#:118 Tot_rate:0.73 Go#:74 NoGo#:44 Go_rate:0.73 NoGo_rate:0.73
+P 1776313 4 trials moving ave Go success rate: 0.85
+D 1776314 4
+D 1777908 20
+D 1779205 1
+D 1781256 20
+P 1782936 s_go_bar_off
+D 1782937 3
+D 1783408 7
+P 1783408 light_on
+P 1783408 reward bar_off
+D 1783631 10
+P 1783634 Timestamp:1782936 Go:0 Success:True Free_rew:False Light:0 Latency:696
+P 1783635 Summary: T#:119 Tot_rate:0.73 Go#:75 NoGo#:44 Go_rate:0.73 NoGo_rate:0.73
+P 1783636 4 trials moving ave Go success rate: 0.88
+D 1783636 4
+D 1783668 11
+D 1783952 10
+D 1783965 11
+D 1784175 6
+D 1785751 1
+P 1787408 light_off
+D 1788726 20
+P 1791734 s_go_sham
+D 1791735 3
+D 1792286 7
+P 1792286 reward bar_off
+D 1792351 10
+P 1792353 Timestamp:1791734 Go:0 Success:True Free_rew:False Light:0 Latency:618
+P 1792355 Summary: T#:120 Tot_rate:0.73 Go#:76 NoGo#:44 Go_rate:0.74 NoGo_rate:0.73
+P 1792355 4 trials moving ave Go success rate: 0.91
+D 1792356 4
+D 1792375 11
+D 1792484 10
+D 1792649 11
+D 1794075 1
+D 1794868 20
+D 1795263 10
+D 1795360 11
+D 1795369 10
+D 1795617 11
+D 1798340 10
+D 1798349 11
+D 1798357 10
+D 1798481 11
+D 1799257 10
+D 1799368 11
+D 1799794 10
+D 1799850 11
+D 1799976 10
+D 1799985 11
+D 1799990 10
+D 1800475 11
+D 1800615 20
+D 1800626 10
+D 1802284 11
+D 1803623 10
+D 1803639 11
+D 1803653 10
+D 1803714 11
+D 1803801 10
+D 1803909 11
+D 1805756 20
+D 1807900 20
+D 1808448 6
+D 1809693 7
+D 1809721 6
+D 1811255 20
+P 1812812 s_go_bar_off
+D 1812813 3
+D 1816552 7
+P 1816553 light_on
+P 1816553 reward bar_off
+D 1816735 6
+P 1816814 Timestamp:1812812 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 1816816 Summary: T#:121 Tot_rate:0.73 Go#:77 NoGo#:44 Go_rate:0.73 NoGo_rate:0.73
+P 1816817 4 trials moving ave Go success rate: 0.71
+D 1816817 5
+D 1816865 7
+D 1816897 10
+D 1816989 11
+D 1817920 6
+D 1818628 20
+D 1819001 7
+D 1819029 6
+D 1820024 1
+P 1820553 light_off
+D 1821665 20
+D 1822829 20
+P 1825490 s_go_error_sham
+D 1825491 3
+D 1825750 7
+D 1825799 10
+P 1825802 Timestamp:1825490 Go:0 Success:True Free_rew:False Light:0 Latency:310
+P 1825803 Summary: T#:122 Tot_rate:0.73 Go#:78 NoGo#:44 Go_rate:0.73 NoGo_rate:0.73
+P 1825804 4 trials moving ave Go success rate: 0.77
+D 1825804 4
+D 1825889 11
+D 1826049 10
+D 1826307 11
+D 1827760 10
+D 1827870 11
+D 1827919 10
+D 1828266 11
+D 1828331 1
+D 1829194 10
+D 1829285 11
+D 1829321 10
+D 1830099 11
+D 1830854 20
+D 1830998 10
+D 1831513 11
+D 1832965 10
+D 1833056 11
+D 1833098 10
+D 1833104 11
+D 1833107 10
+D 1833353 11
+D 1833823 10
+D 1833928 11
+D 1834239 10
+D 1834320 11
+D 1834433 10
+D 1834500 11
+D 1835104 10
+D 1835132 11
+D 1835256 20
+D 1837421 6
+D 1838513 7
+D 1838522 6
+D 1838850 7
+D 1838862 6
+D 1839465 7
+D 1839485 6
+D 1840650 7
+D 1840663 6
+D 1840812 20
+P 1843690 s_go_sham
+D 1843691 3
+D 1844901 7
+P 1844901 reward bar_off
+D 1844924 6
+D 1845135 7
+D 1845208 10
+P 1845211 Timestamp:1843690 Go:0 Success:True Free_rew:False Light:0 Latency:1519
+P 1845212 Summary: T#:123 Tot_rate:0.73 Go#:79 NoGo#:44 Go_rate:0.73 NoGo_rate:0.73
+P 1845213 4 trials moving ave Go success rate: 0.82
+D 1845213 4
+D 1845233 11
+D 1845521 10
+D 1845663 11
+D 1847319 1
+D 1847673 10
+D 1847707 11
+D 1848102 10
+D 1848196 11
+D 1848502 10
+D 1848572 20
+D 1848610 11
+D 1848655 10
+D 1848998 11
+D 1849072 10
+D 1849094 11
+D 1849101 10
+D 1849171 11
+D 1849501 10
+D 1849524 11
+D 1849655 10
+D 1849761 11
+D 1849884 10
+D 1849933 11
+D 1850057 10
+D 1850182 11
+D 1850922 10
+D 1850976 11
+D 1851381 10
+D 1851426 11
+D 1852443 10
+D 1853319 11
+D 1854900 20
+D 1855717 6
+D 1855740 7
+D 1855743 10
+D 1855890 11
+D 1856044 10
+D 1856721 11
+D 1856882 10
+D 1856912 11
+D 1857235 10
+D 1857340 11
+D 1857931 20
+D 1858035 10
+D 1858133 11
+D 1859464 6
+D 1859938 20
+D 1860592 7
+D 1860607 6
+D 1861098 7
+D 1861109 6
+D 1861424 7
+D 1861435 6
+D 1861518 7
+D 1861535 6
+D 1861976 20
+P 1865337 s_nogo_sham
+D 1865338 2
+P 1869339 Timestamp:1865337 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 1869341 Summary: T#:124 Tot_rate:0.73 Go#:79 NoGo#:45 Go_rate:0.73 NoGo_rate:0.73
+P 1869344 4 trials moving ave Go success rate: 0.82
+D 1869345 4
+D 1869778 20
+D 1872202 1
+D 1873007 20
+P 1874833 s_go_spout
+D 1874834 3
+D 1875413 7
+P 1875413 reward bar_off
+D 1875476 10
+P 1875476 light_on
+P 1875478 Timestamp:1874833 Go:0 Success:True Free_rew:False Light:0 Latency:643
+P 1875479 Summary: T#:125 Tot_rate:0.74 Go#:80 NoGo#:45 Go_rate:0.74 NoGo_rate:0.73
+P 1875480 4 trials moving ave Go success rate: 0.86
+D 1875481 4
+D 1875514 11
+D 1875625 10
+D 1875658 11
+D 1875790 10
+D 1875822 11
+D 1876237 10
+D 1876309 11
+D 1876390 10
+D 1876407 11
+D 1876413 10
+D 1876523 11
+D 1877082 1
+D 1877323 10
+D 1877334 11
+D 1877560 6
+D 1877571 7
+D 1877576 6
+P 1879476 light_off
+D 1879717 20
+D 1880264 7
+D 1880471 10
+D 1880499 11
+D 1880645 10
+D 1880749 11
+D 1880911 10
+D 1881102 11
+D 1882276 10
+D 1882742 11
+D 1882844 10
+D 1882909 11
+D 1883385 10
+D 1883436 11
+D 1884297 10
+D 1884385 11
+D 1884501 6
+D 1885173 7
+D 1885179 6
+D 1887651 20
+P 1888804 s_go_cs_onset
+P 1888805 light_on
+D 1888805 3
+D 1888980 7
+P 1888980 reward bar_off
+D 1889128 6
+P 1892807 Timestamp:1888804 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 1892808 Summary: T#:126 Tot_rate:0.73 Go#:81 NoGo#:45 Go_rate:0.73 NoGo_rate:0.73
+P 1892809 4 trials moving ave Go success rate: 0.67
+D 1892809 5
+P 1892809 light_off
+D 1892951 20
+D 1893316 7
+D 1893321 6
+D 1893321 7
+D 1893326 6
+D 1893403 7
+D 1893409 6
+D 1893670 7
+D 1893909 10
+D 1894236 11
+D 1894284 6
+D 1894289 7
+D 1894330 10
+D 1894381 11
+D 1894459 20
+D 1895161 10
+D 1895276 11
+D 1895312 10
+D 1895531 11
+D 1896491 1
+D 1896603 10
+D 1896730 11
+D 1896768 6
+D 1896774 7
+D 1896801 6
+D 1897041 7
+D 1897057 6
+D 1897062 7
+D 1897067 6
+D 1897180 7
+D 1897198 6
+D 1898278 7
+D 1898378 6
+D 1898404 7
+D 1898520 6
+D 1898525 7
+D 1899861 6
+D 1899868 7
+D 1900483 6
+D 1900554 7
+D 1900580 6
+D 1900658 7
+D 1901900 20
+D 1904066 6
+D 1904071 7
+D 1904429 6
+D 1904454 7
+D 1904469 6
+D 1906236 20
+P 1907985 s_go_bar_off
+D 1907986 3
+D 1908649 7
+P 1908650 light_on
+P 1908650 reward bar_off
+D 1908681 6
+D 1908686 7
+D 1908706 10
+P 1908708 Timestamp:1907986 Go:0 Success:True Free_rew:False Light:0 Latency:720
+P 1908709 Summary: T#:127 Tot_rate:0.73 Go#:82 NoGo#:45 Go_rate:0.73 NoGo_rate:0.73
+P 1908710 4 trials moving ave Go success rate: 0.74
+D 1908711 4
+D 1908805 11
+D 1909166 10
+D 1909233 11
+D 1909343 6
+D 1910721 1
+D 1911542 20
+D 1912313 20
+P 1912650 light_off
+D 1913394 7
+D 1913666 6
+D 1913726 7
+D 1913734 6
+D 1913743 7
+D 1913969 6
+D 1914412 20
+P 1918451 s_go_cs_onset
+P 1918452 light_on
+D 1918452 3
+D 1922263 20
+P 1922454 Timestamp:1918451 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 1922455 Summary: T#:128 Tot_rate:0.73 Go#:83 NoGo#:45 Go_rate:0.72 NoGo_rate:0.73
+P 1922456 4 trials moving ave Go success rate: 0.58
+D 1922456 5
+P 1922456 light_off
+D 1922948 7
+D 1923596 6
+D 1923602 7
+D 1923672 6
+D 1923677 7
+D 1923747 10
+D 1923864 11
+D 1923941 10
+D 1924087 11
+D 1925931 10
+D 1926032 11
+D 1926083 10
+D 1926316 11
+D 1926468 1
+D 1926767 10
+D 1926795 11
+D 1926929 10
+D 1927037 11
+D 1928016 10
+D 1928046 11
+D 1928919 10
+D 1928927 11
+D 1928932 10
+D 1928950 11
+D 1928965 10
+D 1929010 11
+D 1929661 10
+D 1929688 11
+D 1929704 10
+D 1929743 11
+D 1929871 20
+D 1930340 6
+D 1930345 7
+D 1930384 6
+D 1930389 7
+D 1930399 6
+D 1930413 7
+D 1930428 6
+D 1930810 7
+D 1930823 6
+D 1931388 7
+D 1931404 6
+D 1934037 20
+P 1934102 s_nogo_sham
+D 1934103 2
+P 1938104 Timestamp:1934102 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 1938106 Summary: T#:129 Tot_rate:0.73 Go#:83 NoGo#:46 Go_rate:0.72 NoGo_rate:0.74
+P 1938106 4 trials moving ave Go success rate: 0.58
+D 1938107 4
+D 1940513 1
+D 1941871 20
+P 1944151 s_go_sham
+D 1944152 3
+D 1944694 7
+P 1944695 reward bar_off
+D 1944720 6
+D 1944725 7
+D 1944855 10
+P 1944857 Timestamp:1944151 Go:0 Success:True Free_rew:False Light:0 Latency:704
+P 1944858 Summary: T#:130 Tot_rate:0.73 Go#:84 NoGo#:46 Go_rate:0.73 NoGo_rate:0.74
+P 1944859 4 trials moving ave Go success rate: 0.67
+D 1944859 4
+D 1944967 11
+D 1946247 10
+D 1946599 11
+D 1946890 1
+D 1947903 10
+D 1948519 20
+D 1950043 11
+D 1950055 6
+D 1950060 7
+D 1950098 6
+D 1951006 7
+D 1951035 6
+D 1951265 7
+D 1951273 6
+D 1951307 7
+D 1951326 6
+D 1951363 7
+D 1951373 6
+D 1951378 7
+D 1951383 6
+D 1951416 7
+D 1951444 6
+D 1951857 7
+D 1951876 6
+D 1954261 20
+P 1955219 s_go_error_sham
+D 1955220 3
+D 1955338 20
+D 1956382 7
+D 1956418 6
+D 1956423 7
+D 1956442 10
+P 1956445 Timestamp:1955219 Go:0 Success:True Free_rew:False Light:0 Latency:1224
+P 1956446 Summary: T#:131 Tot_rate:0.73 Go#:85 NoGo#:46 Go_rate:0.73 NoGo_rate:0.74
+P 1956447 4 trials moving ave Go success rate: 0.74
+D 1956447 4
+D 1956470 11
+D 1956610 10
+D 1956634 11
+D 1956773 10
+D 1956865 11
+D 1956949 10
+D 1957046 11
+D 1957151 6
+D 1957157 7
+D 1957216 10
+D 1957312 11
+D 1957367 6
+D 1957372 7
+D 1957428 6
+D 1957438 7
+D 1957443 6
+D 1957705 7
+D 1957953 1
+D 1957953 10
+D 1957962 11
+D 1958063 20
+D 1958410 10
+D 1958515 11
+D 1958847 10
+D 1958856 11
+D 1959121 6
+D 1959126 7
+D 1959146 6
+D 1959169 7
+D 1959185 6
+D 1959931 7
+D 1959958 6
+P 1963621 s_go_sham
+D 1963622 3
+D 1964089 7
+P 1964090 reward bar_off
+D 1964120 6
+D 1964125 7
+D 1964161 10
+P 1964163 Timestamp:1963621 Go:0 Success:True Free_rew:False Light:0 Latency:540
+P 1964164 Summary: T#:132 Tot_rate:0.73 Go#:86 NoGo#:46 Go_rate:0.73 NoGo_rate:0.74
+P 1964165 4 trials moving ave Go success rate: 0.80
+D 1964166 4
+D 1964211 11
+D 1964731 20
+D 1966085 10
+D 1966109 11
+D 1966178 6
+D 1966183 7
+D 1966241 10
+D 1966454 20
+D 1966756 1
+D 1967666 11
+D 1967692 6
+D 1967697 7
+D 1967752 6
+D 1968391 7
+D 1968505 6
+D 1968530 7
+D 1968573 10
+D 1968593 11
+D 1968594 6
+D 1968718 10
+D 1968724 11
+D 1968798 7
+D 1968885 10
+D 1968908 11
+D 1969202 6
+D 1969260 7
+D 1969267 10
+D 1969354 11
+D 1969485 6
+D 1969490 7
+D 1969540 10
+D 1969650 11
+D 1969675 6
+D 1969681 7
+D 1969755 10
+D 1969788 11
+D 1970107 6
+D 1970586 7
+D 1970594 6
+P 1973682 s_nogo_sham
+D 1973683 2
+D 1975910 20
+P 1977684 Timestamp:1973682 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 1977686 Summary: T#:133 Tot_rate:0.74 Go#:86 NoGo#:47 Go_rate:0.73 NoGo_rate:0.74
+P 1977686 4 trials moving ave Go success rate: 0.80
+D 1977687 4
+D 1979693 1
+D 1982015 20
+P 1984498 s_nogo_cs_onset
+P 1984499 light_on
+D 1984499 2
+P 1988501 Timestamp:1984498 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 1988502 Summary: T#:134 Tot_rate:0.74 Go#:86 NoGo#:48 Go_rate:0.73 NoGo_rate:0.75
+P 1988503 4 trials moving ave Go success rate: 0.80
+D 1988503 4
+P 1988503 light_off
+D 1988549 20
+D 1989598 7
+D 1989634 6
+D 1989639 7
+D 1989680 10
+D 1989704 11
+D 1989746 6
+D 1989751 7
+D 1989775 6
+D 1990117 1
+D 1990340 7
+D 1990352 6
+D 1990480 7
+D 1990528 10
+D 1990640 11
+D 1990651 6
+D 1990656 7
+D 1990777 10
+D 1990883 6
+D 1990889 7
+D 1990915 11
+D 1991472 10
+D 1991560 11
+D 1991682 10
+D 1991795 11
+D 1992293 6
+D 1993866 7
+D 1993872 6
+P 1996748 s_go_bar_off
+D 1996749 3
+D 1997372 7
+P 1997372 light_on
+P 1997372 reward bar_off
+D 1997386 6
+D 1997391 7
+D 1997513 20
+D 1997816 6
+D 1997821 7
+D 1997859 6
+D 1997886 7
+D 1997894 6
+P 2000751 Timestamp:1996748 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 2000752 Summary: T#:135 Tot_rate:0.73 Go#:87 NoGo#:48 Go_rate:0.72 NoGo_rate:0.75
+P 2000753 4 trials moving ave Go success rate: 0.62
+D 2000753 5
+P 2001372 light_off
+D 2002024 7
+D 2002063 6
+D 2002068 7
+D 2002107 10
+D 2002116 11
+D 2002389 10
+D 2002496 11
+D 2002590 10
+D 2002901 11
+D 2003821 20
+D 2003989 6
+D 2003994 7
+D 2004010 10
+D 2004110 11
+D 2004434 10
+D 2004512 11
+D 2004531 1
+D 2004794 6
+D 2004799 7
+D 2004821 10
+D 2004849 11
+D 2005332 6
+D 2005337 7
+D 2005366 10
+D 2005393 11
+D 2005399 10
+D 2005461 11
+D 2005734 6
+D 2005739 7
+D 2005776 10
+D 2005808 11
+D 2006032 6
+D 2006038 7
+D 2006340 6
+D 2006346 7
+D 2006347 10
+D 2006366 11
+D 2006581 6
+D 2006586 7
+D 2006642 10
+D 2006676 11
+D 2006797 10
+D 2007084 11
+D 2007313 10
+D 2007421 11
+D 2008422 20
+D 2009010 6
+D 2009081 7
+D 2009099 6
+P 2011617 s_nogo_sham
+D 2011618 2
+D 2014512 20
+P 2015619 Timestamp:2011617 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 2015621 Summary: T#:136 Tot_rate:0.74 Go#:87 NoGo#:49 Go_rate:0.72 NoGo_rate:0.76
+P 2015621 4 trials moving ave Go success rate: 0.62
+D 2015622 4
+D 2018085 1
+D 2020965 20
+P 2021240 s_go_cs_onset
+P 2021241 light_on
+D 2021241 3
+D 2024506 20
+P 2025242 Timestamp:2021240 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 2025244 Summary: T#:137 Tot_rate:0.73 Go#:88 NoGo#:49 Go_rate:0.72 NoGo_rate:0.76
+P 2025244 4 trials moving ave Go success rate: 0.49
+D 2025245 5
+P 2025245 light_off
+D 2028772 1
+D 2030307 20
+P 2032456 s_go_spout
+D 2032457 3
+D 2032604 7
+P 2032604 reward bar_off
+D 2032685 6
+D 2032690 7
+D 2032716 10
+P 2032717 light_on
+P 2032719 Timestamp:2032456 Go:0 Success:True Free_rew:False Light:0 Latency:261
+P 2032720 Summary: T#:138 Tot_rate:0.73 Go#:89 NoGo#:49 Go_rate:0.72 NoGo_rate:0.76
+P 2032721 4 trials moving ave Go success rate: 0.60
+D 2032721 4
+D 2033176 11
+D 2034569 1
+D 2035441 6
+D 2035447 7
+D 2035501 6
+D 2036191 7
+D 2036225 6
+P 2036717 light_off
+D 2037272 7
+D 2037294 6
+D 2037911 7
+D 2037926 6
+D 2037999 7
+D 2038026 6
+D 2039758 20
+D 2042001 7
+D 2042023 6
+D 2042028 7
+D 2042035 6
+D 2042052 10
+D 2042085 11
+D 2042262 7
+D 2042521 6
+D 2042565 10
+D 2042630 7
+D 2042834 11
+D 2042976 10
+D 2042983 6
+D 2042989 7
+D 2043024 11
+D 2043963 10
+D 2044050 11
+D 2044371 6
+D 2044376 10
+D 2044376 7
+D 2044472 11
+D 2044500 6
+D 2044527 7
+D 2044556 6
+D 2044568 7
+D 2044585 6
+D 2044828 7
+D 2044854 6
+D 2044870 7
+D 2044901 6
+D 2045029 7
+D 2045146 6
+D 2045157 10
+D 2045185 11
+D 2045250 7
+D 2045263 6
+D 2046273 7
+D 2046300 6
+D 2046327 7
+D 2046504 6
+D 2046685 20
+D 2047825 20
+P 2050276 s_go_error_sham
+D 2050277 3
+D 2051286 7
+D 2051314 6
+D 2051341 10
+P 2051344 Timestamp:2050276 Go:0 Success:True Free_rew:False Light:0 Latency:1066
+P 2051345 Summary: T#:139 Tot_rate:0.73 Go#:90 NoGo#:49 Go_rate:0.72 NoGo_rate:0.76
+P 2051346 4 trials moving ave Go success rate: 0.69
+D 2051346 4
+D 2051349 7
+D 2051397 6
+D 2051407 11
+D 2051494 10
+D 2051689 11
+D 2051860 10
+D 2051869 11
+D 2051883 10
+D 2051889 11
+D 2052109 7
+D 2052276 20
+D 2052681 10
+D 2052762 11
+D 2052903 10
+D 2052905 1
+D 2053701 11
+D 2053720 6
+D 2053745 7
+D 2053758 6
+D 2053774 7
+D 2053793 6
+D 2054310 7
+D 2054315 6
+D 2054621 7
+D 2054630 6
+D 2056431 20
+P 2057961 s_nogo_sham
+D 2057962 2
+D 2059691 20
+P 2061963 Timestamp:2057961 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 2061965 Summary: T#:140 Tot_rate:0.74 Go#:90 NoGo#:50 Go_rate:0.72 NoGo_rate:0.76
+P 2061965 4 trials moving ave Go success rate: 0.69
+D 2061966 4
+D 2063663 1
+D 2064884 20
+P 2067562 s_go_bar_off
+D 2067563 3
+D 2068426 7
+P 2068427 light_on
+P 2068427 reward bar_off
+D 2068449 6
+D 2068502 10
+P 2068504 Timestamp:2067562 Go:0 Success:True Free_rew:False Light:0 Latency:940
+P 2068505 Summary: T#:141 Tot_rate:0.74 Go#:91 NoGo#:50 Go_rate:0.73 NoGo_rate:0.76
+P 2068506 4 trials moving ave Go success rate: 0.76
+D 2068506 4
+D 2068532 7
+D 2068562 11
+D 2070079 1
+D 2072212 6
+P 2072427 light_off
+D 2072548 20
+D 2073559 7
+D 2073571 6
+D 2074047 7
+D 2074135 6
+D 2074163 7
+D 2074208 6
+D 2074766 7
+D 2074780 6
+D 2074844 7
+D 2074854 6
+D 2078428 20
+P 2078502 s_nogo_cs_onset
+P 2078503 light_on
+D 2078503 2
+P 2082504 Timestamp:2078502 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 2082506 Summary: T#:142 Tot_rate:0.74 Go#:91 NoGo#:51 Go_rate:0.73 NoGo_rate:0.76
+P 2082506 4 trials moving ave Go success rate: 0.76
+D 2082507 4
+P 2082507 light_off
+D 2083442 20
+D 2084759 1
+P 2087291 s_go_cs_onset
+P 2087292 light_on
+D 2087292 3
+P 2091293 Timestamp:2087291 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 2091295 Summary: T#:143 Tot_rate:0.73 Go#:92 NoGo#:51 Go_rate:0.72 NoGo_rate:0.76
+P 2091295 4 trials moving ave Go success rate: 0.59
+D 2091296 5
+P 2091296 light_off
+D 2091476 20
+D 2094513 7
+D 2094519 6
+D 2094593 7
+D 2094667 1
+D 2094769 6
+D 2094785 7
+D 2094810 6
+D 2097337 7
+D 2097343 6
+D 2099168 7
+D 2099197 6
+D 2099641 7
+D 2099658 6
+D 2099757 7
+D 2099769 6
+D 2099865 20
+D 2099961 7
+D 2099983 6
+D 2100043 7
+D 2100059 6
+D 2100453 7
+D 2100465 6
+D 2101012 7
+D 2101020 6
+D 2101539 7
+D 2101553 6
+D 2101606 7
+D 2101611 6
+D 2101965 7
+D 2101980 6
+D 2102078 7
+D 2102089 6
+D 2103117 7
+D 2103132 6
+D 2104779 20
+D 2104791 7
+D 2104799 6
+D 2104809 7
+D 2104831 6
+D 2104848 7
+D 2105019 6
+D 2105585 7
+D 2105600 6
+D 2107911 20
+P 2108350 s_go_sham
+D 2108351 3
+D 2108992 7
+P 2108992 reward bar_off
+D 2109002 6
+D 2109232 7
+D 2109248 6
+D 2109305 7
+D 2109376 6
+D 2109420 10
+P 2109422 Timestamp:2108350 Go:0 Success:True Free_rew:False Light:0 Latency:1071
+P 2109424 Summary: T#:144 Tot_rate:0.74 Go#:93 NoGo#:51 Go_rate:0.72 NoGo_rate:0.76
+P 2109424 4 trials moving ave Go success rate: 0.68
+D 2109425 4
+D 2109506 11
+D 2109825 7
+D 2110600 20
+D 2110615 10
+D 2110625 11
+D 2110632 10
+D 2111538 1
+D 2111993 6
+D 2112007 11
+D 2112032 7
+D 2113045 10
+D 2113060 20
+D 2113088 11
+D 2113531 10
+D 2113600 11
+D 2113615 10
+D 2114480 11
+D 2115236 10
+D 2115308 11
+D 2115354 10
+D 2115729 11
+D 2116802 10
+D 2116816 11
+D 2116976 10
+D 2116993 11
+D 2117115 10
+D 2117192 11
+D 2117228 10
+D 2117382 11
+D 2118101 10
+D 2118108 11
+D 2118409 10
+D 2118430 11
+D 2118763 6
+D 2118789 7
+D 2118794 6
+D 2119632 7
+D 2119645 6
+D 2122135 20
+P 2123255 s_go_spout
+D 2123256 3
+D 2123957 7
+P 2123958 reward bar_off
+D 2123985 6
+D 2124022 10
+P 2124022 light_on
+P 2124024 Timestamp:2123255 Go:0 Success:True Free_rew:False Light:0 Latency:768
+P 2124026 Summary: T#:145 Tot_rate:0.74 Go#:94 NoGo#:51 Go_rate:0.72 NoGo_rate:0.76
+P 2124026 4 trials moving ave Go success rate: 0.75
+D 2124027 4
+D 2124026 7
+D 2124142 11
+D 2124149 6
+D 2124209 10
+D 2124236 11
+D 2124405 7
+D 2126038 1
+P 2128022 light_off
+D 2128811 10
+D 2128943 11
+D 2129089 10
+D 2129226 11
+D 2129280 6
+D 2129288 10
+D 2129318 7
+D 2129380 11
+D 2130175 10
+D 2130208 11
+D 2130489 10
+D 2130494 11
+D 2130500 10
+D 2130520 11
+D 2131248 20
+D 2131362 6
+D 2131382 7
+D 2131390 6
+D 2131428 7
+D 2131434 6
+D 2132172 7
+D 2132189 6
+P 2135356 s_go_cs_onset
+P 2135357 light_on
+D 2135357 3
+P 2139358 Timestamp:2135356 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 2139360 Summary: T#:146 Tot_rate:0.73 Go#:95 NoGo#:51 Go_rate:0.72 NoGo_rate:0.76
+P 2139361 4 trials moving ave Go success rate: 0.58
+D 2139361 5
+P 2139361 light_off
+D 2139375 20
+D 2140684 7
+D 2140707 6
+D 2140753 7
+D 2140757 10
+D 2140769 11
+D 2140925 10
+D 2141010 11
+D 2141049 6
+D 2141082 10
+D 2141149 7
+D 2141164 11
+D 2141169 10
+D 2141176 6
+D 2141176 11
+D 2141295 7
+D 2141357 6
+D 2141362 7
+D 2141362 6
+D 2141411 10
+D 2141456 11
+D 2141532 7
+D 2141558 6
+D 2141570 7
+D 2141817 6
+D 2142340 7
+D 2142352 6
+D 2143092 1
+D 2147095 20
+P 2147122 s_go_error_sham
+D 2147123 3
+D 2148058 20
+P 2151124 Timestamp:2147122 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 2151126 Summary: T#:147 Tot_rate:0.73 Go#:96 NoGo#:51 Go_rate:0.71 NoGo_rate:0.76
+P 2151127 4 trials moving ave Go success rate: 0.46
+D 2151127 5
+D 2151964 20
+D 2154799 1
+D 2157395 20
+D 2158871 20
+P 2159059 s_nogo_cs_onset
+P 2159060 light_on
+D 2159060 2
+P 2163062 Timestamp:2159059 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 2163063 Summary: T#:148 Tot_rate:0.73 Go#:96 NoGo#:52 Go_rate:0.71 NoGo_rate:0.77
+P 2163063 4 trials moving ave Go success rate: 0.46
+D 2163064 4
+P 2163064 light_off
+D 2165085 7
+D 2165094 6
+D 2165100 7
+D 2165123 6
+D 2165286 20
+D 2165452 7
+D 2165470 6
+D 2165476 7
+D 2165515 6
+D 2165567 7
+D 2165584 6
+D 2165597 7
+D 2165613 6
+D 2165618 7
+D 2165689 6
+D 2165694 7
+D 2165720 6
+D 2165868 1
+D 2166191 7
+D 2166201 6
+D 2166214 7
+D 2166280 6
+D 2166327 10
+D 2166387 11
+D 2166666 10
+D 2166810 11
+D 2166815 10
+D 2166820 11
+D 2166825 10
+D 2166830 11
+D 2166835 10
+D 2166960 11
+D 2166965 10
+D 2166980 11
+D 2166985 10
+D 2167000 11
+D 2167005 10
+D 2167020 11
+D 2167025 10
+D 2167030 11
+D 2167035 10
+D 2167040 11
+D 2167045 10
+D 2167060 11
+D 2167065 10
+D 2167070 11
+D 2167075 10
+D 2167080 11
+D 2167085 10
+D 2167100 11
+D 2167105 10
+D 2167110 11
+D 2167115 10
+D 2167120 11
+D 2167125 10
+D 2167130 11
+D 2167135 10
+D 2167140 11
+D 2167145 10
+D 2167150 11
+D 2167155 10
+D 2167160 11
+D 2167165 10
+D 2167170 11
+D 2167175 10
+D 2167180 11
+D 2167185 10
+D 2167190 11
+D 2167195 10
+D 2167200 11
+D 2167205 10
+D 2167210 11
+D 2167215 10
+D 2167220 11
+D 2167225 10
+D 2167230 11
+D 2167235 10
+D 2167240 11
+D 2167245 10
+D 2167250 11
+D 2167255 10
+D 2167260 11
+D 2167265 10
+D 2167270 11
+D 2167275 10
+D 2167280 11
+D 2167285 10
+D 2167290 11
+D 2167295 10
+D 2167300 11
+D 2167305 10
+D 2167310 11
+D 2167315 10
+D 2167320 11
+D 2167325 10
+D 2167330 11
+D 2167335 10
+D 2167340 11
+D 2167345 10
+D 2167350 11
+D 2167355 10
+D 2167360 11
+D 2167365 10
+D 2167370 11
+D 2167375 10
+D 2167380 11
+D 2167385 10
+D 2167390 11
+D 2167395 10
+D 2167400 11
+D 2167405 10
+D 2167410 11
+D 2167415 10
+D 2167420 11
+D 2167425 10
+D 2167430 11
+D 2167435 10
+D 2167440 11
+D 2167445 10
+D 2167450 11
+D 2167455 10
+D 2167460 11
+D 2167465 10
+D 2167470 11
+D 2167475 10
+D 2167480 11
+D 2167485 10
+D 2167490 11
+D 2167495 10
+D 2167500 11
+D 2167505 10
+D 2167510 11
+D 2167515 10
+D 2167520 11
+D 2167525 10
+D 2167530 11
+D 2167535 10
+D 2167540 11
+D 2167545 10
+D 2167550 11
+D 2167555 10
+D 2167560 11
+D 2167565 10
+D 2167570 11
+D 2167575 10
+D 2167580 11
+D 2167585 10
+D 2167590 11
+D 2167595 10
+D 2167600 11
+D 2167605 10
+D 2167610 11
+D 2167615 10
+D 2167620 11
+D 2167625 10
+D 2167630 11
+D 2167635 10
+D 2167640 11
+D 2167645 10
+D 2167650 11
+D 2167655 10
+D 2167660 11
+D 2167665 10
+D 2167670 11
+D 2167828 7
+D 2167839 6
+D 2168447 7
+D 2168458 6
+D 2169474 7
+D 2169842 6
+D 2169853 20
+D 2170713 7
+D 2170727 6
+P 2174031 s_go_cs_onset
+P 2174032 light_on
+D 2174032 3
+D 2176589 20
+P 2178033 Timestamp:2174031 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 2178035 Summary: T#:149 Tot_rate:0.72 Go#:97 NoGo#:52 Go_rate:0.70 NoGo_rate:0.77
+P 2178035 4 trials moving ave Go success rate: 0.35
+D 2178036 5
+P 2178036 light_off
+D 2181508 1
+D 2181759 20
+P 2186500 s_nogo_cs_onset
+P 2186501 light_on
+D 2186501 2
+D 2189228 20
+P 2190502 Timestamp:2186500 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 2190504 Summary: T#:150 Tot_rate:0.73 Go#:97 NoGo#:53 Go_rate:0.70 NoGo_rate:0.77
+P 2190504 4 trials moving ave Go success rate: 0.35
+D 2190505 4
+P 2190505 light_off
+D 2190844 20
+D 2191470 20
+D 2191683 7
+D 2191763 6
+D 2191823 7
+D 2191858 6
+D 2192007 1
+D 2192428 7
+D 2192505 10
+D 2192728 11
+D 2192874 20
+D 2193751 6
+D 2193780 7
+D 2193799 6
+D 2193811 7
+D 2193836 6
+D 2194485 7
+D 2194499 6
+D 2194873 7
+D 2194891 6
+D 2196191 20
+P 2197624 s_nogo_cs_onset
+P 2197625 light_on
+D 2197625 2
+P 2201627 Timestamp:2197624 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 2201628 Summary: T#:151 Tot_rate:0.73 Go#:97 NoGo#:54 Go_rate:0.70 NoGo_rate:0.78
+P 2201628 4 trials moving ave Go success rate: 0.35
+D 2201629 4
+P 2201629 light_off
+D 2201652 20
+D 2202576 7
+D 2202599 6
+D 2202720 7
+D 2202725 6
+D 2202725 7
+D 2202821 6
+D 2202855 10
+D 2202881 11
+D 2202935 7
+D 2202997 6
+D 2203042 10
+D 2203048 11
+D 2203194 10
+D 2203213 11
+D 2203344 10
+D 2203362 7
+D 2203450 6
+D 2203451 11
+D 2203519 1
+D 2203576 10
+D 2203603 7
+D 2203787 11
+D 2203975 6
+D 2204052 10
+D 2204064 11
+D 2204065 7
+D 2204109 6
+D 2204123 7
+D 2204333 6
+D 2204360 7
+D 2204366 6
+D 2204374 7
+D 2204389 6
+D 2205082 20
+D 2205229 7
+D 2205239 6
+P 2208308 s_nogo_sham
+D 2208309 2
+D 2209450 20
+P 2212311 Timestamp:2208308 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 2212312 Summary: T#:152 Tot_rate:0.73 Go#:97 NoGo#:55 Go_rate:0.70 NoGo_rate:0.78
+P 2212312 4 trials moving ave Go success rate: 0.35
+D 2212313 4
+D 2213495 7
+D 2213503 6
+D 2214499 1
+P 2218620 s_go_sham
+D 2218621 3
+D 2218695 20
+D 2219402 7
+P 2219402 reward bar_off
+D 2219419 6
+D 2219687 10
+P 2219689 Timestamp:2218620 Go:0 Success:True Free_rew:False Light:0 Latency:1067
+P 2219690 Summary: T#:153 Tot_rate:0.73 Go#:98 NoGo#:55 Go_rate:0.70 NoGo_rate:0.78
+P 2219691 4 trials moving ave Go success rate: 0.50
+D 2219692 4
+D 2219720 11
+D 2220034 10
+D 2220145 11
+D 2220268 10
+D 2220520 11
+D 2220680 7
+D 2220685 6
+D 2220745 7
+D 2220750 6
+D 2220755 7
+D 2220770 6
+D 2220780 7
+D 2220785 6
+D 2220785 7
+D 2220791 6
+D 2220800 7
+D 2220805 6
+D 2220805 7
+D 2221050 6
+D 2221075 7
+D 2221076 10
+D 2221081 6
+D 2221088 7
+D 2221574 6
+D 2221575 11
+D 2221614 1
+D 2221739 10
+D 2221797 11
+D 2221897 10
+D 2221976 11
+D 2222008 10
+D 2222161 11
+D 2222279 10
+D 2222312 11
+D 2222563 7
+D 2223064 10
+D 2223150 11
+D 2223171 10
+D 2223725 11
+D 2223835 20
+D 2223921 10
+D 2223987 11
+D 2224491 6
+D 2224531 7
+D 2224563 6
+D 2225265 7
+D 2225287 6
+P 2228016 s_nogo_sham
+D 2228017 2
+D 2228686 7
+P 2228688 Timestamp:2228016 Go:0 Success:False Free_rew:False Light:0 Latency:671
+P 2228690 Summary: T#:154 Tot_rate:0.73 Go#:98 NoGo#:56 Go_rate:0.70 NoGo_rate:0.77
+P 2228690 4 trials moving ave Go success rate: 0.50
+D 2228691 5
+D 2228704 6
+D 2228975 20
+D 2229068 7
+D 2229109 6
+D 2230064 7
+D 2230087 6
+D 2230430 7
+D 2230437 6
+D 2230447 7
+D 2230570 6
+D 2232199 7
+D 2232215 6
+D 2232794 1
+P 2237044 s_go_cs_onset
+P 2237045 light_on
+D 2237045 3
+D 2237554 20
+P 2241047 Timestamp:2237044 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 2241048 Summary: T#:155 Tot_rate:0.72 Go#:99 NoGo#:56 Go_rate:0.70 NoGo_rate:0.77
+P 2241049 4 trials moving ave Go success rate: 0.39
+D 2241049 5
+P 2241049 light_off
+D 2244566 20
+D 2244699 1
+D 2246849 7
+D 2246863 6
+D 2247216 7
+D 2247221 6
+D 2247226 7
+D 2247257 6
+D 2247262 7
+D 2247269 6
+D 2248150 7
+D 2248160 6
+D 2248757 7
+D 2248782 6
+D 2248909 7
+D 2248921 6
+D 2249554 7
+D 2249568 6
+D 2249588 7
+D 2249606 6
+D 2249624 7
+D 2249647 6
+D 2250201 7
+D 2250216 6
+D 2250231 7
+D 2250247 6
+D 2250265 7
+D 2250290 6
+D 2250895 7
+D 2250900 6
+D 2251066 7
+D 2251077 6
+D 2251478 7
+D 2251490 6
+D 2252186 7
+D 2252194 6
+D 2252356 7
+D 2252362 6
+D 2252447 7
+D 2252456 6
+D 2252665 7
+D 2252673 6
+D 2253180 20
+D 2253836 7
+D 2253841 6
+P 2256924 s_nogo_cs_onset
+P 2256925 light_on
+D 2256925 2
+D 2259444 20
+P 2260927 Timestamp:2256924 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 2260928 Summary: T#:156 Tot_rate:0.72 Go#:99 NoGo#:57 Go_rate:0.70 NoGo_rate:0.77
+P 2260928 4 trials moving ave Go success rate: 0.39
+D 2260929 4
+P 2260929 light_off
+D 2261358 7
+D 2261516 6
+D 2262885 1
+D 2267054 20
+P 2267700 s_go_cs_onset
+P 2267701 light_on
+D 2267701 3
+P 2271702 Timestamp:2267700 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 2271704 Summary: T#:157 Tot_rate:0.72 Go#:100 NoGo#:57 Go_rate:0.69 NoGo_rate:0.77
+P 2271704 4 trials moving ave Go success rate: 0.30
+D 2271705 5
+P 2271705 light_off
+D 2274424 20
+D 2275099 1
+P 2278725 s_go_bar_off
+D 2278726 3
+D 2279740 7
+P 2279740 light_on
+P 2279740 reward bar_off
+D 2279777 6
+D 2279821 10
+P 2279823 Timestamp:2278725 Go:0 Success:True Free_rew:False Light:0 Latency:1096
+P 2279824 Summary: T#:158 Tot_rate:0.72 Go#:101 NoGo#:57 Go_rate:0.69 NoGo_rate:0.77
+P 2279825 4 trials moving ave Go success rate: 0.46
+D 2279825 4
+D 2279921 11
+D 2280008 7
+D 2281600 1
+D 2281924 20
+D 2282600 6
+D 2282641 7
+D 2282650 6
+D 2283301 20
+P 2283740 light_off
+P 2286983 s_nogo_sham
+D 2286984 2
+D 2290493 20
+P 2290986 Timestamp:2286983 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 2290987 Summary: T#:159 Tot_rate:0.72 Go#:101 NoGo#:58 Go_rate:0.69 NoGo_rate:0.78
+P 2290987 4 trials moving ave Go success rate: 0.46
+D 2290988 4
+D 2292285 20
+D 2293752 1
+D 2296111 20
+P 2297321 s_go_error_bar_off
+D 2297322 3
+D 2297956 7
+P 2297957 light_on
+D 2297976 6
+D 2298031 10
+P 2298034 Timestamp:2297321 Go:0 Success:True Free_rew:False Light:0 Latency:711
+P 2298035 Summary: T#:160 Tot_rate:0.73 Go#:102 NoGo#:58 Go_rate:0.70 NoGo_rate:0.78
+P 2298036 4 trials moving ave Go success rate: 0.58
+D 2298036 4
+D 2298048 11
+D 2298405 10
+D 2298678 11
+D 2298689 7
+D 2298922 6
+D 2298928 7
+D 2298983 6
+D 2300176 1
+D 2301063 20
+P 2301957 light_off
+D 2303840 7
+D 2303858 6
+D 2305474 7
+D 2305486 6
+D 2305744 7
+D 2305757 6
+P 2308352 s_go_bar_off
+D 2308353 3
+D 2309325 7
+P 2309325 light_on
+P 2309325 reward bar_off
+D 2309342 6
+D 2309519 10
+P 2309522 Timestamp:2308352 Go:0 Success:True Free_rew:False Light:0 Latency:1168
+P 2309523 Summary: T#:161 Tot_rate:0.73 Go#:103 NoGo#:58 Go_rate:0.70 NoGo_rate:0.78
+P 2309524 4 trials moving ave Go success rate: 0.67
+D 2309524 4
+D 2309537 11
+D 2309546 7
+D 2309771 6
+D 2309826 10
+D 2309834 11
+D 2310002 10
+D 2310020 11
+D 2310304 20
+D 2310338 7
+D 2310385 6
+D 2310721 7
+D 2310732 6
+D 2310737 7
+D 2311035 6
+D 2311130 1
+P 2313325 light_off
+D 2316501 20
+P 2316520 s_go_sham
+D 2316521 3
+D 2317244 7
+P 2317244 reward bar_off
+D 2317249 6
+D 2317491 7
+D 2317514 6
+D 2317550 10
+P 2317552 Timestamp:2316520 Go:0 Success:True Free_rew:False Light:0 Latency:1030
+P 2317553 Summary: T#:162 Tot_rate:0.73 Go#:104 NoGo#:58 Go_rate:0.70 NoGo_rate:0.78
+P 2317554 4 trials moving ave Go success rate: 0.74
+D 2317555 4
+D 2318145 7
+D 2318437 20
+D 2319201 6
+D 2319232 11
+D 2319282 10
+D 2319302 7
+D 2319447 1
+D 2319602 6
+D 2319610 11
+D 2319618 7
+D 2319630 6
+D 2319635 7
+D 2319660 6
+D 2319665 7
+D 2319670 6
+D 2319677 7
+D 2320299 10
+D 2320345 11
+D 2320411 6
+D 2320429 7
+D 2320430 10
+D 2320680 11
+D 2321486 10
+D 2321542 11
+D 2321570 10
+D 2321582 11
+D 2322282 10
+D 2322291 11
+D 2322436 10
+D 2322528 11
+D 2323010 10
+D 2323036 11
+D 2323291 10
+D 2323296 11
+D 2324103 10
+D 2324342 11
+D 2324441 20
+D 2325087 10
+D 2325167 11
+D 2325238 10
+D 2325273 11
+D 2325828 10
+D 2325875 11
+D 2326826 6
+D 2326880 7
+D 2326899 6
+D 2328460 20
+D 2328475 7
+D 2328510 6
+D 2329611 20
+P 2331615 s_go_spout
+D 2331621 3
+D 2332964 7
+P 2332965 reward bar_off
+D 2333049 6
+D 2333153 10
+P 2333154 light_on
+P 2333156 Timestamp:2331615 Go:0 Success:True Free_rew:False Light:0 Latency:1539
+P 2333157 Summary: T#:163 Tot_rate:0.73 Go#:105 NoGo#:58 Go_rate:0.70 NoGo_rate:0.78
+P 2333158 4 trials moving ave Go success rate: 0.80
+D 2333158 4
+D 2333224 11
+D 2333672 10
+D 2333698 11
+D 2334196 7
+D 2334210 6
+D 2335801 1
+D 2337014 20
+P 2337154 light_off
+D 2338373 20
+P 2341688 s_nogo_sham
+D 2341689 2
+P 2345691 Timestamp:2341688 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 2345692 Summary: T#:164 Tot_rate:0.73 Go#:105 NoGo#:59 Go_rate:0.70 NoGo_rate:0.78
+P 2345693 4 trials moving ave Go success rate: 0.80
+D 2345693 4
+D 2345871 20
+D 2347734 7
+D 2347910 6
+D 2347915 7
+D 2347916 6
+D 2348051 1
+D 2348519 7
+D 2348536 6
+D 2348817 7
+D 2348839 6
+D 2348942 7
+D 2348948 6
+D 2349141 7
+D 2349563 6
+D 2349688 7
+D 2349695 6
+D 2349700 7
+D 2349978 10
+D 2350117 6
+D 2350122 11
+D 2350338 10
+D 2350365 11
+D 2350485 7
+D 2351084 6
+D 2351099 7
+D 2351233 10
+D 2351238 11
+D 2351929 10
+D 2351962 11
+D 2351973 20
+D 2352075 10
+D 2352080 11
+D 2352088 10
+D 2352096 11
+D 2352135 10
+D 2352169 11
+D 2352588 6
+D 2352619 7
+D 2352641 6
+D 2353886 7
+D 2353899 6
+D 2354224 7
+D 2354243 6
+D 2354576 7
+D 2354587 6
+D 2354775 7
+D 2354790 6
+P 2358371 s_nogo_sham
+D 2358372 2
+D 2358815 20
+D 2360641 7
+P 2360644 Timestamp:2358371 Go:0 Success:False Free_rew:False Light:0 Latency:2271
+P 2360645 Summary: T#:165 Tot_rate:0.73 Go#:105 NoGo#:60 Go_rate:0.70 NoGo_rate:0.77
+P 2360646 4 trials moving ave Go success rate: 0.80
+D 2360646 5
+D 2360668 6
+D 2363722 20
+D 2364536 1
+D 2366133 7
+D 2366147 6
+P 2368999 s_nogo_cs_onset
+P 2369000 light_on
+D 2369000 2
+P 2373002 Timestamp:2368999 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 2373003 Summary: T#:166 Tot_rate:0.73 Go#:105 NoGo#:61 Go_rate:0.70 NoGo_rate:0.77
+P 2373003 4 trials moving ave Go success rate: 0.80
+D 2373004 4
+P 2373004 light_off
+D 2373204 20
+D 2375223 1
+D 2376143 20
+P 2378148 s_go_sham
+D 2378149 3
+D 2379185 7
+P 2379185 reward bar_off
+D 2379212 6
+D 2379232 10
+P 2379238 Timestamp:2378148 Go:0 Success:True Free_rew:False Light:0 Latency:1085
+P 2379239 Summary: T#:167 Tot_rate:0.73 Go#:106 NoGo#:61 Go_rate:0.71 NoGo_rate:0.77
+P 2379240 4 trials moving ave Go success rate: 0.84
+D 2379240 4
+D 2379292 11
+D 2379546 7
+D 2380996 1
+D 2381353 10
+D 2381437 11
+D 2381525 10
+D 2382564 11
+D 2383060 10
+D 2383146 11
+D 2383169 6
+D 2383173 10
+D 2383174 7
+D 2383349 11
+D 2383473 20
+D 2384133 10
+D 2384143 11
+D 2384299 6
+D 2384317 7
+D 2384343 6
+D 2384740 7
+D 2384750 6
+D 2385150 20
+D 2385300 7
+D 2385308 6
+D 2385433 7
+D 2385445 6
+P 2388694 s_nogo_sham
+D 2388695 2
+D 2390377 20
+P 2392697 Timestamp:2388694 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 2392698 Summary: T#:168 Tot_rate:0.73 Go#:106 NoGo#:62 Go_rate:0.71 NoGo_rate:0.77
+P 2392698 4 trials moving ave Go success rate: 0.84
+D 2392699 4
+D 2394721 1
+D 2394950 20
+D 2395521 20
+P 2398837 s_nogo_sham
+D 2398838 2
+D 2399690 20
+P 2402839 Timestamp:2398837 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 2402841 Summary: T#:169 Tot_rate:0.73 Go#:106 NoGo#:63 Go_rate:0.71 NoGo_rate:0.78
+P 2402841 4 trials moving ave Go success rate: 0.84
+D 2402842 4
+D 2404713 1
+P 2408296 s_nogo_cs_onset
+P 2408297 light_on
+D 2408297 2
+D 2408738 20
+D 2411163 20
+P 2412298 Timestamp:2408296 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 2412300 Summary: T#:170 Tot_rate:0.74 Go#:106 NoGo#:64 Go_rate:0.71 NoGo_rate:0.78
+P 2412300 4 trials moving ave Go success rate: 0.84
+D 2412301 4
+P 2412301 light_off
+D 2413343 7
+D 2413365 6
+D 2413417 7
+D 2413665 10
+D 2413723 11
+D 2413772 6
+D 2413806 10
+D 2413819 7
+D 2413889 11
+D 2413959 6
+D 2413983 10
+D 2414034 7
+D 2414072 11
+D 2414304 6
+D 2414309 7
+D 2414315 6
+D 2414339 7
+D 2414363 6
+D 2414390 1
+D 2415024 7
+D 2415036 6
+D 2415481 7
+D 2415491 6
+D 2415643 20
+P 2418456 s_go_sham
+D 2418457 3
+D 2418632 20
+D 2419186 7
+P 2419187 reward bar_off
+D 2419199 6
+D 2419453 7
+D 2419477 6
+D 2419493 10
+P 2419495 Timestamp:2418456 Go:0 Success:True Free_rew:False Light:0 Latency:1037
+P 2419496 Summary: T#:171 Tot_rate:0.74 Go#:107 NoGo#:64 Go_rate:0.71 NoGo_rate:0.78
+P 2419497 4 trials moving ave Go success rate: 0.88
+D 2419498 4
+D 2419515 7
+D 2419538 11
+D 2419538 6
+D 2419615 7
+D 2420581 10
+D 2420596 11
+D 2420761 10
+D 2420940 11
+D 2421076 1
+D 2421518 20
+D 2421556 10
+D 2421642 11
+D 2421654 10
+D 2421659 11
+D 2421665 10
+D 2422141 11
+D 2422697 10
+D 2422943 11
+D 2423250 10
+D 2423269 11
+D 2423411 10
+D 2424115 11
+D 2424282 20
+D 2424843 10
+D 2424960 11
+D 2425918 10
+D 2426012 11
+D 2426343 10
+D 2426348 11
+D 2427118 10
+D 2427227 11
+D 2427427 10
+D 2427459 11
+D 2428577 6
+D 2428628 7
+D 2428641 6
+D 2429850 7
+D 2429857 6
+D 2431978 20
+P 2433662 s_go_bar_off
+D 2433663 3
+D 2435121 7
+P 2435121 light_on
+P 2435122 reward bar_off
+D 2435245 6
+D 2435294 7
+D 2435338 6
+P 2437665 Timestamp:2433662 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 2437666 Summary: T#:172 Tot_rate:0.73 Go#:108 NoGo#:64 Go_rate:0.70 NoGo_rate:0.78
+P 2437667 4 trials moving ave Go success rate: 0.68
+D 2437667 5
+P 2439122 light_off
+D 2440161 20
+D 2440336 7
+D 2440374 6
+D 2440555 10
+D 2440594 11
+D 2440639 7
+D 2441190 10
+D 2441299 11
+D 2442058 10
+D 2442064 11
+D 2442073 10
+D 2442226 11
+D 2442479 1
+D 2442732 10
+D 2442872 11
+D 2443769 10
+D 2443856 11
+D 2444046 10
+D 2444138 11
+D 2445178 10
+D 2445273 11
+D 2445407 10
+D 2445415 11
+D 2445618 10
+D 2445713 11
+D 2446031 10
+D 2446065 11
+D 2446092 10
+D 2446128 11
+D 2446362 20
+D 2446664 6
+D 2446687 7
+D 2446696 6
+D 2446724 7
+D 2446752 6
+P 2450732 s_go_cs_onset
+P 2450733 light_on
+D 2450733 3
+D 2453368 20
+P 2454735 Timestamp:2450732 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 2454736 Summary: T#:173 Tot_rate:0.73 Go#:109 NoGo#:64 Go_rate:0.70 NoGo_rate:0.78
+P 2454737 4 trials moving ave Go success rate: 0.53
+D 2454737 5
+P 2454737 light_off
+D 2455435 20
+D 2458228 1
+D 2459079 20
+D 2461107 20
+P 2461356 s_go_bar_off
+D 2461357 3
+D 2462016 7
+P 2462017 light_on
+P 2462017 reward bar_off
+D 2462043 6
+P 2465358 Timestamp:2461356 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 2465360 Summary: T#:174 Tot_rate:0.72 Go#:110 NoGo#:64 Go_rate:0.69 NoGo_rate:0.78
+P 2465361 4 trials moving ave Go success rate: 0.42
+D 2465361 5
+P 2466017 light_off
+D 2466853 20
+D 2467190 7
+D 2467220 6
+D 2467535 10
+D 2467645 11
+D 2467862 7
+D 2467901 6
+D 2467943 10
+D 2468053 11
+D 2468231 7
+D 2468328 20
+D 2469202 10
+D 2469311 1
+D 2469351 11
+D 2469356 10
+D 2469365 11
+D 2469374 10
+D 2469697 11
+D 2470173 10
+D 2470182 11
+D 2470190 10
+D 2470283 11
+D 2471259 10
+D 2471353 11
+D 2471423 10
+D 2471573 11
+D 2472490 10
+D 2472519 11
+D 2472646 10
+D 2472733 11
+D 2473332 10
+D 2473432 11
+D 2473478 10
+D 2473579 11
+D 2473898 10
+D 2473933 11
+D 2475002 10
+D 2475040 11
+D 2475057 10
+D 2475082 11
+D 2476205 10
+D 2476222 20
+D 2476259 11
+D 2476390 10
+D 2476479 11
+D 2477020 6
+D 2477030 7
+D 2477050 6
+D 2477058 7
+D 2477067 6
+D 2477763 20
+D 2478149 7
+D 2478164 6
+D 2478392 20
+D 2478576 7
+D 2478591 6
+D 2481300 20
+P 2482069 s_nogo_cs_onset
+P 2482070 light_on
+D 2482070 2
+D 2485614 20
+P 2486072 Timestamp:2482069 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 2486073 Summary: T#:175 Tot_rate:0.73 Go#:110 NoGo#:65 Go_rate:0.69 NoGo_rate:0.78
+P 2486073 4 trials moving ave Go success rate: 0.42
+D 2486074 4
+P 2486074 light_off
+D 2487593 7
+D 2487641 6
+D 2488114 1
+D 2488130 10
+D 2488172 11
+D 2488310 10
+D 2488375 7
+D 2488603 6
+D 2488604 11
+D 2488687 7
+D 2488730 6
+D 2488891 7
+D 2488924 6
+D 2488977 7
+D 2489044 20
+D 2489103 6
+D 2489152 10
+D 2489163 7
+D 2489181 11
+D 2489281 6
+D 2489332 7
+D 2489375 10
+D 2489387 11
+D 2489392 10
+D 2489467 6
+D 2489472 11
+D 2489508 7
+D 2489602 6
+P 2492128 s_go_sham
+D 2492129 3
+D 2493038 7
+P 2493039 reward bar_off
+D 2493063 6
+D 2493111 10
+P 2493114 Timestamp:2492128 Go:0 Success:True Free_rew:False Light:0 Latency:984
+P 2493115 Summary: T#:176 Tot_rate:0.73 Go#:111 NoGo#:65 Go_rate:0.69 NoGo_rate:0.78
+P 2493116 4 trials moving ave Go success rate: 0.54
+D 2493116 4
+D 2493160 11
+D 2493194 7
+D 2493240 6
+D 2493300 10
+D 2493325 11
+D 2493327 7
+D 2493418 6
+D 2493461 10
+D 2493497 11
+D 2493597 10
+D 2493605 11
+D 2493668 7
+D 2494025 10
+D 2494030 11
+D 2494044 10
+D 2494222 11
+D 2494749 1
+D 2494890 6
+D 2494907 10
+D 2494969 7
+D 2494996 11
+D 2495454 10
+D 2496096 11
+D 2496135 6
+D 2496287 20
+D 2496403 10
+D 2496425 11
+D 2496546 10
+D 2496576 11
+D 2496646 7
+D 2496675 6
+D 2496738 7
+D 2497246 10
+D 2497289 11
+D 2497394 6
+D 2497405 7
+D 2497446 6
+D 2497483 10
+D 2497561 20
+D 2497725 7
+D 2500704 20
+D 2502001 11
+D 2502028 6
+D 2502115 10
+D 2502116 7
+D 2502176 11
+D 2502215 6
+D 2502220 7
+D 2502228 6
+D 2502239 10
+D 2502252 7
+D 2502296 11
+D 2502410 10
+D 2502410 6
+D 2502416 7
+D 2504570 11
+D 2504706 6
+D 2504740 7
+D 2504755 6
+D 2504761 7
+D 2504776 6
+D 2505298 20
+D 2505643 7
+D 2505879 6
+D 2505884 7
+D 2505891 6
+D 2505896 7
+D 2505907 6
+D 2505923 7
+D 2505936 6
+D 2505993 7
+D 2505999 6
+D 2506698 7
+D 2506717 6
+P 2509600 s_nogo_sham
+D 2509601 2
+D 2510344 20
+D 2510981 20
+P 2513602 Timestamp:2509600 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 2513604 Summary: T#:177 Tot_rate:0.73 Go#:111 NoGo#:66 Go_rate:0.69 NoGo_rate:0.79
+P 2513604 4 trials moving ave Go success rate: 0.54
+D 2513605 4
+D 2515977 1
+P 2519640 s_go_spout
+D 2519641 3
+D 2519767 20
+D 2520305 7
+P 2520305 reward bar_off
+D 2520319 6
+D 2520572 7
+D 2520880 6
+D 2520995 10
+P 2520995 light_on
+P 2520997 Timestamp:2519640 Go:0 Success:True Free_rew:False Light:0 Latency:1356
+P 2520999 Summary: T#:178 Tot_rate:0.73 Go#:112 NoGo#:66 Go_rate:0.70 NoGo_rate:0.79
+P 2520999 4 trials moving ave Go success rate: 0.65
+D 2521000 4
+D 2521870 11
+D 2521938 7
+D 2521982 6
+D 2523426 1
+P 2524995 light_off
+D 2526528 20
+D 2528400 20
+P 2529852 s_go_cs_onset
+P 2529853 light_on
+D 2529853 3
+D 2530702 20
+D 2533836 20
+P 2533854 Timestamp:2529852 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 2533856 Summary: T#:179 Tot_rate:0.73 Go#:113 NoGo#:66 Go_rate:0.69 NoGo_rate:0.79
+P 2533856 4 trials moving ave Go success rate: 0.50
+D 2533857 5
+P 2533857 light_off
+D 2535100 20
+D 2537014 1
+D 2540479 20
+D 2541122 20
+P 2541491 s_go_spout
+D 2541492 3
+D 2541916 7
+P 2541917 reward bar_off
+D 2541933 6
+D 2541955 7
+D 2541968 6
+D 2542107 7
+D 2542116 6
+D 2542328 7
+D 2542361 6
+D 2542387 10
+P 2542388 light_on
+P 2542390 Timestamp:2541491 Go:0 Success:True Free_rew:False Light:0 Latency:897
+P 2542391 Summary: T#:180 Tot_rate:0.73 Go#:114 NoGo#:66 Go_rate:0.69 NoGo_rate:0.79
+P 2542392 4 trials moving ave Go success rate: 0.61
+D 2542395 4
+D 2542401 7
+D 2542568 11
+D 2544085 1
+P 2546388 light_off
+D 2546791 10
+D 2546798 11
+D 2546804 10
+D 2547058 11
+D 2547094 10
+D 2547352 11
+D 2548644 10
+D 2548750 11
+D 2548802 10
+D 2549656 11
+D 2549909 20
+D 2550857 10
+D 2550958 11
+D 2551415 10
+D 2551783 11
+D 2551991 10
+D 2552035 11
+D 2553207 10
+D 2553212 11
+D 2553268 6
+D 2554889 7
+D 2554933 6
+P 2557778 s_go_bar_off
+D 2557779 3
+D 2557801 20
+D 2559714 20
+P 2561781 Timestamp:2557778 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 2561782 Summary: T#:181 Tot_rate:0.72 Go#:115 NoGo#:66 Go_rate:0.69 NoGo_rate:0.79
+P 2561783 4 trials moving ave Go success rate: 0.48
+D 2561783 5
+D 2563517 20
+D 2566547 1
+D 2570357 20
+P 2570887 s_go_cs_onset
+P 2570888 light_on
+D 2570888 3
+D 2572744 20
+P 2574889 Timestamp:2570887 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 2574891 Summary: T#:182 Tot_rate:0.72 Go#:116 NoGo#:66 Go_rate:0.68 NoGo_rate:0.79
+P 2574891 4 trials moving ave Go success rate: 0.37
+D 2574892 5
+P 2574892 light_off
+D 2575544 7
+D 2575550 6
+D 2575649 20
+D 2575769 7
+D 2575813 6
+D 2575920 7
+D 2576020 6
+D 2576025 7
+D 2576074 6
+D 2576112 7
+D 2576364 6
+D 2576416 10
+D 2576440 11
+D 2576614 10
+D 2576669 7
+D 2576736 11
+D 2577022 10
+D 2577076 11
+D 2577317 6
+D 2577325 7
+D 2577330 6
+D 2577397 7
+D 2577433 6
+D 2577444 7
+D 2577813 6
+D 2577883 7
+D 2577894 6
+D 2578166 7
+D 2578190 6
+D 2578911 1
+D 2579498 20
+P 2583196 s_go_spout
+D 2583197 3
+D 2584252 20
+P 2587198 Timestamp:2583196 Go:0 Success:False Free_rew:False Light:0 Latency:4000
+P 2587199 Summary: T#:183 Tot_rate:0.72 Go#:117 NoGo#:66 Go_rate:0.68 NoGo_rate:0.79
+P 2587199 4 trials moving ave Go success rate: 0.29
+D 2587200 5
+D 2589829 20
+D 2591392 1
+D 2591958 20
+P 2594573 s_go_spout
+D 2594574 3
+P 2595146 free_reward
+D 2595189 7
+P 2595189 reward bar_off
+D 2595195 6
+D 2595462 7
+D 2595488 6
+D 2595506 10
+P 2595506 light_on
+P 2595509 Timestamp:2594573 Go:0 Success:True Free_rew:True Light:0 Latency:934
+P 2595510 Summary: T#:184 Tot_rate:0.72 Go#:118 NoGo#:66 Go_rate:0.68 NoGo_rate:0.79
+P 2595511 4 trials moving ave Go success rate: 0.45
+D 2595511 4
+D 2595511 7
+D 2595518 6
+D 2595628 7
+D 2595632 11
+D 2595644 6
+D 2595687 10
+D 2595743 7
+D 2595895 11
+D 2596426 10
+D 2596705 11
+D 2597294 1
+D 2598708 20
+P 2599507 light_off
+D 2599827 10
+D 2599841 11
+D 2599865 10
+D 2600049 11
+D 2600103 10
+D 2600830 11
+D 2602576 10
+D 2602590 11
+D 2602608 10
+D 2602705 11
+D 2603417 10
+D 2603515 11
+D 2603833 10
+D 2603930 11
+D 2604140 10
+D 2604152 11
+D 2604865 10
+D 2604874 11
+D 2604879 10
+D 2604900 11
+D 2604905 10
+D 2604953 11
+D 2605481 10
+D 2605493 11
+D 2606202 6
+D 2606215 7
+D 2606254 6
+D 2607601 20
+P 2608766 s_nogo_sham
+D 2608767 2
+P 2612768 Timestamp:2608766 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 2612770 Summary: T#:185 Tot_rate:0.72 Go#:118 NoGo#:67 Go_rate:0.68 NoGo_rate:0.79
+P 2612770 4 trials moving ave Go success rate: 0.45
+D 2612771 4
+D 2613723 20
+D 2614682 1
+D 2617756 20
+P 2618064 s_go_bar_off
+D 2618065 3
+D 2618872 7
+P 2618873 light_on
+P 2618873 reward bar_off
+D 2618899 6
+D 2618945 10
+P 2618947 Timestamp:2618064 Go:0 Success:True Free_rew:False Light:0 Latency:882
+P 2618949 Summary: T#:186 Tot_rate:0.72 Go#:119 NoGo#:67 Go_rate:0.68 NoGo_rate:0.79
+P 2618949 4 trials moving ave Go success rate: 0.57
+D 2618950 4
+D 2618950 11
+D 2619083 10
+D 2619097 11
+D 2619121 10
+D 2619126 11
+D 2619536 7
+D 2619586 6
+D 2620285 7
+D 2620307 6
+D 2621314 1
+P 2622873 light_off
+D 2626143 20
+P 2626986 s_nogo_sham
+D 2626987 2
+P 2630988 Timestamp:2626986 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 2630990 Summary: T#:187 Tot_rate:0.72 Go#:119 NoGo#:68 Go_rate:0.68 NoGo_rate:0.79
+P 2630990 4 trials moving ave Go success rate: 0.57
+D 2630991 4
+D 2632817 1
+D 2634407 20
+D 2637055 20
+P 2637503 s_go_sham
+D 2637504 3
+D 2637770 7
+P 2637771 reward bar_off
+D 2637802 6
+D 2637864 10
+P 2637867 Timestamp:2637503 Go:0 Success:True Free_rew:False Light:0 Latency:362
+P 2637868 Summary: T#:188 Tot_rate:0.72 Go#:120 NoGo#:68 Go_rate:0.68 NoGo_rate:0.79
+P 2637869 4 trials moving ave Go success rate: 0.66
+D 2637869 4
+D 2637919 7
+D 2637999 11
+D 2639766 1
+D 2640885 10
+D 2641108 11
+D 2641271 10
+D 2641296 11
+D 2641900 10
+D 2642003 11
+D 2642181 10
+D 2642202 11
+D 2642854 10
+D 2642957 11
+D 2643810 10
+D 2643852 11
+D 2644317 6
+D 2644437 7
+D 2644457 6
+D 2644739 20
+D 2645009 7
+D 2645023 6
+D 2645089 7
+D 2645124 6
+D 2645144 10
+D 2645171 11
+D 2645192 7
+D 2645203 6
+D 2645233 7
+D 2645306 6
+D 2645344 7
+D 2645595 6
+D 2645600 10
+D 2645611 11
+D 2645612 7
+D 2646148 6
+D 2646164 7
+D 2646169 6
+D 2647201 7
+D 2647222 6
+D 2650006 20
+P 2650078 s_go_sham
+D 2650079 3
+D 2651003 7
+P 2651003 reward bar_off
+D 2651027 6
+D 2651064 10
+P 2651067 Timestamp:2650078 Go:0 Success:True Free_rew:False Light:0 Latency:987
+P 2651068 Summary: T#:189 Tot_rate:0.72 Go#:121 NoGo#:68 Go_rate:0.69 NoGo_rate:0.79
+P 2651069 4 trials moving ave Go success rate: 0.74
+D 2651069 4
+D 2651105 11
+D 2651255 7
+D 2652781 1
+D 2653173 10
+D 2653282 11
+D 2653641 20
+D 2653731 10
+D 2653740 11
+D 2653754 10
+D 2653934 11
+D 2654253 10
+D 2654264 11
+D 2654523 10
+D 2654624 11
+D 2655316 10
+D 2655375 11
+D 2655415 6
+D 2655421 7
+D 2655425 6
+P 2658335 s_go_sham
+D 2658336 3
+D 2658911 7
+P 2658912 reward bar_off
+D 2658930 6
+D 2659339 7
+D 2659371 20
+D 2659380 6
+D 2659748 10
+P 2659751 Timestamp:2658335 Go:0 Success:True Free_rew:False Light:0 Latency:1414
+P 2659752 Summary: T#:190 Tot_rate:0.73 Go#:122 NoGo#:68 Go_rate:0.69 NoGo_rate:0.79
+P 2659753 4 trials moving ave Go success rate: 0.80
+D 2659753 4
+D 2659768 11
+D 2660043 10
+D 2660064 11
+D 2660212 10
+D 2660301 7
+D 2660356 11
+D 2660375 6
+D 2660479 10
+D 2660537 11
+D 2660560 7
+D 2661398 10
+D 2661454 11
+D 2661935 1
+D 2662062 10
+D 2662086 20
+D 2662910 6
+D 2662911 11
+D 2662925 7
+D 2662994 6
+D 2663003 7
+D 2663052 6
+D 2663157 20
+D 2664013 7
+D 2664083 6
+D 2664106 7
+D 2664112 10
+D 2664135 6
+D 2664139 11
+D 2664253 10
+D 2664260 7
+D 2664263 11
+D 2664351 6
+D 2664404 10
+D 2664415 11
+D 2664453 10
+D 2664493 11
+D 2664544 10
+D 2664632 7
+D 2664654 11
+D 2664682 6
+D 2664853 10
+D 2664872 11
+D 2664943 7
+D 2664956 6
+D 2665043 10
+D 2665051 7
+D 2665090 11
+D 2665122 6
+D 2665202 10
+D 2665263 7
+D 2665307 11
+D 2665325 6
+D 2665390 10
+D 2665400 7
+D 2665907 6
+D 2665919 11
+D 2665972 7
+D 2666047 6
+P 2668621 s_go_cs_onset
+P 2668622 light_on
+D 2668622 3
+D 2670803 20
+P 2672623 Timestamp:2668621 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 2672625 Summary: T#:191 Tot_rate:0.72 Go#:123 NoGo#:68 Go_rate:0.68 NoGo_rate:0.79
+P 2672626 4 trials moving ave Go success rate: 0.62
+D 2672626 5
+P 2672626 light_off
+D 2675197 20
+D 2675724 1
+P 2678803 s_go_bar_off
+D 2678804 3
+D 2679630 7
+P 2679630 light_on
+P 2679631 reward bar_off
+D 2679653 6
+D 2679915 7
+D 2679955 6
+D 2680486 7
+D 2681171 6
+D 2681344 7
+D 2681349 6
+D 2681488 7
+D 2681497 6
+P 2682806 Timestamp:2678803 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 2682807 Summary: T#:192 Tot_rate:0.72 Go#:124 NoGo#:68 Go_rate:0.68 NoGo_rate:0.79
+P 2682808 4 trials moving ave Go success rate: 0.48
+D 2682808 5
+D 2682854 20
+P 2683630 light_off
+D 2686148 1
+D 2687502 20
+P 2689250 s_nogo_cs_onset
+P 2689251 light_on
+D 2689251 2
+D 2691309 20
+P 2693252 Timestamp:2689250 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 2693254 Summary: T#:193 Tot_rate:0.72 Go#:124 NoGo#:69 Go_rate:0.68 NoGo_rate:0.80
+P 2693254 4 trials moving ave Go success rate: 0.48
+D 2693255 4
+P 2693255 light_off
+D 2694130 7
+D 2694160 6
+D 2694355 10
+D 2694446 11
+D 2694477 7
+D 2695621 10
+D 2695647 1
+D 2695764 11
+D 2696102 10
+D 2696109 11
+D 2696116 10
+D 2696135 11
+D 2696525 10
+D 2696594 11
+D 2696729 6
+D 2696757 7
+D 2696789 6
+D 2697520 7
+D 2697527 6
+D 2697751 7
+D 2697790 6
+D 2698254 7
+D 2698296 6
+D 2698358 7
+D 2698396 6
+D 2698415 7
+D 2698441 6
+D 2698552 7
+D 2698599 6
+D 2698608 7
+D 2698676 20
+D 2698817 10
+D 2698817 6
+D 2698834 11
+D 2698856 10
+D 2698929 11
+D 2699005 7
+D 2699016 6
+D 2699046 7
+D 2699078 6
+D 2699167 7
+D 2699188 6
+D 2699483 7
+D 2700782 20
+D 2701317 6
+D 2702992 20
+P 2704936 s_nogo_sham
+D 2704937 2
+D 2708224 20
+P 2708938 Timestamp:2704936 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 2708940 Summary: T#:194 Tot_rate:0.72 Go#:124 NoGo#:70 Go_rate:0.68 NoGo_rate:0.80
+P 2708940 4 trials moving ave Go success rate: 0.48
+D 2708941 4
+D 2710127 20
+D 2711584 1
+D 2713304 20
+D 2716387 20
+P 2716522 s_go_spout
+D 2716526 3
+D 2717204 7
+P 2717205 reward bar_off
+D 2717258 6
+D 2717276 10
+P 2717276 light_on
+P 2717278 Timestamp:2716525 Go:0 Success:True Free_rew:False Light:0 Latency:752
+P 2717280 Summary: T#:195 Tot_rate:0.72 Go#:125 NoGo#:70 Go_rate:0.68 NoGo_rate:0.80
+P 2717280 4 trials moving ave Go success rate: 0.60
+D 2717281 4
+D 2717310 11
+D 2717763 10
+D 2717835 11
+D 2718075 7
+D 2718232 20
+D 2718869 6
+D 2718892 7
+D 2718897 6
+D 2719188 1
+P 2721276 light_off
+P 2724850 s_go_cs_onset
+P 2724851 light_on
+D 2724851 3
+D 2725264 20
+P 2728852 Timestamp:2724850 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 2728854 Summary: T#:196 Tot_rate:0.72 Go#:126 NoGo#:70 Go_rate:0.67 NoGo_rate:0.80
+P 2728854 4 trials moving ave Go success rate: 0.47
+D 2728855 5
+P 2728855 light_off
+D 2729943 7
+D 2729980 6
+D 2730266 7
+D 2730306 6
+D 2730324 10
+D 2730329 11
+D 2730458 10
+D 2730499 11
+D 2730650 10
+D 2730683 11
+D 2730796 7
+D 2730801 6
+D 2731028 7
+D 2731048 6
+D 2731253 7
+D 2731270 6
+D 2731563 7
+D 2731936 1
+D 2731992 6
+D 2732025 10
+D 2732038 7
+D 2732079 20
+D 2732122 6
+D 2732131 11
+D 2732235 7
+D 2732782 10
+D 2732787 11
+D 2732789 10
+D 2732802 11
+D 2732849 10
+D 2733114 11
+D 2733305 10
+D 2733388 11
+D 2734468 10
+D 2734573 11
+D 2734900 10
+D 2734944 11
+D 2735300 10
+D 2738025 11
+D 2738397 6
+D 2738406 10
+D 2738424 7
+D 2738468 11
+D 2739022 10
+D 2739042 11
+D 2739390 20
+D 2740327 6
+D 2740369 7
+D 2740385 6
+D 2741407 7
+D 2741424 6
+D 2741947 20
+P 2744392 s_go_spout
+D 2744393 3
+D 2746112 20
+P 2748393 Timestamp:2744392 Go:0 Success:False Free_rew:False Light:0 Latency:4000
+P 2748395 Summary: T#:197 Tot_rate:0.72 Go#:127 NoGo#:70 Go_rate:0.67 NoGo_rate:0.80
+P 2748396 4 trials moving ave Go success rate: 0.36
+D 2748396 5
+D 2751241 20
+D 2752038 1
+D 2755980 20
+P 2756927 s_go_bar_off
+D 2756928 3
+D 2757446 7
+P 2757447 light_on
+P 2757447 reward bar_off
+D 2757471 6
+P 2760930 Timestamp:2756927 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 2760931 Summary: T#:198 Tot_rate:0.71 Go#:128 NoGo#:70 Go_rate:0.66 NoGo_rate:0.80
+P 2760932 4 trials moving ave Go success rate: 0.28
+D 2760932 5
+P 2761447 light_off
+D 2761689 20
+D 2763711 7
+D 2763716 6
+D 2763977 7
+D 2763994 6
+D 2764244 7
+D 2764499 1
+D 2764521 10
+D 2764597 11
+D 2766135 10
+D 2766365 11
+D 2766704 10
+D 2766719 11
+D 2766989 20
+D 2767472 6
+D 2767480 7
+D 2767495 6
+D 2767500 7
+D 2767524 6
+D 2767534 7
+D 2767550 6
+D 2768919 7
+D 2768940 6
+P 2772094 s_go_sham
+D 2772095 3
+D 2773220 7
+P 2773220 reward bar_off
+D 2773257 6
+D 2773291 10
+P 2773293 Timestamp:2772094 Go:0 Success:True Free_rew:False Light:0 Latency:1198
+P 2773295 Summary: T#:199 Tot_rate:0.71 Go#:129 NoGo#:70 Go_rate:0.67 NoGo_rate:0.80
+P 2773295 4 trials moving ave Go success rate: 0.44
+D 2773296 4
+D 2773323 20
+D 2773347 11
+D 2773527 7
+D 2775377 1
+D 2775908 10
+D 2775985 11
+D 2776313 10
+D 2776398 11
+D 2776896 10
+D 2776964 11
+D 2777015 10
+D 2777198 11
+D 2777582 10
+D 2778394 11
+D 2778412 6
+D 2778430 7
+D 2778438 6
+D 2778470 7
+D 2778496 6
+D 2779590 7
+D 2779618 6
+D 2782293 20
+P 2783260 s_nogo_cs_onset
+P 2783261 light_on
+D 2783261 2
+D 2784596 20
+D 2784814 7
+P 2784817 Timestamp:2783260 Go:0 Success:False Free_rew:False Light:0 Latency:1555
+P 2784818 Summary: T#:200 Tot_rate:0.71 Go#:129 NoGo#:71 Go_rate:0.67 NoGo_rate:0.79
+P 2784819 4 trials moving ave Go success rate: 0.44
+D 2784819 5
+D 2784847 6
+P 2787261 light_off
+D 2788640 1
+D 2790206 20
+P 2793023 s_go_bar_off
+D 2793024 3
+D 2794313 7
+P 2794313 light_on
+P 2794313 reward bar_off
+D 2794320 6
+D 2794402 7
+D 2794446 6
+D 2794562 7
+D 2794581 6
+P 2797026 Timestamp:2793023 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 2797027 Summary: T#:201 Tot_rate:0.71 Go#:130 NoGo#:71 Go_rate:0.66 NoGo_rate:0.79
+P 2797028 4 trials moving ave Go success rate: 0.34
+D 2797028 5
+D 2797108 20
+P 2798313 light_off
+D 2799848 7
+D 2799880 6
+D 2799902 7
+D 2799970 6
+D 2800036 10
+D 2800058 11
+D 2800449 20
+D 2800459 7
+D 2800492 6
+D 2800788 7
+D 2800819 6
+D 2801086 1
+D 2801099 7
+D 2801176 10
+D 2801360 11
+D 2801423 6
+D 2801618 7
+D 2802753 20
+D 2802888 10
+D 2802975 11
+D 2803282 10
+D 2803320 11
+D 2803987 10
+D 2804071 11
+D 2804158 10
+D 2804237 11
+D 2804729 6
+D 2804774 7
+D 2804779 6
+P 2808466 s_nogo_sham
+D 2808467 2
+D 2810004 20
+P 2812468 Timestamp:2808466 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 2812470 Summary: T#:202 Tot_rate:0.71 Go#:130 NoGo#:72 Go_rate:0.66 NoGo_rate:0.79
+P 2812470 4 trials moving ave Go success rate: 0.34
+D 2812471 4
+D 2814628 1
+D 2817331 20
+P 2818326 s_go_bar_off
+D 2818327 3
+D 2819625 7
+P 2819626 light_on
+P 2819626 reward bar_off
+D 2819707 6
+D 2819736 10
+P 2819739 Timestamp:2818326 Go:0 Success:True Free_rew:False Light:0 Latency:1411
+P 2819740 Summary: T#:203 Tot_rate:0.71 Go#:131 NoGo#:72 Go_rate:0.66 NoGo_rate:0.79
+P 2819741 4 trials moving ave Go success rate: 0.49
+D 2819741 4
+D 2819737 7
+D 2819784 11
+D 2819833 6
+D 2820377 7
+D 2820839 20
+D 2821298 6
+D 2821310 7
+D 2821315 6
+D 2821320 7
+D 2821326 6
+D 2822061 1
+P 2823626 light_off
+D 2827108 20
+P 2828223 s_nogo_cs_onset
+P 2828224 light_on
+D 2828224 2
+P 2832226 Timestamp:2828223 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 2832227 Summary: T#:204 Tot_rate:0.71 Go#:131 NoGo#:73 Go_rate:0.66 NoGo_rate:0.79
+P 2832227 4 trials moving ave Go success rate: 0.49
+D 2832228 4
+P 2832228 light_off
+D 2833608 20
+D 2834215 1
+D 2835801 20
+P 2837529 s_nogo_cs_onset
+P 2837530 light_on
+D 2837530 2
+P 2841532 Timestamp:2837529 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 2841533 Summary: T#:205 Tot_rate:0.71 Go#:131 NoGo#:74 Go_rate:0.66 NoGo_rate:0.80
+P 2841533 4 trials moving ave Go success rate: 0.49
+D 2841534 4
+P 2841534 light_off
+D 2842493 20
+D 2843749 1
+D 2844193 20
+P 2846563 s_go_spout
+D 2846564 3
+D 2847606 7
+P 2847606 reward bar_off
+D 2847642 6
+D 2847671 10
+P 2847671 light_on
+P 2847673 Timestamp:2846563 Go:0 Success:True Free_rew:False Light:0 Latency:1109
+P 2847675 Summary: T#:206 Tot_rate:0.71 Go#:132 NoGo#:74 Go_rate:0.67 NoGo_rate:0.80
+P 2847675 4 trials moving ave Go success rate: 0.60
+D 2847676 4
+D 2847713 11
+D 2847841 7
+D 2848095 6
+D 2848109 7
+D 2848125 6
+D 2849769 1
+D 2850934 20
+P 2851671 light_off
+D 2853390 20
+P 2856077 s_go_cs_onset
+P 2856078 light_on
+D 2856078 3
+D 2858090 20
+P 2860079 Timestamp:2856077 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 2860081 Summary: T#:207 Tot_rate:0.71 Go#:133 NoGo#:74 Go_rate:0.66 NoGo_rate:0.80
+P 2860082 4 trials moving ave Go success rate: 0.47
+D 2860082 5
+P 2860082 light_off
+D 2863090 1
+D 2863261 7
+D 2863266 6
+D 2863741 7
+D 2863781 6
+D 2863819 10
+D 2863830 11
+D 2863980 10
+D 2864015 11
+D 2864412 10
+D 2864435 11
+D 2864475 10
+D 2864497 11
+D 2864563 10
+D 2864973 11
+D 2865073 7
+D 2865246 20
+D 2866924 10
+D 2866961 11
+D 2867192 10
+D 2867219 11
+D 2867621 10
+D 2867708 11
+D 2867806 10
+D 2867858 11
+D 2868231 10
+D 2868246 11
+D 2868612 6
+D 2868635 7
+D 2868647 6
+D 2869579 7
+D 2869593 6
+P 2872101 s_go_spout
+D 2872102 3
+D 2873165 7
+P 2873166 reward bar_off
+D 2873178 6
+D 2873543 7
+D 2873548 6
+D 2873838 7
+D 2873880 6
+D 2873957 10
+P 2873958 light_on
+P 2873960 Timestamp:2872101 Go:0 Success:True Free_rew:False Light:0 Latency:1857
+P 2873961 Summary: T#:208 Tot_rate:0.71 Go#:134 NoGo#:74 Go_rate:0.66 NoGo_rate:0.80
+P 2873962 4 trials moving ave Go success rate: 0.59
+D 2873962 4
+D 2873994 11
+D 2874284 20
+D 2874386 10
+D 2874415 11
+D 2874420 10
+D 2874464 11
+D 2874733 7
+D 2874751 6
+D 2875354 20
+D 2875735 1
+P 2877958 light_off
+P 2880802 s_go_bar_off
+D 2880803 3
+D 2881472 7
+P 2881472 light_on
+P 2881472 reward bar_off
+D 2881582 6
+D 2881593 7
+D 2881639 6
+D 2881644 7
+D 2882099 6
+D 2882107 7
+D 2882129 6
+D 2884427 20
+P 2884804 Timestamp:2880802 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 2884806 Summary: T#:209 Tot_rate:0.71 Go#:135 NoGo#:74 Go_rate:0.66 NoGo_rate:0.80
+P 2884807 4 trials moving ave Go success rate: 0.46
+D 2884807 5
+P 2885472 light_off
+D 2886519 7
+D 2886552 6
+D 2886576 10
+D 2886611 11
+D 2886986 7
+D 2888992 1
+D 2889316 10
+D 2889359 11
+D 2889595 6
+D 2889596 10
+D 2889610 7
+D 2889876 6
+D 2889881 7
+D 2889994 20
+D 2890838 11
+D 2892253 10
+D 2892275 11
+D 2892934 10
+D 2892988 6
+D 2892993 7
+D 2892993 6
+D 2893000 7
+D 2893027 11
+D 2894371 6
+D 2894395 7
+D 2894401 6
+D 2894422 7
+D 2894429 6
+D 2895417 7
+D 2895427 6
+D 2898014 20
+P 2898344 s_go_cs_onset
+P 2898345 light_on
+D 2898345 3
+P 2902347 Timestamp:2898344 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 2902348 Summary: T#:210 Tot_rate:0.70 Go#:136 NoGo#:74 Go_rate:0.65 NoGo_rate:0.80
+P 2902349 4 trials moving ave Go success rate: 0.36
+D 2902349 5
+P 2902349 light_off
+D 2904776 20
+D 2905867 1
+P 2910284 s_nogo_sham
+D 2910285 2
+D 2914066 20
+P 2914287 Timestamp:2910284 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 2914288 Summary: T#:211 Tot_rate:0.71 Go#:136 NoGo#:75 Go_rate:0.65 NoGo_rate:0.80
+P 2914288 4 trials moving ave Go success rate: 0.36
+D 2914289 4
+D 2916502 1
+D 2918114 20
+P 2919834 s_go_spout
+D 2919835 3
+D 2920823 20
+D 2920828 7
+P 2920828 reward bar_off
+D 2920845 6
+D 2921037 10
+P 2921038 light_on
+P 2921040 Timestamp:2919834 Go:0 Success:True Free_rew:False Light:0 Latency:1204
+P 2921041 Summary: T#:212 Tot_rate:0.71 Go#:137 NoGo#:75 Go_rate:0.66 NoGo_rate:0.80
+P 2921044 4 trials moving ave Go success rate: 0.50
+D 2921045 4
+D 2921063 11
+D 2921512 10
+D 2921586 11
+D 2921640 10
+D 2921654 7
+D 2921666 11
+D 2922741 10
+D 2922823 11
+D 2922897 10
+D 2922930 11
+D 2923463 6
+D 2923500 7
+D 2923507 6
+D 2923600 1
+D 2924672 7
+D 2924686 6
+P 2925038 light_off
+D 2927876 20
+P 2928303 s_nogo_sham
+D 2928304 2
+D 2932157 7
+P 2932160 Timestamp:2928303 Go:0 Success:False Free_rew:False Light:0 Latency:3855
+P 2932161 Summary: T#:213 Tot_rate:0.70 Go#:137 NoGo#:76 Go_rate:0.66 NoGo_rate:0.79
+P 2932162 4 trials moving ave Go success rate: 0.50
+D 2932162 5
+D 2932165 6
+D 2935489 1
+D 2935861 20
+P 2939345 s_nogo_sham
+D 2939346 2
+P 2943347 Timestamp:2939345 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 2943349 Summary: T#:214 Tot_rate:0.71 Go#:137 NoGo#:77 Go_rate:0.66 NoGo_rate:0.79
+P 2943349 4 trials moving ave Go success rate: 0.50
+D 2943350 4
+D 2944211 7
+D 2944245 6
+D 2944985 1
+D 2945124 20
+D 2945927 7
+D 2945950 6
+D 2946236 7
+D 2946251 6
+P 2950040 s_nogo_cs_onset
+P 2950041 light_on
+D 2950041 2
+D 2953986 7
+P 2953989 Timestamp:2950040 Go:0 Success:False Free_rew:False Light:0 Latency:3947
+P 2953990 Summary: T#:215 Tot_rate:0.70 Go#:137 NoGo#:78 Go_rate:0.66 NoGo_rate:0.78
+P 2953991 4 trials moving ave Go success rate: 0.50
+D 2953991 5
+D 2953997 6
+P 2954041 light_off
+D 2954495 20
+D 2954542 7
+D 2954570 6
+D 2954611 7
+D 2954620 6
+D 2954692 7
+D 2954701 6
+D 2954756 7
+D 2954768 6
+D 2954838 7
+D 2954851 6
+D 2955329 7
+D 2955343 6
+D 2955395 7
+D 2955410 6
+D 2955475 7
+D 2955480 6
+D 2955545 7
+D 2955560 6
+D 2955837 7
+D 2955848 6
+D 2956306 7
+D 2956333 6
+D 2956662 7
+D 2956672 6
+D 2957460 1
+D 2957556 7
+D 2957574 6
+D 2958252 20
+P 2960271 s_go_sham
+D 2960272 3
+P 2964272 Timestamp:2960271 Go:0 Success:False Free_rew:False Light:0 Latency:4000
+P 2964274 Summary: T#:216 Tot_rate:0.70 Go#:138 NoGo#:78 Go_rate:0.65 NoGo_rate:0.78
+P 2964274 4 trials moving ave Go success rate: 0.39
+D 2964275 5
+D 2965420 20
+D 2969126 20
+D 2970233 1
+P 2973166 s_nogo_sham
+D 2973167 2
+D 2974065 20
+P 2977168 Timestamp:2973166 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 2977170 Summary: T#:217 Tot_rate:0.70 Go#:138 NoGo#:79 Go_rate:0.65 NoGo_rate:0.78
+P 2977170 4 trials moving ave Go success rate: 0.39
+D 2977171 4
+D 2977851 20
+D 2979584 1
+D 2980764 7
+D 2980780 6
+D 2983088 20
+P 2984027 s_nogo_cs_onset
+P 2984030 light_on
+D 2984031 2
+D 2984989 20
+D 2987225 20
+P 2988032 Timestamp:2984030 Go:0 Success:True Free_rew:False Light:0 Latency:4000
+P 2988033 Summary: T#:218 Tot_rate:0.70 Go#:138 NoGo#:80 Go_rate:0.65 NoGo_rate:0.79
+P 2988034 4 trials moving ave Go success rate: 0.39
+D 2988034 4
+P 2988034 light_off
+D 2990002 1
+P 2994159 s_go_bar_off
+D 2994160 3
+D 2994785 7
+P 2994786 light_on
+P 2994786 reward bar_off
+D 2994790 6
+D 2994862 20
+D 2995737 7
+D 2995762 6
+D 2995768 7
+D 2995778 6
+D 2995906 7
+D 2995926 6
+D 2996929 7
+D 2996966 6
+P 2998162 Timestamp:2994159 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 2998163 Summary: T#:219 Tot_rate:0.70 Go#:139 NoGo#:80 Go_rate:0.65 NoGo_rate:0.79
+P 2998164 4 trials moving ave Go success rate: 0.30
+D 2998164 5
+D 2998379 20
+P 2998786 light_off
+D 2999971 7
+D 3000006 6
+D 3000459 10
+D 3000657 11
+D 3001135 7
+D 3001551 1
+D 3001764 10
+D 3001774 11
+D 3001794 6
+D 3001899 10
+D 3002416 11
+D 3002583 7
+D 3002888 10
+D 3002988 11
+D 3003038 6
+D 3003180 7
+D 3003185 6
+D 3003195 7
+D 3003201 20
+D 3004083 6
+D 3004088 10
+D 3004090 7
+D 3004097 6
+D 3004135 7
+D 3004140 6
+D 3004150 7
+D 3004155 6
+D 3004155 7
+D 3004165 6
+D 3004170 7
+D 3004170 6
+D 3004175 7
+D 3004185 6
+D 3004190 7
+D 3004205 6
+D 3004210 7
+D 3004245 6
+D 3004250 7
+D 3004345 6
+D 3004350 7
+D 3004360 6
+D 3004365 7
+D 3004370 6
+D 3004375 7
+D 3004380 6
+D 3004385 7
+D 3004390 6
+D 3004395 7
+D 3004405 6
+D 3004410 7
+D 3004410 6
+D 3004415 7
+D 3004420 6
+D 3004425 7
+D 3004430 6
+D 3004435 7
+D 3004445 6
+D 3004450 7
+D 3004455 6
+D 3004455 7
+D 3004465 6
+D 3004470 7
+D 3004470 6
+D 3004475 7
+D 3004480 6
+D 3004485 7
+D 3004490 6
+D 3004495 7
+D 3004500 6
+D 3004503 11
+D 3004520 7
+D 3004525 6
+D 3004575 7
+D 3004580 6
+D 3004585 7
+D 3004590 6
+D 3004595 7
+D 3004600 6
+D 3004605 7
+D 3004625 6
+D 3004630 7
+D 3004645 6
+D 3004650 7
+D 3004740 6
+D 3004750 7
+D 3004755 6
+D 3004755 7
+D 3004765 6
+D 3004770 7
+D 3004770 6
+D 3004775 7
+D 3004780 6
+D 3004785 7
+D 3004785 6
+D 3004790 7
+D 3004805 6
+D 3004810 7
+D 3004825 6
+D 3004830 7
+D 3004925 6
+D 3004930 7
+D 3005065 6
+D 3005070 7
+D 3005085 6
+D 3005090 7
+D 3005165 6
+D 3005170 7
+D 3005179 6
+D 3005420 7
+D 3005454 6
+D 3006204 7
+D 3006218 6
+D 3007324 20
+D 3008506 20
+P 3009574 s_go_spout
+D 3009575 3
+P 3010636 free_reward
+D 3010636 7
+P 3010637 reward bar_off
+D 3010663 6
+D 3010703 10
+P 3010703 light_on
+P 3010705 Timestamp:3009574 Go:0 Success:True Free_rew:True Light:0 Latency:1129
+P 3010707 Summary: T#:220 Tot_rate:0.70 Go#:140 NoGo#:80 Go_rate:0.65 NoGo_rate:0.79
+P 3010707 4 trials moving ave Go success rate: 0.46
+D 3010708 4
+D 3010748 11
+D 3010936 20
+D 3011064 7
+D 3012424 1
+D 3012823 10
+D 3012831 11
+D 3012837 10
+D 3012872 11
+D 3012904 6
+D 3012925 7
+D 3012931 6
+P 3014703 light_off
+D 3016743 20
+P 3018784 s_nogo_cs_onset
+P 3018785 light_on
+D 3018785 2
+P 3022787 Timestamp:3018784 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 3022788 Summary: T#:221 Tot_rate:0.70 Go#:140 NoGo#:81 Go_rate:0.65 NoGo_rate:0.79
+P 3022788 4 trials moving ave Go success rate: 0.46
+D 3022789 4
+P 3022789 light_off
+D 3024320 1
+D 3024364 7
+D 3024583 6
+D 3024588 7
+D 3024607 6
+D 3024906 7
+D 3024931 6
+D 3024969 7
+D 3025026 6
+D 3025320 10
+D 3025405 11
+D 3025415 7
+D 3025435 6
+D 3025506 10
+D 3025535 11
+D 3025626 20
+D 3025877 10
+D 3025912 11
+D 3026048 10
+D 3026120 11
+D 3026792 10
+D 3026810 11
+D 3026974 7
+D 3027055 6
+D 3027107 7
+D 3027129 6
+P 3030011 s_nogo_cs_onset
+P 3030012 light_on
+D 3030012 2
+D 3033138 20
+P 3034013 Timestamp:3030011 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 3034015 Summary: T#:222 Tot_rate:0.70 Go#:140 NoGo#:82 Go_rate:0.65 NoGo_rate:0.79
+P 3034015 4 trials moving ave Go success rate: 0.46
+D 3034016 4
+P 3034016 light_off
+D 3035224 20
+D 3036371 1
+P 3039271 s_nogo_cs_onset
+P 3039272 light_on
+D 3039272 2
+D 3042233 7
+P 3042235 Timestamp:3039271 Go:0 Success:False Free_rew:False Light:0 Latency:2963
+P 3042237 Summary: T#:223 Tot_rate:0.70 Go#:140 NoGo#:83 Go_rate:0.65 NoGo_rate:0.78
+P 3042237 4 trials moving ave Go success rate: 0.46
+D 3042238 5
+D 3042269 6
+P 3043272 light_off
+D 3044310 20
+D 3046350 1
+P 3049698 s_go_cs_onset
+P 3049699 light_on
+D 3049699 3
+D 3052569 20
+P 3053701 Timestamp:3049698 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 3053702 Summary: T#:224 Tot_rate:0.70 Go#:141 NoGo#:83 Go_rate:0.65 NoGo_rate:0.78
+P 3053703 4 trials moving ave Go success rate: 0.36
+D 3053703 5
+P 3053703 light_off
+D 3054227 20
+D 3057626 1
+D 3057735 7
+D 3057782 6
+D 3057973 7
+D 3057987 6
+D 3058115 7
+D 3058301 6
+D 3058954 7
+D 3058969 6
+P 3062178 s_go_error_bar_off
+D 3062179 3
+D 3063083 20
+D 3066005 20
+P 3066181 Timestamp:3062178 Go:0 Success:False Free_rew:False Light:0 Latency:4001
+P 3066182 Summary: T#:225 Tot_rate:0.69 Go#:142 NoGo#:83 Go_rate:0.64 NoGo_rate:0.78
+P 3066183 4 trials moving ave Go success rate: 0.28
+D 3066183 5
+D 3070901 1
+D 3071390 20
+D 3074687 7
+D 3074699 6
+D 3075235 7
+D 3075546 6
+D 3075561 7
+D 3075600 6
+D 3075694 7
+D 3075815 6
+D 3076348 10
+D 3076548 11
+D 3076693 10
+D 3076822 11
+D 3077166 10
+D 3077203 11
+D 3077601 7
+D 3077606 6
+D 3077618 7
+D 3077642 6
+D 3078009 20
+D 3078236 7
+D 3078263 6
+D 3079274 7
+D 3079284 6
+P 3081802 s_go_spout
+D 3081803 3
+P 3084165 free_reward
+D 3084952 20
+P 3085804 Timestamp:3081802 Go:0 Success:False Free_rew:True Light:0 Latency:4001
+P 3085806 Summary: T#:226 Tot_rate:0.69 Go#:143 NoGo#:83 Go_rate:0.64 NoGo_rate:0.78
+P 3085807 4 trials moving ave Go success rate: 0.22
+D 3085807 5
+D 3086152 20
+D 3086549 7
+D 3086642 6
+D 3086647 7
+D 3086659 6
+D 3088127 20
+D 3089933 1
+D 3092342 20
+P 3093688 s_go_bar_off
+D 3093689 3
+P 3095919 free_reward
+D 3096849 20
+P 3097691 Timestamp:3093688 Go:0 Success:False Free_rew:True Light:0 Latency:4001
+P 3097692 Summary: T#:227 Tot_rate:0.69 Go#:144 NoGo#:83 Go_rate:0.63 NoGo_rate:0.78
+P 3097693 4 trials moving ave Go success rate: 0.17
+D 3097693 5
+D 3100474 20
+D 3102494 7
+D 3102499 1
+D 3102500 6
+D 3103076 7
+D 3103331 6
+D 3103347 7
+D 3103381 6
+D 3103502 7
+D 3103568 6
+D 3103656 7
+D 3103681 6
+D 3105910 20
+P 3106433 s_nogo_sham
+D 3106434 2
+P 3110436 Timestamp:3106433 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 3110437 Summary: T#:228 Tot_rate:0.69 Go#:144 NoGo#:84 Go_rate:0.63 NoGo_rate:0.79
+P 3110437 4 trials moving ave Go success rate: 0.17
+D 3110438 4
+D 3110946 7
+D 3110984 6
+D 3111129 7
+D 3111159 6
+D 3111535 7
+D 3111564 6
+D 3111573 7
+D 3111594 6
+D 3111712 7
+D 3111772 6
+D 3111869 7
+D 3111884 6
+D 3111956 7
+D 3111973 6
+D 3112123 7
+D 3112138 6
+D 3112182 7
+D 3112206 6
+D 3112227 7
+D 3112240 10
+D 3112276 11
+D 3112368 6
+D 3112496 1
+D 3112679 10
+D 3112805 11
+D 3112924 20
+D 3113670 7
+D 3114976 10
+D 3115033 11
+D 3115143 10
+D 3115256 11
+D 3115284 10
+D 3115403 11
+D 3115582 6
+D 3115597 10
+D 3115608 7
+D 3115697 11
+D 3116352 6
+D 3116368 7
+D 3116368 10
+D 3116472 11
+D 3116851 10
+D 3116894 11
+D 3117276 10
+D 3117340 11
+D 3117551 10
+D 3117595 11
+D 3117822 6
+D 3117829 10
+D 3117871 7
+D 3117942 11
+D 3118657 6
+D 3118660 10
+D 3118695 11
+D 3118729 7
+D 3118977 10
+D 3119010 11
+D 3119015 10
+D 3119038 11
+D 3119280 10
+D 3119302 11
+D 3119898 10
+D 3119991 11
+D 3120479 20
+D 3120585 10
+D 3120633 11
+D 3120872 10
+D 3120908 11
+D 3121134 10
+D 3121177 11
+D 3121527 10
+D 3121538 11
+D 3121728 10
+D 3121745 11
+D 3121876 10
+D 3121917 11
+D 3121961 6
+D 3122004 10
+D 3122027 7
+D 3122035 11
+D 3122058 10
+D 3122084 11
+D 3122113 6
+D 3122114 10
+D 3122126 11
+D 3122165 10
+D 3122191 7
+D 3122205 11
+D 3122392 10
+D 3122491 11
+D 3122665 10
+D 3122713 11
+D 3123108 6
+D 3123121 10
+D 3123144 7
+D 3123178 11
+D 3123419 10
+D 3123458 11
+D 3124792 6
+D 3124816 7
+D 3124891 6
+D 3125758 20
+D 3126116 7
+D 3126141 6
+D 3126221 7
+D 3126231 6
+D 3126419 7
+D 3126424 6
+D 3126469 7
+D 3126574 6
+P 3129660 s_nogo_sham
+D 3129661 2
+P 3133662 Timestamp:3129661 Go:0 Success:True Free_rew:False Light:0 Latency:4000
+P 3133664 Summary: T#:229 Tot_rate:0.69 Go#:144 NoGo#:85 Go_rate:0.63 NoGo_rate:0.79
+P 3133664 4 trials moving ave Go success rate: 0.17
+D 3133665 4
+D 3133891 20
+D 3136172 1
+P 3139649 s_go_cs_onset
+P 3139650 light_on
+D 3139651 3
+D 3140140 7
+P 3140140 reward bar_off
+D 3140444 6
+D 3140590 20
+P 3142165 free_reward
+P 3143652 Timestamp:3139649 Go:0 Success:False Free_rew:True Light:0 Latency:4001
+P 3143653 Summary: T#:230 Tot_rate:0.69 Go#:145 NoGo#:85 Go_rate:0.63 NoGo_rate:0.79
+P 3143654 4 trials moving ave Go success rate: 0.13
+D 3143654 5
+P 3143654 light_off
+D 3147021 1
+D 3149700 20
+P 3150993 s_go_bar_off
+D 3150994 3
+P 3152102 free_reward
+D 3152724 7
+P 3152724 light_on
+P 3152725 reward bar_off
+D 3152730 6
+D 3153395 7
+D 3153447 6
+D 3153611 7
+D 3153627 6
+P 3154996 Timestamp:3150993 Go:0 Success:False Free_rew:True Light:0 Latency:4001
+P 3154997 Summary: T#:231 Tot_rate:0.68 Go#:146 NoGo#:85 Go_rate:0.62 NoGo_rate:0.79
+P 3154998 4 trials moving ave Go success rate: 0.10
+D 3154998 5
+P 3156725 light_off
+D 3157823 20
+D 3158248 7
+D 3158263 1
+D 3158533 6
+D 3158551 7
+D 3158583 6
+D 3158724 7
+D 3158739 6
+D 3158746 7
+D 3158759 6
+D 3158956 7
+D 3158983 6
+D 3159025 10
+D 3159038 11
+D 3159047 7
+D 3159260 6
+D 3159309 10
+D 3159331 7
+D 3159391 11
+D 3159464 6
+D 3159469 7
+D 3159474 6
+D 3159625 7
+D 3160556 20
+D 3162988 20
+D 3164783 10
+D 3164839 11
+D 3165128 10
+D 3165191 11
+D 3165455 10
+D 3165555 11
+D 3166361 10
+D 3166406 11
+D 3167299 10
+D 3167314 11
+D 3167319 10
+D 3167324 11
+D 3167329 10
+D 3167454 11
+D 3167479 10
+D 3167563 11
+D 3167669 10
+D 3168100 6
+D 3168108 11
+D 3168168 7
+D 3168464 20
+D 3168477 10
+D 3168550 11
+D 3168874 10
+D 3168927 11
+D 3169608 6
+D 3169623 7
+D 3169650 6
+D 3171616 20
+P 3173493 s_nogo_sham
+D 3173494 2
+D 3174463 20
+P 3177496 Timestamp:3173493 Go:0 Success:True Free_rew:False Light:0 Latency:4001
+P 3177497 Summary: T#:232 Tot_rate:0.69 Go#:146 NoGo#:86 Go_rate:0.62 NoGo_rate:0.79
+P 3177498 4 trials moving ave Go success rate: 0.10
+D 3177498 4
+D 3179141 1
+D 3180274 20
+P 3182186 s_go_cs_onset
+P 3182187 light_on
+D 3182188 3
+P 3184172 free_reward
+P 3186189 Timestamp:3182186 Go:0 Success:False Free_rew:True Light:0 Latency:4001
+P 3186190 Summary: T#:233 Tot_rate:0.68 Go#:147 NoGo#:86 Go_rate:0.62 NoGo_rate:0.79
+P 3186191 4 trials moving ave Go success rate: 0.08
+D 3186191 5
+P 3186192 light_off
+D 3189451 20
+D 3190054 1
+D 3191864 20
+D 3192913 7
+D 3193046 6
+D 3194003 7
+D 3194041 6
+D 3194111 7
+D 3194226 6
+D 3194251 10
+D 3194412 11
+D 3194469 10
+D 3194490 7
+D 3194537 6
+D 3194573 11
+D 3194686 7
+D 3194737 6
+D 3194760 10
+D 3194769 7
+D 3195079 11
+D 3195085 20
+D 3196512 10
+D 3196718 11
+D 3197071 10
+D 3197166 11
+D 3197472 10
+D 3197477 11
+D 3197478 10
+D 3197521 11
+D 3198093 10
+D 3198155 11
+D 3198900 6
+D 3198908 7
+D 3198926 6
+D 3199289 20
+D 3199294 7
+D 3199436 6
+P 3202795 s_nogo_sham
+D 3202796 2
+D 3204240 20
+P 3206797 Timestamp:3202796 Go:0 Success:True Free_rew:False Light:0 Latency:4000
+P 3206799 Summary: T#:234 Tot_rate:0.68 Go#:147 NoGo#:87 Go_rate:0.62 NoGo_rate:0.79
+P 3206799 4 trials moving ave Go success rate: 0.08
+D 3206800 4
+D 3209704 1
+D 3209838 20
+P 3212425 s_go_sham
+D 3212426 3
+P 3212998 free_reward
+D 3213326 20
+D 3214402 7
+P 3214403 reward bar_off
+D 3214427 6
+D 3214439 10
+P 3214441 Timestamp:3212425 Go:0 Success:True Free_rew:True Light:0 Latency:2014
+P 3214443 Summary: T#:235 Tot_rate:0.69 Go#:148 NoGo#:87 Go_rate:0.62 NoGo_rate:0.79
+P 3214443 4 trials moving ave Go success rate: 0.28
+D 3214444 4
+D 3214452 7
+D 3214457 6
+D 3214497 11
+D 3214573 10
+D 3214596 7
+D 3214679 11
+D 3216039 10
+D 3216195 11
+D 3216393 1
+D 3216940 10
+D 3217050 11
+D 3217964 10
+D 3218002 11
+D 3218363 10
+D 3218392 11
+D 3218912 10
+D 3218950 11
+D 3218960 10
+D 3218982 20
+D 3218998 11
+D 3219307 10
+D 3219329 11
+D 3219495 10
+D 3219577 11
+D 3219909 10
+D 3219953 11
+D 3220461 10
+D 3220529 11
+D 3220777 10
+D 3220820 11
+D 3221239 10
+D 3221275 11
+D 3222125 10
+D 3222132 11
+D 3222137 10
+D 3222748 6
+D 3222757 11
+D 3222795 7
+D 3222841 6
+D 3222849 7
+D 3223344 10
+D 3223423 11
+D 3225824 6
+D 3225951 7
+D 3225964 6
+D 3225969 7
+D 3226002 6
+D 3228432 20
+P 3230330 s_nogo_sham
+D 3230331 2
+P 3234332 Timestamp:3230331 Go:0 Success:True Free_rew:False Light:0 Latency:4000
+P 3234334 Summary: T#:236 Tot_rate:0.69 Go#:148 NoGo#:88 Go_rate:0.62 NoGo_rate:0.80
+P 3234334 4 trials moving ave Go success rate: 0.28
+D 3234335 4
+D 3235972 1
+D 3237079 20

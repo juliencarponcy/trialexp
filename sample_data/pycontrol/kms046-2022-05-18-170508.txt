@@ -1,0 +1,4836 @@
+I Experiment name  : reaching_go_spout_cued_uncued
+I Task name : reaching_go_spout_cued_uncued
+I Task file hash : 2405126602
+I Setup ID : COM9
+I Subject ID : kms046
+I Start date : 2022/05/18 17:05:08
+
+S {"long_refrac_period": 4, "hold_start": 1, "CS_Go": 2, "short_refrac_period": 3}
+
+E {"bar_on_timer": 8, "button_release": 18, "bar_off": 6, "cue_delay_timer": 12, "spout_off": 10, "rsync": 19, "free_reward_timer": 14, "US_end_timer": 13, "bar": 5, "sound_off_timer": 11, "spout": 9, "solenoid_off": 7, "block_timer": 15, "uncued_timer": 16, "button_press": 17}
+
+V 0 spout_thresh 0.5
+V 0 cued_block True
+V 0 free_reward_threshold 0.35
+V 0 US_duration 25
+
+D 0 19
+P 0 Starting block: Cued
+D 0 1
+D 2678 2
+P 3178 reward free
+D 5344 19
+D 6005 5
+D 6215 6
+D 6254 5
+P 6679 Timestamp:2678 Go:bar Success:False Free_rew:True Light:False Latency:4000
+P 6681 Summary: T#:1 Tot_rate:0.00 Cued#:1 Uncued#:0 Cued_rate:0.00 Uncued_rate:0.00
+P 6681 4 trials moving ave success rate: 0.00
+D 6682 4
+D 7066 6
+D 7081 5
+D 8367 6
+D 8413 5
+D 9899 6
+D 9937 5
+D 10411 6
+D 10436 5
+D 12059 1
+D 14901 19
+D 16131 2
+P 18015 reward free
+P 20132 Timestamp:16131 Go:bar Success:False Free_rew:True Light:False Latency:4000
+P 20134 Summary: T#:2 Tot_rate:0.00 Cued#:2 Uncued#:0 Cued_rate:0.00 Uncued_rate:0.00
+P 20134 4 trials moving ave success rate: 0.00
+D 20135 4
+D 22631 19
+D 24825 19
+D 26099 1
+D 28760 2
+P 30784 reward free
+D 31065 19
+P 32761 Timestamp:28760 Go:bar Success:False Free_rew:True Light:False Latency:4000
+P 32763 Summary: T#:3 Tot_rate:0.00 Cued#:3 Uncued#:0 Cued_rate:0.00 Uncued_rate:0.00
+P 32763 4 trials moving ave success rate: 0.00
+D 32764 4
+D 36275 6
+D 36325 5
+D 36503 6
+D 36539 5
+D 36870 6
+D 36892 5
+D 37900 6
+D 37965 5
+D 38805 19
+D 38822 6
+D 38845 5
+D 39466 6
+D 39502 5
+D 39504 1
+D 39563 6
+D 39592 5
+D 39662 6
+D 39702 5
+D 39733 6
+D 39778 5
+D 40066 19
+D 41653 19
+D 42794 19
+D 42812 2
+P 45575 reward free
+D 45978 6
+D 46105 5
+D 46120 6
+D 46164 5
+P 46813 Timestamp:42812 Go:bar Success:False Free_rew:True Light:False Latency:4000
+P 46814 Summary: T#:4 Tot_rate:0.00 Cued#:4 Uncued#:0 Cued_rate:0.00 Uncued_rate:0.00
+P 46815 4 trials moving ave success rate: 0.00
+D 46815 4
+D 47615 19
+D 49963 19
+D 52516 19
+D 53546 1
+D 58099 2
+D 58953 6
+P 58954 reward bar_off
+D 59014 9
+D 59029 10
+D 59931 5
+D 60361 19
+P 62100 Timestamp:58099 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 62102 Summary: T#:5 Tot_rate:0.00 Cued#:5 Uncued#:0 Cued_rate:0.00 Uncued_rate:0.00
+P 62102 4 trials moving ave success rate: 0.00
+D 62103 4
+D 68407 1
+D 69748 19
+D 72152 2
+P 73208 reward free
+P 76153 Timestamp:72152 Go:bar Success:False Free_rew:True Light:False Latency:4000
+P 76155 Summary: T#:6 Tot_rate:0.00 Cued#:6 Uncued#:0 Cued_rate:0.00 Uncued_rate:0.00
+P 76155 4 trials moving ave success rate: 0.00
+D 76156 4
+D 78679 19
+D 83437 1
+D 84404 6
+D 84431 19
+D 84456 5
+D 84715 6
+D 84742 5
+D 86479 19
+D 87730 2
+D 88917 19
+P 90559 reward free
+P 91731 Timestamp:87730 Go:bar Success:False Free_rew:True Light:False Latency:4000
+P 91733 Summary: T#:7 Tot_rate:0.00 Cued#:7 Uncued#:0 Cued_rate:0.00 Uncued_rate:0.00
+P 91733 4 trials moving ave success rate: 0.00
+D 91734 4
+D 94269 19
+D 95427 19
+D 96849 1
+D 97298 6
+D 97335 5
+D 99546 19
+D 101388 2
+D 103800 19
+P 104055 reward free
+P 105389 Timestamp:101388 Go:bar Success:False Free_rew:True Light:False Latency:4000
+P 105391 Summary: T#:8 Tot_rate:0.00 Cued#:8 Uncued#:0 Cued_rate:0.00 Uncued_rate:0.00
+P 105391 4 trials moving ave success rate: 0.00
+D 105392 4
+D 107299 19
+D 109442 19
+D 111261 1
+D 113279 6
+D 113317 5
+D 113682 6
+D 113739 5
+D 114304 6
+D 114351 5
+D 114378 6
+D 114466 5
+D 114481 6
+D 114509 5
+D 115857 6
+D 116021 5
+D 118644 19
+D 118882 2
+P 120358 reward free
+P 122883 Timestamp:118882 Go:bar Success:False Free_rew:True Light:False Latency:4000
+P 122885 Summary: T#:9 Tot_rate:0.00 Cued#:9 Uncued#:0 Cued_rate:0.00 Uncued_rate:0.00
+P 122885 4 trials moving ave success rate: 0.00
+D 122886 4
+D 123483 6
+D 123552 5
+D 123567 6
+D 123602 5
+D 124570 19
+D 128768 1
+D 129069 19
+D 133172 2
+P 134756 reward free
+D 136400 19
+P 137173 Timestamp:133172 Go:bar Success:False Free_rew:True Light:False Latency:4000
+P 137175 Summary: T#:10 Tot_rate:0.00 Cued#:10 Uncued#:0 Cued_rate:0.00 Uncued_rate:0.00
+P 137175 4 trials moving ave success rate: 0.00
+D 137176 4
+D 137385 19
+D 138114 6
+D 138764 9
+D 138780 10
+D 139288 5
+D 143683 1
+D 146471 2
+D 146599 19
+P 148677 reward free
+D 149090 6
+D 149388 9
+P 149389 reward bar cued
+P 149391 Timestamp:146471 Go:bar Success:True Free_rew:True Light:False Latency:2918
+P 149392 Summary: T#:11 Tot_rate:0.09 Cued#:11 Uncued#:0 Cued_rate:0.09 Uncued_rate:0.00
+P 149393 4 trials moving ave success rate: 0.22
+D 149393 3
+D 149442 10
+D 149804 9
+D 149853 10
+D 149932 9
+D 149985 10
+D 150499 9
+D 150575 10
+D 150629 9
+D 150716 10
+D 151509 19
+D 151686 9
+D 151716 10
+D 151793 9
+D 151833 10
+D 151896 9
+D 151911 10
+D 152418 5
+D 152451 1
+D 153056 6
+D 153080 19
+D 153110 5
+D 155926 19
+D 156876 2
+D 157466 6
+P 157467 reward bar_off
+D 157527 9
+D 157542 10
+D 157558 9
+P 157559 reward bar cued
+P 157561 Timestamp:156876 Go:bar Success:True Free_rew:False Light:False Latency:683
+P 157562 Summary: T#:12 Tot_rate:0.17 Cued#:12 Uncued#:0 Cued_rate:0.17 Uncued_rate:0.00
+P 157563 4 trials moving ave success rate: 0.39
+D 157563 3
+D 157624 10
+D 157677 9
+D 157782 10
+D 157847 9
+D 157874 10
+D 158180 9
+D 158246 10
+D 158317 9
+D 158386 10
+D 158458 9
+D 158531 10
+D 158601 9
+D 158671 10
+D 159750 19
+D 159824 9
+D 159885 10
+D 159946 9
+D 159996 10
+D 160033 9
+D 160048 10
+D 160388 1
+D 160984 5
+D 161225 6
+D 161283 5
+D 163951 19
+D 164822 2
+D 165757 19
+P 165805 reward free
+D 166045 6
+D 166133 9
+P 166134 reward bar cued
+P 166136 Timestamp:164822 Go:bar Success:True Free_rew:True Light:False Latency:1312
+P 166137 Summary: T#:13 Tot_rate:0.23 Cued#:13 Uncued#:0 Cued_rate:0.23 Uncued_rate:0.00
+P 166137 4 trials moving ave success rate: 0.53
+D 166138 3
+D 166205 10
+D 166235 9
+D 166519 10
+D 166568 9
+D 166583 10
+D 167337 5
+D 167353 6
+D 167411 5
+D 168739 1
+D 172097 2
+D 173362 19
+P 174968 reward free
+D 175219 6
+D 175325 9
+P 175325 reward bar cued
+P 175327 Timestamp:172097 Go:bar Success:True Free_rew:True Light:False Latency:3229
+P 175328 Summary: T#:14 Tot_rate:0.29 Cued#:14 Uncued#:0 Cued_rate:0.29 Uncued_rate:0.00
+P 175329 4 trials moving ave success rate: 0.63
+D 175329 3
+D 175364 10
+D 175415 9
+D 175473 10
+D 175526 9
+D 175618 10
+D 175680 9
+D 175696 10
+D 176528 5
+D 176569 6
+D 176584 5
+D 176922 6
+D 177011 5
+D 177286 19
+D 178181 1
+D 181256 2
+P 181790 reward free
+D 181908 6
+D 182018 9
+P 182019 reward bar cued
+P 182021 Timestamp:181256 Go:bar Success:True Free_rew:True Light:False Latency:763
+P 182022 Summary: T#:15 Tot_rate:0.33 Cued#:15 Uncued#:0 Cued_rate:0.33 Uncued_rate:0.00
+P 182023 4 trials moving ave success rate: 0.71
+D 182023 3
+D 182076 10
+D 182120 9
+D 182192 10
+D 182219 9
+D 182262 10
+D 183815 9
+D 183847 10
+D 183930 9
+D 183978 10
+D 184702 5
+D 185344 6
+D 185380 5
+D 185415 1
+D 185873 19
+D 187086 19
+D 188782 2
+D 189196 6
+P 189196 reward bar_off
+D 189249 5
+D 189257 9
+P 189258 reward bar cued
+P 189260 Timestamp:188782 Go:bar Success:True Free_rew:False Light:False Latency:476
+P 189261 Summary: T#:16 Tot_rate:0.38 Cued#:16 Uncued#:0 Cued_rate:0.38 Uncued_rate:0.00
+P 189262 4 trials moving ave success rate: 0.78
+D 189262 3
+D 189272 10
+D 189361 6
+D 189391 5
+D 189604 6
+D 189625 5
+D 189659 6
+D 189777 9
+D 189829 10
+D 189870 9
+D 189932 10
+D 190738 19
+D 190810 5
+D 190834 6
+D 190897 5
+D 190981 6
+D 191033 5
+D 191825 1
+D 194066 6
+D 194164 9
+D 194199 10
+D 194960 5
+D 195619 6
+D 195682 5
+D 197214 19
+D 199907 19
+D 200073 2
+D 200957 6
+P 200957 reward bar_off
+D 200980 5
+D 201154 6
+D 201358 9
+P 201359 reward bar cued
+P 201361 Timestamp:200073 Go:bar Success:True Free_rew:False Light:False Latency:1287
+P 201362 Summary: T#:17 Tot_rate:0.41 Cued#:17 Uncued#:0 Cued_rate:0.41 Uncued_rate:0.00
+P 201363 4 trials moving ave success rate: 0.83
+D 201363 3
+D 201404 10
+D 201446 9
+D 201509 10
+D 202416 9
+D 202464 10
+D 202499 9
+D 202534 10
+D 203229 9
+D 203262 10
+D 203934 5
+D 204510 6
+D 204540 5
+D 205239 1
+D 207314 19
+D 207878 6
+D 208008 9
+D 208152 10
+D 208407 5
+D 211006 2
+D 212620 6
+P 212621 reward bar_off
+D 212730 9
+P 212730 reward bar cued
+P 212732 Timestamp:211006 Go:bar Success:True Free_rew:False Light:False Latency:1725
+P 212734 Summary: T#:18 Tot_rate:0.44 Cued#:18 Uncued#:0 Cued_rate:0.44 Uncued_rate:0.00
+P 212734 4 trials moving ave success rate: 0.86
+D 212735 3
+D 212770 10
+D 212819 9
+D 212887 10
+D 213341 9
+D 213361 10
+D 213455 9
+D 213499 10
+D 214032 9
+D 214111 10
+D 214330 5
+D 215314 1
+D 215802 19
+D 219248 6
+D 219365 9
+D 219388 10
+D 219403 9
+D 219409 10
+D 219469 9
+D 219485 10
+D 219851 19
+D 220035 5
+D 220541 6
+D 220572 5
+D 221098 6
+D 221114 5
+D 221508 6
+D 221547 5
+D 221562 6
+D 221570 5
+D 221585 6
+D 221604 5
+D 221793 6
+D 222115 5
+D 222138 6
+D 222158 5
+D 222249 6
+D 222265 5
+D 222321 6
+D 222336 5
+D 222839 19
+D 222931 6
+D 222987 5
+D 223030 6
+D 223106 5
+D 223179 6
+D 223344 5
+D 223359 6
+D 223391 5
+D 223515 6
+D 223531 19
+D 223533 5
+D 224269 6
+D 224365 5
+D 224551 6
+D 224589 5
+D 225218 6
+D 225263 5
+D 225535 19
+D 228358 2
+D 231910 6
+P 231910 reward bar_off
+D 232090 9
+P 232091 reward bar cued
+P 232093 Timestamp:228358 Go:bar Success:True Free_rew:False Light:False Latency:3733
+P 232094 Summary: T#:19 Tot_rate:0.47 Cued#:19 Uncued#:0 Cued_rate:0.47 Uncued_rate:0.00
+P 232095 4 trials moving ave success rate: 0.89
+D 232095 3
+D 232158 10
+D 232197 9
+D 232283 10
+D 232317 9
+D 232367 10
+D 233152 5
+D 233167 6
+D 233626 5
+D 233800 6
+D 233851 5
+D 235082 19
+D 235174 1
+D 237975 2
+D 238444 6
+P 238444 reward bar_off
+D 238522 9
+P 238523 reward bar cued
+P 238525 Timestamp:237975 Go:bar Success:True Free_rew:False Light:False Latency:548
+P 238526 Summary: T#:20 Tot_rate:0.50 Cued#:20 Uncued#:0 Cued_rate:0.50 Uncued_rate:0.00
+P 238527 4 trials moving ave success rate: 0.92
+D 238527 3
+D 238582 10
+D 238606 9
+D 238658 10
+D 239370 9
+D 239467 10
+D 241002 5
+D 241017 6
+D 241400 5
+D 242141 19
+D 242324 1
+D 244911 2
+D 246223 19
+D 246481 6
+P 246481 reward bar_off
+D 246629 9
+P 246630 reward bar cued
+P 246632 Timestamp:244911 Go:bar Success:True Free_rew:False Light:False Latency:1719
+P 246633 Summary: T#:21 Tot_rate:0.52 Cued#:21 Uncued#:0 Cued_rate:0.52 Uncued_rate:0.00
+P 246634 4 trials moving ave success rate: 0.94
+D 246634 3
+D 246684 10
+D 247387 9
+D 247417 10
+D 247521 9
+D 247536 10
+D 247768 9
+D 247783 10
+D 247923 5
+D 249472 1
+D 252371 19
+D 252412 2
+D 252412 6
+D 252439 5
+D 252764 6
+D 252973 9
+P 252974 reward spout cued
+P 252976 Timestamp:252412 Go:spout Success:True Free_rew:False Light:False Latency:562
+P 252977 Summary: T#:22 Tot_rate:0.55 Cued#:22 Uncued#:0 Cued_rate:0.55 Uncued_rate:0.00
+P 252978 4 trials moving ave success rate: 0.95
+D 252978 3
+D 253037 10
+D 253052 9
+D 253104 10
+D 254238 5
+D 254307 6
+D 254412 9
+D 254444 10
+D 254780 5
+D 254815 6
+D 254857 5
+D 255399 6
+D 255445 5
+D 256529 1
+D 259829 19
+D 260439 6
+D 260533 9
+D 260866 10
+D 261086 5
+D 261134 6
+D 261183 5
+D 265838 2
+D 267999 6
+D 268014 5
+D 268016 6
+D 268056 5
+D 268187 6
+D 268249 5
+D 268554 6
+D 268585 5
+D 268934 19
+P 269839 Timestamp:265838 Go:spout Success:False Free_rew:False Light:False Latency:4000
+P 269841 Summary: T#:23 Tot_rate:0.52 Cued#:23 Uncued#:0 Cued_rate:0.52 Uncued_rate:0.00
+P 269841 4 trials moving ave success rate: 0.74
+D 269842 4
+D 275298 1
+D 275628 19
+D 277933 6
+D 277942 19
+D 277948 5
+D 281726 2
+D 283379 6
+D 283454 5
+D 283469 6
+D 283487 5
+D 283502 6
+D 283588 9
+P 283589 reward spout cued
+P 283591 Timestamp:281726 Go:spout Success:True Free_rew:False Light:False Latency:1864
+P 283592 Summary: T#:24 Tot_rate:0.54 Cued#:24 Uncued#:0 Cued_rate:0.54 Uncued_rate:0.00
+P 283593 4 trials moving ave success rate: 0.80
+D 283594 3
+D 283631 10
+D 283705 9
+D 283769 10
+D 283800 9
+D 283822 10
+D 284802 9
+D 284833 10
+D 284991 19
+D 285649 5
+D 286018 6
+D 286047 5
+D 286466 6
+D 286511 5
+D 286735 1
+D 289444 2
+D 290443 6
+D 290528 9
+P 290528 reward spout cued
+P 290530 Timestamp:289444 Go:spout Success:True Free_rew:False Light:False Latency:1085
+P 290531 Summary: T#:25 Tot_rate:0.56 Cued#:25 Uncued#:0 Cued_rate:0.56 Uncued_rate:0.00
+P 290532 4 trials moving ave success rate: 0.84
+D 290532 3
+D 290553 10
+D 290662 9
+D 290678 10
+D 291237 9
+D 291313 10
+D 291735 19
+D 292292 9
+D 292326 10
+D 292341 9
+D 292372 10
+D 292430 9
+D 292479 10
+D 292694 9
+D 292729 10
+D 292832 9
+D 292873 10
+D 293015 9
+D 293034 10
+D 293149 9
+D 293215 10
+D 293328 9
+D 293359 10
+D 293386 1
+D 293523 9
+D 293538 10
+D 293887 5
+D 293928 6
+D 293958 5
+D 294528 6
+D 294576 5
+D 295189 19
+D 295244 6
+D 295281 5
+D 295322 6
+D 295358 5
+D 295404 6
+D 295473 5
+D 295488 6
+D 296367 5
+D 296388 6
+D 296403 5
+D 296511 6
+D 296549 5
+D 296565 6
+D 296589 5
+D 297107 6
+D 297129 5
+D 298961 19
+D 301027 2
+P 305028 Timestamp:301027 Go:spout Success:False Free_rew:False Light:False Latency:4000
+P 305030 Summary: T#:26 Tot_rate:0.54 Cued#:26 Uncued#:0 Cued_rate:0.54 Uncued_rate:0.00
+P 305030 4 trials moving ave success rate: 0.66
+D 305031 4
+D 307371 19
+D 308308 6
+D 308517 9
+D 308538 10
+D 308735 9
+D 308783 10
+D 309048 5
+D 309105 6
+D 309120 5
+D 309176 19
+D 310675 1
+D 314581 2
+D 314882 19
+D 316580 19
+D 316864 6
+D 316970 9
+P 316971 reward spout cued
+P 316973 Timestamp:314581 Go:spout Success:True Free_rew:False Light:False Latency:2390
+P 316974 Summary: T#:27 Tot_rate:0.56 Cued#:27 Uncued#:0 Cued_rate:0.56 Uncued_rate:0.00
+P 316975 4 trials moving ave success rate: 0.73
+D 316975 3
+D 316985 10
+D 317125 9
+D 317171 10
+D 317863 9
+D 317911 10
+D 318426 5
+D 318721 6
+D 318736 5
+D 318738 6
+D 318753 5
+D 319831 1
+D 323716 6
+D 324155 9
+D 324170 10
+D 324451 5
+D 324466 6
+D 324499 5
+D 324765 19
+D 327096 2
+D 327289 19
+D 329648 19
+D 330597 6
+D 330693 9
+P 330694 reward spout cued
+P 330696 Timestamp:327096 Go:spout Success:True Free_rew:False Light:False Latency:3598
+P 330697 Summary: T#:28 Tot_rate:0.57 Cued#:28 Uncued#:0 Cued_rate:0.57 Uncued_rate:0.00
+P 330698 4 trials moving ave success rate: 0.79
+D 330698 3
+D 330729 10
+D 330831 9
+D 330898 10
+D 330954 19
+D 332204 5
+D 332367 6
+D 332477 19
+D 333140 9
+D 333194 10
+D 333279 1
+D 333289 9
+D 333304 10
+D 334190 9
+D 334214 10
+D 334328 9
+D 334360 10
+D 334490 9
+D 334540 10
+D 334555 9
+D 334570 10
+D 334888 9
+D 334904 10
+D 335072 5
+D 335103 6
+D 335144 5
+D 338012 2
+D 338665 19
+P 342013 Timestamp:338012 Go:spout Success:False Free_rew:False Light:False Latency:4000
+P 342015 Summary: T#:29 Tot_rate:0.55 Cued#:29 Uncued#:0 Cued_rate:0.55 Uncued_rate:0.00
+P 342015 4 trials moving ave success rate: 0.62
+D 342016 4
+D 342470 6
+D 342869 9
+D 342911 10
+D 342982 9
+D 343024 10
+D 343041 9
+D 343056 10
+D 343379 5
+D 347305 1
+D 347628 19
+D 348840 19
+D 350389 2
+D 351349 6
+D 351797 9
+P 351798 reward spout cued
+P 351800 Timestamp:350389 Go:spout Success:True Free_rew:False Light:False Latency:1409
+P 351801 Summary: T#:30 Tot_rate:0.57 Cued#:30 Uncued#:0 Cued_rate:0.57 Uncued_rate:0.00
+P 351802 4 trials moving ave success rate: 0.70
+D 351802 3
+D 351809 19
+D 351824 10
+D 351923 9
+D 351987 10
+D 352764 5
+D 352779 6
+D 353160 5
+D 354291 6
+D 354326 5
+D 355281 1
+D 357069 19
+D 358523 2
+D 358930 6
+D 358951 5
+D 359284 6
+D 359520 9
+P 359521 reward spout cued
+P 359523 Timestamp:358523 Go:spout Success:True Free_rew:False Light:False Latency:998
+P 359524 Summary: T#:31 Tot_rate:0.58 Cued#:31 Uncued#:0 Cued_rate:0.58 Uncued_rate:0.00
+P 359525 4 trials moving ave success rate: 0.77
+D 359525 3
+D 359563 10
+D 359713 5
+D 359779 19
+D 362713 1
+D 366334 6
+D 366548 9
+D 366574 10
+D 366837 9
+D 366868 10
+D 366976 9
+D 367006 10
+D 367295 5
+D 367506 6
+D 367525 19
+D 367533 5
+D 367548 6
+D 367600 5
+D 372150 2
+P 376151 Timestamp:372150 Go:spout Success:False Free_rew:False Light:False Latency:4000
+P 376153 Summary: T#:32 Tot_rate:0.56 Cued#:32 Uncued#:0 Cued_rate:0.56 Uncued_rate:0.00
+P 376153 4 trials moving ave success rate: 0.60
+D 376154 4
+D 376772 19
+D 379641 6
+D 379660 5
+D 379680 6
+D 379699 5
+D 379699 6
+D 379720 5
+D 381586 1
+D 384043 19
+D 384505 6
+D 384584 5
+D 384618 6
+D 384768 9
+D 384783 10
+D 385066 5
+D 385439 6
+D 385467 5
+D 389897 2
+D 389919 19
+D 390697 19
+D 392216 6
+D 392262 5
+P 393898 Timestamp:389897 Go:spout Success:False Free_rew:False Light:False Latency:4000
+P 393900 Summary: T#:33 Tot_rate:0.55 Cued#:33 Uncued#:0 Cued_rate:0.55 Uncued_rate:0.00
+P 393900 4 trials moving ave success rate: 0.47
+D 393901 4
+D 396430 19
+D 401388 1
+D 404736 19
+D 405760 6
+D 405817 5
+D 406168 6
+D 406184 5
+D 407012 6
+D 407052 5
+D 407207 6
+D 407237 5
+D 407252 6
+D 407280 5
+D 407543 6
+D 407559 5
+D 408312 6
+D 408345 5
+D 408559 6
+D 408637 5
+D 408953 6
+D 409027 5
+D 409762 6
+D 409811 5
+D 411214 6
+D 411248 5
+D 413829 19
+D 414827 2
+P 418828 Timestamp:414827 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 418830 Summary: T#:34 Tot_rate:0.53 Cued#:34 Uncued#:0 Cued_rate:0.53 Uncued_rate:0.00
+P 418830 4 trials moving ave success rate: 0.36
+D 418831 4
+D 419140 6
+D 419258 9
+D 419293 10
+D 419334 9
+D 419421 10
+D 421089 5
+D 422156 19
+D 424197 1
+D 426943 2
+D 427282 6
+P 427282 reward bar_off
+D 427406 9
+P 427406 reward bar cued
+P 427408 Timestamp:426943 Go:bar Success:True Free_rew:False Light:False Latency:464
+P 427410 Summary: T#:35 Tot_rate:0.54 Cued#:35 Uncued#:0 Cued_rate:0.54 Uncued_rate:0.00
+P 427410 4 trials moving ave success rate: 0.50
+D 427411 3
+D 427494 10
+D 427527 9
+D 427545 10
+D 428462 19
+D 428532 9
+D 428556 10
+D 429163 5
+D 430113 1
+D 430887 19
+D 432733 2
+D 434784 6
+D 434880 9
+P 434881 reward spout cued
+P 434883 Timestamp:432733 Go:spout Success:True Free_rew:False Light:False Latency:2148
+P 434884 Summary: T#:36 Tot_rate:0.56 Cued#:36 Uncued#:0 Cued_rate:0.56 Uncued_rate:0.00
+P 434885 4 trials moving ave success rate: 0.61
+D 434885 3
+D 434895 10
+D 434941 9
+D 434956 10
+D 434977 9
+D 435004 10
+D 435452 9
+D 435490 10
+D 435835 5
+D 435916 6
+D 435960 5
+D 437829 19
+D 438140 1
+D 442194 2
+D 443383 6
+D 443550 9
+P 443551 reward spout cued
+P 443553 Timestamp:442194 Go:spout Success:True Free_rew:False Light:False Latency:1357
+P 443554 Summary: T#:37 Tot_rate:0.57 Cued#:37 Uncued#:0 Cued_rate:0.57 Uncued_rate:0.00
+P 443555 4 trials moving ave success rate: 0.70
+D 443555 3
+D 443630 10
+D 443671 9
+D 443755 10
+D 444301 9
+D 444348 10
+D 444690 9
+D 444735 10
+D 444817 9
+D 444842 10
+D 444977 9
+D 445284 10
+D 446182 19
+D 446209 1
+D 447052 5
+D 447387 6
+D 447415 5
+D 447818 6
+D 447843 5
+D 448522 6
+D 448581 5
+D 452314 2
+D 452345 6
+D 452956 9
+P 452957 reward spout cued
+P 452959 Timestamp:452314 Go:spout Success:True Free_rew:False Light:False Latency:644
+P 452960 Summary: T#:38 Tot_rate:0.58 Cued#:38 Uncued#:0 Cued_rate:0.58 Uncued_rate:0.00
+P 452961 4 trials moving ave success rate: 0.77
+D 452961 3
+D 452971 10
+D 453017 9
+D 453032 10
+D 453189 19
+D 453290 9
+D 453331 10
+D 453423 9
+D 453453 10
+D 454938 19
+D 455610 1
+D 455733 5
+D 460193 2
+D 461736 19
+P 464194 Timestamp:460193 Go:spout Success:False Free_rew:False Light:False Latency:4000
+P 464196 Summary: T#:39 Tot_rate:0.56 Cued#:39 Uncued#:0 Cued_rate:0.56 Uncued_rate:0.00
+P 464196 4 trials moving ave success rate: 0.60
+D 464197 4
+D 464662 6
+D 464762 9
+D 464786 10
+D 464887 9
+D 464903 10
+D 465103 9
+D 465134 10
+D 465255 9
+D 465277 10
+D 465439 5
+D 465552 6
+D 465593 5
+D 467569 19
+D 468580 19
+D 470461 1
+D 470995 6
+D 471114 9
+D 471129 10
+D 471481 9
+D 471522 10
+D 472275 5
+D 472447 6
+D 472467 5
+D 472483 6
+D 472536 5
+D 473650 6
+D 473683 5
+D 474684 19
+D 476293 2
+D 476366 19
+D 479630 6
+D 479695 5
+D 479751 6
+D 479842 9
+P 479843 reward spout cued
+P 479845 Timestamp:476293 Go:spout Success:True Free_rew:False Light:False Latency:3550
+P 479846 Summary: T#:40 Tot_rate:0.58 Cued#:40 Uncued#:0 Cued_rate:0.58 Uncued_rate:0.00
+P 479847 4 trials moving ave success rate: 0.69
+D 479847 3
+D 479857 10
+D 479950 9
+D 479976 10
+D 480042 9
+D 480100 10
+D 480527 5
+D 480605 6
+D 480862 9
+D 480906 10
+D 481043 9
+D 481064 10
+D 481214 9
+D 481254 10
+D 481467 9
+D 481516 10
+D 481597 5
+D 481654 19
+D 482323 6
+D 482368 5
+D 482497 1
+D 482630 6
+D 482683 5
+D 486537 2
+D 488636 19
+P 490538 Timestamp:486537 Go:spout Success:False Free_rew:False Light:False Latency:4000
+P 490540 Summary: T#:41 Tot_rate:0.56 Cued#:41 Uncued#:0 Cued_rate:0.56 Uncued_rate:0.00
+P 490540 4 trials moving ave success rate: 0.53
+D 490541 4
+D 496540 1
+D 496952 19
+D 499346 6
+D 499906 5
+D 500225 6
+D 500285 5
+D 503692 19
+D 505097 2
+D 507585 6
+D 507600 5
+D 508871 19
+P 509098 Timestamp:505097 Go:spout Success:False Free_rew:False Light:False Latency:4000
+P 509100 Summary: T#:42 Tot_rate:0.55 Cued#:42 Uncued#:0 Cued_rate:0.55 Uncued_rate:0.00
+P 509100 4 trials moving ave success rate: 0.42
+D 509101 4
+D 509285 6
+D 509327 5
+D 509669 6
+D 509707 5
+D 509950 6
+D 509981 5
+D 510533 6
+D 510581 5
+D 512944 19
+D 513888 19
+D 514450 1
+D 515813 19
+D 517359 2
+D 518747 6
+P 518747 reward bar_off
+D 518761 9
+D 518776 10
+D 518779 5
+D 518824 6
+D 518852 5
+D 518971 6
+D 519220 9
+P 519221 reward bar cued
+P 519223 Timestamp:517359 Go:bar Success:True Free_rew:False Light:False Latency:1862
+P 519224 Summary: T#:43 Tot_rate:0.56 Cued#:43 Uncued#:0 Cued_rate:0.56 Uncued_rate:0.00
+P 519225 4 trials moving ave success rate: 0.54
+D 519225 3
+D 519260 10
+D 519443 9
+D 519480 10
+D 519703 19
+D 519917 9
+D 519956 10
+D 520062 9
+D 520163 10
+D 521251 5
+D 522063 1
+D 524883 2
+D 526820 19
+P 528884 Timestamp:524883 Go:spout Success:False Free_rew:False Light:False Latency:4000
+P 528886 Summary: T#:44 Tot_rate:0.55 Cued#:44 Uncued#:0 Cued_rate:0.55 Uncued_rate:0.00
+P 528886 4 trials moving ave success rate: 0.42
+D 528887 4
+D 530298 6
+D 530461 9
+D 530493 10
+D 530621 9
+D 530660 10
+D 530756 9
+D 530799 10
+D 531382 5
+D 532200 19
+D 534015 1
+D 537652 2
+D 537831 6
+P 537831 reward bar_off
+D 537862 5
+D 537930 6
+D 537959 5
+D 538325 6
+D 538340 5
+D 539230 19
+D 540856 6
+D 540896 5
+D 540912 6
+D 540951 5
+D 540970 6
+D 541116 9
+P 541116 reward bar cued
+P 541118 Timestamp:537652 Go:bar Success:True Free_rew:False Light:False Latency:3465
+P 541120 Summary: T#:45 Tot_rate:0.56 Cued#:45 Uncued#:0 Cued_rate:0.56 Uncued_rate:0.00
+P 541120 4 trials moving ave success rate: 0.55
+D 541121 3
+D 541159 10
+D 541226 9
+D 541263 10
+D 541803 5
+D 541849 6
+D 541907 5
+D 543797 1
+D 546924 19
+D 548522 2
+D 550370 6
+D 550642 9
+P 550643 reward spout cued
+P 550645 Timestamp:548522 Go:spout Success:True Free_rew:False Light:False Latency:2122
+P 550646 Summary: T#:46 Tot_rate:0.57 Cued#:46 Uncued#:0 Cued_rate:0.57 Uncued_rate:0.00
+P 550647 4 trials moving ave success rate: 0.65
+D 550647 3
+D 550699 10
+D 550802 9
+D 550877 10
+D 552502 5
+D 553462 1
+D 555948 19
+D 557283 2
+D 557742 19
+D 560187 6
+D 560240 5
+D 560290 6
+D 560356 5
+D 560379 6
+D 560410 5
+D 560484 6
+D 560526 5
+P 561284 Timestamp:557283 Go:spout Success:False Free_rew:False Light:False Latency:4000
+P 561286 Summary: T#:47 Tot_rate:0.55 Cued#:47 Uncued#:0 Cued_rate:0.55 Uncued_rate:0.00
+P 561286 4 trials moving ave success rate: 0.51
+D 561287 4
+D 563719 19
+D 566913 1
+D 567348 19
+D 569945 2
+D 570190 6
+D 570238 5
+D 571039 6
+D 571110 5
+D 571157 6
+D 571267 5
+D 571285 6
+D 571332 5
+D 571502 19
+D 571960 6
+D 572009 5
+P 573946 Timestamp:569945 Go:spout Success:False Free_rew:False Light:False Latency:4000
+P 573948 Summary: T#:48 Tot_rate:0.54 Cued#:48 Uncued#:0 Cued_rate:0.54 Uncued_rate:0.00
+P 573948 4 trials moving ave success rate: 0.39
+D 573949 4
+D 577575 19
+D 579110 1
+D 580028 19
+D 581326 19
+D 581841 6
+D 581897 5
+D 582148 6
+D 582184 5
+D 582848 6
+D 582870 5
+D 583165 6
+D 583195 5
+D 583838 6
+D 583869 5
+D 583884 6
+D 583923 5
+D 584385 6
+D 584411 5
+D 585001 6
+D 585033 5
+D 585077 6
+D 585096 5
+D 585532 6
+D 585578 5
+D 585593 6
+D 585625 5
+D 585779 6
+D 585837 5
+D 585844 19
+D 588543 6
+D 588570 5
+D 588940 6
+D 588955 5
+D 588991 6
+D 589008 5
+D 589023 6
+D 589056 5
+D 589742 6
+D 589763 5
+D 592798 2
+D 592937 6
+P 592938 reward bar_off
+D 592966 5
+D 593044 6
+D 593059 5
+D 593060 6
+D 593111 5
+D 593656 6
+D 593671 5
+D 593672 6
+D 593722 5
+D 594347 6
+D 594378 5
+D 594911 19
+P 596799 Timestamp:592798 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 596801 Summary: T#:49 Tot_rate:0.53 Cued#:49 Uncued#:0 Cued_rate:0.53 Uncued_rate:0.00
+P 596801 4 trials moving ave success rate: 0.31
+D 596802 4
+D 598640 19
+D 602450 19
+D 603590 1
+D 605971 6
+D 606010 5
+D 606497 6
+D 606537 5
+D 607375 19
+D 610387 2
+D 613739 6
+P 613739 reward bar_off
+D 613753 9
+D 613757 5
+D 613768 10
+D 613772 6
+D 613791 5
+D 613912 6
+D 613939 5
+D 614158 6
+D 614186 5
+D 614201 6
+D 614211 5
+P 614388 Timestamp:610387 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 614390 Summary: T#:50 Tot_rate:0.52 Cued#:50 Uncued#:0 Cued_rate:0.52 Uncued_rate:0.00
+P 614390 4 trials moving ave success rate: 0.24
+D 614391 4
+D 615974 19
+D 620757 1
+D 623511 2
+D 624731 19
+D 625135 6
+P 625135 reward bar_off
+D 625167 5
+D 625279 6
+D 625312 5
+D 625990 6
+D 626038 5
+P 627512 Timestamp:623511 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 627514 Summary: T#:51 Tot_rate:0.51 Cued#:51 Uncued#:0 Cued_rate:0.51 Uncued_rate:0.00
+P 627514 4 trials moving ave success rate: 0.19
+D 627515 4
+D 633899 19
+D 634792 1
+D 637106 6
+D 637121 5
+D 637130 6
+D 637145 5
+D 637436 6
+D 637503 5
+D 637907 6
+D 637938 19
+D 637959 5
+D 638583 6
+D 638637 5
+D 641489 2
+D 644776 19
+P 645490 Timestamp:641489 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 645492 Summary: T#:52 Tot_rate:0.50 Cued#:52 Uncued#:0 Cued_rate:0.50 Uncued_rate:0.00
+P 645492 4 trials moving ave success rate: 0.15
+D 645493 4
+D 648786 19
+D 650584 1
+D 651653 19
+D 655105 19
+D 655567 2
+D 657492 6
+P 657493 reward bar_off
+D 657507 9
+D 657509 5
+D 657522 10
+D 657887 6
+D 657906 5
+D 658552 6
+D 658567 5
+D 658872 6
+D 658896 5
+D 658912 6
+D 658963 5
+P 659568 Timestamp:655567 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 659570 Summary: T#:53 Tot_rate:0.49 Cued#:53 Uncued#:0 Cued_rate:0.49 Uncued_rate:0.00
+P 659570 4 trials moving ave success rate: 0.11
+D 659571 4
+D 660285 6
+D 660300 5
+D 661581 6
+D 661606 5
+D 664645 19
+D 665160 1
+D 667941 2
+D 668549 19
+D 671052 6
+P 671053 reward bar_off
+D 671113 9
+D 671121 5
+D 671128 10
+D 671136 6
+D 671317 9
+P 671317 reward bar cued
+P 671319 Timestamp:667941 Go:bar Success:True Free_rew:False Light:False Latency:3377
+P 671320 Summary: T#:54 Tot_rate:0.50 Cued#:54 Uncued#:0 Cued_rate:0.50 Uncued_rate:0.00
+P 671321 4 trials moving ave success rate: 0.31
+D 671322 3
+D 671360 10
+D 671439 9
+D 671459 10
+D 671592 9
+D 671608 10
+D 672179 9
+D 672213 10
+D 672469 5
+D 672484 6
+D 672508 5
+D 672776 6
+D 672814 5
+D 672829 6
+D 672880 5
+D 673232 19
+D 673958 19
+D 674403 1
+D 678471 2
+D 681885 19
+P 682472 Timestamp:678471 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 682474 Summary: T#:55 Tot_rate:0.49 Cued#:55 Uncued#:0 Cued_rate:0.49 Uncued_rate:0.00
+P 682474 4 trials moving ave success rate: 0.24
+D 682475 4
+D 685667 19
+D 688315 1
+D 688961 6
+D 689012 5
+D 689044 6
+D 689059 5
+D 689063 6
+D 689080 5
+D 689139 6
+D 689154 5
+D 689569 6
+D 689594 5
+D 689771 6
+D 689793 5
+D 689928 6
+D 689945 5
+D 689960 6
+D 689989 5
+D 690318 6
+D 690333 5
+D 690730 6
+D 690780 5
+D 692292 6
+D 692322 5
+D 692603 19
+D 696571 2
+D 697641 19
+P 700572 Timestamp:696571 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 700574 Summary: T#:56 Tot_rate:0.48 Cued#:56 Uncued#:0 Cued_rate:0.48 Uncued_rate:0.00
+P 700574 4 trials moving ave success rate: 0.19
+D 700575 4
+D 701817 19
+D 706406 6
+D 706484 5
+D 706637 6
+D 706659 5
+D 706741 6
+D 706756 5
+D 706880 19
+D 707160 6
+D 707169 1
+D 707202 5
+D 707293 6
+D 707321 5
+D 709468 19
+D 710232 2
+D 713059 19
+P 714233 Timestamp:710232 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 714235 Summary: T#:57 Tot_rate:0.47 Cued#:57 Uncued#:0 Cued_rate:0.47 Uncued_rate:0.00
+P 714235 4 trials moving ave success rate: 0.15
+D 714236 4
+D 717519 19
+D 717680 6
+D 717715 5
+D 717772 6
+D 717835 5
+D 718461 6
+D 718477 5
+D 718790 6
+D 718810 5
+D 719015 6
+D 719036 5
+D 719213 6
+D 719234 5
+D 719384 6
+D 719400 5
+D 719655 6
+D 719670 5
+D 719901 6
+D 719947 5
+D 719962 6
+D 720023 5
+D 720239 6
+D 720274 5
+D 720319 6
+D 720335 5
+D 720853 6
+D 720868 5
+D 720875 6
+D 720893 5
+D 720992 6
+D 721007 5
+D 721151 6
+D 721177 5
+D 721314 1
+D 721657 6
+D 721683 5
+D 721824 6
+D 721856 5
+D 722173 6
+D 722189 5
+D 722411 6
+D 722431 5
+D 722538 6
+D 722592 5
+D 722889 6
+D 722914 5
+D 723056 6
+D 723095 5
+D 723338 6
+D 723366 5
+D 723435 6
+D 723450 5
+D 725660 19
+D 726460 19
+D 726932 2
+D 727647 19
+D 728508 19
+P 730933 Timestamp:726932 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 730935 Summary: T#:58 Tot_rate:0.47 Cued#:58 Uncued#:0 Cued_rate:0.47 Uncued_rate:0.00
+P 730935 4 trials moving ave success rate: 0.11
+D 730936 4
+D 733218 19
+D 737487 6
+D 737586 5
+D 737634 6
+D 737649 5
+D 737658 6
+D 737705 5
+D 737886 6
+D 737928 5
+D 738236 1
+D 738272 6
+D 738304 5
+D 738599 19
+D 738686 6
+D 738720 5
+D 739504 6
+D 739547 5
+D 739764 6
+D 739783 5
+D 739798 6
+D 739840 5
+D 740308 6
+D 740350 5
+D 740535 6
+D 740620 5
+D 740797 6
+D 740850 5
+D 741783 19
+D 742725 19
+D 743602 2
+P 747603 Timestamp:743602 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 747605 Summary: T#:59 Tot_rate:0.46 Cued#:59 Uncued#:0 Cued_rate:0.46 Uncued_rate:0.00
+P 747605 4 trials moving ave success rate: 0.09
+D 747606 4
+D 748466 19
+D 750692 19
+D 752385 19
+D 753942 1
+D 756519 2
+D 757589 19
+D 759163 19
+P 760520 Timestamp:756519 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 760522 Summary: T#:60 Tot_rate:0.45 Cued#:60 Uncued#:0 Cued_rate:0.45 Uncued_rate:0.00
+P 760522 4 trials moving ave success rate: 0.07
+D 760523 4
+D 766153 1
+D 766497 19
+D 769426 19
+D 770158 2
+D 771732 19
+P 774159 Timestamp:770158 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 774161 Summary: T#:61 Tot_rate:0.44 Cued#:61 Uncued#:0 Cued_rate:0.44 Uncued_rate:0.00
+P 774161 4 trials moving ave success rate: 0.05
+D 774162 4
+D 775165 19
+D 775203 6
+D 775261 5
+D 775478 6
+D 775511 5
+D 776006 6
+D 776032 5
+D 776430 6
+D 776490 5
+D 776566 6
+D 776596 5
+D 777185 6
+D 777239 5
+D 780726 1
+D 783941 19
+D 784319 2
+D 788128 6
+P 788129 reward bar_off
+D 788155 5
+D 788192 6
+D 788197 19
+D 788236 5
+P 788320 Timestamp:784319 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 788322 Summary: T#:62 Tot_rate:0.44 Cued#:62 Uncued#:0 Cued_rate:0.44 Uncued_rate:0.00
+P 788322 4 trials moving ave success rate: 0.04
+D 788323 4
+D 790764 6
+D 791310 5
+D 791992 6
+D 792026 5
+D 792057 19
+D 794478 19
+D 794697 1
+D 797887 2
+P 801888 Timestamp:797887 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 801890 Summary: T#:63 Tot_rate:0.43 Cued#:63 Uncued#:0 Cued_rate:0.43 Uncued_rate:0.00
+P 801890 4 trials moving ave success rate: 0.03
+D 801891 4
+D 802091 19
+D 806406 19
+D 807203 1
+D 810598 2
+D 810703 19
+D 814550 6
+P 814550 reward bar_off
+D 814582 5
+D 814597 6
+P 814599 Timestamp:810598 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 814601 Summary: T#:64 Tot_rate:0.42 Cued#:64 Uncued#:0 Cued_rate:0.42 Uncued_rate:0.00
+P 814601 4 trials moving ave success rate: 0.03
+D 814602 4
+D 814668 5
+D 815037 6
+D 815470 5
+D 815676 6
+D 815713 5
+D 816919 19
+D 820499 1
+D 824591 2
+D 824871 19
+D 827525 6
+P 827525 reward bar_off
+D 827585 9
+D 827600 10
+D 827722 9
+P 827722 reward bar cued
+P 827724 Timestamp:824591 Go:bar Success:True Free_rew:False Light:False Latency:3132
+P 827726 Summary: T#:65 Tot_rate:0.43 Cued#:65 Uncued#:0 Cued_rate:0.43 Uncued_rate:0.00
+P 827726 4 trials moving ave success rate: 0.24
+D 827727 3
+D 827783 10
+D 829252 5
+D 829429 6
+D 829655 5
+D 829735 6
+D 830559 5
+D 831895 1
+D 832606 19
+D 835741 2
+D 838774 6
+P 838775 reward bar_off
+D 838957 9
+P 838957 reward bar cued
+P 838959 Timestamp:835741 Go:bar Success:True Free_rew:False Light:False Latency:3217
+P 838961 Summary: T#:66 Tot_rate:0.44 Cued#:66 Uncued#:0 Cued_rate:0.44 Uncued_rate:0.00
+P 838961 4 trials moving ave success rate: 0.41
+D 838962 3
+D 838994 10
+D 840526 5
+D 841697 19
+D 841910 1
+D 841986 6
+D 842021 5
+D 846231 2
+D 847473 6
+P 847474 reward bar_off
+D 847653 9
+P 847653 reward bar cued
+P 847655 Timestamp:846231 Go:bar Success:True Free_rew:False Light:False Latency:1423
+P 847657 Summary: T#:67 Tot_rate:0.45 Cued#:67 Uncued#:0 Cued_rate:0.45 Uncued_rate:0.00
+P 847657 4 trials moving ave success rate: 0.54
+D 847658 3
+D 847708 10
+D 847796 9
+D 847830 10
+D 848559 5
+D 848608 6
+D 848637 5
+D 849935 19
+D 850168 1
+D 851136 19
+D 852677 6
+D 852684 19
+D 852901 9
+D 853030 10
+D 854409 19
+D 854470 5
+D 854536 6
+D 855530 5
+D 855579 6
+D 855601 5
+D 856108 6
+D 856123 5
+D 857002 6
+D 857045 5
+D 860812 2
+D 861138 6
+P 861138 reward bar_off
+D 863023 5
+D 863038 6
+D 863074 5
+D 863636 19
+P 864813 Timestamp:860812 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 864815 Summary: T#:68 Tot_rate:0.44 Cued#:68 Uncued#:0 Cued_rate:0.44 Uncued_rate:0.00
+P 864815 4 trials moving ave success rate: 0.42
+D 864816 4
+D 868538 6
+D 868695 9
+D 868711 10
+D 868786 19
+D 869482 5
+D 869498 6
+D 869532 5
+D 869547 6
+D 869569 5
+D 869987 6
+D 870020 5
+D 870373 6
+D 870417 5
+D 870811 1
+D 874061 2
+D 877082 6
+P 877083 reward bar_off
+D 877279 9
+P 877279 reward bar cued
+P 877281 Timestamp:874061 Go:bar Success:True Free_rew:False Light:False Latency:3219
+P 877283 Summary: T#:69 Tot_rate:0.45 Cued#:69 Uncued#:0 Cued_rate:0.45 Uncued_rate:0.00
+P 877283 4 trials moving ave success rate: 0.55
+D 877284 3
+D 877316 10
+D 877331 19
+D 877399 9
+D 877444 10
+D 877841 5
+D 881005 1
+D 882182 19
+D 883913 6
+D 884026 9
+D 884064 10
+D 884151 9
+D 884210 10
+D 884284 9
+D 884333 10
+D 885156 5
+D 885884 6
+D 885935 5
+D 889123 19
+D 889207 2
+D 890060 6
+P 890061 reward bar_off
+D 890368 9
+P 890368 reward bar cued
+P 890370 Timestamp:889207 Go:bar Success:True Free_rew:False Light:False Latency:1162
+P 890371 Summary: T#:70 Tot_rate:0.46 Cued#:70 Uncued#:0 Cued_rate:0.46 Uncued_rate:0.00
+P 890372 4 trials moving ave success rate: 0.65
+D 890373 3
+D 890429 10
+D 890776 5
+D 890793 6
+D 890808 5
+D 893203 19
+D 893620 1
+D 896280 6
+D 896370 9
+D 896445 10
+D 897284 19
+D 898853 5
+D 898977 6
+D 899013 5
+D 899562 19
+D 902968 2
+D 903823 6
+P 903824 reward bar_off
+D 904008 9
+P 904008 reward bar cued
+P 904010 Timestamp:902968 Go:bar Success:True Free_rew:False Light:False Latency:1041
+P 904012 Summary: T#:71 Tot_rate:0.46 Cued#:71 Uncued#:0 Cued_rate:0.46 Uncued_rate:0.00
+P 904012 4 trials moving ave success rate: 0.73
+D 904013 3
+D 904023 10
+D 904984 5
+D 905152 6
+D 905402 9
+D 905422 10
+D 905596 19
+D 906005 9
+D 906074 10
+D 906156 9
+D 906349 10
+D 906455 9
+D 906471 10
+D 907020 1
+D 910807 9
+D 910843 10
+D 910908 9
+D 910926 10
+D 911399 9
+D 911428 10
+D 911514 9
+D 911548 10
+D 912148 5
+D 912583 19
+D 912902 6
+D 912927 5
+D 917013 2
+D 917970 6
+P 917970 reward bar_off
+D 918009 5
+D 918121 6
+D 918150 5
+D 918166 6
+D 918189 5
+D 918209 6
+D 918224 5
+D 918230 6
+D 918465 5
+D 918480 6
+D 919293 9
+P 919294 reward bar cued
+P 919296 Timestamp:917013 Go:bar Success:True Free_rew:False Light:False Latency:2281
+P 919297 Summary: T#:72 Tot_rate:0.47 Cued#:72 Uncued#:0 Cued_rate:0.47 Uncued_rate:0.00
+P 919298 4 trials moving ave success rate: 0.79
+D 919298 3
+D 919348 10
+D 919417 9
+D 919447 10
+D 919576 9
+D 919591 10
+D 920598 5
+D 921689 19
+D 922022 1
+D 923539 6
+D 923854 9
+D 923932 10
+D 924750 5
+D 925006 6
+D 925153 5
+D 928052 2
+D 931218 19
+P 932053 Timestamp:928052 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 932055 Summary: T#:73 Tot_rate:0.47 Cued#:73 Uncued#:0 Cued_rate:0.47 Uncued_rate:0.00
+P 932055 4 trials moving ave success rate: 0.61
+D 932056 4
+D 933856 6
+D 933964 9
+D 934032 10
+D 934086 9
+D 934179 10
+D 936281 9
+D 936337 10
+D 937170 1
+D 939374 19
+D 940396 9
+D 940427 10
+D 940842 5
+D 940857 6
+D 940884 5
+D 941671 6
+D 941791 9
+D 941806 10
+D 941811 9
+D 941829 10
+D 942118 9
+D 942145 10
+D 942749 9
+D 942784 10
+D 943177 5
+D 945158 19
+D 948013 2
+P 952014 Timestamp:948013 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 952016 Summary: T#:74 Tot_rate:0.46 Cued#:74 Uncued#:0 Cued_rate:0.46 Uncued_rate:0.00
+P 952016 4 trials moving ave success rate: 0.48
+D 952017 4
+D 952218 6
+D 952234 5
+D 952243 6
+D 952266 5
+D 953288 19
+D 953487 6
+D 953534 5
+D 954189 19
+D 955726 19
+D 957915 1
+D 957973 19
+D 960491 19
+D 962456 2
+D 963828 6
+P 963829 reward bar_off
+D 963976 9
+P 963977 reward bar cued
+P 963979 Timestamp:962456 Go:bar Success:True Free_rew:False Light:False Latency:1521
+P 963980 Summary: T#:75 Tot_rate:0.47 Cued#:75 Uncued#:0 Cued_rate:0.47 Uncued_rate:0.00
+P 963981 4 trials moving ave success rate: 0.59
+D 963981 3
+D 964054 10
+D 964781 19
+D 965203 5
+D 965218 6
+D 965241 5
+D 966615 1
+D 970332 19
+D 970933 2
+D 972239 19
+D 974240 6
+P 974241 reward bar_off
+D 974271 5
+D 974301 9
+P 974302 reward bar cued
+P 974304 Timestamp:970933 Go:bar Success:True Free_rew:False Light:False Latency:3369
+P 974310 Summary: T#:76 Tot_rate:0.47 Cued#:76 Uncued#:0 Cued_rate:0.47 Uncued_rate:0.00
+P 974310 4 trials moving ave success rate: 0.68
+D 974311 3
+D 974316 10
+D 975064 6
+D 975102 5
+D 975280 6
+D 975408 9
+D 975461 10
+D 976573 9
+D 976601 10
+D 977845 1
+D 978142 5
+D 978552 6
+D 978590 5
+D 979683 6
+D 979705 5
+D 980358 19
+D 981859 6
+D 981900 5
+D 984580 2
+D 985983 19
+D 987987 6
+P 987988 reward bar_off
+D 988010 5
+D 988296 6
+D 988326 5
+P 988581 Timestamp:984580 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 988583 Summary: T#:77 Tot_rate:0.47 Cued#:77 Uncued#:0 Cued_rate:0.47 Uncued_rate:0.00
+P 988583 4 trials moving ave success rate: 0.53
+D 988584 4
+D 989780 6
+D 989855 5
+D 994528 19
+D 994637 6
+D 994764 9
+D 994779 10
+D 994782 9
+D 994797 10
+D 995020 1
+D 995355 9
+D 995419 10
+D 996308 5
+D 996345 6
+D 996465 9
+D 996511 10
+D 996880 19
+D 997237 9
+D 997260 10
+D 997397 9
+D 997413 10
+D 997648 5
+D 997686 6
+D 997714 5
+D 1000027 19
+D 1000059 6
+D 1000095 5
+D 1003682 2
+D 1004683 19
+D 1006562 6
+P 1006562 reward bar_off
+D 1006716 9
+P 1006716 reward bar cued
+P 1006718 Timestamp:1003682 Go:bar Success:True Free_rew:False Light:False Latency:3035
+P 1006720 Summary: T#:78 Tot_rate:0.47 Cued#:78 Uncued#:0 Cued_rate:0.47 Uncued_rate:0.00
+P 1006720 4 trials moving ave success rate: 0.64
+D 1006721 3
+D 1006768 10
+D 1006848 9
+D 1006863 10
+D 1007785 9
+D 1007851 10
+D 1007917 9
+D 1007941 10
+D 1009534 1
+D 1009627 9
+D 1009667 10
+D 1009762 9
+D 1009821 10
+D 1009912 9
+D 1009940 10
+D 1010082 9
+D 1010188 10
+D 1011031 5
+D 1011067 6
+D 1011133 5
+D 1011148 6
+D 1011284 19
+D 1011466 5
+D 1011482 6
+D 1011522 5
+D 1011571 6
+D 1011607 5
+D 1015515 2
+D 1017493 19
+P 1019516 Timestamp:1015515 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 1019518 Summary: T#:79 Tot_rate:0.47 Cued#:79 Uncued#:0 Cued_rate:0.47 Uncued_rate:0.00
+P 1019518 4 trials moving ave success rate: 0.49
+D 1019519 4
+D 1020131 6
+D 1020301 9
+D 1020330 10
+D 1020404 9
+D 1020419 10
+D 1020810 9
+D 1020839 10
+D 1020902 9
+D 1020917 10
+D 1021511 19
+D 1021592 5
+D 1025325 1
+D 1027046 19
+D 1030060 2
+D 1031534 19
+D 1033086 19
+D 1034029 6
+P 1034029 reward bar_off
+P 1034061 Timestamp:1030060 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 1034063 Summary: T#:80 Tot_rate:0.46 Cued#:80 Uncued#:0 Cued_rate:0.46 Uncued_rate:0.00
+P 1034063 4 trials moving ave success rate: 0.39
+D 1034064 4
+D 1034099 5
+D 1034114 6
+D 1034149 5
+D 1034187 6
+D 1034344 9
+D 1034375 10
+D 1034476 9
+D 1034491 10
+D 1034640 9
+D 1034692 10
+D 1035826 9
+D 1035927 10
+D 1036067 9
+D 1036092 10
+D 1036195 9
+D 1036235 10
+D 1036615 5
+D 1036630 6
+D 1036664 5
+D 1038107 19
+D 1040007 1
+D 1044152 2
+D 1047422 6
+P 1047423 reward bar_off
+D 1047461 5
+D 1047483 9
+D 1047498 10
+D 1047682 19
+D 1048020 6
+D 1048035 5
+P 1048153 Timestamp:1044152 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 1048155 Summary: T#:81 Tot_rate:0.46 Cued#:81 Uncued#:0 Cued_rate:0.46 Uncued_rate:0.00
+P 1048155 4 trials moving ave success rate: 0.30
+D 1048156 4
+D 1048459 6
+D 1048560 9
+D 1048601 10
+D 1048680 9
+D 1048710 10
+D 1049720 9
+D 1049756 10
+D 1049859 9
+D 1049883 10
+D 1050906 5
+D 1050938 6
+D 1050979 5
+D 1051014 6
+D 1051046 5
+D 1051521 6
+D 1051566 5
+D 1053500 1
+D 1053856 6
+D 1053928 5
+D 1053966 19
+D 1053997 6
+D 1054028 5
+D 1054347 6
+D 1054398 5
+D 1054469 6
+D 1054505 5
+D 1055044 6
+D 1055074 5
+D 1059918 2
+D 1060426 6
+P 1060426 reward bar_off
+D 1060460 5
+D 1060486 9
+D 1060501 10
+D 1060508 6
+D 1060531 5
+D 1060721 6
+D 1060793 5
+D 1061278 6
+D 1061342 5
+D 1061388 6
+D 1061407 5
+D 1062797 19
+P 1063919 Timestamp:1059918 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 1063921 Summary: T#:82 Tot_rate:0.45 Cued#:82 Uncued#:0 Cued_rate:0.45 Uncued_rate:0.00
+P 1063921 4 trials moving ave success rate: 0.23
+D 1063922 4
+D 1066392 19
+D 1069066 1
+D 1071713 19
+D 1072571 2
+D 1072587 19
+P 1076572 Timestamp:1072571 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 1076574 Summary: T#:83 Tot_rate:0.45 Cued#:83 Uncued#:0 Cued_rate:0.45 Uncued_rate:0.00
+P 1076574 4 trials moving ave success rate: 0.18
+D 1076575 4
+D 1080210 6
+D 1080386 9
+D 1080426 10
+D 1080532 9
+D 1080559 10
+D 1081073 9
+D 1081153 10
+D 1082184 19
+D 1082839 9
+D 1082871 10
+D 1082966 1
+D 1082975 9
+D 1083014 10
+D 1083291 19
+D 1083637 5
+D 1083660 6
+D 1083794 9
+D 1083877 10
+D 1083987 9
+D 1084016 10
+D 1084439 5
+D 1084561 6
+D 1084600 5
+D 1085078 6
+D 1085121 5
+D 1086353 19
+D 1089252 19
+D 1089291 2
+D 1092217 6
+P 1092218 reward bar_off
+D 1092328 9
+P 1092329 reward bar cued
+P 1092331 Timestamp:1089291 Go:bar Success:True Free_rew:False Light:False Latency:3038
+P 1092332 Summary: T#:84 Tot_rate:0.45 Cued#:84 Uncued#:0 Cued_rate:0.45 Uncued_rate:0.00
+P 1092333 4 trials moving ave success rate: 0.36
+D 1092333 3
+D 1092421 10
+D 1092472 9
+D 1092487 10
+D 1092872 19
+D 1093421 9
+D 1093491 10
+D 1094259 9
+D 1094340 10
+D 1094414 9
+D 1094454 10
+D 1094767 5
+D 1094783 6
+D 1094810 5
+D 1095782 1
+D 1096779 6
+D 1096816 5
+D 1097421 19
+D 1100339 2
+D 1102730 6
+P 1102730 reward bar_off
+D 1102860 9
+P 1102861 reward bar cued
+P 1102862 Timestamp:1100339 Go:bar Success:True Free_rew:False Light:False Latency:2522
+P 1102864 Summary: T#:85 Tot_rate:0.46 Cued#:85 Uncued#:0 Cued_rate:0.46 Uncued_rate:0.00
+P 1102864 4 trials moving ave success rate: 0.50
+D 1102868 3
+D 1102892 10
+D 1102998 9
+D 1103055 10
+D 1104905 9
+D 1104933 10
+D 1105059 9
+D 1105074 10
+D 1105662 19
+D 1105835 5
+D 1106049 1
+D 1106654 6
+D 1106682 5
+D 1110517 2
+D 1110698 6
+P 1110698 reward bar_off
+D 1110835 9
+P 1110836 reward bar cued
+P 1110838 Timestamp:1110517 Go:bar Success:True Free_rew:False Light:False Latency:319
+P 1110839 Summary: T#:86 Tot_rate:0.47 Cued#:86 Uncued#:0 Cued_rate:0.47 Uncued_rate:0.00
+P 1110840 4 trials moving ave success rate: 0.61
+D 1110840 3
+D 1110874 10
+D 1111411 9
+D 1111661 10
+D 1112189 9
+D 1112233 10
+D 1112302 9
+D 1112326 10
+D 1113419 9
+D 1113486 10
+D 1113582 9
+D 1113616 10
+D 1113683 1
+D 1114824 19
+D 1114985 5
+D 1115178 6
+D 1115260 5
+D 1115692 6
+D 1115727 5
+D 1118717 19
+D 1120137 2
+D 1120599 6
+P 1120600 reward bar_off
+D 1121065 9
+P 1121066 reward bar cued
+P 1121068 Timestamp:1120137 Go:bar Success:True Free_rew:False Light:False Latency:929
+P 1121069 Summary: T#:87 Tot_rate:0.47 Cued#:87 Uncued#:0 Cued_rate:0.47 Uncued_rate:0.00
+P 1121069 4 trials moving ave success rate: 0.70
+D 1121070 3
+D 1121155 10
+D 1121227 9
+D 1121247 10
+D 1122204 5
+D 1122382 6
+D 1122433 5
+D 1123574 6
+D 1123612 5
+D 1124018 1
+D 1125239 19
+D 1126842 19
+D 1128115 2
+P 1132116 Timestamp:1128115 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 1132118 Summary: T#:88 Tot_rate:0.47 Cued#:88 Uncued#:0 Cued_rate:0.47 Uncued_rate:0.00
+P 1132118 4 trials moving ave success rate: 0.54
+D 1132119 4
+D 1132821 19
+D 1135642 19
+D 1136086 6
+D 1136152 5
+D 1137097 6
+D 1137120 5
+D 1137550 6
+D 1137577 5
+D 1137593 6
+D 1137632 5
+D 1137638 1
+D 1138314 6
+D 1138336 5
+D 1138711 6
+D 1138747 5
+D 1143191 2
+D 1143907 19
+D 1144856 6
+P 1144857 reward bar_off
+D 1145037 9
+P 1145038 reward bar cued
+P 1145040 Timestamp:1143191 Go:bar Success:True Free_rew:False Light:False Latency:1847
+P 1145041 Summary: T#:89 Tot_rate:0.47 Cued#:89 Uncued#:0 Cued_rate:0.47 Uncued_rate:0.00
+P 1145042 4 trials moving ave success rate: 0.65
+D 1145042 3
+D 1145083 10
+D 1145193 9
+D 1145215 10
+D 1145547 9
+D 1145573 10
+D 1145647 9
+D 1145673 10
+D 1146233 9
+D 1146456 10
+D 1146696 5
+D 1146835 6
+D 1146894 5
+D 1147998 1
+D 1151935 6
+D 1152047 9
+D 1152064 10
+D 1152076 19
+D 1152176 9
+D 1152235 10
+D 1152334 9
+D 1152349 10
+D 1153327 5
+D 1153370 6
+D 1153395 5
+D 1153410 6
+D 1153415 5
+D 1155559 6
+D 1155596 5
+D 1155960 6
+D 1156014 5
+D 1156561 6
+D 1157023 5
+D 1159888 19
+D 1161347 19
+D 1161583 2
+D 1163229 6
+P 1163230 reward bar_off
+D 1163244 9
+D 1163259 10
+D 1163308 9
+P 1163309 reward bar cued
+P 1163311 Timestamp:1161583 Go:bar Success:True Free_rew:False Light:False Latency:1727
+P 1163312 Summary: T#:90 Tot_rate:0.48 Cued#:90 Uncued#:0 Cued_rate:0.48 Uncued_rate:0.00
+P 1163313 4 trials moving ave success rate: 0.72
+D 1163313 3
+D 1163357 10
+D 1164759 9
+D 1164790 10
+D 1165702 9
+D 1165746 10
+D 1165847 9
+D 1165880 10
+D 1165979 9
+D 1166010 10
+D 1166431 19
+D 1167128 5
+D 1167144 6
+D 1167154 5
+D 1167264 1
+D 1168425 19
+D 1168439 6
+D 1168469 5
+D 1171892 2
+D 1172081 19
+P 1175893 Timestamp:1171892 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 1175895 Summary: T#:91 Tot_rate:0.47 Cued#:91 Uncued#:0 Cued_rate:0.47 Uncued_rate:0.00
+P 1175895 4 trials moving ave success rate: 0.56
+D 1175896 4
+D 1176509 6
+D 1176975 9
+D 1177056 10
+D 1177227 9
+D 1177260 10
+D 1177365 9
+D 1177415 10
+D 1177847 5
+D 1179614 19
+D 1182009 1
+D 1183047 19
+D 1185016 19
+D 1185439 2
+D 1187691 19
+P 1189440 Timestamp:1185439 Go:bar Success:False Free_rew:False Light:False Latency:4000
+P 1189442 Summary: T#:92 Tot_rate:0.47 Cued#:92 Uncued#:0 Cued_rate:0.47 Uncued_rate:0.00
+P 1189442 4 trials moving ave success rate: 0.44
+D 1189443 4
+D 1191873 19
+D 1193295 6
+D 1193336 5
+D 1193688 6
+D 1193703 5
+D 1194235 6
+D 1194282 5
+D 1194479 1
+D 1195904 19
+D 1198599 2
+D 1199594 6
+P 1199594 reward bar_off
+D 1199615 5
+D 1199682 6
+D 1199697 5
+D 1200024 6
+D 1200058 5
+D 1200626 6
+D 1200648 5
+D 1200958 6
+D 1200985 5
+D 1201319 6
+D 1201356 5
+D 1201371 6
+D 1201400 5
+D 1201518 19
+D 1202096 6
+D 1202178 5
+D 1202342 19
+D 1206388 6
+D 1206464 5
+D 1206668 6
+D 1206687 5
+D 1206702 6
+D 1206740 5
+D 1208914 19
+D 1211535 6
+D 1211555 5
+D 1212347 6
+D 1212362 5
+D 1212377 6
+D 1212414 5
+D 1212632 19
+D 1220366 19
+D 1221954 6
+D 1221969 5
+D 1222608 6
+D 1222649 5
+D 1223595 6
+D 1223625 5
+D 1223665 6
+D 1223700 5
+D 1227455 19
+D 1232188 19
+D 1235269 6
+D 1235559 9
+P 1235559 reward bar uncued
+P 1235561 Timestamp:1198599 Go:bar Success:True Free_rew:False Light:False Latency:36961
+P 1235563 Summary: T#:93 Tot_rate:0.47 Cued#:92 Uncued#:1 Cued_rate:0.47 Uncued_rate:1.00
+P 1235563 4 trials moving ave success rate: 0.56
+D 1235564 3
+D 1235603 10
+D 1236708 9
+D 1236742 10
+D 1236831 9
+D 1236872 10
+D 1236968 9
+D 1237003 10
+D 1238285 5
+D 1238369 6
+D 1238491 9
+D 1238524 10
+D 1238643 9
+D 1238871 19
+D 1238924 10
+D 1239071 9
+D 1239111 10
+D 1239555 1
+D 1240269 5
+D 1243771 2
+D 1248160 19
+D 1248465 6
+P 1248466 reward bar_off
+D 1248480 9
+D 1248495 10
+D 1248645 9
+P 1248646 reward bar uncued
+P 1248648 Timestamp:1243771 Go:bar Success:True Free_rew:False Light:False Latency:4875
+P 1248649 Summary: T#:94 Tot_rate:0.48 Cued#:92 Uncued#:2 Cued_rate:0.47 Uncued_rate:1.00
+P 1248650 4 trials moving ave success rate: 0.66
+D 1248650 3
+D 1248704 10
+D 1250053 9
+D 1250104 10
+D 1250981 5
+D 1251369 6
+D 1251487 9
+D 1251519 10
+D 1251639 9
+D 1251657 10
+D 1251783 5
+D 1251995 6
+D 1252035 5
+D 1252769 1
+D 1257157 2
+D 1257745 19
+D 1263101 19
+D 1263284 6
+P 1263285 reward bar_off
+D 1263345 9
+P 1263345 reward bar uncued
+P 1263347 Timestamp:1257157 Go:bar Success:True Free_rew:False Light:False Latency:6189
+P 1263349 Summary: T#:95 Tot_rate:0.48 Cued#:92 Uncued#:3 Cued_rate:0.47 Uncued_rate:1.00
+P 1263349 4 trials moving ave success rate: 0.73
+D 1263350 3
+D 1263360 10
+D 1263420 9
+D 1263458 10
+D 1263560 9
+D 1263602 10
+D 1264121 9
+D 1264167 10
+D 1264221 9
+D 1264246 10
+D 1264709 19
+D 1265200 5
+D 1266117 1
+D 1269291 19
+D 1269777 2
+D 1272859 6
+P 1272859 reward bar_off
+D 1272990 9
+P 1272990 reward bar uncued
+P 1272992 Timestamp:1269777 Go:bar Success:True Free_rew:False Light:False Latency:3214
+P 1272993 Summary: T#:96 Tot_rate:0.49 Cued#:92 Uncued#:4 Cued_rate:0.47 Uncued_rate:1.00
+P 1272994 4 trials moving ave success rate: 0.79
+D 1272995 3
+D 1273059 10
+D 1273477 19
+D 1275657 9
+D 1275686 10
+D 1275801 9
+D 1275847 10
+D 1275905 1
+D 1276119 5
+D 1279070 2
+D 1279579 19
+D 1281664 6
+P 1281665 reward bar_off
+D 1281725 9
+D 1281740 10
+D 1281806 9
+P 1281807 reward bar uncued
+P 1281808 Timestamp:1279070 Go:bar Success:True Free_rew:False Light:False Latency:2737
+P 1281810 Summary: T#:97 Tot_rate:0.49 Cued#:92 Uncued#:5 Cued_rate:0.47 Uncued_rate:1.00
+P 1281810 4 trials moving ave success rate: 0.84
+D 1281811 3
+D 1281850 10
+D 1281921 9
+D 1281937 10
+D 1282463 9
+D 1282506 10
+D 1282579 9
+D 1282620 10
+D 1283291 5
+D 1283729 6
+D 1283853 9
+D 1283868 10
+D 1284006 9
+D 1284024 10
+D 1284401 5
+D 1284473 6
+D 1284514 5
+D 1284979 1
+D 1288109 2
+D 1288280 19
+D 1292813 6
+P 1292813 reward bar_off
+D 1292832 5
+D 1292847 6
+D 1292974 9
+P 1292975 reward bar uncued
+P 1292977 Timestamp:1288109 Go:bar Success:True Free_rew:False Light:False Latency:4866
+P 1292978 Summary: T#:98 Tot_rate:0.50 Cued#:92 Uncued#:6 Cued_rate:0.47 Uncued_rate:1.00
+P 1292979 4 trials moving ave success rate: 0.87
+D 1292979 3
+D 1293076 10
+D 1293122 9
+D 1293156 10
+D 1294055 19
+D 1294875 5
+D 1295318 6
+D 1295517 9
+D 1295542 10
+D 1295683 9
+D 1295790 10
+D 1296895 1
+D 1297845 5
+D 1298536 6
+D 1298569 5
+D 1301738 19
+D 1302912 6
+D 1303045 9
+D 1303069 10
+D 1306678 19
+D 1309725 9
+D 1309754 10
+D 1310048 5
+D 1310063 6
+D 1310614 5
+D 1312201 6
+D 1312256 5
+D 1312738 19
+D 1316323 2
+D 1316664 19
+D 1320081 19
+D 1322100 19
+D 1323503 6
+P 1323503 reward bar_off
+D 1323535 5
+D 1323591 6
+D 1323608 5
+P 1323896 reward free_uncued
+P 1323898 Timestamp:1316323 Go:bar Success:False Free_rew:True Light:False Latency:7573
+P 1323899 Summary: T#:99 Tot_rate:0.49 Cued#:92 Uncued#:7 Cued_rate:0.47 Uncued_rate:0.86
+P 1323900 4 trials moving ave success rate: 0.68
+D 1323900 4
+D 1323956 9
+D 1323971 10
+D 1324227 6
+D 1324242 5
+D 1324379 6
+D 1324473 5
+D 1324852 6
+D 1324869 5
+D 1329252 1
+D 1330128 19
+D 1332865 6
+D 1332983 9
+D 1333034 10
+D 1333122 9
+D 1333159 10
+D 1333653 9
+D 1333736 10
+D 1333758 9
+D 1333789 10
+D 1333875 9
+D 1333924 10
+D 1334013 19
+D 1334625 5
+D 1334697 6
+D 1334751 5
+D 1335381 6
+D 1335424 5
+D 1339506 2
+D 1340662 6
+P 1340663 reward bar_off
+D 1340682 5
+D 1341182 6
+D 1341273 9
+P 1341274 reward bar uncued
+P 1341276 Timestamp:1339506 Go:bar Success:True Free_rew:False Light:False Latency:1768
+P 1341277 Summary: T#:100 Tot_rate:0.50 Cued#:92 Uncued#:8 Cued_rate:0.47 Uncued_rate:0.88
+P 1341278 4 trials moving ave success rate: 0.75
+D 1341278 3
+D 1341334 10
+D 1341396 9
+D 1341451 10
+D 1342103 19
+D 1343011 9
+D 1343049 10
+D 1343920 9
+D 1343968 10
+D 1344031 1
+D 1344051 9
+D 1344111 10
+D 1345241 9
+D 1345256 10
+D 1345485 9
+D 1345565 10
+D 1345639 9
+D 1345743 10
+D 1345778 9
+D 1345944 10
+D 1346801 19
+D 1347325 9
+D 1347376 10
+D 1347509 9
+D 1347577 10
+D 1348348 9
+D 1348364 10
+D 1348534 5
+D 1352827 2
+D 1352956 19
+D 1353541 6
+P 1353542 reward bar_off
+D 1353566 5
+D 1353602 9
+P 1353603 reward bar uncued
+P 1353605 Timestamp:1352827 Go:bar Success:True Free_rew:False Light:False Latency:776
+P 1353606 Summary: T#:101 Tot_rate:0.50 Cued#:92 Uncued#:9 Cued_rate:0.47 Uncued_rate:0.89
+P 1353607 4 trials moving ave success rate: 0.81
+D 1353607 3
+D 1353618 10
+D 1353698 6
+D 1353744 5
+D 1356047 6
+D 1356158 9
+D 1356199 1
+D 1356199 10
+D 1356273 9
+D 1356507 10
+D 1357648 9
+D 1357771 10
+D 1357940 5
+D 1358197 6
+D 1358214 5
+D 1362163 19
+D 1362519 2
+D 1362573 6
+D 1362653 9
+P 1362654 reward spout uncued
+P 1362656 Timestamp:1362519 Go:spout Success:True Free_rew:False Light:False Latency:136
+P 1362657 Summary: T#:102 Tot_rate:0.51 Cued#:92 Uncued#:10 Cued_rate:0.47 Uncued_rate:0.90
+P 1362658 4 trials moving ave success rate: 0.85
+D 1362659 3
+D 1362719 10
+D 1362778 9
+D 1362804 10
+D 1363529 19
+D 1363917 9
+D 1363995 10
+D 1364073 9
+D 1364093 10
+D 1365420 9
+D 1365473 10
+D 1365524 1
+D 1365564 9
+D 1365629 10
+D 1369058 9
+D 1369083 10
+D 1369651 5
+D 1369671 6
+D 1369703 5
+D 1369964 19
+D 1369976 6
+D 1370082 9
+D 1370122 10
+D 1370196 9
+D 1370211 10
+D 1370693 9
+D 1370743 10
+D 1370873 9
+D 1370888 10
+D 1371306 9
+D 1371342 10
+D 1371503 9
+D 1371524 10
+D 1371757 9
+D 1371958 10
+D 1372033 9
+D 1372219 10
+D 1372451 5
+D 1372466 6
+D 1372496 5
+D 1376596 2
+D 1378676 19
+D 1379010 6
+D 1379193 9
+P 1379193 reward spout uncued
+P 1379195 Timestamp:1376596 Go:spout Success:True Free_rew:False Light:False Latency:2598
+P 1379197 Summary: T#:103 Tot_rate:0.51 Cued#:92 Uncued#:11 Cued_rate:0.47 Uncued_rate:0.91
+P 1379197 4 trials moving ave success rate: 0.88
+D 1379198 3
+D 1379226 10
+D 1379315 9
+D 1379343 10
+D 1379542 5
+D 1379575 6
+D 1379598 5
+D 1379800 6
+D 1379817 5
+D 1379833 6
+D 1379873 5
+D 1382214 1
+D 1385747 6
+D 1385763 5
+D 1386013 6
+D 1386054 5
+D 1386606 6
+D 1386681 5
+D 1386736 6
+D 1386756 5
+D 1386913 6
+D 1387476 19
+D 1387674 9
+D 1387689 10
+D 1387834 9
+D 1387930 10
+D 1388078 9
+D 1388116 10
+D 1388310 9
+D 1388437 10
+D 1388615 9
+D 1388681 10
+D 1388981 5
+D 1388996 6
+D 1389012 5
+D 1389410 6
+D 1389427 5
+D 1389806 6
+D 1389821 5
+D 1390522 6
+D 1390537 5
+D 1390715 6
+D 1390753 5
+D 1391012 6
+D 1391027 5
+D 1391214 6
+D 1391236 5
+D 1394149 19
+D 1394268 2
+D 1394853 19
+D 1396079 19
+D 1396668 6
+D 1396695 5
+D 1396863 6
+D 1396891 5
+D 1397162 6
+D 1397187 5
+D 1400461 19
+D 1402089 19
+D 1405012 6
+D 1405036 5
+D 1405199 6
+D 1405215 5
+D 1405469 6
+D 1405766 9
+P 1405767 reward spout uncued
+P 1405769 Timestamp:1394268 Go:spout Success:True Free_rew:False Light:False Latency:11499
+P 1405770 Summary: T#:104 Tot_rate:0.52 Cued#:92 Uncued#:12 Cued_rate:0.47 Uncued_rate:0.92
+P 1405771 4 trials moving ave success rate: 0.91
+D 1405771 3
+D 1405801 10
+D 1406573 9
+D 1406618 10
+D 1407412 9
+D 1407464 10
+D 1407566 9
+D 1407603 10
+D 1408453 1
+D 1409034 5
+D 1409282 6
+D 1409434 9
+D 1409461 10
+D 1409503 19
+D 1409570 9
+D 1409610 10
+D 1413530 9
+D 1413545 10
+D 1413545 9
+D 1413560 10
+D 1413601 9
+D 1413658 10
+D 1413905 9
+D 1413933 10
+D 1414092 9
+D 1414143 10
+D 1414231 9
+D 1414340 10
+D 1415152 9
+D 1415260 10
+D 1415367 9
+D 1415478 10
+D 1415553 9
+D 1415568 10
+D 1415751 9
+D 1415867 10
+D 1416170 5
+D 1417335 19
+D 1417693 6
+D 1417731 5
+D 1421920 2
+D 1423687 6
+D 1423812 9
+P 1423813 reward spout uncued
+P 1423815 Timestamp:1421920 Go:spout Success:True Free_rew:False Light:False Latency:1894
+P 1423816 Summary: T#:105 Tot_rate:0.52 Cued#:92 Uncued#:13 Cued_rate:0.47 Uncued_rate:0.92
+P 1423817 4 trials moving ave success rate: 0.93
+D 1423817 3
+D 1423828 10
+D 1423953 9
+D 1423991 10
+D 1424378 9
+D 1424414 10
+D 1424516 9
+D 1424669 10
+D 1424750 9
+D 1424765 10
+D 1425806 19
+D 1426454 1
+D 1429336 5
+D 1429654 19
+D 1432186 19
+D 1434101 2
+D 1434413 19
+D 1438211 6
+D 1438384 9
+P 1438385 reward spout uncued
+P 1438387 Timestamp:1434101 Go:spout Success:True Free_rew:False Light:False Latency:4284
+P 1438388 Summary: T#:106 Tot_rate:0.53 Cued#:92 Uncued#:14 Cued_rate:0.47 Uncued_rate:0.93
+P 1438389 4 trials moving ave success rate: 0.94
+D 1438389 3
+D 1438403 10
+D 1438495 9
+D 1438570 10
+D 1439101 19
+D 1440135 5
+D 1440150 6
+D 1440175 5
+D 1440897 1
+D 1441116 6
+D 1441182 5
+D 1441217 6
+D 1441255 5
+D 1445012 2
+D 1447760 19
+D 1450944 6
+D 1451092 9
+P 1451093 reward spout uncued
+P 1451095 Timestamp:1445012 Go:spout Success:True Free_rew:False Light:False Latency:6081
+P 1451096 Summary: T#:107 Tot_rate:0.53 Cued#:92 Uncued#:15 Cued_rate:0.47 Uncued_rate:0.93
+P 1451097 4 trials moving ave success rate: 0.96
+D 1451097 3
+D 1451155 10
+D 1451223 9
+D 1451254 10
+D 1453870 1
+D 1455828 19
+D 1455932 9
+D 1455965 10
+D 1456068 9
+D 1456123 10
+D 1456211 9
+D 1456231 10
+D 1457381 9
+D 1457412 10
+D 1457547 9
+D 1457607 19
+D 1457902 10
+D 1458083 5
+D 1458346 6
+D 1458379 5
+D 1460124 19
+D 1461004 2
+D 1464901 6
+D 1465075 9
+P 1465076 reward spout uncued
+P 1465078 Timestamp:1461004 Go:spout Success:True Free_rew:False Light:False Latency:4072
+P 1465079 Summary: T#:108 Tot_rate:0.54 Cued#:92 Uncued#:16 Cued_rate:0.47 Uncued_rate:0.94
+P 1465080 4 trials moving ave success rate: 0.97
+D 1465080 3
+D 1465104 10
+D 1465198 9
+D 1465443 10
+D 1465738 5
+D 1466043 6
+D 1466095 5
+D 1466401 6
+D 1466600 9
+D 1466702 10
+D 1466788 5
+D 1466803 6
+D 1466808 5
+D 1466824 6
+D 1466853 5
+D 1466972 6
+D 1466999 5
+D 1467766 1
+D 1468319 19
+D 1470480 2
+D 1475402 6
+D 1475518 9
+P 1475519 reward spout uncued
+P 1475521 Timestamp:1470480 Go:spout Success:True Free_rew:False Light:False Latency:5040
+P 1475522 Summary: T#:109 Tot_rate:0.54 Cued#:92 Uncued#:17 Cued_rate:0.47 Uncued_rate:0.94
+P 1475523 4 trials moving ave success rate: 0.97
+D 1475524 3
+D 1475562 10
+D 1475659 9
+D 1475696 10
+D 1477065 9
+D 1477106 10
+D 1477203 9
+D 1477231 10
+D 1477618 19
+D 1478004 5
+D 1478534 1
+D 1482211 2
+D 1484328 19
+D 1486163 6
+D 1486317 9
+P 1486318 reward spout uncued
+P 1486320 Timestamp:1482211 Go:spout Success:True Free_rew:False Light:False Latency:4107
+P 1486321 Summary: T#:110 Tot_rate:0.55 Cued#:92 Uncued#:18 Cued_rate:0.47 Uncued_rate:0.94
+P 1486322 4 trials moving ave success rate: 0.98
+D 1486322 3
+D 1486333 10
+D 1486470 9
+D 1486546 10
+D 1488107 5
+D 1489015 1
+D 1491683 2
+D 1492409 19
+D 1496971 6
+D 1497065 9
+P 1497066 reward spout uncued
+P 1497068 Timestamp:1491683 Go:spout Success:True Free_rew:False Light:False Latency:5383
+P 1497069 Summary: T#:111 Tot_rate:0.55 Cued#:92 Uncued#:19 Cued_rate:0.47 Uncued_rate:0.95
+P 1497069 4 trials moving ave success rate: 0.98
+D 1497070 3
+D 1497103 10
+D 1497125 9
+D 1497140 10
+D 1497185 9
+D 1497209 19
+D 1497225 10
+D 1498384 9
+D 1498430 10
+D 1498541 9
+D 1498575 10
+D 1498723 9
+D 1498748 10
+D 1499223 5
+D 1499658 6
+D 1499678 5
+D 1499781 6
+D 1499797 5
+D 1500929 1
+D 1504821 2
+D 1506242 19
+D 1512010 6
+D 1512325 9
+P 1512326 reward spout uncued
+P 1512328 Timestamp:1504821 Go:spout Success:True Free_rew:False Light:False Latency:7505
+P 1512329 Summary: T#:112 Tot_rate:0.55 Cued#:92 Uncued#:20 Cued_rate:0.47 Uncued_rate:0.95
+P 1512329 4 trials moving ave success rate: 0.99
+D 1512330 3
+D 1512451 10
+D 1514193 5
+D 1514793 6
+D 1514845 5
+D 1515306 19
+D 1515664 1
+D 1518179 2
+D 1520206 6
+D 1520356 9
+P 1520356 reward spout uncued
+P 1520358 Timestamp:1518179 Go:spout Success:True Free_rew:False Light:False Latency:2178
+P 1520360 Summary: T#:113 Tot_rate:0.56 Cued#:92 Uncued#:21 Cued_rate:0.47 Uncued_rate:0.95
+P 1520360 4 trials moving ave success rate: 0.99
+D 1520361 3
+D 1520396 10
+D 1520468 9
+D 1520510 10
+D 1521213 9
+D 1521272 10
+D 1522323 5
+D 1522671 6
+D 1522765 19
+D 1522774 9
+D 1522823 10
+D 1522902 9
+D 1522917 10
+D 1523049 1
+D 1524324 5
+D 1525272 6
+D 1525315 5
+D 1525819 6
+D 1525856 5
+D 1529193 2
+D 1530834 19
+D 1531901 6
+D 1532031 9
+P 1532031 reward spout uncued
+P 1532033 Timestamp:1529193 Go:spout Success:True Free_rew:False Light:False Latency:2839
+P 1532035 Summary: T#:114 Tot_rate:0.56 Cued#:92 Uncued#:22 Cued_rate:0.47 Uncued_rate:0.95
+P 1532035 4 trials moving ave success rate: 0.99
+D 1532036 3
+D 1532131 10
+D 1532165 9
+D 1532193 10
+D 1532618 19
+D 1532949 9
+D 1533023 10
+D 1533110 9
+D 1533140 10
+D 1533240 9
+D 1533255 10
+D 1535094 9
+D 1535154 10
+D 1535246 9
+D 1535291 10
+D 1535365 9
+D 1535403 10
+D 1535534 19
+D 1535670 1
+D 1535810 9
+D 1535825 10
+D 1535994 9
+D 1536044 10
+D 1536208 9
+D 1536256 10
+D 1536420 9
+D 1536620 10
+D 1536751 9
+D 1536824 19
+D 1536826 10
+D 1538009 5
+D 1538026 6
+D 1538083 5
+D 1538531 6
+D 1538548 5
+D 1543318 2
+D 1543876 19
+D 1544973 6
+D 1545076 9
+P 1545077 reward spout uncued
+P 1545079 Timestamp:1543318 Go:spout Success:True Free_rew:False Light:False Latency:1760
+P 1545080 Summary: T#:115 Tot_rate:0.57 Cued#:92 Uncued#:23 Cued_rate:0.47 Uncued_rate:0.96
+P 1545081 4 trials moving ave success rate: 0.99
+D 1545082 3
+D 1545144 10
+D 1545208 9
+D 1545268 10
+D 1548308 19
+D 1548345 1
+D 1550716 9
+D 1550746 10
+D 1550827 9
+D 1550867 10
+D 1550960 9
+D 1550975 10
+D 1552327 5
+D 1552342 6
+D 1552385 5
+D 1552425 6
+D 1552463 5
+D 1552480 6
+D 1552499 5
+D 1552759 19
+D 1552983 6
+D 1553018 5
+D 1556630 2
+D 1557879 19
+D 1561740 6
+D 1561839 9
+P 1561840 reward spout uncued
+P 1561842 Timestamp:1556630 Go:spout Success:True Free_rew:False Light:False Latency:5210
+P 1561848 Summary: T#:116 Tot_rate:0.57 Cued#:92 Uncued#:24 Cued_rate:0.47 Uncued_rate:0.96
+P 1561848 4 trials moving ave success rate: 1.00
+D 1561849 3
+D 1561874 10
+D 1561958 9
+D 1561989 10
+D 1562585 9
+D 1562658 10
+D 1563243 19
+D 1563645 9
+D 1563682 10
+D 1563787 9
+D 1563842 10
+D 1563941 9
+D 1563977 10
+D 1564155 9
+D 1564170 10
+D 1564404 1
+D 1564408 9
+D 1564451 10
+D 1564526 9
+D 1564565 10
+D 1564655 9
+D 1565089 10
+D 1565440 5
+D 1565676 6
+D 1565698 5
+D 1565789 6
+D 1565808 5
+D 1565860 6
+D 1565883 5
+D 1566612 19
+D 1567685 19
+D 1569124 2
+D 1571459 19
+D 1571525 6
+D 1571939 5
+D 1572077 6
+D 1572348 5
+D 1572495 6
+D 1573359 5
+D 1573977 6
+D 1573996 5
+D 1574166 6
+D 1574196 5
+D 1574370 6
+D 1574418 5
+D 1574478 6
+D 1574502 5
+D 1575001 6
+D 1575026 5
+D 1575041 6
+D 1575083 5
+D 1575921 6
+D 1575999 5
+D 1576192 6
+D 1576257 5
+D 1576701 19
+D 1586011 19
+D 1587206 6
+D 1587419 9
+P 1587419 reward spout uncued
+P 1587421 Timestamp:1569124 Go:spout Success:True Free_rew:False Light:False Latency:18296
+P 1587422 Summary: T#:117 Tot_rate:0.57 Cued#:92 Uncued#:25 Cued_rate:0.47 Uncued_rate:0.96
+P 1587423 4 trials moving ave success rate: 1.00
+D 1587424 3
+D 1587473 10
+D 1587936 9
+D 1588034 10
+D 1588325 9
+D 1588357 10
+D 1588672 5
+D 1590345 1
+D 1592524 19
+D 1594244 2
+D 1595898 19
+D 1599010 6
+D 1599119 9
+P 1599120 reward spout uncued
+P 1599122 Timestamp:1594244 Go:spout Success:True Free_rew:False Light:False Latency:4877
+P 1599123 Summary: T#:118 Tot_rate:0.58 Cued#:92 Uncued#:26 Cued_rate:0.47 Uncued_rate:0.96
+P 1599124 4 trials moving ave success rate: 1.00
+D 1599124 3
+D 1599191 10
+D 1599255 9
+D 1599337 10
+D 1599778 19
+D 1600408 9
+D 1600525 10
+D 1600592 9
+D 1600607 10
+D 1601826 1
+D 1606218 9
+D 1606256 10
+D 1606345 9
+D 1606741 10
+D 1606942 5
+D 1607147 6
+D 1607181 19
+D 1607190 5
+D 1612104 2
+D 1612821 19
+D 1614399 6
+D 1614506 9
+P 1614506 reward spout uncued
+P 1614508 Timestamp:1612104 Go:spout Success:True Free_rew:False Light:False Latency:2403
+P 1614510 Summary: T#:119 Tot_rate:0.58 Cued#:92 Uncued#:27 Cued_rate:0.47 Uncued_rate:0.96
+P 1614510 4 trials moving ave success rate: 1.00
+D 1614511 3
+D 1614539 10
+D 1614627 9
+D 1614702 10
+D 1614768 9
+D 1614814 10
+D 1615031 9
+D 1615046 10
+D 1616089 19
+D 1616155 5
+D 1616170 6
+D 1616181 5
+D 1616355 6
+D 1617523 5
+D 1617692 1
+D 1620514 19
+D 1620858 2
+D 1622545 19
+D 1625418 6
+D 1625566 9
+P 1625566 reward spout uncued
+P 1625568 Timestamp:1620858 Go:spout Success:True Free_rew:False Light:False Latency:4709
+P 1625570 Summary: T#:120 Tot_rate:0.58 Cued#:92 Uncued#:28 Cued_rate:0.47 Uncued_rate:0.96
+P 1625570 4 trials moving ave success rate: 1.00
+D 1625571 3
+D 1625604 10
+D 1625626 9
+D 1625641 10
+D 1625674 9
+D 1625746 10
+D 1628545 1
+D 1628697 5
+D 1629195 6
+D 1629211 5
+D 1630178 6
+D 1630220 5
+D 1630500 6
+D 1630515 5
+D 1630757 19
+D 1633292 2
+D 1638156 19
+D 1640235 6
+D 1640257 5
+D 1640384 6
+D 1640554 9
+P 1640554 reward spout uncued
+P 1640556 Timestamp:1633292 Go:spout Success:True Free_rew:False Light:False Latency:7263
+P 1640558 Summary: T#:121 Tot_rate:0.59 Cued#:92 Uncued#:29 Cued_rate:0.47 Uncued_rate:0.97
+P 1640558 4 trials moving ave success rate: 1.00
+D 1640559 3
+D 1640599 10
+D 1640689 9
+D 1640717 10
+D 1641331 9
+D 1641473 10
+D 1643299 1
+D 1643672 5
+D 1643688 6
+D 1643714 5
+D 1646831 19
+D 1647349 2
+D 1650315 6
+D 1650388 5
+D 1650445 6
+D 1650801 5
+D 1654537 19
+D 1661600 19
+D 1662756 19
+D 1663578 6
+D 1663621 5
+D 1664001 6
+D 1664027 5
+P 1664299 reward free_uncued
+P 1664301 Timestamp:1647349 Go:spout Success:False Free_rew:True Light:False Latency:16950
+P 1664302 Summary: T#:122 Tot_rate:0.58 Cued#:92 Uncued#:30 Cued_rate:0.47 Uncued_rate:0.93
+P 1664303 4 trials moving ave success rate: 0.78
+D 1664303 4
+D 1666461 19
+D 1671443 1
+D 1672613 6
+D 1672658 5
+D 1672792 6
+D 1672861 5
+D 1672901 6
+D 1673028 9
+D 1673043 10
+D 1673172 9
+D 1673187 10
+D 1673535 19
+D 1673758 5
+D 1674496 6
+D 1674538 5
+D 1675120 6
+D 1675141 5
+D 1677025 19
+D 1679482 2
+D 1685841 19
+D 1689805 6
+D 1689986 9
+P 1689987 reward spout uncued
+P 1689989 Timestamp:1679482 Go:spout Success:True Free_rew:False Light:False Latency:10506
+P 1689990 Summary: T#:123 Tot_rate:0.59 Cued#:92 Uncued#:31 Cued_rate:0.47 Uncued_rate:0.94
+P 1689991 4 trials moving ave success rate: 0.83
+D 1689992 3
+D 1690067 10
+D 1691400 19
+D 1692102 9
+D 1692145 10
+D 1692238 9
+D 1692266 10
+D 1692683 1
+D 1692732 9
+D 1692784 10
+D 1692915 9
+D 1692930 10
+D 1693126 9
+D 1693141 10
+D 1695212 19
+D 1697351 9
+D 1697368 10
+D 1697461 9
+D 1697521 10
+D 1697604 9
+D 1697623 10
+D 1697735 9
+D 1697750 10
+D 1697915 9
+D 1697937 10
+D 1698072 9
+D 1698110 10
+D 1698255 5
+D 1698274 6
+D 1698357 9
+D 1698376 10
+D 1698542 5
+D 1698757 6
+D 1698776 5
+D 1699022 6
+D 1699058 5
+D 1702995 2
+D 1704055 19
+D 1706414 19
+D 1707354 6
+D 1707370 5
+D 1707377 6
+D 1707392 5
+D 1707826 6
+D 1707947 9
+P 1707947 reward spout uncued
+P 1707949 Timestamp:1702995 Go:spout Success:True Free_rew:False Light:False Latency:4953
+P 1707951 Summary: T#:124 Tot_rate:0.59 Cued#:92 Uncued#:32 Cued_rate:0.47 Uncued_rate:0.94
+P 1707951 4 trials moving ave success rate: 0.87
+D 1707952 3
+D 1708041 10
+D 1708085 9
+D 1708192 10
+D 1708281 9
+D 1708297 10
+D 1710080 19
+D 1710882 1
+D 1711438 19
+D 1712774 5
+D 1712789 6
+D 1712790 5
+D 1712806 6
+D 1712814 5
+D 1713021 6
+D 1713179 9
+D 1713210 10
+D 1713298 9
+D 1713386 10
+D 1716817 19
+D 1717722 9
+D 1717737 10
+D 1717859 9
+D 1718025 10
+D 1718173 5
+D 1718192 6
+D 1718212 5
+D 1720949 19
+D 1722875 2
+D 1727698 6
+D 1727727 5
+D 1727742 6
+D 1727877 9
+P 1727877 reward spout uncued
+P 1727879 Timestamp:1722875 Go:spout Success:True Free_rew:False Light:False Latency:5003
+P 1727881 Summary: T#:125 Tot_rate:0.59 Cued#:92 Uncued#:33 Cued_rate:0.47 Uncued_rate:0.94
+P 1727881 4 trials moving ave success rate: 0.90
+D 1727882 3
+D 1727931 10
+D 1728007 9
+D 1728120 10
+D 1729795 19
+D 1730602 5
+D 1730679 6
+D 1730700 5
+D 1731197 1
+D 1731485 6
+D 1731516 5
+D 1731531 6
+D 1731568 5
+D 1731612 6
+D 1731644 5
+D 1734270 2
+D 1737129 6
+D 1737240 9
+P 1737241 reward spout uncued
+P 1737243 Timestamp:1734270 Go:spout Success:True Free_rew:False Light:False Latency:2972
+P 1737244 Summary: T#:126 Tot_rate:0.60 Cued#:92 Uncued#:34 Cued_rate:0.47 Uncued_rate:0.94
+P 1737245 4 trials moving ave success rate: 0.92
+D 1737246 3
+D 1737260 10
+D 1737348 9
+D 1737419 19
+D 1737422 10
+D 1737502 9
+D 1737698 10
+D 1738181 9
+D 1738201 10
+D 1740158 1
+D 1742025 5
+D 1742106 6
+D 1742122 5
+D 1742124 6
+D 1742140 5
+D 1742409 6
+D 1742500 9
+D 1742545 10
+D 1742625 9
+D 1742826 10
+D 1743517 5
+D 1743604 6
+D 1743675 9
+D 1743750 10
+D 1743765 9
+D 1743772 10
+D 1744139 9
+D 1744268 10
+D 1744512 5
+D 1745823 19
+D 1748510 2
+D 1750760 6
+D 1750903 9
+P 1750903 reward spout uncued
+P 1750905 Timestamp:1748510 Go:spout Success:True Free_rew:False Light:False Latency:2394
+P 1750907 Summary: T#:127 Tot_rate:0.60 Cued#:92 Uncued#:35 Cued_rate:0.47 Uncued_rate:0.94
+P 1750907 4 trials moving ave success rate: 0.94
+D 1750908 3
+D 1750961 10
+D 1751053 9
+D 1751429 10
+D 1751835 5
+D 1753414 19
+D 1753465 1
+D 1757394 19
+D 1757569 2
+D 1761132 19
+D 1762400 6
+D 1762429 5
+D 1762737 6
+D 1762760 5
+D 1762874 6
+D 1763008 9
+P 1763009 reward spout uncued
+P 1763011 Timestamp:1757569 Go:spout Success:True Free_rew:False Light:False Latency:5440
+P 1763012 Summary: T#:128 Tot_rate:0.60 Cued#:92 Uncued#:36 Cued_rate:0.47 Uncued_rate:0.94
+P 1763013 4 trials moving ave success rate: 0.95
+D 1763013 3
+D 1763017 19
+D 1763023 10
+D 1763174 9
+D 1763208 10
+D 1763300 9
+D 1763327 10
+D 1763420 9
+D 1763435 10
+D 1764389 9
+D 1764434 10
+D 1764449 9
+D 1764453 10
+D 1764489 9
+D 1764523 10
+D 1765000 19
+D 1765521 5
+D 1765597 6
+D 1765634 5
+D 1766347 1
+D 1770595 19
+D 1770690 6
+D 1770852 9
+D 1770962 10
+D 1771097 9
+D 1771118 10
+D 1771178 9
+D 1771235 10
+D 1772270 5
+D 1772320 6
+D 1772335 5
+D 1772807 6
+D 1772827 5
+D 1776003 2
+D 1779335 19
+D 1781496 6
+D 1781802 9
+P 1781802 reward spout uncued
+P 1781804 Timestamp:1776003 Go:spout Success:True Free_rew:False Light:False Latency:5800
+P 1781806 Summary: T#:129 Tot_rate:0.60 Cued#:92 Uncued#:37 Cued_rate:0.47 Uncued_rate:0.95
+P 1781806 4 trials moving ave success rate: 0.96
+D 1781807 3
+D 1781902 10
+D 1781966 9
+D 1781983 10
+D 1781998 9
+D 1781999 10
+D 1782684 9
+D 1782699 10
+D 1782700 9
+D 1782715 10
+D 1784066 9
+D 1784213 10
+D 1784414 19
+D 1784444 5
+D 1784459 6
+D 1784574 5
+D 1784666 1
+D 1785045 6
+D 1785085 5
+D 1785199 6
+D 1785214 5
+D 1786474 6
+D 1786515 5
+D 1787972 6
+D 1788011 5
+D 1790659 2
+D 1791748 19
+D 1793776 19
+D 1797562 6
+D 1797852 5
+D 1797905 6
+D 1797939 5
+D 1798148 6
+D 1798172 5
+D 1798415 6
+D 1798439 5
+D 1801545 19
+D 1806133 19
+D 1807281 6
+D 1807452 9
+P 1807452 reward spout uncued
+P 1807454 Timestamp:1790659 Go:spout Success:True Free_rew:False Light:False Latency:16794
+P 1807456 Summary: T#:130 Tot_rate:0.61 Cued#:92 Uncued#:38 Cued_rate:0.47 Uncued_rate:0.95
+P 1807456 4 trials moving ave success rate: 0.97
+D 1807457 3
+D 1807699 10
+D 1808360 5
+D 1808401 6
+D 1808749 9
+D 1808828 10
+D 1808971 5
+D 1810347 19
+D 1810790 1
+D 1813967 2
+D 1814241 19
+D 1817838 6
+D 1817854 5
+D 1818021 19
+D 1818665 6
+D 1818738 5
+D 1819389 6
+D 1819404 5
+D 1819407 6
+D 1819422 5
+D 1822829 19
+D 1827906 6
+D 1827929 5
+D 1828212 6
+D 1828234 5
+D 1828334 19
+D 1828574 6
+D 1828600 5
+D 1829188 9
+P 1829189 reward spout uncued
+P 1829191 Timestamp:1813967 Go:spout Success:True Free_rew:False Light:False Latency:15222
+P 1829192 Summary: T#:131 Tot_rate:0.61 Cued#:92 Uncued#:39 Cued_rate:0.47 Uncued_rate:0.95
+P 1829193 4 trials moving ave success rate: 0.98
+D 1829193 3
+D 1829203 10
+D 1829222 9
+D 1829239 10
+D 1829335 9
+D 1829397 10
+D 1829462 9
+D 1829520 10
+D 1829581 9
+D 1829653 10
+D 1830320 9
+D 1830335 10
+D 1830523 9
+D 1830542 10
+D 1830775 9
+D 1830862 10
+D 1831029 9
+D 1831067 10
+D 1831509 19
+D 1831792 1
+D 1831873 9
+D 1831897 10
+D 1831912 9
+D 1832074 10
+D 1833332 6
+D 1833506 9
+D 1833522 10
+D 1834322 9
+D 1834337 10
+D 1834756 9
+D 1834771 10
+D 1835515 9
+D 1835548 10
+D 1835983 9
+D 1836043 10
+D 1838448 19
+D 1839252 9
+D 1839381 10
+D 1840011 9
+D 1840114 10
+D 1840210 5
+D 1841292 6
+D 1841309 5
+D 1841513 6
+D 1841550 5
+D 1842292 6
+D 1842307 5
+D 1842481 6
+D 1842499 5
+D 1845169 19
+D 1846089 6
+D 1846144 5
+D 1846190 6
+D 1846206 5
+D 1846307 6
+D 1846422 9
+D 1846449 10
+D 1846537 9
+D 1846570 10
+D 1846659 9
+D 1846674 10
+D 1846808 9
+D 1846897 10
+D 1847155 5
+D 1847512 6
+D 1847539 5
+D 1847717 19
+D 1848131 6
+D 1848147 5
+D 1848378 6
+D 1848791 9
+D 1848847 10
+D 1849093 9
+D 1849108 10
+D 1849109 9
+D 1849125 10
+D 1849241 9
+D 1849259 10
+D 1849517 9
+D 1849547 10
+D 1849651 9
+D 1849684 10
+D 1849839 9
+D 1849868 10
+D 1850004 9
+D 1850019 10
+D 1850628 5
+D 1850643 6
+D 1850672 5
+D 1851025 6
+D 1851450 5
+D 1853696 19
+D 1854482 2
+D 1860186 19
+P 1860793 reward free_uncued
+P 1860795 Timestamp:1854482 Go:spout Success:False Free_rew:True Light:False Latency:6311
+P 1860796 Summary: T#:132 Tot_rate:0.61 Cued#:92 Uncued#:40 Cued_rate:0.47 Uncued_rate:0.93
+P 1860797 4 trials moving ave success rate: 0.76
+D 1860797 4
+D 1860984 6
+D 1861013 5
+D 1861140 6
+D 1861237 9
+D 1861384 10
+D 1861447 9
+D 1861472 10
+D 1864100 5
+D 1864116 6
+D 1864146 5
+D 1864162 6
+D 1864203 5
+D 1864285 6
+D 1864384 9
+D 1864569 10
+D 1864680 9
+D 1864727 10
+D 1864830 9
+D 1864891 10
+D 1864990 9
+D 1865052 10
+D 1865726 9
+D 1865741 10
+D 1865893 9
+D 1865908 10
+D 1866097 1
+D 1866110 9
+D 1866138 10
+D 1866688 5
+D 1867237 6
+D 1867498 9
+D 1867530 10
+D 1867631 5
+D 1867649 6
+D 1867686 5
+D 1867905 6
+D 1867942 5
+D 1868702 6
+D 1868744 19
+D 1868744 5
+D 1872470 2
+D 1877435 6
+D 1877688 9
+P 1877689 reward spout uncued
+P 1877691 Timestamp:1872470 Go:spout Success:True Free_rew:False Light:False Latency:5219
+P 1877692 Summary: T#:133 Tot_rate:0.61 Cued#:92 Uncued#:41 Cued_rate:0.47 Uncued_rate:0.93
+P 1877693 4 trials moving ave success rate: 0.81
+D 1877693 3
+D 1877710 10
+D 1878057 19
+D 1878252 9
+D 1878278 10
+D 1878968 9
+D 1878998 10
+D 1879995 9
+D 1880031 10
+D 1880292 5
+D 1880437 6
+D 1880461 5
+D 1880571 1
+D 1880744 6
+D 1880781 5
+D 1884345 2
+D 1886322 19
+D 1888912 19
+D 1898436 19
+D 1903523 6
+D 1903813 9
+P 1903813 reward spout uncued
+P 1903815 Timestamp:1884345 Go:spout Success:True Free_rew:False Light:False Latency:19469
+P 1903817 Summary: T#:134 Tot_rate:0.61 Cued#:92 Uncued#:42 Cued_rate:0.47 Uncued_rate:0.93
+P 1903817 4 trials moving ave success rate: 0.85
+D 1903818 3
+D 1903890 19
+D 1903932 10
+D 1906015 9
+D 1906049 10
+D 1906164 9
+D 1906201 10
+D 1906310 9
+D 1906328 10
+D 1906357 9
+D 1906394 10
+D 1907168 1
+D 1907978 9
+D 1908015 10
+D 1908146 9
+D 1908209 10
+D 1908313 9
+D 1908329 10
+D 1908462 9
+D 1908506 10
+D 1908582 9
+D 1908633 10
+D 1910237 19
+D 1910519 9
+D 1910534 10
+D 1910749 5
+D 1913591 2
+D 1915183 6
+D 1915330 9
+P 1915331 reward spout uncued
+P 1915333 Timestamp:1913591 Go:spout Success:True Free_rew:False Light:False Latency:1740
+P 1915334 Summary: T#:135 Tot_rate:0.61 Cued#:92 Uncued#:43 Cued_rate:0.47 Uncued_rate:0.93
+P 1915335 4 trials moving ave success rate: 0.89
+D 1915335 3
+D 1915357 10
+D 1915372 9
+D 1915372 10
+D 1915391 9
+D 1915406 10
+D 1915443 9
+D 1915524 10
+D 1917905 9
+D 1917941 10
+D 1918095 9
+D 1918147 10
+D 1918247 9
+D 1918329 10
+D 1918572 19
+D 1919044 1
+D 1923719 19
+D 1924150 9
+D 1924166 10
+D 1924298 9
+D 1924353 10
+D 1924439 9
+D 1924489 10
+D 1924605 9
+D 1924621 10
+D 1924761 9
+D 1924802 10
+D 1925082 5
+D 1925335 6
+D 1925350 19
+D 1925427 5
+D 1926239 6
+D 1926279 5
+D 1930783 2
+D 1933969 6
+D 1933985 5
+D 1934294 6
+D 1934309 5
+D 1934315 6
+D 1934330 5
+D 1934428 19
+D 1935658 6
+D 1935686 5
+P 1942045 reward free_uncued
+P 1942047 Timestamp:1930783 Go:spout Success:False Free_rew:True Light:False Latency:11262
+P 1942048 Summary: T#:136 Tot_rate:0.61 Cued#:92 Uncued#:44 Cued_rate:0.47 Uncued_rate:0.91
+P 1942049 4 trials moving ave success rate: 0.69
+D 1942049 4
+D 1942536 19
+D 1942754 6
+D 1942977 9
+D 1943039 10
+D 1944689 9
+D 1944704 10
+D 1945442 5
+D 1945992 19
+D 1947066 19
+D 1947889 1
+D 1951100 19
+D 1951838 6
+D 1951964 9
+D 1951979 10
+D 1952108 9
+D 1952146 10
+D 1952244 9
+D 1952260 10
+D 1952582 9
+D 1952627 10
+D 1952719 9
+D 1952734 10
+D 1952880 9
+D 1952897 10
+D 1953088 5
+D 1953326 19
+D 1954404 19
+D 1955897 2
+D 1960203 19
+D 1962901 19
+D 1963654 19
+D 1965034 19
+D 1965769 19
+D 1966993 6
+D 1967031 5
+D 1967685 6
+D 1967731 5
+D 1969125 6
+D 1969161 5
+D 1969648 6
+D 1969664 5
+D 1971724 19
+D 1974804 19
+D 1976511 19
+P 1976890 reward free_uncued
+P 1976892 Timestamp:1955897 Go:spout Success:False Free_rew:True Light:False Latency:20993
+P 1976893 Summary: T#:137 Tot_rate:0.61 Cued#:92 Uncued#:45 Cued_rate:0.47 Uncued_rate:0.89
+P 1976894 4 trials moving ave success rate: 0.54
+D 1976894 4
+D 1977126 6
+D 1977141 5
+D 1977402 6
+D 1977517 9
+D 1977533 10
+D 1977645 9
+D 1977818 10
+D 1978000 19
+D 1978985 9
+D 1979000 10
+D 1979183 9
+D 1979274 10
+D 1980965 5
+D 1982157 1
+D 1982487 6
+D 1982816 9
+D 1982868 10
+D 1983078 5
+D 1986295 19
+D 1986711 2
+D 1995010 19
+D 2001443 19
+P 2006158 reward free_uncued
+P 2006160 Timestamp:1986711 Go:spout Success:False Free_rew:True Light:False Latency:19447
+P 2006161 Summary: T#:138 Tot_rate:0.60 Cued#:92 Uncued#:46 Cued_rate:0.47 Uncued_rate:0.87
+P 2006162 4 trials moving ave success rate: 0.42
+D 2006162 4
+D 2006218 9
+D 2006233 10
+D 2006292 6
+D 2006312 5
+D 2006384 6
+D 2006420 5
+D 2006508 6
+D 2006861 9
+D 2006911 10
+D 2007021 9
+D 2007564 10
+D 2009098 5
+D 2009599 19
+D 2010132 6
+D 2010196 5
+D 2010308 6
+D 2010333 5
+D 2011446 1
+D 2012901 19
+D 2014131 19
+D 2014778 6
+D 2014889 9
+D 2014916 10
+D 2015005 9
+D 2015032 10
+D 2015143 9
+D 2015165 10
+D 2015312 5
+D 2015327 6
+D 2015382 5
+D 2015579 6
+D 2016067 5
+D 2016194 6
+D 2016220 5
+D 2016851 6
+D 2016879 5
+D 2017783 6
+D 2017815 5
+D 2018151 19
+D 2022199 2
+D 2022696 19
+D 2029428 19
+D 2034244 19
+P 2036447 reward free_uncued
+P 2036449 Timestamp:2022199 Go:bar Success:False Free_rew:True Light:False Latency:14248
+P 2036450 Summary: T#:139 Tot_rate:0.60 Cued#:92 Uncued#:47 Cued_rate:0.47 Uncued_rate:0.85
+P 2036451 4 trials moving ave success rate: 0.33
+D 2036451 4
+D 2036897 6
+D 2037068 9
+D 2037084 10
+D 2037156 9
+D 2037213 10
+D 2037551 9
+D 2037566 10
+D 2038518 9
+D 2038696 10
+D 2038820 5
+D 2038825 19
+D 2038896 6
+D 2038933 5
+D 2041534 19
+D 2042453 6
+D 2042481 5
+D 2042778 1
+D 2045888 19
+D 2047448 2
+D 2050509 6
+P 2050509 reward bar_off
+D 2050633 9
+P 2050633 reward bar uncued
+P 2050635 Timestamp:2047448 Go:bar Success:True Free_rew:False Light:False Latency:3186
+P 2050637 Summary: T#:140 Tot_rate:0.60 Cued#:92 Uncued#:48 Cued_rate:0.47 Uncued_rate:0.85
+P 2050637 4 trials moving ave success rate: 0.48
+D 2050638 3
+D 2050682 10
+D 2051329 9
+D 2051398 10
+D 2052743 9
+D 2052776 10
+D 2052916 9
+D 2053008 10
+D 2053086 9
+D 2053106 10
+D 2053523 9
+D 2053552 10
+D 2053603 1
+D 2054824 5
+D 2055118 19
+D 2055487 6
+D 2055531 5
+D 2057838 19
+D 2059382 2
+D 2062078 19
+D 2063161 6
+P 2063161 reward bar_off
+D 2063331 9
+P 2063331 reward bar uncued
+P 2063333 Timestamp:2059382 Go:bar Success:True Free_rew:False Light:False Latency:3950
+P 2063334 Summary: T#:141 Tot_rate:0.60 Cued#:92 Uncued#:49 Cued_rate:0.47 Uncued_rate:0.86
+P 2063335 4 trials moving ave success rate: 0.59
+D 2063336 3
+D 2063388 10
+D 2065099 9
+D 2065162 10
+D 2065267 9
+D 2065297 10
+D 2066371 1
+D 2066788 5
+D 2066982 6
+D 2067014 5
+D 2070242 2
+D 2070750 19
+D 2075333 19
+D 2075584 6
+D 2075607 5
+D 2075622 6
+D 2075801 9
+P 2075802 reward spout uncued
+P 2075804 Timestamp:2070242 Go:spout Success:True Free_rew:False Light:False Latency:5560
+P 2075805 Summary: T#:142 Tot_rate:0.61 Cued#:92 Uncued#:50 Cued_rate:0.47 Uncued_rate:0.86
+P 2075806 4 trials moving ave success rate: 0.68
+D 2075806 3
+D 2075829 10
+D 2076211 9
+D 2076276 10
+D 2076328 9
+D 2076385 10
+D 2077264 5
+D 2077410 6
+D 2077448 5
+D 2079122 1
+D 2081208 19
+D 2083097 2
+D 2084833 19
+D 2092218 19
+D 2095266 19
+D 2095620 6
+D 2095760 9
+P 2095761 reward spout uncued
+P 2095763 Timestamp:2083097 Go:spout Success:True Free_rew:False Light:False Latency:12664
+P 2095764 Summary: T#:143 Tot_rate:0.61 Cued#:92 Uncued#:51 Cued_rate:0.47 Uncued_rate:0.86
+P 2095765 4 trials moving ave success rate: 0.75
+D 2095765 3
+D 2095820 10
+D 2096742 9
+D 2096766 10
+D 2096893 9
+D 2096908 10
+D 2097094 9
+D 2097118 10
+D 2097254 9
+D 2097279 10
+D 2097449 9
+D 2097487 10
+D 2098386 9
+D 2098457 10
+D 2099552 1
+D 2099611 19
+D 2099898 9
+D 2099917 10
+D 2100089 5
+D 2100104 6
+D 2100119 5
+D 2100851 6
+D 2100891 5
+D 2104682 19
+D 2105420 2
+D 2108381 6
+D 2108517 9
+P 2108518 reward spout uncued
+P 2108520 Timestamp:2105420 Go:spout Success:True Free_rew:False Light:False Latency:3098
+P 2108521 Summary: T#:144 Tot_rate:0.61 Cued#:92 Uncued#:52 Cued_rate:0.47 Uncued_rate:0.87
+P 2108522 4 trials moving ave success rate: 0.81
+D 2108522 3
+D 2108558 10
+D 2108578 9
+D 2108593 10
+D 2108973 9
+D 2109133 10
+D 2110024 5
+D 2111489 1
+D 2112386 19
+D 2114671 19
+D 2115717 2
+D 2119498 6
+D 2119642 9
+P 2119642 reward spout uncued
+P 2119644 Timestamp:2115717 Go:spout Success:True Free_rew:False Light:False Latency:3926
+P 2119646 Summary: T#:145 Tot_rate:0.61 Cued#:92 Uncued#:53 Cued_rate:0.47 Uncued_rate:0.87
+P 2119646 4 trials moving ave success rate: 0.85
+D 2119647 3
+D 2119675 10
+D 2119691 9
+D 2119695 10
+D 2119768 9
+D 2119796 10
+D 2120533 9
+D 2120574 10
+D 2120677 9
+D 2120713 10
+D 2122241 1
+D 2123166 19
+D 2126736 19
+D 2128207 5
+D 2128223 6
+D 2128420 9
+D 2128519 10
+D 2128667 9
+D 2128732 10
+D 2129303 19
+D 2130183 9
+D 2130211 10
+D 2130334 9
+D 2130353 10
+D 2130621 19
+D 2131090 5
+D 2131759 6
+D 2131784 5
+D 2132150 6
+D 2132167 5
+D 2132255 6
+D 2132270 5
+D 2132272 6
+D 2132313 5
+D 2132510 6
+D 2132540 5
+D 2132555 6
+D 2132568 5
+D 2132583 6
+D 2132584 5
+D 2136423 2
+D 2136474 19
+D 2140038 19
+D 2140406 6
+D 2140533 9
+P 2140534 reward spout uncued
+P 2140536 Timestamp:2136423 Go:spout Success:True Free_rew:False Light:False Latency:4111
+P 2140537 Summary: T#:146 Tot_rate:0.62 Cued#:92 Uncued#:54 Cued_rate:0.47 Uncued_rate:0.87
+P 2140538 4 trials moving ave success rate: 0.88
+D 2140538 3
+D 2140548 10
+D 2140668 9
+D 2140718 10
+D 2141868 9
+D 2141886 10
+D 2142045 9
+D 2142066 10
+D 2142186 9
+D 2142232 10
+D 2143481 5
+D 2143990 6
+D 2144037 5
+D 2144122 1
+D 2144234 6
+D 2144268 5
+D 2144368 6
+D 2144405 5
+D 2146961 19
+D 2147566 2
+D 2152097 19
+D 2153868 6
+D 2154048 9
+P 2154049 reward spout uncued
+P 2154051 Timestamp:2147566 Go:spout Success:True Free_rew:False Light:False Latency:6483
+P 2154052 Summary: T#:147 Tot_rate:0.62 Cued#:92 Uncued#:55 Cued_rate:0.47 Uncued_rate:0.87
+P 2154053 4 trials moving ave success rate: 0.91
+D 2154053 3
+D 2154078 10
+D 2154358 9
+D 2154412 10
+D 2155218 9
+D 2155233 10
+D 2155933 19
+D 2156247 5
+D 2156269 6
+D 2156322 5
+D 2157110 19
+D 2157350 1
+D 2158323 19
+D 2162345 2
+D 2166619 19
+D 2171681 19
+D 2172879 19
+D 2174425 6
+D 2174823 9
+P 2174823 reward spout uncued
+P 2174826 Timestamp:2162345 Go:spout Success:True Free_rew:False Light:False Latency:12479
+P 2174827 Summary: T#:148 Tot_rate:0.62 Cued#:92 Uncued#:56 Cued_rate:0.47 Uncued_rate:0.88
+P 2174827 4 trials moving ave success rate: 0.93
+D 2174828 3
+D 2174881 10
+D 2176005 5
+D 2177019 6
+D 2177038 5
+D 2177958 1
+D 2178592 6
+D 2178661 5
+D 2180403 6
+D 2180435 5
+D 2181275 19
+D 2183218 2
+D 2190011 19
+D 2190824 19
+D 2193262 19
+D 2200228 6
+D 2200243 5
+D 2200249 6
+D 2200264 5
+D 2200361 19
+D 2205522 19
+P 2205959 reward free_uncued
+P 2205961 Timestamp:2183218 Go:spout Success:False Free_rew:True Light:False Latency:22741
+P 2205962 Summary: T#:149 Tot_rate:0.62 Cued#:92 Uncued#:57 Cued_rate:0.47 Uncued_rate:0.86
+P 2205963 4 trials moving ave success rate: 0.72
+D 2205963 4
+D 2206128 19
+D 2206512 6
+D 2206793 9
+D 2206902 10
+D 2207042 9
+D 2207067 10
+D 2207414 5
+D 2212283 1
+D 2214036 19
+D 2216541 2
+D 2220611 19
+D 2227874 19
+D 2233285 19
+D 2234224 19
+P 2237284 reward free_uncued
+P 2237286 Timestamp:2216541 Go:spout Success:False Free_rew:True Light:False Latency:20743
+P 2237287 Summary: T#:150 Tot_rate:0.61 Cued#:92 Uncued#:58 Cued_rate:0.47 Uncued_rate:0.84
+P 2237288 4 trials moving ave success rate: 0.56
+D 2237288 4
+D 2237344 9
+D 2237359 10
+D 2237741 6
+D 2237756 5
+D 2238396 6
+D 2238713 9
+D 2238761 10
+D 2239479 19
+D 2240937 9
+D 2240972 10
+D 2241093 9
+D 2241143 10
+D 2242934 19
+D 2243018 5
+D 2243310 6
+D 2243356 5
+D 2243418 1
+D 2246985 2
+D 2250365 19
+D 2252689 19
+D 2256001 6
+D 2256021 5
+D 2258509 19
+D 2263623 19
+P 2264419 reward free_uncued
+P 2264421 Timestamp:2246985 Go:spout Success:False Free_rew:True Light:False Latency:17434
+P 2264422 Summary: T#:151 Tot_rate:0.61 Cued#:92 Uncued#:59 Cued_rate:0.47 Uncued_rate:0.83
+P 2264423 4 trials moving ave success rate: 0.44
+D 2264423 4
+D 2264433 9
+D 2264448 10
+D 2264487 19
+D 2264740 6
+D 2264885 9
+D 2264918 10
+D 2265022 9
+D 2265051 10
+D 2265164 9
+D 2265182 10
+D 2265312 9
+D 2265384 10
+D 2265656 19
+D 2266320 5
+D 2266335 6
+D 2266335 5
+D 2266351 6
+D 2266532 19
+D 2267043 5
+D 2267072 6
+D 2267089 5
+D 2267106 6
+D 2267121 5
+D 2267363 6
+D 2267462 9
+D 2267494 10
+D 2267719 5
+D 2267771 6
+D 2267795 5
+D 2268751 6
+D 2268766 5
+D 2268808 6
+D 2268848 5
+D 2269160 6
+D 2269175 5
+D 2269654 1
+D 2271938 19
+D 2272621 2
+D 2279203 19
+D 2284457 19
+D 2285177 19
+D 2286322 19
+P 2293655 reward free_uncued
+P 2293657 Timestamp:2272621 Go:bar Success:False Free_rew:True Light:False Latency:21034
+P 2293658 Summary: T#:152 Tot_rate:0.61 Cued#:92 Uncued#:60 Cued_rate:0.47 Uncued_rate:0.82
+P 2293659 4 trials moving ave success rate: 0.34
+D 2293659 4
+D 2294195 6
+D 2294373 9
+D 2294407 10
+D 2294528 9
+D 2294567 10
+D 2294711 9
+D 2294736 10
+D 2294868 9
+D 2294923 10
+D 2295013 9
+D 2295056 10
+D 2295603 19
+D 2296963 5
+D 2297084 6
+D 2297099 5
+D 2298734 1
+D 2300802 19
+D 2301411 2
+D 2308711 19
+D 2310612 6
+P 2310612 reward bar_off
+D 2310788 9
+P 2310788 reward bar uncued
+P 2310790 Timestamp:2301411 Go:bar Success:True Free_rew:False Light:False Latency:9378
+P 2310792 Summary: T#:153 Tot_rate:0.61 Cued#:92 Uncued#:61 Cued_rate:0.47 Uncued_rate:0.82
+P 2310792 4 trials moving ave success rate: 0.49
+D 2310793 3
+D 2310855 10
+D 2310945 9
+D 2310966 10
+D 2312325 5
+D 2312660 6
+D 2312691 5
+D 2313923 1
+D 2314201 19
+D 2318679 2
+D 2320627 6
+P 2320627 reward bar_off
+D 2320968 9
+P 2320969 reward bar uncued
+P 2320971 Timestamp:2318679 Go:bar Success:True Free_rew:False Light:False Latency:2290
+P 2320972 Summary: T#:154 Tot_rate:0.61 Cued#:92 Uncued#:62 Cued_rate:0.47 Uncued_rate:0.82
+P 2320973 4 trials moving ave success rate: 0.60
+D 2320973 3
+D 2321002 10
+D 2321120 9
+D 2321137 10
+D 2321496 9
+D 2321559 10
+D 2322465 5
+D 2322495 19
+D 2322912 6
+D 2323053 9
+D 2323072 10
+D 2323323 5
+D 2323495 6
+D 2323523 5
+D 2324331 1
+D 2327814 19
+D 2327815 2
+D 2330577 19
+D 2332708 19
+D 2336344 19
+D 2336952 19
+D 2338384 19
+D 2340428 6
+D 2340447 5
+D 2340760 6
+D 2340911 9
+P 2340911 reward spout uncued
+P 2340913 Timestamp:2327815 Go:spout Success:True Free_rew:False Light:False Latency:13097
+P 2340915 Summary: T#:155 Tot_rate:0.61 Cued#:92 Uncued#:63 Cued_rate:0.47 Uncued_rate:0.83
+P 2340915 4 trials moving ave success rate: 0.69
+D 2340916 3
+D 2340932 10
+D 2341053 9
+D 2341088 10
+D 2341422 9
+D 2341455 10
+D 2341747 5
+D 2343640 1
+D 2344091 19
+D 2347266 2
+D 2349936 19
+D 2352686 6
+D 2352862 9
+P 2352863 reward spout uncued
+P 2352865 Timestamp:2347266 Go:spout Success:True Free_rew:False Light:False Latency:5597
+P 2352866 Summary: T#:156 Tot_rate:0.62 Cued#:92 Uncued#:64 Cued_rate:0.47 Uncued_rate:0.83
+P 2352867 4 trials moving ave success rate: 0.76
+D 2352867 3
+D 2352910 10
+D 2353034 9
+D 2353076 10
+D 2353159 19
+D 2355628 5
+D 2356206 1
+D 2356840 19
+D 2359201 2
+D 2364888 19
+D 2365157 6
+D 2365316 9
+P 2365317 reward spout uncued
+P 2365319 Timestamp:2359201 Go:spout Success:True Free_rew:False Light:False Latency:6116
+P 2365320 Summary: T#:157 Tot_rate:0.62 Cued#:92 Uncued#:65 Cued_rate:0.47 Uncued_rate:0.83
+P 2365321 4 trials moving ave success rate: 0.81
+D 2365324 3
+D 2365351 10
+D 2365483 9
+D 2365662 10
+D 2367510 5
+D 2367539 6
+D 2367555 5
+D 2368317 6
+D 2368336 1
+D 2368352 5
+D 2371179 2
+D 2372811 19
+D 2375007 6
+D 2375299 9
+P 2375300 reward spout uncued
+P 2375302 Timestamp:2371179 Go:spout Success:True Free_rew:False Light:False Latency:4122
+P 2375303 Summary: T#:158 Tot_rate:0.62 Cued#:92 Uncued#:66 Cued_rate:0.47 Uncued_rate:0.83
+P 2375304 4 trials moving ave success rate: 0.85
+D 2375305 3
+D 2375357 10
+D 2376498 9
+D 2376522 10
+D 2377153 5
+D 2377172 6
+D 2377229 5
+D 2377947 1
+D 2380488 2
+D 2381497 19
+D 2389840 19
+D 2393978 19
+D 2397023 6
+D 2397045 5
+D 2397099 6
+D 2397256 9
+P 2397257 reward spout uncued
+P 2397259 Timestamp:2380488 Go:spout Success:True Free_rew:False Light:False Latency:16769
+P 2397260 Summary: T#:159 Tot_rate:0.62 Cued#:92 Uncued#:67 Cued_rate:0.47 Uncued_rate:0.84
+P 2397261 4 trials moving ave success rate: 0.89
+D 2397261 3
+D 2397301 10
+D 2398391 9
+D 2398431 10
+D 2400246 1
+D 2401027 5
+D 2401165 6
+D 2401187 5
+D 2402339 19
+D 2404644 6
+D 2404686 5
+D 2404862 6
+D 2404877 5
+D 2409137 2
+D 2409869 19
+D 2412396 6
+D 2412726 9
+P 2412727 reward spout uncued
+P 2412729 Timestamp:2409137 Go:spout Success:True Free_rew:False Light:False Latency:3590
+P 2412730 Summary: T#:160 Tot_rate:0.63 Cued#:92 Uncued#:68 Cued_rate:0.47 Uncued_rate:0.84
+P 2412731 4 trials moving ave success rate: 0.91
+D 2412731 3
+D 2412758 10
+D 2412787 9
+D 2412802 10
+D 2413402 19
+D 2413580 9
+D 2413673 10
+D 2414507 5
+D 2415336 1
+D 2416156 19
+D 2418146 2
+D 2425098 19
+D 2432612 6
+D 2432629 5
+D 2434414 19
+D 2434483 6
+D 2434498 5
+D 2434502 6
+D 2434517 5
+P 2435337 reward free_uncued
+P 2435339 Timestamp:2418146 Go:spout Success:False Free_rew:True Light:False Latency:17191
+P 2435340 Summary: T#:161 Tot_rate:0.62 Cued#:92 Uncued#:69 Cued_rate:0.47 Uncued_rate:0.83
+P 2435341 4 trials moving ave success rate: 0.71
+D 2435341 4
+D 2441565 19
+D 2442381 19
+D 2442712 1
+D 2445199 6
+D 2445234 5
+D 2446046 6
+D 2446083 5
+D 2447585 6
+D 2447609 5
+D 2448326 6
+D 2448422 5
+D 2450142 19
+D 2451136 6
+D 2451151 5
+D 2454098 6
+D 2454113 5
+D 2455004 19
+D 2458630 2
+D 2461534 6
+D 2461577 5
+D 2461989 6
+D 2462006 5
+D 2462570 19
+D 2462633 6
+D 2462648 5
+D 2463013 6
+D 2463030 5
+D 2467371 19
+P 2468712 reward free_uncued
+P 2468714 Timestamp:2458630 Go:spout Success:False Free_rew:True Light:False Latency:10082
+P 2468715 Summary: T#:162 Tot_rate:0.62 Cued#:92 Uncued#:70 Cued_rate:0.47 Uncued_rate:0.81
+P 2468716 4 trials moving ave success rate: 0.55
+D 2468716 4
+D 2469123 6
+D 2469140 5
+D 2469766 6
+D 2469805 5
+D 2469809 19
+D 2474867 1
+D 2476414 19
+D 2478667 2
+D 2479215 19
+D 2479819 6
+D 2479834 5
+D 2480149 6
+D 2480174 5
+D 2480785 6
+D 2480822 5
+D 2485576 6
+D 2485624 5
+D 2486166 6
+D 2486216 5
+D 2486333 6
+D 2486394 5
+D 2486818 6
+D 2486833 5
+D 2486838 6
+D 2486853 5
+D 2487466 6
+D 2487507 5
+D 2487711 19
+D 2488535 19
+D 2493318 19
+D 2495810 6
+D 2495840 5
+D 2495940 6
+D 2495970 5
+D 2497453 19
+D 2499649 19
+D 2501117 6
+D 2501157 5
+D 2501171 19
+D 2504285 6
+D 2504326 5
+D 2504383 6
+D 2504398 5
+P 2504870 reward free_uncued
+P 2504872 Timestamp:2478667 Go:spout Success:False Free_rew:True Light:False Latency:26203
+P 2504873 Summary: T#:163 Tot_rate:0.61 Cued#:92 Uncued#:71 Cued_rate:0.47 Uncued_rate:0.80
+P 2504874 4 trials moving ave success rate: 0.43
+D 2504874 4
+D 2505260 6
+D 2505327 5
+D 2505623 19
+D 2505638 6
+D 2505678 5
+D 2508047 19
+D 2509352 6
+D 2509371 5
+D 2510660 1
+D 2512598 19
+D 2513466 2
+D 2516889 19
+D 2524580 19
+D 2532792 19
+D 2536114 19
+D 2536844 19
+D 2537830 6
+P 2537831 reward bar_off
+D 2537861 5
+D 2538571 6
+D 2538597 5
+P 2540661 reward free_uncued
+P 2540663 Timestamp:2513466 Go:bar Success:False Free_rew:True Light:False Latency:27195
+P 2540664 Summary: T#:164 Tot_rate:0.61 Cued#:92 Uncued#:72 Cued_rate:0.47 Uncued_rate:0.79
+P 2540665 4 trials moving ave success rate: 0.34
+D 2540665 4
+D 2542254 6
+D 2542273 5
+D 2543366 19
+D 2545927 1
+D 2548739 19
+D 2550593 2
+D 2552529 19
+D 2554917 19
+D 2560750 6
+P 2560751 reward bar_off
+D 2560770 5
+D 2564201 19
+D 2565928 19
+D 2567514 6
+D 2567759 9
+P 2567760 reward bar uncued
+P 2567762 Timestamp:2550593 Go:bar Success:True Free_rew:False Light:False Latency:17167
+P 2567763 Summary: T#:165 Tot_rate:0.61 Cued#:92 Uncued#:73 Cued_rate:0.47 Uncued_rate:0.79
+P 2567764 4 trials moving ave success rate: 0.48
+D 2567764 3
+D 2567816 10
+D 2569612 5
+D 2570215 6
+D 2570249 5
+D 2570331 1
+D 2573732 2
+D 2575383 19
+D 2580026 19
+D 2589225 19
+D 2590862 19
+P 2594332 reward free_uncued
+P 2594334 Timestamp:2573732 Go:bar Success:False Free_rew:True Light:False Latency:20600
+P 2594335 Summary: T#:166 Tot_rate:0.61 Cued#:92 Uncued#:74 Cued_rate:0.47 Uncued_rate:0.78
+P 2594336 4 trials moving ave success rate: 0.38
+D 2594336 4
+D 2594392 9
+D 2594407 10
+D 2594649 6
+D 2594999 9
+D 2595053 10
+D 2595166 9
+D 2595181 10
+D 2595302 9
+D 2595325 10
+D 2595583 9
+D 2595621 10
+D 2596260 19
+D 2596351 9
+D 2596401 10
+D 2596522 9
+D 2596552 10
+D 2596702 9
+D 2596721 10
+D 2596885 9
+D 2596924 10
+D 2597059 9
+D 2597078 10
+D 2597083 19
+D 2597993 5
+D 2598031 6
+D 2598056 5
+D 2599690 1
+D 2603820 2
+D 2603996 19
+D 2607402 6
+P 2607403 reward bar_off
+D 2607552 9
+P 2607552 reward bar uncued
+P 2607554 Timestamp:2603820 Go:bar Success:True Free_rew:False Light:False Latency:3733
+P 2607556 Summary: T#:167 Tot_rate:0.61 Cued#:92 Uncued#:75 Cued_rate:0.47 Uncued_rate:0.79
+P 2607556 4 trials moving ave success rate: 0.51
+D 2607559 3
+D 2607597 10
+D 2607671 9
+D 2607762 10
+D 2607808 9
+D 2607848 10
+D 2608352 19
+D 2608570 9
+D 2608623 10
+D 2608687 9
+D 2608794 10
+D 2610486 1
+D 2611285 5
+D 2615111 19
+D 2615728 2
+D 2615747 6
+D 2615940 9
+P 2615941 reward spout uncued
+P 2615943 Timestamp:2615728 Go:spout Success:True Free_rew:False Light:False Latency:214
+P 2615944 Summary: T#:168 Tot_rate:0.61 Cued#:92 Uncued#:76 Cued_rate:0.47 Uncued_rate:0.79
+P 2615945 4 trials moving ave success rate: 0.62
+D 2615946 3
+D 2615956 10
+D 2616081 9
+D 2616138 10
+D 2617294 9
+D 2617327 10
+D 2617391 9
+D 2617420 10
+D 2617628 19
+D 2618279 5
+D 2619971 1
+D 2622704 6
+D 2622813 9
+D 2622828 10
+D 2622948 9
+D 2622978 10
+D 2623903 5
+D 2623919 6
+D 2623926 5
+D 2624673 6
+D 2624711 5
+D 2625442 19
+D 2627895 2
+D 2634254 19
+D 2642077 19
+P 2646972 reward free_uncued
+P 2646974 Timestamp:2627895 Go:spout Success:False Free_rew:True Light:False Latency:19077
+P 2646975 Summary: T#:169 Tot_rate:0.61 Cued#:92 Uncued#:77 Cued_rate:0.47 Uncued_rate:0.78
+P 2646976 4 trials moving ave success rate: 0.48
+D 2646976 4
+D 2647256 6
+D 2647371 5
+D 2647451 6
+D 2647726 9
+D 2647762 10
+D 2647869 9
+D 2647911 10
+D 2648228 9
+D 2648272 10
+D 2648564 5
+D 2648579 6
+D 2648584 5
+D 2648874 6
+D 2648907 5
+D 2649708 19
+D 2651219 6
+D 2651243 5
+D 2651762 6
+D 2651806 5
+D 2651870 6
+D 2651918 5
+D 2652799 1
+D 2654268 19
+D 2655644 19
+D 2656368 2
+D 2663690 19
+D 2664747 6
+P 2664747 reward bar_off
+D 2664761 9
+D 2664763 5
+D 2664776 10
+D 2665531 6
+D 2665570 5
+D 2665641 6
+D 2665795 9
+P 2665795 reward bar uncued
+P 2665797 Timestamp:2656368 Go:bar Success:True Free_rew:False Light:False Latency:9428
+P 2665799 Summary: T#:170 Tot_rate:0.61 Cued#:92 Uncued#:78 Cued_rate:0.47 Uncued_rate:0.78
+P 2665799 4 trials moving ave success rate: 0.60
+D 2665800 3
+D 2665816 10
+D 2665913 9
+D 2665984 10
+D 2667049 9
+D 2667130 10
+D 2667198 9
+D 2667260 10
+D 2668322 9
+D 2668360 10
+D 2668435 9
+D 2668456 10
+D 2668670 1
+D 2669034 19
+D 2669503 9
+D 2669530 10
+D 2669631 9
+D 2669662 10
+D 2670470 5
+D 2673318 2
+D 2675197 19
+D 2683863 19
+D 2684348 6
+D 2684452 9
+P 2684453 reward spout uncued
+P 2684455 Timestamp:2673318 Go:spout Success:True Free_rew:False Light:False Latency:11135
+P 2684456 Summary: T#:171 Tot_rate:0.61 Cued#:92 Uncued#:79 Cued_rate:0.47 Uncued_rate:0.78
+P 2684457 4 trials moving ave success rate: 0.69
+D 2684457 3
+D 2684509 10
+D 2684556 19
+D 2684567 9
+D 2684619 10
+D 2685647 9
+D 2685664 10
+D 2687308 1
+D 2687355 19
+D 2692090 5
+D 2692651 6
+D 2692686 5
+D 2693398 6
+D 2693516 5
+D 2694276 6
+D 2694313 5
+D 2694863 19
+D 2698402 2
+D 2700732 19
+D 2707870 19
+P 2709308 reward free_uncued
+P 2709310 Timestamp:2698402 Go:spout Success:False Free_rew:True Light:False Latency:10906
+P 2709311 Summary: T#:172 Tot_rate:0.61 Cued#:92 Uncued#:80 Cued_rate:0.47 Uncued_rate:0.78
+P 2709312 4 trials moving ave success rate: 0.53
+D 2709312 4
+D 2710645 6
+D 2710689 5
+D 2710737 6
+D 2710755 5
+D 2711659 6
+D 2711698 5
+D 2715314 19
+D 2715901 1
+D 2718996 19
+D 2719118 2
+D 2724977 19
+D 2730988 6
+D 2731018 5
+D 2733483 19
+D 2741412 19
+D 2742230 6
+D 2742272 5
+D 2742391 6
+D 2742445 5
+D 2742515 6
+D 2742785 9
+P 2742786 reward spout uncued
+P 2742788 Timestamp:2719118 Go:spout Success:True Free_rew:False Light:False Latency:23668
+P 2742789 Summary: T#:173 Tot_rate:0.61 Cued#:92 Uncued#:81 Cued_rate:0.47 Uncued_rate:0.78
+P 2742790 4 trials moving ave success rate: 0.64
+D 2742790 3
+D 2742822 10
+D 2743047 9
+D 2743066 10
+D 2743473 9
+D 2743571 10
+D 2744212 9
+D 2744227 10
+D 2744384 9
+D 2744417 10
+D 2745126 5
+D 2745145 6
+D 2745187 5
+D 2746194 1
+D 2749302 2
+D 2750008 19
+D 2750794 19
+D 2756558 19
+D 2762694 6
+D 2762730 5
+D 2764633 19

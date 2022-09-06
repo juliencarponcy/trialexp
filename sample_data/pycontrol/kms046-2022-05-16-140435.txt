@@ -1,0 +1,42 @@
+I Experiment name  : reaching_go_spout_cued_uncued
+I Task name : reaching_go_spout_cued_uncued
+I Task file hash : 2405126602
+I Setup ID : COM9
+I Subject ID : kms046
+I Start date : 2022/05/16 14:04:35
+
+S {"long_refrac_period": 4, "hold_start": 1, "CS_Go": 2, "short_refrac_period": 3}
+
+E {"bar_on_timer": 8, "button_release": 18, "bar_off": 6, "cue_delay_timer": 12, "spout_off": 10, "rsync": 19, "free_reward_timer": 14, "US_end_timer": 13, "bar": 5, "sound_off_timer": 11, "spout": 9, "solenoid_off": 7, "block_timer": 15, "uncued_timer": 16, "button_press": 17}
+
+V 0 spout_thresh 0.5
+V 0 cued_block True
+V 0 free_reward_threshold 0.35
+
+D 0 19
+P 0 Starting block: Cued
+D 0 1
+D 2775 19
+D 3455 2
+P 5965 reward free
+D 6310 6
+D 6381 9
+P 6382 reward bar cued
+P 6384 Timestamp:3455 Go:bar Success:True Free_rew:True Light:False Latency:2927
+P 6385 Summary: T#:1 Tot_rate:1.00 Cued#:1 Uncued#:0 Cued_rate:1.00 Uncued_rate:0.00
+P 6386 4 trials moving ave success rate: 0.22
+D 6386 3
+D 6433 10
+D 6482 9
+D 6573 10
+D 6641 9
+D 6696 10
+D 6760 9
+D 6775 10
+D 7110 9
+D 7125 10
+D 7485 19
+D 9048 5
+D 9474 1
+D 9953 6
+D 9968 5
