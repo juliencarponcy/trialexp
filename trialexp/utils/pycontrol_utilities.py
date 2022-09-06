@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.signal import butter, filtfilt, medfilt
 from pandas import Timestamp
-from rsync import *
+from trialexp.utils.rsync import *
 
 #----------------------------------------------------------------------------------
 # Plotting

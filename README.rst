@@ -28,6 +28,17 @@ Features
 
 * TODO
 
+Install
+-------
+
+* Make sure you have conda installed
+* download https://github.com/juliencarponcy/trialexp or, if you have already git installed:
+* git clone https://github.com/juliencarponcy/trialexp
+* conda create --name <environment_name> python==3.8
+* conda activate <environment_name>
+* navigate to the trialexp root folder (cd trialexp)
+* pip install -r requirements.txt
+
 Credits
 -------
 
