@@ -32,16 +32,23 @@ Install
 -------
 
 * Make sure you have conda installed
-* download https://github.com/juliencarponcy/trialexp or, if you have already git installed:
+* download https://github.com/juliencarponcy/trialexp or, if you have git installed:
 * git clone https://github.com/juliencarponcy/trialexp
-* conda create --name <environment_name> python==3.8
-* conda activate <environment_name>
-* navigate to the trialexp root folder (cd trialexp)
-* pip install -r requirements.txt
+* navigate where you downloaded the trialexp repository (most likely using cd trialexp)
+* conda env create -f trialexp.yaml
+
+Usage
+-----
+
+* You can then navigate to the notebooks directory, execute cells, and change the paths and variables depending on your own needs
+* Or you can create a new script or notebook and call trialexp modules, for example using from trialexp.dataset_classes import * 
 
 Credits
 -------
 
+This package is based on the work of Thomas Akam
+- https://github.com/pyControl/code/
+- 
 This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.
 
 .. _Cookiecutter: https://github.com/audreyr/cookiecutter
