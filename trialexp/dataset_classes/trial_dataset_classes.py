@@ -487,7 +487,9 @@ class Continuous_Dataset(Trials_Dataset):
 
             # Compute means and sems
             for g_idx, group_ID in enumerate(group_IDs):
-                subj_subset = gby.loc[cond_ID, group_ID ,:].index.get_level_values(2).values
+                subj_subset = gby.loc[cond_ID, group_ID ,:].index.values
+                # used to work using the following, possibly previous for behaviour only?
+                # subj_subset = gby.loc[cond_ID, group_ID ,:].index.get_level_values(2).values
 
                 for subj_idx, subject in enumerate(subj_subset):
                     if verbose:

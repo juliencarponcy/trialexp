@@ -435,7 +435,7 @@ class Session():
             self.df_conditions.loc[(self.df_conditions.cued == False),['trigger']] = self.triggers[1]
             self.df_events.loc[(self.df_conditions.cued == True),['trigger']] = self.triggers[0]
             self.df_events.loc[(self.df_conditions.cued == False),['trigger']] = self.triggers[1]
-        print(self.df_events.shape, self.df_conditions.shape)
+        # print(self.df_events.shape, self.df_conditions.shape)
         return self
 
     # Perform all the pretreatments to analyze behavioural file by trials
