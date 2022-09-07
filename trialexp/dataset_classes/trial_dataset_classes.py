@@ -444,7 +444,6 @@ class Continuous_Dataset(Trials_Dataset):
         # Get conditions and groups from filtered metadata
         condition_IDs = gby.index.get_level_values('condition_ID').unique()
         group_IDs = gby.index.get_level_values('group_ID').unique()
-        print(f' conditions {condition_IDs} groups {group_IDs}')
         # Compute color maps and assign colors to subjects
         group_colors = cm.get_cmap(colormap, self.metadata_df['group_ID'].nunique())
         subj_colors = cm.get_cmap(colormap, self.metadata_df['subject_ID'].nunique())
