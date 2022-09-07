@@ -39,8 +39,8 @@ Install
     
 * Navigate into the root folder
       
-``cd trialexp (navigate inside the root trialexp repository)``
-   
+``cd trialexp''
+    
 * Create environment called trialexp (you can change the name of the environment by modifying the trialexp.yaml file
     
 ``conda env create -f trialexp.yaml``
@@ -55,7 +55,7 @@ Usage
 ``jupyter-notebook``
     
 
-In the ```/notebooks``` folder can then browse the different templates notebooks, create your own notebook or copy and edit the different workflow notebooks.
+In the ```/notebooks``` folder, you can then open the different templates notebooks, create your own notebook or copy and edit the different workflow notebooks.
   
 * You can alternatively open the different workflow notebooks in a code editor which support jupyter notebooks.
   
