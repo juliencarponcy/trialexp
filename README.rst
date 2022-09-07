@@ -16,7 +16,7 @@ trialexp
 
 
 
-Framework to analyze PyControl and PyPhotometry experiments by trials, and integrate with other data such as DeepLabCut or spikes data
+Package to analyze PyControl and PyPhotometry experiments by trials, and integrate with other data such as DeepLabCut or spikes data
 
 
 * Free software: MIT license
@@ -32,24 +32,48 @@ Install
 -------
 
 * Make sure you have conda installed
-* download https://github.com/juliencarponcy/trialexp or, if you have git installed:
-* git clone https://github.com/juliencarponcy/trialexp
-* navigate where you downloaded the trialexp repository (most likely using cd trialexp)
-* conda env create -f trialexp.yaml
+* download https://github.com/juliencarponcy/trialexp 
+* or, if you have git installed:
+'''
+git clone https://github.com/juliencarponcy/trialexp
+'''
+* Navigate into the root folder
+'''
+cd trialexp (navigate inside the root trialexp repository)
+'''
+Create environment called trialexp (you can change the name of the environment by modifying the trialexp.yaml file
+'''
+conda env create -f trialexp.yaml
+'''
 
 Usage
 -----
 
-* You can then navigate to the notebooks directory, execute cells, and change the paths and variables depending on your own needs
-* Or you can create a new script or notebook and call trialexp modules, for example using from trialexp.dataset_classes import * 
+* By command line using:
+'''
+conda activate trialexp
+jupyter-notebook
+'''
+You can then browse the different notebooks, create your own notebook or copy and edit the different workflow noteobooks.
+  
+* You can alternatively open the different workflow notebooks in a code editor which support jupyter notebooks.
+  
+* Or you can create a new python script or notebook and import trialexp modules
+
 
 Credits
 -------
 
-This package is based on the work of Thomas Akam
-- https://github.com/pyControl/code/
-- 
-This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.
+This package is an extension on the work of Thomas Akam for:
+- **PyControl** (Open source, Python based, behavioural experiment control)
+    - pycontrol.readthedocs.io
+    - github.com/pyControl/code  
+      
+- PyPhotometry** (Open source, Python based, fiber photometry data acquisition)
+    - github.com/pyPhotometry/code
+    - pyphotometry.readthedocs.io  
+      
+This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.  
 
-.. _Cookiecutter: https://github.com/audreyr/cookiecutter
+.. _Cookiecutter: https://github.com/audreyr/cookiecutter  
 .. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
