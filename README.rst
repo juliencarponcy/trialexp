@@ -50,10 +50,10 @@ Usage
 -----
 
 * Activate notebooks by command line using:
-::
-conda activate trialexp
-jupyter-notebook
-::
+
+``conda activate trialexp``
+``jupyter-notebook``
+    
 
 In the ```/notebooks``` folder can then browse the different templates notebooks, create your own notebook or copy and edit the different workflow notebooks.
   
