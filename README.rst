@@ -34,17 +34,16 @@ Install
 * Make sure you have conda installed
 * download https://github.com/juliencarponcy/trialexp 
 * or, if you have git installed:
-::
-git clone https://github.com/juliencarponcy/trialexp
-::
+       
+``git clone https://github.com/juliencarponcy/trialexp`` 
+    
 * Navigate into the root folder
-::
-cd trialexp (navigate inside the root trialexp repository)
-::
+      
+``cd trialexp (navigate inside the root trialexp repository)``
+   
 * Create environment called trialexp (you can change the name of the environment by modifying the trialexp.yaml file
-::
-conda env create -f trialexp.yaml
-::
+    
+''conda env create -f trialexp.yaml``
 
 Usage
 -----
@@ -52,6 +51,7 @@ Usage
 * Activate notebooks by command line using:
 
 ``conda activate trialexp``
+   
 ``jupyter-notebook``
     
 
@@ -66,6 +66,7 @@ Credits
 -------
 
 This package is an extension on the work of Thomas Akam for:
+   
 - **PyControl** (Open source, Python based, behavioural experiment control)
     - pycontrol.readthedocs.io
     - github.com/pyControl/code  
