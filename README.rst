@@ -68,12 +68,12 @@ Credits
 This package is an extension on the work of Thomas Akam for:
    
 - **PyControl** (Open source, Python based, behavioural experiment control)
-    - pycontrol.readthedocs.io
-    - github.com/pyControl/code  
+    - https://pycontrol.readthedocs.io
+    - https://github.com/pyControl/code  
       
 - **PyPhotometry** (Open source, Python based, fiber photometry data acquisition)
-    - github.com/pyPhotometry/code
-    - pyphotometry.readthedocs.io  
+    - https://github.com/pyPhotometry/code
+    - https://pyphotometry.readthedocs.io  
       
 This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.  
   
