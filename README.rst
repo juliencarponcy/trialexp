@@ -34,27 +34,28 @@ Install
 * Make sure you have conda installed
 * download https://github.com/juliencarponcy/trialexp 
 * or, if you have git installed:
-'''
+::
 git clone https://github.com/juliencarponcy/trialexp
-'''
+::
 * Navigate into the root folder
-'''
+::
 cd trialexp (navigate inside the root trialexp repository)
-'''
-Create environment called trialexp (you can change the name of the environment by modifying the trialexp.yaml file
-'''
+::
+* Create environment called trialexp (you can change the name of the environment by modifying the trialexp.yaml file
+::
 conda env create -f trialexp.yaml
-'''
+::
 
 Usage
 -----
 
-* By command line using:
-'''
+* Activate notebooks by command line using:
+::
 conda activate trialexp
 jupyter-notebook
-'''
-You can then browse the different notebooks, create your own notebook or copy and edit the different workflow noteobooks.
+::
+
+In the ```/notebooks``` folder can then browse the different templates notebooks, create your own notebook or copy and edit the different workflow notebooks.
   
 * You can alternatively open the different workflow notebooks in a code editor which support jupyter notebooks.
   
