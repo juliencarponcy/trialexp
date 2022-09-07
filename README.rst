@@ -69,7 +69,7 @@ This package is an extension on the work of Thomas Akam for:
     - pycontrol.readthedocs.io
     - github.com/pyControl/code  
       
-- PyPhotometry** (Open source, Python based, fiber photometry data acquisition)
+- **PyPhotometry** (Open source, Python based, fiber photometry data acquisition)
     - github.com/pyPhotometry/code
     - pyphotometry.readthedocs.io  
       
