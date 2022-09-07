@@ -43,7 +43,7 @@ Install
    
 * Create environment called trialexp (you can change the name of the environment by modifying the trialexp.yaml file
     
-''conda env create -f trialexp.yaml``
+``conda env create -f trialexp.yaml``
 
 Usage
 -----
