@@ -39,7 +39,7 @@ Install
     
 * Navigate into the root folder
       
-``cd trialexp''
+``cd trialexp``
     
 * Create environment called trialexp (you can change the name of the environment by modifying the trialexp.yaml file
     
