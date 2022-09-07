@@ -28,4 +28,4 @@ dependencies:
   - statsmodels
   - scikit-learn
   - pip:
-    - "-r requirements.txt"
+    - "-e setup.py"
