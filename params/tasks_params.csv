@@ -17,3 +17,4 @@
 15,train_Go_CS-US_pavlovian,Go,bar; bar_off; spout,free_reward,,,,,,,
 16,train_Go_CS-US_pavlovian_with_bar,CS_Go,bar; bar_off; spout,free_reward,,,,,,,
 17,reaching_go_spout_cued_uncued,CS_Go,bar; bar_off; spout,free_reward_timer; reward spout cued; reward bar cued; reward bar_off; reward spout uncued; reward bar uncued; reward free; reward free_uncued,,,,,,,
+18,pavlovian_nobar-nodelay,CS_Go,bar; bar_off; spout,,,,,,,,
