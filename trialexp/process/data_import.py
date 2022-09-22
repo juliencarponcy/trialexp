@@ -538,28 +538,32 @@ class Session():
         elif self.task_name in ['reaching_go_spout_cued_uncued']:
 
             # for cued trials, find if spout event within timelim           
-            go_success = self.df_events.loc[
-                (self.df_events[self.df_conditions.cued == True].index),'spout_trial_time'].apply(
+            cued_success = self.df_events.loc[
+                (self.df_events[self.df_conditions.trigger == 'cued'].index),'spout_trial_time'].apply(
                 lambda x: find_if_event_within_timelim(x, self.timelim))
-            go_success_idx = go_success[go_success == True].index
+            cued_success_idx = cued_success[cued_success == True].index
 
             # for uncued trials, just check if there is a spout event after trial start
-            go_success = self.df_events.loc[
-                (self.df_events[self.df_conditions.cued == False].index),'spout_trial_time'].apply(
+            uncued_success = self.df_events.loc[
+                (self.df_events[self.df_conditions.trigger == 'uncued'].index),'spout_trial_time'].apply(
                 lambda x: x[-1] > 0 if len(x) > 0 else False)
-            go_success_idx = go_success[go_success == True].index
-
+            uncued_success_idx = uncued_success[uncued_success == True].index
+            
             # categorize successful go trials
+            self.df_conditions.loc[(cued_success_idx + uncued_success_idx), 'success'] = True
+            self.df_events.loc[(cued_success_idx + uncued_success_idx),'success'] = True
+            print(self.task_name, self.subject_ID, self.datetime_string, len(cued_success_idx), len(uncued_success_idx))
+        
+        elif self.task_name in ['pavlovian_nobar_nodelay']:
+            
+            go_success = self.df_events.loc[
+                (self.df_events[self.df_events.trigger == self.triggers[0]].index),'spout_trial_time'].apply(
+                lambda x: find_if_event_within_timelim(x, self.timelim))
+            go_success_idx = go_success[go_success == True].index
+            # categorize successful go trials which have a spout event within timelim
             self.df_conditions.loc[(go_success_idx),'success'] = True
             self.df_events.loc[(go_success_idx),'success'] = True
-
-            # For uncued trials, relying on detected conditions to assess success
-            # recreating full event dataframe as lookup as to go beyond trial_window, for uncued trials
-            df_events = pd.DataFrame(self.events, columns=['timestamp', 'event'])
-
-
-        # Transform NaN values to empty list when there is no detected events for that trial
-        #self.df_events.replace(np.NaN, list(), inplace=True)
+          
 
         # Reorder columns putting trigger, valid and success first for more clarity
         col_list = list(self.df_conditions.columns.values)
@@ -568,6 +572,8 @@ class Session():
             col_list.remove(c)
         col_list = ['trigger', 'success','valid'] + col_list
         self.df_conditions = self.df_conditions[col_list]
+
+        
 
         return self
 
