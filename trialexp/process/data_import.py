@@ -522,7 +522,7 @@ class Session():
 
         # To perform for simple pavlovian Go task, 
         elif self.task_name in ['train_Go_CS-US_pavlovian','reaching_yp', 'reaching_test','reaching_test_CS',
-            'train_CSgo_US_coterminated','train_Go_CS-US_pavlovian', 'train_Go_CS-US_pavlovian_with_bar']:
+            'train_CSgo_US_coterminated','train_Go_CS-US_pavlovian', 'train_Go_CS-US_pavlovian_with_bar', 'pavlovian_nobar_nodelay']:
 
             # self.triggers[0] refers to CS_Go triggering event most of the time whereas self.triggers[1] refers to CS_NoGo
             # find if spout event within timelim for go trials
@@ -554,17 +554,6 @@ class Session():
             self.df_events.loc[(cued_success_idx + uncued_success_idx),'success'] = True
             print(self.task_name, self.subject_ID, self.datetime_string, len(cued_success_idx), len(uncued_success_idx))
         
-        elif self.task_name in ['pavlovian_nobar_nodelay']:
-            
-            go_success = self.df_events.loc[
-                (self.df_events[self.df_events.trigger == self.triggers[0]].index),'spout_trial_time'].apply(
-                lambda x: find_if_event_within_timelim(x, self.timelim))
-            go_success_idx = go_success[go_success == True].index
-            # categorize successful go trials which have a spout event within timelim
-            self.df_conditions.loc[(go_success_idx),'success'] = True
-            self.df_events.loc[(go_success_idx),'success'] = True
-          
-
         # Reorder columns putting trigger, valid and success first for more clarity
         col_list = list(self.df_conditions.columns.values)
         col_to_put_first = ['trigger', 'success','valid']
@@ -1312,7 +1301,7 @@ class Experiment():
         and trials and assemble it as an Event_Dataset
         instance for further analyses.
         '''
-
+        print('caca')
         # TODO: put all redundant args checks in a utility function
         # list: groups, conditions_list, cond_aliases, task_names, trig_on_ev
 
@@ -1351,15 +1340,17 @@ class Experiment():
                     raise ValueError(
                         f'{trig_on_ev} is not in the processed events: {sessions[0].events_to_process}')
                 
-                                        
+                print('pipi')                         
                 for session in sessions:
                     try:
                         df_events = session.df_events.copy()
                         df_conditions = session.df_conditions.copy()
                     except:
-                        # print(session.subject_ID, session.datetime)
+                        print(session.subject_ID, session.datetime)
                         continue
+                    print(conditions_list)
                     df_conditions['condition_ID'] = nan
+                    
                     # df_events['condition'] = nan
                     df_conditions['condition'] = nan
                     
@@ -1371,13 +1362,14 @@ class Experiment():
                     trials_times_all_cond = []
                     first_ev_times_all_cond = []
                     events_aggreg = pd.DataFrame()
+                    print(conditions_list)
                     for cond_idx, conditions_dict in enumerate(conditions_list):
                         
                         if trig_on_ev:
                             idx_joint, trials_times, first_ev_times = session.get_trials_times_from_conditions(
                                 conditions_dict = conditions_dict,
                                 trig_on_ev = trig_on_ev, output_first_ev = True)
-                            # print(len(idx_joint), trials_times.shape, first_ev_times.shape)
+                            print(conditions_dict, len(idx_joint), trials_times.shape, first_ev_times.shape)
                         
                             df_ev_cond = df_events.loc[idx_joint,:].copy()
                             df_ev_cond = df_ev_cond.reset_index()
@@ -1405,7 +1397,7 @@ class Experiment():
 
                         idx_all_cond = np.concatenate([idx_all_cond, idx_joint])
                         trials_times_all_cond = np.concatenate([trials_times_all_cond, trials_times])
-
+                        print('prout')
                         if isinstance(trig_on_ev, str):
                             first_ev_times_all_cond = np.concatenate([first_ev_times_all_cond, first_ev_times])
                         
