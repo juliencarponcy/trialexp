@@ -126,9 +126,18 @@ def get_datestr_from_filename(filename):
     datestr = match_str.group(0)
     return datestr
 
+def blank_spurious_detection(df_item, blank_timelim):
+    '''
+    Delete events within blank_timelim, which are suspected to be caused by
+    unwanted contacts (e.g. drop to whisker), or artifacts in the detections.
+    '''
+    if isinstance(df_item, list):
+        tlist = [t for t in df_item if (t < 0 or t > 60)]
+        return tlist
+
 
 def find_if_event_within_timelim(df_item, timelim):
-    if isinstance(df_item,list):
+    if isinstance(df_item, list):
         within_lim = any(ele >= timelim[0] and ele <= timelim[1] for ele in df_item)
     else:
         within_lim = False
@@ -210,6 +219,7 @@ def copy_files_to_horizontal_folders(root_folders, horizontal_folder_pycontrol, 
                     print(join(path, name))
                     shutil.copyfile(join(path, name),join(horizontal_folder_pycontrol, name))
                 elif name[-4:] == '.ppd':
+                    print(join(path, name))
                     shutil.copyfile(join(path, name),join(horizontal_folder_photometry, name))
 
 #----------------------------------------------------------------------------------

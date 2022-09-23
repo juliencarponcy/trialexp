@@ -396,18 +396,21 @@ class Session():
 
             # group by trigger and trial nb
             df_conditions_summed = self.df_conditions[self.conditions + ['trial_nb']].groupby(['trial_nb'], as_index=True)
+            # Aggregate different timestamp ()
+            df_conditions_summed = df_conditions_summed.agg(lambda x: sum(x))   
 
+            # reindexing to have conditions for all trials even if no condition has been detected for some trials
+            df_conditions = df_conditions_summed.reindex(index=self.df_events.index, fill_value=0)   
 
-        # Aggregate different timestamp ()
-        df_conditions_summed = df_conditions_summed.agg(lambda x: sum(x))   
+            df_conditions = pd.concat([self.df_events[['trigger','valid']], df_conditions], axis='columns', join='outer')
 
-        # reindexing to have conditions for all trials even if no condition has been detected for some trials
-        df_conditions = df_conditions_summed.reindex(index=self.df_events.index, fill_value=0)   
+            self.df_conditions = df_conditions
+            self.df_conditions[self.conditions] = self.df_conditions[self.conditions].astype(bool)
 
-        df_conditions = pd.concat([self.df_events[['trigger','valid']], df_conditions], axis='columns', join='outer')
+        else:
+            self.df_conditions = self.df_events.iloc[:,1:4]
+            df_conditions_summed = self.df_conditions
 
-        self.df_conditions = df_conditions
-        self.df_conditions[self.conditions] = self.df_conditions[self.conditions].astype(bool)
 
         # Compute if trials are cued or uncued for this specific task
         if self.task_name == 'reaching_go_spout_cued_uncued':
@@ -439,7 +442,8 @@ class Session():
         return self
 
     # Perform all the pretreatments to analyze behavioural file by trials
-    def get_session_by_trial(self, trial_window, timelim, tasksfile, verbose=False):
+    def get_session_by_trial(self, trial_window: list, timelim: list,
+            tasksfile, blank_spurious_event: list, blank_timelim: list, verbose=False):
         
         # set a minimum nb of events to not process aborted files
         min_ev_to_process = 30
@@ -461,7 +465,10 @@ class Session():
                     print(f'processing by trial: {self.file_name} task: {self.task_name}')
 
                 self = self.extract_data_from_session()
-                self = self.compute_trial_nb() 
+                self = self.compute_trial_nb()
+                if blank_spurious_event is not None:
+                    self.df_events[blank_spurious_event + '_trial_time'] = self.df_events[blank_spurious_event + '_trial_time'].apply(lambda x: blank_spurious_detection(x, blank_timelim))
+
                 self = self.compute_conditions_by_trial()
                 self = self.compute_success()
                 self.analyzed = True
@@ -522,7 +529,7 @@ class Session():
 
         # To perform for simple pavlovian Go task, 
         elif self.task_name in ['train_Go_CS-US_pavlovian','reaching_yp', 'reaching_test','reaching_test_CS',
-            'train_CSgo_US_coterminated','train_Go_CS-US_pavlovian', 'train_Go_CS-US_pavlovian_with_bar']:
+            'train_CSgo_US_coterminated','train_Go_CS-US_pavlovian', 'train_Go_CS-US_pavlovian_with_bar', 'pavlovian_nobar_nodelay']:
 
             # self.triggers[0] refers to CS_Go triggering event most of the time whereas self.triggers[1] refers to CS_NoGo
             # find if spout event within timelim for go trials
@@ -550,20 +557,9 @@ class Session():
             uncued_success_idx = uncued_success[uncued_success == True].index
             
             # categorize successful go trials
-            self.df_conditions.loc[(cued_success_idx + uncued_success_idx), 'success'] = True
-            self.df_events.loc[(cued_success_idx + uncued_success_idx),'success'] = True
+            self.df_conditions.loc[np.hstack((cued_success_idx.values, uncued_success_idx.values)), 'success'] = True
+            self.df_events.loc[np.hstack((cued_success_idx.values, uncued_success_idx.values)),'success'] = True
             print(self.task_name, self.subject_ID, self.datetime_string, len(cued_success_idx), len(uncued_success_idx))
-        
-        elif self.task_name in ['pavlovian_nobar_nodelay']:
-            
-            go_success = self.df_events.loc[
-                (self.df_events[self.df_events.trigger == self.triggers[0]].index),'spout_trial_time'].apply(
-                lambda x: find_if_event_within_timelim(x, self.timelim))
-            go_success_idx = go_success[go_success == True].index
-            # categorize successful go trials which have a spout event within timelim
-            self.df_conditions.loc[(go_success_idx),'success'] = True
-            self.df_events.loc[(go_success_idx),'success'] = True
-          
 
         # Reorder columns putting trigger, valid and success first for more clarity
         col_list = list(self.df_conditions.columns.values)
@@ -1266,14 +1262,17 @@ class Experiment():
         return valid_sessions
 
 
-    def process_exp_by_trial(self, trial_window, timelim, tasksfile):
+    def process_exp_by_trial(self, trial_window: list, timelim: list,
+            tasksfile: str, blank_spurious_event: list = None, blank_timelim: list = [0, 60], verbose = False):
+
         # create emtpy list to store idx of sessions without trials,
         # can be extended to detect all kind of faulty sessions.
         sessions_idx_to_remove = []
         
         for s_idx, s in enumerate(self.sessions):
 
-            self.sessions[s_idx] = s.get_session_by_trial(trial_window, timelim, tasksfile)
+            self.sessions[s_idx] = s.get_session_by_trial(trial_window, timelim,
+                tasksfile, blank_spurious_event, blank_timelim, verbose = False)
             
             # for files too short
             if self.sessions[s_idx].analyzed == False:
