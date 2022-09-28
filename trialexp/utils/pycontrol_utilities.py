@@ -10,7 +10,7 @@ from re import search
 
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.signal import butter, filtfilt, medfilt
+from scipy.signal import butter, filtfilt, sosfiltfilt, medfilt
 from pandas import Timestamp
 from trialexp.utils.rsync import *
 
@@ -280,13 +280,26 @@ def import_ppd(file_path, low_pass=20, high_pass=0.01, median_filt=None):
         b, a = butter(2, low_pass/(0.5*sampling_rate), 'low')
     elif high_pass:
         b, a = butter(2, high_pass/(0.5*sampling_rate), 'high')
-      
+
+    # sosfilt
+    # if low_pass and high_pass:
+    #     sos = butter(2, np.array([high_pass, low_pass])/(0.5*sampling_rate), 'bandpass', output='sos')
+    # elif low_pass:
+    #     sos = butter(2, low_pass/(0.5*sampling_rate), 'low', output='sos')
+    # elif high_pass:
+    #     sos = butter(2, high_pass/(0.5*sampling_rate), 'high', output='sos')
+
+
     if low_pass or high_pass:
         if median_filt:
-            analog_1_filt = medfilt(analog_1, kernel_size=median_filt)
-            analog_2_filt = medfilt(analog_2, kernel_size=median_filt)    
-            analog_1_filt = filtfilt(b, a, analog_1_filt)
-            analog_2_filt = filtfilt(b, a, analog_2_filt)
+            analog_1_medfilt = medfilt(analog_1, kernel_size=median_filt)
+            analog_2_medfilt = medfilt(analog_2, kernel_size=median_filt)
+            analog_1_filt = filtfilt(b, a, analog_1_medfilt)
+            analog_2_filt = filtfilt(b, a, analog_2_medfilt)
+            # analog_1_filt = sosfiltfilt(sos, analog_1_filt)
+            # analog_2_filt = sosfiltfilt(sos, analog_2_filt)   
+            # analog_1_filt = filtfilt(b, a, analog_1_medfilt, padlen = len(analog_1)-1)
+            # analog_2_filt = filtfilt(b, a, analog_2_medfilt, padlen = len(analog_2)-1)
         else:
             analog_1_filt = filtfilt(b, a, analog_1)
             analog_2_filt = filtfilt(b, a, analog_2)

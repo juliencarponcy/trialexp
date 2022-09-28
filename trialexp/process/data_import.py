@@ -800,11 +800,8 @@ class Session():
             raise Exception('You need to high_pass and/or low_pass and/or median_filt the signal for motion correction')
         if df_over_f == True and motion_corr == False:
             raise Exception('You need motion correction to compute dF/F')
-
-        try: 
-            photometry_dict = import_ppd(self.photometry_path, high_pass=high_pass, low_pass=low_pass, median_filt=median_filt)
-        except:
-            raise Exception('could not load photometry file, check path')
+    
+        photometry_dict = import_ppd(self.photometry_path, high_pass=high_pass, low_pass=low_pass, median_filt=median_filt)
 
         #----------------------------------------------------------------------------------
         # Filtering / Motion correction / resampling block below

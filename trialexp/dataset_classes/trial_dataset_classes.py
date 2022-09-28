@@ -373,7 +373,7 @@ class Continuous_Dataset(Trials_Dataset):
                 fullpath = os.path.join(os.getcwd(), name + '.pkl')
             
             with open(fullpath, 'wb') as file:
-                pickle.dump(self, file, protocol=pickle.HIGHEST_PROTOCOL)
+                pickle.dump([X,y], file, protocol=pickle.HIGHEST_PROTOCOL)
 
             if verbose:
                 print(f'Nested Dataframe saved in {fullpath}')
