@@ -162,6 +162,20 @@ class Trials_Dataset():
         filter = self.metadata_df['condition_ID'].apply(lambda x: x in condition_IDs_to_exclude)
         self.metadata_df.loc[filter,'keep'] = False
 
+    def filterout_dates(self, days_to_exclude: list):
+        '''
+        exclude one or several dates of the dataset 
+        '''
+        if isinstance(days_to_exclude, datetime.datetime):
+            days_to_exclude = [days_to_exclude.date()]
+        elif isinstance(days_to_exclude, datetime.date):
+            days_to_exclude = [days_to_exclude]
+        else:
+            raise TypeError("days_to_exclude has to be a list of datetime or date")
+        filter = self.metadata_df['datetime'].apply(
+            lambda x: x.date() in days_to_exclude)
+        self.metadata_df.loc[filter,'keep'] = False
+
     def filterout_groups(self, group_IDs_to_exclude: list):
         '''
         exclude one or several groups of the dataset
