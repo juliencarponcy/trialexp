@@ -153,7 +153,7 @@ class Trials_Dataset():
         '''
         raise NotImplementedError    
 
-    def filter_conditions(self, condition_IDs_to_exclude: list):
+    def filterout_conditions(self, condition_IDs_to_exclude: list):
         '''
         exclude one or several conditions of the dataset
         '''
@@ -162,7 +162,7 @@ class Trials_Dataset():
         filter = self.metadata_df['condition_ID'].apply(lambda x: x in condition_IDs_to_exclude)
         self.metadata_df.loc[filter,'keep'] = False
 
-    def filter_groups(self, group_IDs_to_exclude: list):
+    def filterout_groups(self, group_IDs_to_exclude: list):
         '''
         exclude one or several groups of the dataset
         '''
@@ -171,7 +171,7 @@ class Trials_Dataset():
         filter = self.metadata_df['group_ID'].apply(lambda x: x in group_IDs_to_exclude)
         self.metadata_df.loc[filter,'keep'] = False
 
-    def filter_subjects(self, subject_IDs_to_exclude: list):
+    def filterout_subjects(self, subject_IDs_to_exclude: list):
         '''
         exclude one or several subjects of the dataset
         '''
@@ -189,7 +189,7 @@ class Trials_Dataset():
         a condition from the full dataset, use sequentially:
 
         <trial_dataset>.filter_min(min_trials = x)
-        <trial_dataset>.filter_if_not_all_cond()
+        <trial_dataset>.filterout_if_not_in_all_cond()
         '''
 
         nb_trials = self.metadata_df.groupby(['condition_ID', 'group_ID','subject_ID']).agg(len)['trial_ID']
@@ -200,7 +200,7 @@ class Trials_Dataset():
             idx_filter = np.concatenate(trials_idx[discarded].values)
             self.metadata_df.loc[idx_filter,'keep'] = False
 
-    def filter_if_not_in_all_cond(self):
+    def filterout_if_not_in_all_cond(self):
         '''
         To remove subjects who do not have
         trials in all the conditions.
