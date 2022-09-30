@@ -414,6 +414,7 @@ class Continuous_Dataset(Trials_Dataset):
             colormap: str = 'jet',
             figsize: tuple = (20, 10),
             dpi: int = 100,
+            box: bool = False,
             legend: bool = True,
             verbose: bool = False):
 
@@ -624,8 +625,18 @@ class Continuous_Dataset(Trials_Dataset):
                     for c in range(axs.shape[1]):
                         axs[r,c].legend()
                 else:
-                    axs[r].legend() 
+                    axs[r].legend()
         
+        if not box:
+            for r in range(axs.shape[0]):
+                if len(axs.shape) > 1:
+                    for c in range(axs.shape[1]):
+                        axs[r, c].spines['top'].set_visible(False)
+                        axs[r, c].spines['right'].set_visible(False)
+                else:
+                    axs[r].spines['top'].set_visible(False)
+                    axs[r].spines['right'].set_visible(False)
+
         plt.show()
 
     def scatterplot(self, vars: VarsType, groupby: Optional[list] = ['group_ID', 'subject_ID'], \
