@@ -3,7 +3,7 @@
 import shutil
 import json
 
-from os.path import join
+from os.path import join, isfile
 from os import walk
 from datetime import datetime, date
 from re import search
@@ -207,7 +207,10 @@ def copy_files_to_horizontal_folders(root_folders, horizontal_folder_pycontrol, 
     Browse sub-folders (in a single root folder or within a list of root folder)
     and copy them in a separate horizontal folders (no subfolders). The main
     purpose is for easier match between pycontrol and photometry files
+ 
     '''
+
+    #TODO implement data comparison and skip if file exist os.path.isfile()
     
     if isinstance(root_folders, str):
         root_folders = [root_folders]
@@ -215,12 +218,15 @@ def copy_files_to_horizontal_folders(root_folders, horizontal_folder_pycontrol, 
     for root in root_folders:
         for path, subdirs, files in walk(root):
             for name in files:
+
                 if name[-4:] == '.txt':
-                    print(join(path, name))
-                    shutil.copyfile(join(path, name),join(horizontal_folder_pycontrol, name))
+                    if not isfile(join(horizontal_folder_pycontrol,name)):
+                        print(join(path, name))
+                        shutil.copyfile(join(path, name),join(horizontal_folder_pycontrol, name))
                 elif name[-4:] == '.ppd':
-                    print(join(path, name))
-                    shutil.copyfile(join(path, name),join(horizontal_folder_photometry, name))
+                    if not isfile(join(horizontal_folder_pycontrol,name)):
+                        print(join(path, name))
+                        shutil.copyfile(join(path, name),join(horizontal_folder_photometry, name))
 
 #----------------------------------------------------------------------------------
 # Load analog data
