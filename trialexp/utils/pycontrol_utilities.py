@@ -209,8 +209,6 @@ def copy_files_to_horizontal_folders(root_folders, horizontal_folder_pycontrol, 
     purpose is for easier match between pycontrol and photometry files
  
     '''
-
-    #TODO implement data comparison and skip if file exist os.path.isfile()
     
     if isinstance(root_folders, str):
         root_folders = [root_folders]
