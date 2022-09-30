@@ -51,6 +51,10 @@ Usage
 * Activate notebooks by command line using:
 
 ``conda activate trialexp``
+
+Do this to make modules in the repo available
+
+``pip install -e .``
    
 ``jupyter-notebook``
     
