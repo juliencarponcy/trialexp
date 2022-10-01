@@ -20,6 +20,8 @@ from scipy.signal import butter, filtfilt, decimate
 from scipy.stats import linregress
 
 from trialexp.utils.pycontrol_utilities import *
+from trialexp.utils.pyphotometry_utilities import *
+
 from trialexp.utils.rsync import *
 from trialexp.dataset_classes.trial_dataset_classes import *
 
@@ -1129,6 +1131,18 @@ class Experiment():
     sessions_per_subject
     trial_window
 
+    Methods
+    -------
+    behav_events_to_dataset, 
+    get_deeplabcut_groups, 
+    get_photometry_groups, 
+    get_sessions, 
+    match_sessions_to_files, 
+    match_to_photometry_files, 
+    plot, 
+    process_exp_by_trial,
+    save
+
     To know the number of sessions included in an Experiment object, use len(obj.sessions)
             
     """
@@ -1639,8 +1653,8 @@ class Experiment():
             cond_aliases = None,
             when = 'all',
             task_names = 'all',
-            trig_on_ev = None,
-            high_pass = None, 
+            trig_on_ev = None, # align to the first event of a kind e.g. None (meaning CS_Go onset), 'spout', 'bar_off'
+            high_pass = None, # analog_1_df_over_f doesn't work with this
             low_pass = None, 
             median_filt = None,
             motion_corr = False, 
