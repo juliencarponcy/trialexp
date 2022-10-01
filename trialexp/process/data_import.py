@@ -1140,7 +1140,7 @@ class Experiment():
         
         Arguments
         ---------
-        folder_path: Path of data folder.
+        folder_path:      Path of data folder.
         int_subject_IDs:  If True subject IDs are converted to integers, e.g. m012 is converted to 12.
 
         """
@@ -1179,23 +1179,48 @@ class Experiment():
 
         # Assign session numbers.
 
-        self.subject_IDs = list(set([s.subject_ID for s in self.sessions]))
-        self.n_subjects = len(self.subject_IDs)
+        # self.subject_IDs = list(set([s.subject_ID for s in self.sessions]))
+        # self.n_subjects = len(self.subject_IDs)
 
-        self.task_names = list(set([s.task_name for s in self.sessions]))
+        # self.task_names = list(set([s.task_name for s in self.sessions]))
 
-        self.sessions.sort(key = lambda s:s.datetime_string + str(s.subject_ID))
+        # self.sessions.sort(key = lambda s:s.datetime_string + str(s.subject_ID))
         
-        self.sessions_per_subject = {}
+        # self.sessions_per_subject = {}
+        # for subject_ID in self.subject_IDs:
+        #     subject_sessions = self.get_sessions(subject_IDs=subject_ID)
+
+        #     for i, session in enumerate(subject_sessions):
+        #         session.number = i+1
+        #         if verbose:
+        #             print('session nb: ', session.number, session.subject_ID, session.datetime_string, session.task_name)
+        #     self.sessions_per_subject[subject_ID] = subject_sessions[-1].number
+
+    @property
+    def subject_IDs(self):
+        return list(set([s.subject_ID for s in self.sessions]))
+
+    @property
+    def n_subjects(self):
+        return len(self.subject_IDs)
+
+    @property
+    def task_names(self):
+        return list(set([s.task_name for s in self.sessions]))
+
+    @property
+    def sessions_per_subject(self):
+        sessions_per_subject_ = {}
         for subject_ID in self.subject_IDs:
             subject_sessions = self.get_sessions(subject_IDs=subject_ID)
 
             for i, session in enumerate(subject_sessions):
                 session.number = i+1
-                if verbose:
-                    print('session nb: ', session.number, session.subject_ID, session.datetime_string, session.task_name)
-            self.sessions_per_subject[subject_ID] = subject_sessions[-1].number
+                # if verbose:
+                #    print('session nb: ', session.number, session.subject_ID, session.datetime_string, session.task_name)
+            sessions_per_subject_[subject_ID] = subject_sessions[-1].number
 
+        return sessions_per_subject_
 
     def save(self):
         '''Save all sessions as .pkl file. Speeds up subsequent instantiation of 
