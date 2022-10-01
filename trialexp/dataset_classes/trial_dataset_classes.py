@@ -528,13 +528,13 @@ class Continuous_Dataset(Trials_Dataset):
                                 axs[ax_idx, c_idx+1].plot(
                                     time_vec, mean_subj[ax_idx, :],
                                     alpha = 0.7,
-                                    label = f'{subject} #{len(trial_idx)}',
+                                    label = f'{subject} (n = {len(trial_idx)})',
                                     color = subj_colors(subj_dict[subject]))
                             else:
                                 axs[ax_idx, c_idx].plot(
                                     time_vec, mean_subj[ax_idx, :],
                                     alpha = 0.7,
-                                    label = f'{subject} #{len(trial_idx)}',
+                                    label = f'{subject} (n = {len(trial_idx)})',
                                     color = subj_colors(subj_dict[subject]))
 
                     if subj_idx == 0:
@@ -641,7 +641,6 @@ class Continuous_Dataset(Trials_Dataset):
                     axs[r].spines['right'].set_visible(False)
 
         #plt.show()
-        fig
 
         return fig, axs
 
@@ -661,6 +660,7 @@ class Event_Dataset(Trials_Dataset):
 
     def raster(self, kvargs):
         ...
+        #TODO this is important
 
     def compute_distribution(
             self,
