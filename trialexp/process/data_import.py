@@ -1121,11 +1121,11 @@ class Experiment():
    
     Attributes
     ----------
-    folder_name           Path of data folder.
+    folder_name               Path of data folder.
     path
     sessions
     by_trial 
-    subject_IDs           int
+    subject_IDs               int
     n_subjects
     task_names
     sessions_per_subject
