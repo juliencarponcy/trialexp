@@ -415,6 +415,7 @@ class Continuous_Dataset(Trials_Dataset):
             figsize: tuple = (20, 10),
             dpi: int = 100,
             box: bool = False,
+            liney0:bool = True, # draw horizontal gray dashed line at y = 0
             legend: bool = True,
             verbose: bool = False):
 
@@ -640,6 +641,24 @@ class Continuous_Dataset(Trials_Dataset):
                     axs[r].spines['top'].set_visible(False)
                     axs[r].spines['right'].set_visible(False)
 
+        if liney0:
+            for r in range(axs.shape[0]):
+                if len(axs.shape) > 1:
+                    for c in range(axs.shape[1]):
+                        axs[r, c].plot([time_vec[0], time_vec[-1]],
+                            [0, 0], 
+                            color=(0.7, 0.7, 0.7),
+                            linestyle='--',
+                            zorder=0.5, # send to back
+                            )
+                else:
+                    axs[r].plot([time_vec[0], time_vec[-1]],
+                                [0, 0],
+                                color=(0.8, 0.8, 0.8),
+                                linestyle=':',
+                                zorder=0.5,  # send to back
+                                lw=0.5,
+                                )
         #plt.show()
 
         return fig, axs
