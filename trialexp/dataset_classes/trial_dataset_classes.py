@@ -420,6 +420,7 @@ class Continuous_Dataset(Trials_Dataset):
 
         plt.ion()
         plt.rcParams["figure.dpi"] = dpi
+        plt.rcParams['font.family'] = ['Arial']
         
         if time_unit == None and not hasattr(self, 'time_unit'):
             time_vec = self.get_time_vector()
