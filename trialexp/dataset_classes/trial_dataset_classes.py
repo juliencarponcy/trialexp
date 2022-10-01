@@ -418,6 +418,7 @@ class Continuous_Dataset(Trials_Dataset):
             legend: bool = True,
             verbose: bool = False):
 
+        plt.ion()
         plt.rcParams["figure.dpi"] = dpi
         
         if time_unit == None and not hasattr(self, 'time_unit'):
@@ -637,7 +638,10 @@ class Continuous_Dataset(Trials_Dataset):
                     axs[r].spines['top'].set_visible(False)
                     axs[r].spines['right'].set_visible(False)
 
-        plt.show()
+        #plt.show()
+        fig
+
+        return fig, axs
 
     def scatterplot(self, vars: VarsType, groupby: Optional[list] = ['group_ID', 'subject_ID'], \
             timelim: Optional[list] = None):
