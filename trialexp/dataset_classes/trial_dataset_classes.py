@@ -552,14 +552,15 @@ class Continuous_Dataset(Trials_Dataset):
                         sem_group = np.nanstd(mean_group, axis=0) / np.sqrt(mean_group.shape[0]-1)
                         mean_group = np.nanmean(mean_group, axis=0)
 
-                    # Group plotting    
+                    # Group plotting
+                    group_lw = 1    
                     for ax_idx, var_idx in enumerate(vars_idx):
                         if len(group_IDs) == 1:
                             if g_idx == 0 and c_idx == 0:
                                 axs[ax_idx, 0].set_ylabel(vars[ax_idx])
                             # if a group is more than a single subject
                             if len(mean_group.shape) > 1:
-                                axs[ax_idx, 0].plot(time_vec, mean_group[ax_idx, :], lw=3,
+                                axs[ax_idx, 0].plot(time_vec, mean_group[ax_idx, :], lw=group_lw,
                                     color = group_colors(cond_ID),
                                     label = self.cond_aliases[cond_ID])                    
                                 
@@ -572,7 +573,7 @@ class Continuous_Dataset(Trials_Dataset):
 
                             # if single subject in the group
                             else:
-                                axs[ax_idx, 0].plot(time_vec, mean_group, lw=3,
+                                axs[ax_idx, 0].plot(time_vec, mean_group, lw=group_lw,
                                 color = group_colors(cond_ID),
                                 label = self.cond_aliases[cond_ID])     
 
@@ -584,7 +585,7 @@ class Continuous_Dataset(Trials_Dataset):
                             if len(mean_group.shape) > 1:    
                                 # plot mean
                                 axs[ax_idx, c_idx].plot(time_vec, mean_group[ax_idx, :],
-                                    lw=3, color=group_colors(group_ID),
+                                    lw=group_lw, color=group_colors(group_ID),
                                     label = group_ID)                    
                                 
                                 if error is not None:
@@ -596,7 +597,7 @@ class Continuous_Dataset(Trials_Dataset):
                             # if single subject in the group
                             else:
                                 axs[ax_idx, c_idx].plot(time_vec, mean_group,
-                                    lw=3, color=group_colors(group_ID),
+                                    lw=group_lw, color=group_colors(group_ID),
                                     label = group_ID)    
 
                         if ax_idx == len(vars_idx)-1:
