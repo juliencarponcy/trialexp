@@ -1115,14 +1115,35 @@ class Session():
 #----------------------------------------------------------------------------------
 
 class Experiment():
+    """
+   
+    Attributes
+    ----------
+    folder_name           Path of data folder.
+    path
+    sessions
+    by_trial 
+    subject_IDs           int
+    n_subjects
+    task_names
+    sessions_per_subject
+    trial_window
+
+    To know the number of sessions included in an Experiment object, use len(obj.sessions)
+            
+    """
+
     def __init__(self, folder_path, int_subject_IDs=True, verbose=False):
-        '''
+        """
         Import all sessions from specified folder to create experiment object.  Only sessions in the 
         specified folder (not in subfolders) will be imported.
-        Arguments:
+        
+        Arguments
+        ---------
         folder_path: Path of data folder.
         int_subject_IDs:  If True subject IDs are converted to integers, e.g. m012 is converted to 12.
-        '''
+
+        """
 
         self.folder_name = os.path.split(folder_path)[1]
         self.path = folder_path
