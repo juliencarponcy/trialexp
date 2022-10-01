@@ -8,6 +8,8 @@ from datetime import datetime
 from re import search
 
 import matplotlib.pyplot as plt
+import matplotlib as mpl
+
 import numpy as np
 from pandas import Timestamp
 
@@ -152,6 +154,18 @@ def time_delta_by_row(df_events_row, col_idx_start, col_idx_end):
             return end_time - start_time
         else:
             return np.NaN
+
+def cmap10():
+    """
+    Default plot colors of matplotlib.pyplot.plot, turned into colormap
+    """
+    cmap = (mpl.colors.ListedColormap([u'#1f77b4', u'#ff7f0e', u'#2ca02c', u'#d62728', u'#9467bd',
+        u'#8c564b', u'#e377c2', u'#7f7f7f', u'#bcbd22', u'#17becf'])
+        ) # default 10 colors
+
+    return cmap
+
+
 
 #----------------------------------------------------------------------------------
 # Data reorganization
