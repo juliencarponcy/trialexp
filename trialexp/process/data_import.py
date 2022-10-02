@@ -17,7 +17,7 @@ import pandas as pd
 
 from math import ceil
 from scipy.signal import butter, filtfilt, decimate
-from scipy.stats import linregress
+from scipy.stats import linregress, zscore
 
 from trialexp.utils.pycontrol_utilities import *
 from trialexp.utils.pyphotometry_utilities import *
@@ -777,11 +777,20 @@ class Session():
 
         return df_meta_dlc, col_names_numpy, dlc_array
                  
-    def get_photometry_trials(self, conditions_list = None, cond_aliases = None,
-            trig_on_ev = None, high_pass = None, low_pass = None, median_filt = None, 
-            motion_corr = False, df_over_f = False, downsampling_factor = None,
-            return_full_session = False, export_vars = ['analog_1','analog_2'],
-            verbose = False):
+    def get_photometry_trials(self,
+            conditions_list: list = None,
+            cond_aliases: list = None,
+            trig_on_ev: str = None, 
+            high_pass: float = None, 
+            low_pass: int = None, 
+            median_filt: int = None, 
+            motion_corr: bool = False, 
+            df_over_f: bool = False, 
+            downsampling_factor: int = None,
+            return_full_session: bool = False, 
+            export_vars: list = ['analog_1','analog_2'],
+            remove_artifacts: bool = False,
+            verbose: bool = False):
             
         # TODO write docstrings
         
@@ -803,6 +812,8 @@ class Session():
         if df_over_f == True and motion_corr == False:
             raise Exception('You need motion correction to compute dF/F')
     
+        # import of raw and filtered data from full photometry session
+
         photometry_dict = import_ppd(self.photometry_path, high_pass=high_pass, low_pass=low_pass, median_filt=median_filt)
 
         #----------------------------------------------------------------------------------
@@ -857,7 +868,7 @@ class Session():
         # Prepare dictionary output with keys are variable names and values are columns index
         col_names_numpy = {var: var_idx for var_idx, var in enumerate(export_vars)}
         
-
+        # TODO: must be more effective to do that process a single time and then sort by / attribute conditions
         for condition_ID, conditions_dict in enumerate(conditions_list):
             # TEST the option of triggering on the first event of a trial
 
@@ -899,7 +910,10 @@ class Session():
 
 
             if condition_ID == 0:
-                # initialization of 3D numpy arrays
+                # initialization of 3D numpy arrays (for all trials)
+                # Dimensions are M (number of trials) x N (nb of samples by trial) x P (number of variables,
+                # e.g.: analog_1_filt, analog_1_df_over_f, etc)
+
                 photo_array = np.ndarray((len(trials_idx), len(photometry_idx[0]),len(export_vars)))
 
                 for var_idx, photo_var in enumerate(export_vars):
@@ -914,8 +928,12 @@ class Session():
                 df_meta_photo['condition_ID'] = condition_ID
 
             else:
-                # initialization of temp 3D numpy arrays
+                # initialization of temp 3D numpy arrays (for subset of trials by conditions)
+                # Dimensions are M (number of trials) x N (nb of samples by trial) x P (number of variables,
+                # e.g.: analog_1_filt, analog_1_df_over_f, etc)
+
                 photo_array_temp = np.ndarray((len(trials_idx), len(photometry_idx[0]),len(export_vars)))
+
                 for var_idx, photo_var in enumerate(export_vars):
                     # print(f'condition {condition_ID} var: {var_idx} shape {np.take(photometry_dict[photo_var], photometry_idx).shape}')
                     photo_array_temp[:,:,var_idx]  = np.take(photometry_dict[photo_var], photometry_idx)
@@ -933,6 +951,103 @@ class Session():
                 # concatenate with previous numpy array
 
                 photo_array = np.concatenate((photo_array, photo_array_temp), axis=0)
+
+        if remove_artifacts == True:
+            
+            # Fit exponential to red channel
+            red_exp = fit_exp_func(photometry_dict['analog_2'], fs = fs, medfilt_size = 3)
+            # substract exponential from red channel
+            red_minus_exp = photometry_dict['analog_2'] - red_exp
+
+            if verbose:
+                try:
+                    rig_nb = int(self.files['mp4'][0].split('Rig_')[1][0])
+                except:
+                    rig_nb = 'unknown'
+
+                time = np.linspace(1/fs, len(photometry_dict['analog_2'])/fs, len(photometry_dict['analog_2']))
+
+                fig, ax = plt.subplots()
+
+                plt.plot(time, photometry_dict['analog_1'], 'g', label='dLight')
+                plt.plot(time, photometry_dict['analog_2'], 'r', label='red channel')
+                # plt.plot(time, photometry_dict['analog_1_expfit'], 'k')
+                plt.plot(time, red_exp, 'k')
+                plt.xlabel('Time (seconds)')
+                plt.ylabel('Signal (volts)')
+                plt.title('Raw signals')
+                ax.text(0.02, 0.98, f'subject: {self.subject_ID}, date: {self.datetime}, rig: {rig_nb}',
+                        ha='left', va='top', transform=ax.transAxes)
+                # plt.xlim(xlim)
+                # plt.ylim(ylim)
+                plt.legend();
+                plt.show()
+
+            # find how many gaussian in red channel
+            nb_gauss_in_red_chan = find_n_gaussians(
+                data = red_minus_exp,
+                plot_results = verbose,
+                max_nb_gaussians = 4
+            )
+
+
+            if nb_gauss_in_red_chan == 1:
+                # session look "clean", no artifacts
+                if verbose:
+                    print('signal looks clean, no trial removed')
+
+            else:
+                # session look like there is different levels of baseline fluorescence,
+                # likely indicating human interventions
+
+                # HARD CODED, z-score value to exclude trials based on variance of the
+                # filtered red-channnel
+                z_thresh = 1
+
+                # compute variance of red channel
+                var_trials = photo_array[:,:,col_names_numpy['analog_2_filt']].var(1)
+                # z-score the variance of all trials
+                zscore_var = zscore(var_trials)
+                # determine which trials looks artifacted
+                trials_to_exclude = [idx for idx, v in enumerate(zscore_var) if v > z_thresh]
+                # As trial_nb starts at 1, adding +1 to use as filter in the df_meta_photo dataframe
+                trials_to_include = [idx+1 for idx, v in enumerate(zscore_var) if v < z_thresh]
+                
+                if verbose:
+                    print(f'{len(trials_to_exclude)} trials with artifacts were removed')
+
+                    # retransfrom trials_to_include in zero-based indexing to plot from
+                    # the numpy array
+
+                    trials_to_include = np.array(trials_to_include)
+                    trials_to_include = trials_to_include-1
+
+                    fig, axs = plt.subplots(nrows=2, ncols=2, sharey='row')
+                    timevec_trial = np.linspace(self.trial_window[0], self.trial_window[1], photo_array.shape[1])
+
+                    _ = axs[0,0].plot(timevec_trial, photo_array[trials_to_exclude,:,col_names_numpy['analog_2_filt']].T, alpha=0.3)
+                    _ = axs[0,0].plot(timevec_trial, photo_array[trials_to_exclude,:,col_names_numpy['analog_2_filt']].mean(0), c='k', alpha=1)
+
+                    _ = axs[0,1].plot(timevec_trial, photo_array[trials_to_include,:,col_names_numpy['analog_2_filt']].T, alpha=0.3)
+                    _ = axs[0,1].plot(timevec_trial, photo_array[trials_to_include,:,col_names_numpy['analog_2_filt']].mean(0), c='k', alpha=1)
+
+                    _ = axs[1,0].plot(timevec_trial, photo_array[trials_to_exclude,:,col_names_numpy['analog_1_filt']].T, alpha=0.3)
+                    _ = axs[1,0].plot(timevec_trial, photo_array[trials_to_exclude,:,col_names_numpy['analog_1_filt']].mean(0), c='k', alpha=1)
+                    _ = axs[1,1].plot(timevec_trial, photo_array[trials_to_include,:,col_names_numpy['analog_1_filt']].T, alpha=0.3)
+                    _ = axs[1,1].plot(timevec_trial, photo_array[trials_to_include,:,col_names_numpy['analog_1_filt']].mean(0), c='k', alpha=1)
+
+                    axs[0,0].set_title('red channel excluded trials')
+                    axs[0,1].set_title('red channel included trials')
+
+                    axs[1,0].set_title('green channel excluded trials')
+                    axs[1,1].set_title('green channel included trials')
+                    plt.show()
+
+                # delete trials from the numpy array
+                np.delete(photo_array, trials_to_exclude, 0)
+                # delete trials from df_meta_photo metadata DataFrame
+                df_meta_photo = df_meta_photo[df_meta_photo['trial_nb'].isin(trials_to_include)]
+
 
         if 'photo_array' in locals():
             photo_array = photo_array.swapaxes(2,1)
@@ -1329,7 +1444,7 @@ class Experiment():
         for s_idx, s in enumerate(self.sessions):
 
             self.sessions[s_idx] = s.get_session_by_trial(trial_window, timelim,
-                tasksfile, blank_spurious_event, blank_timelim, verbose = False)
+                tasksfile, blank_spurious_event, blank_timelim, verbose = verbose)
             
             # for files too short
             if self.sessions[s_idx].analyzed == False:
@@ -1661,6 +1776,7 @@ class Experiment():
             df_over_f = False, 
             downsampling_factor = None,
             export_vars = ['analog_1','analog_2'],
+            remove_artifacts: bool = False,
             verbose = False) -> Continuous_Dataset:
         '''
         get all photometry trials for one or several group(s) of subject(s) in one or several conditions
@@ -1715,10 +1831,19 @@ class Experiment():
 
                     try:
                         df_meta_photo, col_names_numpy, photometry_array, fs = session.get_photometry_trials(
-                            conditions_list = conditions_list, cond_aliases = cond_aliases, trig_on_ev=trig_on_ev,
-                            high_pass = high_pass, low_pass = low_pass, median_filt = median_filt,
-                            motion_corr = motion_corr, df_over_f = df_over_f, downsampling_factor = downsampling_factor, 
-                            return_full_session = False, export_vars = export_vars, verbose = verbose)
+                            conditions_list = conditions_list, 
+                            cond_aliases = cond_aliases, 
+                            trig_on_ev = trig_on_ev,
+                            high_pass = high_pass, 
+                            low_pass = low_pass, 
+                            median_filt = median_filt,
+                            motion_corr = motion_corr, 
+                            df_over_f = df_over_f, 
+                            downsampling_factor = downsampling_factor, 
+                            return_full_session = False,#
+                            export_vars = export_vars,
+                            remove_artifacts = remove_artifacts,
+                            verbose = verbose)
                     
                     except UnboundLocalError:
                         print(f'No trial in any condition for subject {session.subject_ID} at: {session.datetime_string}')

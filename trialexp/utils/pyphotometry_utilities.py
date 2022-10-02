@@ -24,12 +24,16 @@ def exp_func(x, a, b, c):
    return a*np.exp(-b*x) + c
 
 # compute the exponential fitted to data
-def fit_exp_func(data, fs: int = 100, medfilt: int = 3) -> np.ndarray:
-    if medfilt % 2 == 0:
-        raise Exception('medfilt must be an odd number') 
+def fit_exp_func(data, fs: int = 100, medfilt_size: int = 3) -> np.ndarray:
+    if medfilt_size % 2 == 0:
+        raise Exception('medfilt_size must be an odd number') 
     
-    time = np.linspace(fs, len(data)/fs, len(data))
-    fit_params, parm_cov = curve_fit(exp_func, time, medfilt(data,medfilt), p0=[1,1e-3,1],bounds=([0,0,0],[4,0.1,4]), maxfev=1000)
+    time = np.linspace(1/fs, len(data)/fs, len(data))
+
+    fit_params, parm_cov = curve_fit(
+        exp_func, time, medfilt(data,medfilt_size),
+        p0=[1,1e-3,1],bounds=([0,0,0],[4,0.1,4]), maxfev=1000)
+
     fitted_data = exp_func(time, * fit_params)
 
     return fitted_data
@@ -60,6 +64,10 @@ def find_n_gaussians(
     '''
     #------------------------------------------------------------
     # Set up the dataset. 
+
+    # median filter of raw red channel to remove small electric
+    # data = medfilt(data,3)
+
 
     X = data.reshape(-1, 1)
 
