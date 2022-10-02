@@ -407,7 +407,7 @@ class Continuous_Dataset(Trials_Dataset):
             vars: VarsType = 'all',
             time_lim: Optional[list] = None,
             time_unit: str = None,
-            error: str = None,
+            error: str = None, # only for group plot
             is_x_vs_y: bool = False, # implement here or not?
             plot_subjects: bool = True,
             plot_groups: bool = True,
@@ -485,7 +485,8 @@ class Continuous_Dataset(Trials_Dataset):
             fig, axs = plt.subplots(len(vars), len(condition_IDs), sharex= 'all',
                 sharey = 'row', squeeze = False , figsize = figsize)
         
-        
+        group_dfs = [0] * len(condition_IDs)
+        cond_n = [0] * len(condition_IDs) # trial counts per condition
         for c_idx, cond_ID in enumerate(condition_IDs):
 
             # Set title as condition on the first line
@@ -504,11 +505,14 @@ class Continuous_Dataset(Trials_Dataset):
                     axs[0, c_idx].set_title(str(self.conditions[cond_ID]))
 
             # Compute means and sems
+            group_n = [0] * len(group_IDs)
+            subj_dfs = [None] * len(group_IDs)
             for g_idx, group_ID in enumerate(group_IDs):
                 subj_subset = gby.loc[cond_ID, group_ID ,:].index.values
                 # used to work using the following, possibly previous for behaviour only?
                 # subj_subset = gby.loc[cond_ID, group_ID ,:].index.get_level_values(2).values
 
+                subj_n = [0] * len(subj_subset)
                 for subj_idx, subject in enumerate(subj_subset):
                     if verbose:
                         print(f'cond_ID: {cond_ID}, group_idx {group_ID}, subj {subject}')
@@ -523,6 +527,10 @@ class Continuous_Dataset(Trials_Dataset):
                     # sem_subj = np_val.std(axis=0) / np.sqrt(len(trial_idx)-1)
                     # sem_subj = sem_subj[vars_idx, :]
                     
+                    cond_n[c_idx] = cond_n[c_idx] + len(trial_idx)
+                    group_n[g_idx] = group_n[g_idx] + len(trial_idx)
+                    subj_n[subj_idx] = len(trial_idx)
+
                     # Plot
                     if plot_subjects:
                         for ax_idx, var in enumerate(vars_idx):
@@ -539,6 +547,7 @@ class Continuous_Dataset(Trials_Dataset):
                                     label = f'{subject} (n = {len(trial_idx)})',
                                     color = subj_colors(subj_dict[subject]))
 
+
                     if subj_idx == 0:
                         
                         mean_group = mean_subj
@@ -548,12 +557,21 @@ class Continuous_Dataset(Trials_Dataset):
                     else:
                         mean_group = np.concatenate([mean_group, np.expand_dims(mean_subj, axis=0)], axis=0)
                 
+                # subj_dfs[g_idx] = pd.DataFrame(
+                #     [[cond_ID] * len(subj_subset), [group_ID] * len(subj_subset), subj_subset, subj_n])
+                # subj_dfs[g_idx] = subj_dfs[g_idx].transpose()
+                # subj_dfs[g_idx].columns = ['cond_ID', 'group_ID', 'subject_ID', 'subject_trial_n']
+
+                subj_dfs[g_idx] = pd.DataFrame(
+                    [[group_ID] * len(subj_subset), subj_subset, subj_n])
+                subj_dfs[g_idx] = subj_dfs[g_idx].transpose()
+                subj_dfs[g_idx].columns = ['group_ID', 'subject_ID', 'subject_trial_n']
                 # Group computations
                 if plot_groups:
                     with warnings.catch_warnings():
                         warnings.simplefilter("ignore", category=RuntimeWarning)
                         sem_group = np.nanstd(mean_group, axis=0) / np.sqrt(mean_group.shape[0]-1)
-                        mean_group = np.nanmean(mean_group, axis=0)
+                        mean_group = np.nanmean(mean_group, axis=0) # the mean of the mean per subject(animal), rather than the mean of all trials
 
                     # Group plotting
                     group_lw = 1    
@@ -565,7 +583,8 @@ class Continuous_Dataset(Trials_Dataset):
                             if len(mean_group.shape) > 1:
                                 axs[ax_idx, 0].plot(time_vec, mean_group[ax_idx, :], lw=group_lw,
                                     color = group_colors(cond_ID),
-                                    label = self.cond_aliases[cond_ID])                    
+                                    label=self.cond_aliases[cond_ID] #+ f' (n = {cond_n[cond_ID]})'
+                                    )
                                 
                                 if error is not None:
                                     # fill sem
@@ -578,7 +597,8 @@ class Continuous_Dataset(Trials_Dataset):
                             else:
                                 axs[ax_idx, 0].plot(time_vec, mean_group, lw=group_lw,
                                 color = group_colors(cond_ID),
-                                label = self.cond_aliases[cond_ID])     
+                                label=self.cond_aliases[cond_ID] #+ f' (n = {cond_n[cond_ID]})'
+                                )
 
                         else:
                             if g_idx == 0 and c_idx == 0:
@@ -613,7 +633,29 @@ class Continuous_Dataset(Trials_Dataset):
                                     [ax[0].set_xlabel(time_unit) for ax in axs]
                                 else:
                                     axs[ax_idx, c_idx+1].set_xlabel(time_unit)
-        
+
+            subj_dfs = pd.concat(subj_dfs)
+
+            group_dfs[c_idx] = pd.DataFrame([[cond_ID] * len(group_IDs),  
+                [str(self.cond_aliases[cond_ID])] * len(group_IDs),  group_IDs, group_n])
+            group_dfs[c_idx] = group_dfs[c_idx].transpose()
+            group_dfs[c_idx].columns = ['condition_ID', 'condition_alias', 'group_ID', 'group_trial_n']
+
+            group_dfs[c_idx] = pd.merge(group_dfs[c_idx], subj_dfs, 'outer') 
+
+        out_df = pd.DataFrame([condition_IDs, cond_n])
+        out_df = out_df.transpose()
+        out_df.columns=['condition_ID', 'condition_trial_n']
+
+        group_dfs = pd.concat(group_dfs)
+
+        out_df = pd.merge(out_df, group_dfs, 'outer')
+        #TODO Is this format useful? I am not sure! You need to dig a lot.
+        # Instead of nesting, we can have dataframes and list of dataframes etc to be joined when necessary
+        # Or to have already joined, flat big table???
+
+
+                 
         if time_lim:
             axs[0,0].set_xlim([time_lim[0], time_lim[1]])
         else:        
@@ -662,7 +704,7 @@ class Continuous_Dataset(Trials_Dataset):
                         )
         #plt.show()
 
-        return fig, axs
+        return fig, axs, out_df
 
     def scatterplot(self, vars: VarsType, groupby: Optional[list] = ['group_ID', 'subject_ID'], \
             timelim: Optional[list] = None):
