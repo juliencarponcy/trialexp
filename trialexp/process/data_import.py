@@ -20,7 +20,9 @@ from scipy.signal import butter, filtfilt, decimate
 from scipy.stats import linregress
 
 from trialexp.utils.pycontrol_utilities import *
+from trialexp.utils.pyphotometry_utilities import *
 from trialexp.utils.rsync import *
+
 from trialexp.dataset_classes.trial_dataset_classes import *
 
 Event = namedtuple('Event', ['time','name'])
