@@ -1117,14 +1117,47 @@ class Session():
 #----------------------------------------------------------------------------------
 
 class Experiment():
+    """
+   
+    Attributes
+    ----------
+    folder_name               Path of data folder.
+    path
+    sessions
+    by_trial 
+    subject_IDs               int
+    n_subjects
+    task_names
+    sessions_per_subject
+    trial_window
+
+    Methods
+    -------
+    behav_events_to_dataset, 
+    get_deeplabcut_groups, 
+    get_photometry_groups, 
+    get_sessions, 
+    match_sessions_to_files, 
+    match_to_photometry_files, 
+    plot, 
+    process_exp_by_trial,
+    save
+
+    To know the number of sessions included in an Experiment object, use len(obj.sessions)
+            
+    """
+
     def __init__(self, folder_path, int_subject_IDs=True, verbose=False):
-        '''
+        """
         Import all sessions from specified folder to create experiment object.  Only sessions in the 
         specified folder (not in subfolders) will be imported.
-        Arguments:
-        folder_path: Path of data folder.
+        
+        Arguments
+        ---------
+        folder_path:      Path of data folder.
         int_subject_IDs:  If True subject IDs are converted to integers, e.g. m012 is converted to 12.
-        '''
+
+        """
 
         self.folder_name = os.path.split(folder_path)[1]
         self.path = folder_path
@@ -1160,23 +1193,48 @@ class Experiment():
 
         # Assign session numbers.
 
-        self.subject_IDs = list(set([s.subject_ID for s in self.sessions]))
-        self.n_subjects = len(self.subject_IDs)
+        # self.subject_IDs = list(set([s.subject_ID for s in self.sessions]))
+        # self.n_subjects = len(self.subject_IDs)
 
-        self.task_names = list(set([s.task_name for s in self.sessions]))
+        # self.task_names = list(set([s.task_name for s in self.sessions]))
 
-        self.sessions.sort(key = lambda s:s.datetime_string + str(s.subject_ID))
+        # self.sessions.sort(key = lambda s:s.datetime_string + str(s.subject_ID))
         
-        self.sessions_per_subject = {}
+        # self.sessions_per_subject = {}
+        # for subject_ID in self.subject_IDs:
+        #     subject_sessions = self.get_sessions(subject_IDs=subject_ID)
+
+        #     for i, session in enumerate(subject_sessions):
+        #         session.number = i+1
+        #         if verbose:
+        #             print('session nb: ', session.number, session.subject_ID, session.datetime_string, session.task_name)
+        #     self.sessions_per_subject[subject_ID] = subject_sessions[-1].number
+
+    @property
+    def subject_IDs(self):
+        return list(set([s.subject_ID for s in self.sessions]))
+
+    @property
+    def n_subjects(self):
+        return len(self.subject_IDs)
+
+    @property
+    def task_names(self):
+        return list(set([s.task_name for s in self.sessions]))
+
+    @property
+    def sessions_per_subject(self):
+        sessions_per_subject_ = {}
         for subject_ID in self.subject_IDs:
             subject_sessions = self.get_sessions(subject_IDs=subject_ID)
 
             for i, session in enumerate(subject_sessions):
                 session.number = i+1
-                if verbose:
-                    print('session nb: ', session.number, session.subject_ID, session.datetime_string, session.task_name)
-            self.sessions_per_subject[subject_ID] = subject_sessions[-1].number
+                # if verbose:
+                #    print('session nb: ', session.number, session.subject_ID, session.datetime_string, session.task_name)
+            sessions_per_subject_[subject_ID] = subject_sessions[-1].number
 
+        return sessions_per_subject_
 
     def save(self):
         '''Save all sessions as .pkl file. Speeds up subsequent instantiation of 
@@ -1595,8 +1653,8 @@ class Experiment():
             cond_aliases = None,
             when = 'all',
             task_names = 'all',
-            trig_on_ev = None,
-            high_pass = None, 
+            trig_on_ev = None, # align to the first event of a kind e.g. None (meaning CS_Go onset), 'spout', 'bar_off'
+            high_pass = None, # analog_1_df_over_f doesn't work with this
             low_pass = None, 
             median_filt = None,
             motion_corr = False, 

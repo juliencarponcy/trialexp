@@ -155,7 +155,8 @@ class Trials_Dataset():
 
     def filterout_conditions(self, condition_IDs_to_exclude: list):
         '''
-        exclude one or several conditions of the dataset
+        exclude one or several conditions of the dataset using integer condition_IDs_to_exclude
+        the index (ID) starting from 0
         '''
         if isinstance(condition_IDs_to_exclude, int):
             condition_IDs_to_exclude = [condition_IDs_to_exclude]
@@ -653,12 +654,12 @@ class Continuous_Dataset(Trials_Dataset):
                             )
                 else:
                     axs[r].plot([time_vec[0], time_vec[-1]],
-                                [0, 0],
-                                color=(0.8, 0.8, 0.8),
-                                linestyle=':',
-                                zorder=0.5,  # send to back
-                                lw=0.5,
-                                )
+                        [0, 0],
+                        color=(0.8, 0.8, 0.8),
+                        linestyle=':',
+                        zorder=0.5,  # send to back
+                        lw=0.5,
+                        )
         #plt.show()
 
         return fig, axs
