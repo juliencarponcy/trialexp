@@ -191,7 +191,7 @@ def copy_files_to_horizontal_folders(root_folders, horizontal_folder_pycontrol, 
                         print(join(path, name))
                         shutil.copyfile(join(path, name),join(horizontal_folder_pycontrol, name))
                 elif name[-4:] == '.ppd':
-                    if not isfile(join(horizontal_folder_photometry,name)):
+                    if not isfile(join(horizontal_folder_photometry, name)):
                         print(join(path, name))
                         shutil.copyfile(join(path, name),join(horizontal_folder_photometry, name))
 
