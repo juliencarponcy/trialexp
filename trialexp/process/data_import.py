@@ -1436,9 +1436,21 @@ class Experiment():
 
     def process_exp_by_trial(self, trial_window: list, timelim: list,
             tasksfile: str, blank_spurious_event: list = None, blank_timelim: list = [0, 60], verbose = False):
+        """
+        ARGUMENTS
+        ---------
+        self
+        trial_window: list,                eg [-2000, 6000]
+        timelim: list,                     eg [0 2000]
+        tasksfile: str                     full filepath of tasks_params.csv in this repo
+        blank_spurious_event: list = None, #TODO what's this?
+        blank_timelim: list = [0, 60],     reflecting v.spout_detect_timeout
+        verbose = False
 
-        # create emtpy list to store idx of sessions without trials,
-        # can be extended to detect all kind of faulty sessions.
+        create emtpy list to store idx of sessions without trials,
+        can be extended to detect all kind of faulty sessions.
+        """
+
         sessions_idx_to_remove = []
         
         for s_idx, s in enumerate(self.sessions):
