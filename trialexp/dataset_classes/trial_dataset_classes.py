@@ -325,6 +325,17 @@ class Continuous_Dataset(Trials_Dataset):
     """
     def __init__(self, data: np.ndarray, metadata_df: pd.DataFrame, colnames_dict: dict):
         super().__init__(data, metadata_df)
+        """
+
+        Arguments
+        ---------
+        self
+        data : numpy.ndarray
+            Has to be 3d?
+            What are dimensions? #TODO
+        metadata_df : pandas.DataFrame
+        colnames_dict : dict
+        """
         # TODO: Consider inputing colnames only as list or tuple
         # and compute the dictionary '<names>': <idx_col(int)> in __init__
         self.colnames_dict = colnames_dict
@@ -836,6 +847,17 @@ class Event_Dataset(Trials_Dataset):
         out_as_continuous: bool = False, 
             if True, output a Continuous_Dataset object
         verbose: bool = False
+
+
+        Returns
+        -------
+        grouped_df : DataFrame
+            default
+            only if not out_as_continuous
+        dist_as_continuous : Continuous_Dataset
+            only if out_as_continuous
+
+
         """
 
         if trial_window == None and hasattr(self, 'trial_window'):
