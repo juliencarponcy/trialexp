@@ -51,8 +51,9 @@ class Trials_Dataset():
 
     Attributes
     ----------
-    data : DataFrame
-        derive from trialexp.process.data_import.Session.df_events, rows for trials
+    data : 
+        pandas.DataFrame (Event_Dataset) 
+        or numpy.ndarray (Continuous_Dataset)
     metadata_df : DataFrame
         Rows for trials, holding colums:
             trial_nb : int
@@ -303,6 +304,11 @@ class Trials_Dataset():
 class Continuous_Dataset(Trials_Dataset):
     """
     Subclass of Trials_Dataset.
+
+    Attributes
+    ----------
+    colnames_dict : dict
+
 
     Methods
     -------
@@ -817,6 +823,19 @@ class Event_Dataset(Trials_Dataset):
         Compute distribution of events for each session.
         Output a continuous_dataset instance if out_as_continuous = True
 
+        Arguments
+        ---------
+        self
+        trial_window: Iterable = None,
+        bin_size: int = 100, 
+            by default in ms, not adapted yet for seconds
+        normalize: bool = True, 
+            normalize the count of events according to bin_size
+        per_session: bool = False, 
+            if False, compute distribution per animal for all its sessions
+        out_as_continuous: bool = False, 
+            if True, output a Continuous_Dataset object
+        verbose: bool = False
         """
 
         if trial_window == None and hasattr(self, 'trial_window'):
