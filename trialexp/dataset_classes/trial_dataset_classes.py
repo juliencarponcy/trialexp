@@ -83,7 +83,9 @@ class Trials_Dataset():
     -------
     export()
     filter_min()
+        These filter_* and filterout_* methods are to modify the values of 'keep' column of metadata_df
     filter_reset()
+        The values of 'keep' column of metadata_df are all set to True
     filterout_conditions()
     filterout_dates()
     filterout_groups()
@@ -297,6 +299,7 @@ class Trials_Dataset():
         """
         reset filters to include all trials as
         at the creation of the dataset
+        The values of 'keep' column of metadata_df are all set to True
         """
 
         self.metadata_df['keep'] = True
