@@ -2,6 +2,10 @@
 # coding: utf-8
 
 # ## Workflow to analyze pyControl data
+# 
+# ```bash
+# jupyter nbconvert "D:\OneDrive - Nexus365\Private_Dropbox\Projects\trialexp\notebooks\noncanonical\nb20221002_214600_workflow_pyCon_PavAll.ipynb" --to="python" --output-dir="D:\OneDrive - Nexus365\Private_Dropbox\Projects\trialexp\notebooks\noncanonical" --output="nb20221002_214600_workflow_pyCon_PavAll"
+# ```
 
 # ### Imports
 
@@ -108,7 +112,6 @@ exp_cohort.sessions = exp_cohort.get_sessions(task_names='pavlovian_nobar_nodela
 # exp_cohort.save()
 print(len(exp_cohort.sessions ))
 exp_cohort.subject_IDs
-
 
 
 # ### Perform extraction of behavioural information by trial
@@ -304,11 +307,13 @@ dist_as_continuous.metadata_df['keep'].value_counts()
 # In[375]:
 
 
+
 metadata_df = ev_dataset.metadata_df.loc[ev_dataset.metadata_df['keep'] & ev_dataset.metadata_df['valid'], :]
 metadata_df
 
 
 # In[213]:
+
 
 
 from numpy import NaN
@@ -364,8 +369,8 @@ gr_df = pd.merge(gr_df, ss_dfs, 'outer')
 
 
 
-
 # In[380]:
+
 
 
 gr_df
@@ -456,7 +461,6 @@ def extract_successrates(gr_df : pd.DataFrame, bywhat):
   return out_list
 
 
-
 # In[395]:
 
 
@@ -492,8 +496,8 @@ cb1 = plt.colorbar(im1, location='right', ax=[ax1, ax2], label='Success rate')
 
 
 
-
 # In[394]:
+
 
 
 bywhat = 'days'  # 'days', 'dates', 'sessions'
@@ -528,6 +532,8 @@ cb1 = plt.colorbar(im1, location='right', ax=[ax1, ax2], label='Success rate')
 # In[351]:
 
 
+
+
 bywhat = 'days'  # 'days', 'dates', 'sessions'
 out_list = extract_successrates(gr_df, bywhat)
 
@@ -556,6 +562,7 @@ cb1 = plt.colorbar(im1, location='right', ax=[ax1, ax2], label='Success rate')
 
 
 # In[49]:
+
 
 
 exp_cohort.sessions[1].df_events.head(50)
@@ -598,11 +605,9 @@ s.df_conditions
 # The bodyparts from which we draw here are user-defined
 # when creating a new DeepLabCut project (config.yaml)
 
-L_paw_parts  = ['MCP II', 'MCP III', 'MCP IV', 'MCP V', 'IP II', 'IP III', \
-    'IP IV', 'IP V', 'tip II', 'tip III', 'tip IV', 'tip V'] 
+L_paw_parts  = ['MCP II', 'MCP III', 'MCP IV', 'MCP V', 'IP II', 'IP III',     'IP IV', 'IP V', 'tip II', 'tip III', 'tip IV', 'tip V'] 
 
-R_paw_parts = ['r MCP II', 'r MCP III', 'r MCP IV', 'r MCP V', 'r IP II', \
-    'r IP III', 'r IP IV', 'r IP V', 'r tip II', 'r tip III', 'r tip IV', 'r tip V']
+R_paw_parts = ['r MCP II', 'r MCP III', 'r MCP IV', 'r MCP V', 'r IP II',     'r IP III', 'r IP IV', 'r IP V', 'r tip II', 'r tip III', 'r tip IV', 'r tip V']
 
 names_of_ave_regions = ['Left_paw','Right_paw']
 
