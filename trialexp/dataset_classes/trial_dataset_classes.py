@@ -52,7 +52,7 @@ class Trials_Dataset():
     Attributes
     ----------
     data : DataFrame
-        Session.df_events, rows for trials
+        derive from trialexp.process.data_import.Session.df_events, rows for trials
     metadata_df : DataFrame
         Rows for trials, holding colums:
             trial_nb : int
@@ -76,6 +76,25 @@ class Trials_Dataset():
         eg [-2000, 6000]
     time_unit : str
         'ms' | 'milliseconds' | 's' | 'seconds'
+
+
+    Methods
+    -------
+    export()
+    filter_min()
+    filter_reset()
+    filterout_conditions()
+    filterout_dates()
+    filterout_groups()
+    filterout_if_not_in_all_cond()
+    filterout_subjects()
+    get_groups()
+    get_memory_size()
+    get_session_files()
+    save()
+    set_conditions()
+    set_groups()
+    set_trial_window()
 
     """
 
@@ -283,7 +302,20 @@ class Trials_Dataset():
 
 class Continuous_Dataset(Trials_Dataset):
     """
+    Subclass of Trials_Dataset.
 
+    Methods
+    -------
+    scatterplot()
+        to be implemented
+    export_to_sktime()
+    transform_variables()
+        to be implemented
+    get_time_vector(self, unit: str = None)
+    set_fs(self, fs: int):
+    lineplot(...)
+        The main plotting method.
+    get_col_names()
     """
     def __init__(self, data: np.ndarray, metadata_df: pd.DataFrame, colnames_dict: dict):
         super().__init__(data, metadata_df)
@@ -756,11 +788,11 @@ class Event_Dataset(Trials_Dataset):
 
     Methods
     -------
-    raster
+    raster()
         to be implemented
-    peth
+    peth()
         to be implemented, can be integrated with raster
-    compute_distribution
+    compute_distribution(...)
         Compute distribution of events for each session.
 
     """
