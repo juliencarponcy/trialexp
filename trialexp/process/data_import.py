@@ -43,31 +43,47 @@ class DeepLabCutFileError(Exception):
 
 
 class Session():
-    '''Import data from a pyControl file and represent it as an object with attributes:
-      - file_name
-      - experiment_name
-      - task_name
-      - setup_ID
-          The COM port of the computer used (can be useful when multiple rigs on one computer)
-      - subject_ID
-          If argument int_subject_IDs is True, suject_ID is stored as an integer,
-          otherwise subject_ID is stored as a string.
-      - datetime
-          The date and time that the session started stored as a datetime object.
-      - datetime_string
-          The date and time that the session started stored as a string of format 'YYYY-MM-DD HH:MM:SS'
-      - events
-          A list of all framework events and state entries in the order they occured. 
-          Each entry is a namedtuple with fields 'time' & 'name', such that you can get the 
-          name and time of event/state entry x with x.name and x.time respectively.
-      - times
-          A dictionary with keys that are the names of the framework events and states and 
-          corresponding values which are Numpy arrays of all the times (in milliseconds since the
+    """
+    Import data from a pyControl file and represent it as an object 
+    
+    Attributes
+    ----------
+    file_name : str
+    experiment_name
+    task_name
+    setup_ID
+        The COM port of the computer used (can be useful when multiple rigs on one computer)
+    subject_ID
+        If argument int_subject_IDs is True, suject_ID is stored as an integer,
+        otherwise subject_ID is stored as a string.
+    datetime
+        The date and time that the session started stored as a datetime object.
+    datetime_string
+        The date and time that the session started stored as a string of format 'YYYY-MM-DD HH:MM:SS'
+    events : list
+        A list of all framework events and state entries in the order they occured. 
+        Each entry is a namedtuple with fields 'time' & 'name', such that you can get the 
+        name and time of event/state entry x with x.name and x.time respectively.
+    times : dict
+        A dictionary with keys that are the names of the framework events and states and 
+        corresponding values which are Numpy arrays of all the times (in milliseconds since the
            start of the framework run) at which each event/state entry occured.
-      - print_lines
-          A list of all the lines output by print statements during the framework run, each line starts 
-          with the time in milliseconds at which it was printed.
-    '''
+    print_lines : list
+        A list of all the lines output by print statements during the framework run, each line starts 
+        with the time in milliseconds at which it was printed.
+    number
+    analyzed
+    trial_window
+    triggers
+    events_to_process
+    conditions
+    timelim
+    df_events
+    df_conditions
+    photometry_rsync
+    photometry_path
+    files
+    """
 
     def __init__(self, file_path, int_subject_IDs=True, verbose=False):
 
@@ -499,6 +515,11 @@ class Session():
     # or separate entirely in a more versatile function
     # TODO: identify the most common/likely patterns
     def compute_success(self):
+        """computes success trial numbers
+
+        This methods includes task_name specific definitions of success.
+        The results are stored in self.df_events and self.df_conditions
+        """
         self.df_conditions['success'] = False
         self.df_events['success'] = False
         #print(self.task_name)
@@ -1490,11 +1511,11 @@ class Experiment():
             when = 'all', 
             task_names = 'all',
             trig_on_ev: str = None) -> Event_Dataset: 
-        '''
+        """
         Take all behavioural data from the relevant sessions
         and trials and assemble it as an Event_Dataset
         instance for further analyses.
-        '''
+        """
 
         # TODO: put all redundant args checks in a utility function
         # list: groups, conditions_list, cond_aliases, task_names, trig_on_ev
