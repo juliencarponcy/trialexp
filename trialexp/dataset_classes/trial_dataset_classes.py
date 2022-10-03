@@ -651,9 +651,7 @@ class Continuous_Dataset(Trials_Dataset):
                 # subj_dfs[g_idx] = subj_dfs[g_idx].transpose()
                 # subj_dfs[g_idx].columns = ['cond_ID', 'group_ID', 'subject_ID', 'subject_trial_n']
 
-                subj_dfs[g_idx] = pd.DataFrame(
-                    [[group_ID] * len(subj_subset), subj_subset, subj_n])
-                subj_dfs[g_idx] = subj_dfs[g_idx].transpose()
+                subj_dfs[g_idx] = pd.DataFrame(list(zip([group_ID] * len(subj_subset), subj_subset, subj_n)))
                 subj_dfs[g_idx].columns = ['group_ID', 'subject_ID', 'subject_trial_n']
                 # Group computations
                 if plot_groups:
@@ -725,15 +723,13 @@ class Continuous_Dataset(Trials_Dataset):
 
             subj_dfs = pd.concat(subj_dfs)
 
-            group_dfs[c_idx] = pd.DataFrame([[cond_ID] * len(group_IDs),  
-                [str(self.cond_aliases[cond_ID])] * len(group_IDs),  group_IDs, group_n])
-            group_dfs[c_idx] = group_dfs[c_idx].transpose()
+            group_dfs[c_idx] = pd.DataFrame(list(zip([cond_ID] * len(group_IDs),  
+                [str(self.cond_aliases[cond_ID])] * len(group_IDs),  group_IDs, group_n)))
             group_dfs[c_idx].columns = ['condition_ID', 'condition_alias', 'group_ID', 'group_trial_n']
 
             group_dfs[c_idx] = pd.merge(group_dfs[c_idx], subj_dfs, 'outer') 
 
-        out_df = pd.DataFrame([condition_IDs, cond_n])
-        out_df = out_df.transpose()
+        out_df = pd.DataFrame(list(zip(condition_IDs, cond_n)))
         out_df.columns=['condition_ID', 'condition_trial_n']
 
         group_dfs = pd.concat(group_dfs)
