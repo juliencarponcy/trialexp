@@ -43,6 +43,41 @@ def load_dataset(fullpath:str):
 
 
 class Trials_Dataset():
+    """
+    Trials_Dataset has subclasses Continuous_Dataset and Event_Dataset.
+    Unlike trialexp.process.data_import.Session, which holds data of an entire session
+    with a linear time vector, Trials_Dataset holds triggered trial data that extends to trial_window.
+    In other words, each trial is provided the equal time vector whose 0 is at the trigger event.
+
+    Attributes
+    ----------
+    data : DataFrame
+        Session.df_events, rows for trials
+    metadata_df : DataFrame
+        Rows for trials, holding colums:
+            trial_nb : int
+            trigger : str
+            success : bool
+            valid : bool
+            condition_ID : int 
+            condition : str
+            group_ID : int
+            session_nb : int
+            subject_ID : int or str
+            keep : bool
+            trial_ID : int
+    creation_date : datetime.datetime
+    has_conditions : bool
+    has_groups : bool
+    groups : array
+    conditions : list of dict
+    cond_aliases : list of str
+    trial_window : list
+        eg [-2000, 6000]
+    time_unit : str
+        'ms' | 'milliseconds' | 's' | 'seconds'
+
+    """
 
     def __init__(self, data, metadata_df: pd.DataFrame):
         self.data = data
@@ -131,9 +166,9 @@ class Trials_Dataset():
         raise NotImplementedError
         
     def save(self, folder: str = None, name: str = None, verbose: bool = True):
-        '''
+        """
         Save Trials_Dataset to pickle file (.pkl)
-        '''
+        """
         if folder:
             fullpath = os.path.join(folder, name + '.pkl')
         else:
@@ -154,19 +189,19 @@ class Trials_Dataset():
         raise NotImplementedError    
 
     def filterout_conditions(self, condition_IDs_to_exclude: list):
-        '''
+        """
         exclude one or several conditions of the dataset using integer condition_IDs_to_exclude
         the index (ID) starting from 0
-        '''
+        """
         if isinstance(condition_IDs_to_exclude, int):
             condition_IDs_to_exclude = [condition_IDs_to_exclude]
         filter = self.metadata_df['condition_ID'].apply(lambda x: x in condition_IDs_to_exclude)
         self.metadata_df.loc[filter,'keep'] = False
 
     def filterout_dates(self, days_to_exclude: list):
-        '''
+        """
         exclude one or several dates of the dataset 
-        '''
+        """
         if isinstance(days_to_exclude, datetime.datetime):
             days_to_exclude = [days_to_exclude.date()]
         elif isinstance(days_to_exclude, datetime.date):
@@ -178,25 +213,25 @@ class Trials_Dataset():
         self.metadata_df.loc[filter,'keep'] = False
 
     def filterout_groups(self, group_IDs_to_exclude: list):
-        '''
+        """
         exclude one or several groups of the dataset
-        '''
+        """
         if isinstance(group_IDs_to_exclude, int):
             group_IDs_to_exclude = [group_IDs_to_exclude]
         filter = self.metadata_df['group_ID'].apply(lambda x: x in group_IDs_to_exclude)
         self.metadata_df.loc[filter,'keep'] = False
 
     def filterout_subjects(self, subject_IDs_to_exclude: list):
-        '''
+        """
         exclude one or several subjects of the dataset
-        '''
+        """
         if isinstance(subject_IDs_to_exclude, int):
             subject_IDs_to_exclude = [subject_IDs_to_exclude]
         filter = self.metadata_df['subject_ID'].apply(lambda x: x in subject_IDs_to_exclude)
         self.metadata_df.loc[filter,'keep'] = False
 
     def filter_min(self, min_trials : int = 5):
-        '''
+        """
         filter subjects who do not have sufficient trials in a condition,
         NB: this is not removing the trials of this subject in the other
         conditions! 
@@ -205,7 +240,7 @@ class Trials_Dataset():
 
         <trial_dataset>.filter_min(min_trials = x)
         <trial_dataset>.filterout_if_not_in_all_cond()
-        '''
+        """
 
         nb_trials = self.metadata_df.groupby(['condition_ID', 'group_ID','subject_ID']).agg(len)['trial_ID']
         trials_idx = self.metadata_df.groupby(['condition_ID', 'group_ID','subject_ID']).agg(list)['trial_ID']
@@ -216,11 +251,11 @@ class Trials_Dataset():
             self.metadata_df.loc[idx_filter,'keep'] = False
 
     def filterout_if_not_in_all_cond(self):
-        '''
+        """
         To remove subjects who do not have
         trials in all the conditions.
         Can be used after <trial_dataset>.filter_min()
-        '''
+        """
         
 
         filtered_df = self.metadata_df[self.metadata_df['keep'] == True]
@@ -239,15 +274,17 @@ class Trials_Dataset():
         self.metadata_df.loc[idx_to_remove.index,'keep'] = False
 
     def filter_reset(self):
-        '''
+        """
         reset filters to include all trials as
         at the creation of the dataset
-        '''
+        """
 
         self.metadata_df['keep'] = True
 
 class Continuous_Dataset(Trials_Dataset):
+    """
 
+    """
     def __init__(self, data: np.ndarray, metadata_df: pd.DataFrame, colnames_dict: dict):
         super().__init__(data, metadata_df)
         # TODO: Consider inputing colnames only as list or tuple
@@ -714,7 +751,19 @@ class Continuous_Dataset(Trials_Dataset):
 
 
 class Event_Dataset(Trials_Dataset):
+    """
+    Subclass of Trials_Dataset.
 
+    Methods
+    -------
+    raster
+        to be implemented
+    peth
+        to be implemented, can be integrated with raster
+    compute_distribution
+        Compute distribution of events for each session.
+
+    """
     def __init__(self, data: pd.DataFrame, metadata_df: pd.DataFrame):
             super().__init__(data, metadata_df)
             # TODO: Consider inputing colnames only as list or tuple
@@ -732,11 +781,11 @@ class Event_Dataset(Trials_Dataset):
             per_session: bool = False, # if false, compute distribution per animal for all its sessions
             out_as_continuous: bool = False, # if true, output a continuous dataset
             verbose: bool = False):
-        '''
+        """
         Compute distribution of events for each session.
         Output a continuous_dataset instance if out_as_continuous = True
 
-        '''
+        """
 
         if trial_window == None and hasattr(self, 'trial_window'):
             trial_window = self.trial_window
