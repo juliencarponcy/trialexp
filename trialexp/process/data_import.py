@@ -1264,15 +1264,22 @@ class Experiment():
    
     Attributes
     ----------
-    folder_name               Path of data folder.
-    path
-    sessions
-    by_trial 
-    subject_IDs               int
-    n_subjects
+    folder_name : str
+        Folder name
+    path : str
+        Path of data folder including folder_name
+    sessions : list
+        List of Session objects
+    by_trial : bool
+    trial_window : list
+        eg [-2000, 6000]
+
+    Properties
+    ----------
+    subject_IDs : int
+    n_subjects : scalar integer
     task_names
     sessions_per_subject
-    trial_window
 
     Methods
     -------
