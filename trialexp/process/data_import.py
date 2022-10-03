@@ -49,19 +49,20 @@ class Session():
     Attributes
     ----------
     file_name : str
-    experiment_name
-    task_name
-    setup_ID
+        .txt file name
+    experiment_name : str
+    task_name : str
+    setup_ID : str
         The COM port of the computer used (can be useful when multiple rigs on one computer)
-    subject_ID
+    subject_ID : integer or str
         If argument int_subject_IDs is True, suject_ID is stored as an integer,
         otherwise subject_ID is stored as a string.
     datetime
         The date and time that the session started stored as a datetime object.
     datetime_string
         The date and time that the session started stored as a string of format 'YYYY-MM-DD HH:MM:SS'
-    events : list
-        A list of all framework events and state entries in the order they occured. 
+    events : list of namedtuple
+        A list of all framework events and state entries as objects in the order they occurred. 
         Each entry is a namedtuple with fields 'time' & 'name', such that you can get the 
         name and time of event/state entry x with x.name and x.time respectively.
     times : dict
@@ -71,18 +72,24 @@ class Session():
     print_lines : list
         A list of all the lines output by print statements during the framework run, each line starts 
         with the time in milliseconds at which it was printed.
-    number
-    analyzed
-    trial_window
-    triggers
-    events_to_process
-    conditions
-    timelim
-    df_events
-    df_conditions
+    number : scalar integer
+    analyzed : bool
+    trial_window : list
+        eg [-2000, 6000]
+    triggers : list
+        eg ['CS_Go']
+    events_to_process : list
+    conditions : list
+    timelim : list
+        eg [0, 2000]
+    df_events : DataFrame
+        DataFrame with rows for all the trials. 
+    df_conditions : DataFrame
+        DataFrame with rows for all the trials and columns for 'trigger', 'valid' and the keys of conditions_list passed to
+        Experiment.behav_events_to_dataset. df_conditions is a subset of df_events with fewer columns (maybe)
     photometry_rsync
-    photometry_path
-    files
+    photometry_path : str
+    files : dict
     """
 
     def __init__(self, file_path, int_subject_IDs=True, verbose=False):
@@ -517,8 +524,8 @@ class Session():
     def compute_success(self):
         """computes success trial numbers
 
-        This methods includes task_name specific definitions of success.
-        The results are stored in self.df_events and self.df_conditions
+        This methods includes task_name-specific definitions of successful trials.
+        The results are stored in the 'success' columns of self.df_events and self.df_conditions as bool (True or False).
         """
         self.df_conditions['success'] = False
         self.df_events['success'] = False
@@ -1515,6 +1522,22 @@ class Experiment():
         Take all behavioural data from the relevant sessions
         and trials and assemble it as an Event_Dataset
         instance for further analyses.
+
+        Arguments
+        ---------
+        self
+        groups : list = None
+        conditions_list : list = None
+            List of dictionary. Used by Session.get_trials_times_from_conditions to create
+            DataFrame Session.df_conditions, the rows of which represent trials. 
+            The dictionary keys are used as part of DataFrame column names (columns) together with 'trigger', and 'valid'.
+            The dictionary keys are used to determine if trials are valid and stored as the 'valid' column.
+            The valid trials of df_conditions are then 
+        cond_aliases : list = None
+            The list of condition names.
+        when = 'all'
+        task_names = 'all'
+        trig_on_ev: str = None
         """
 
         # TODO: put all redundant args checks in a utility function
