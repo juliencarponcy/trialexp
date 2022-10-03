@@ -165,7 +165,16 @@ def cmap10():
 
     return cmap
 
+def get_methods(obj):
+    object_methods = [method_name for method_name in dir(obj)
+                      if callable(getattr(obj, method_name))]
+    print(object_methods)
+    return object_methods
 
+def get_attributes(obj):
+    lst = list(obj.__dict__.keys())
+    print(lst)
+    return lst
 
 #----------------------------------------------------------------------------------
 # Data reorganization

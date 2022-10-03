@@ -1637,6 +1637,9 @@ class Experiment():
                             
                             events_aggreg = pd.concat([events_aggreg,df_ev_cond])
 
+                        events_aggreg['datetime'] = pd.Series([session.datetime] * events_aggreg.shape[0], index = events_aggreg.index)
+                        events_aggreg['datetime_string'] = pd.Series([session.datetime_string] * events_aggreg.shape[0], index =  events_aggreg.index)                     
+
                         idx_all_cond = np.concatenate([idx_all_cond, idx_joint])
                         trials_times_all_cond = np.concatenate([trials_times_all_cond, trials_times])
 
@@ -1648,7 +1651,10 @@ class Experiment():
                         if cond_aliases:
                             # df_events.loc[idx_joint, 'condition'] = cond_aliases[cond_idx]
                             df_conditions.loc[idx_joint, 'condition'] = cond_aliases[cond_idx]
-                    
+                        
+                        df_conditions['datetime'] = pd.Series([session.datetime] * df_conditions.shape[0], index = df_conditions.index)
+                        df_conditions['datetime_string'] = pd.Series([session.datetime_string] * df_conditions.shape[0], index = df_conditions.index)                      
+
                     idx_all_cond = idx_all_cond.astype(int)
                     # df_events.dropna(subset=['condition_ID'], inplace=True)
                     # df_conditions.dropna(subset=['condition_ID'], inplace=True)
