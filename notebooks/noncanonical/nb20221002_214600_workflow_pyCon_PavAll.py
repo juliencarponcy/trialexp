@@ -461,7 +461,9 @@ def extract_successrates(gr_df : pd.DataFrame, bywhat):
   return out_list
 
 
-# In[395]:
+# ### sessions
+
+# In[399]:
 
 
 import matplotlib
@@ -473,7 +475,7 @@ fig, (ax1, ax2) = plt.subplots(2,1)
 
 nml = matplotlib.colors.Normalize(0,1)
 
-im1 = ax1.imshow(out_list[0].iloc[:,0:7].transpose(), norm=nml)
+im1 = ax1.imshow(out_list[0].iloc[:,0:6].transpose(), norm=nml)
 ax1.set_title('Cohort 1')
 ax1.set_xlabel('Sessions')
 ax1.set_ylabel('Mice')
@@ -496,7 +498,9 @@ cb1 = plt.colorbar(im1, location='right', ax=[ax1, ax2], label='Success rate')
 
 
 
-# In[394]:
+# ### days
+
+# In[400]:
 
 
 
@@ -507,7 +511,7 @@ fig, (ax1, ax2) = plt.subplots(2, 1)
 
 nml = matplotlib.colors.Normalize(0, 1)
 
-im1 = ax1.imshow(out_list[0].iloc[:, 0:7].transpose(), norm=nml)
+im1 = ax1.imshow(out_list[0].iloc[:, 0:6].transpose(), norm=nml)
 ax1.set_title('Cohort 1')
 #ax1.set_xlabel('Days')
 ax1.set_ylabel('Mice')
@@ -529,34 +533,84 @@ ax2.tick_params(axis='both', which='major', labelsize=8)
 cb1 = plt.colorbar(im1, location='right', ax=[ax1, ax2], label='Success rate')
 
 
-# In[351]:
+# ### days_with_gaps
+
+# In[401]:
 
 
 
-
-bywhat = 'days'  # 'days', 'dates', 'sessions'
+bywhat = 'days_with_gaps'  # 'days', 'dates', 'sessions'
 out_list = extract_successrates(gr_df, bywhat)
 
 fig, (ax1, ax2) = plt.subplots(2, 1)
 
 nml = matplotlib.colors.Normalize(0, 1)
 
-im1 = ax1.imshow(out_list[0].iloc[:, 0:7].transpose(), norm=nml)
+im1 = ax1.imshow(out_list[0].iloc[:, 0:6].transpose(), norm=nml)
 ax1.set_title('Cohort 1')
-ax1.set_xlabel('Sessions')
+#ax1.set_xlabel('Days')
 ax1.set_ylabel('Mice')
 ax1.set_yticks(range(0, 6))
 ax1.set_yticklabels(out_list[0].columns[0:6])
 ax1.set_facecolor('k')
+ax1.tick_params(axis='both', which='major', labelsize=8)
 
 
 im2 = ax2.imshow(out_list[0].iloc[:, 6:].transpose(), norm=nml)
 ax2.set_title('Cohort 2')
-ax2.set_xlabel('Sessions')
+ax2.set_xlabel('Days')
 ax2.set_ylabel('Mice')
 ax2.set_yticks(range(0, 7))
 ax2.set_yticklabels(out_list[0].columns[6:])
 ax2.set_facecolor('k')
+ax2.tick_params(axis='both', which='major', labelsize=8)
+
+cb1 = plt.colorbar(im1, location='right', ax=[ax1, ax2], label='Success rate')
+
+
+# ### Dates
+
+# In[421]:
+
+
+out_list[0].index[range(0, 30, 5)]
+
+
+# In[424]:
+
+
+
+
+bywhat = 'dates'  # 'days', 'dates', 'sessions'
+out_list = extract_successrates(gr_df, bywhat)
+
+fig, (ax1, ax2) = plt.subplots(2, 1)
+
+nml = matplotlib.colors.Normalize(0, 1)
+
+im1 = ax1.imshow(out_list[0].iloc[:, 0:6].transpose(), norm=nml)
+ax1.set_title('Cohort 1')
+ax1.set_xlabel('Dates')
+ax1.set_ylabel('Mice')
+ax1.set_xticks(range(0, 30, 5)) # needed
+ax1.set_xticklabels(
+    out_list[0].index[range(0, 30, 5)], rotation=30, ha='right')
+ax1.set_yticks(range(0, 6))
+ax1.set_yticklabels(out_list[0].columns[0:6])
+ax1.set_facecolor('k')
+ax1.tick_params(axis='both', which='major', labelsize=8)
+
+
+im2 = ax2.imshow(out_list[0].iloc[:, 6:].transpose(), norm=nml)
+ax2.set_title('Cohort 2')
+ax2.set_xlabel('Dates')
+ax2.set_ylabel('Mice')
+ax2.set_xticks(range(0, 30, 5))  # needed
+ax2.set_xticklabels(out_list[0].index[range(0, 30, 5)], rotation=30, ha='right')
+ax2.set_yticks(range(0, 7))
+ax2.set_yticklabels(out_list[0].columns[6:])
+ax2.set_facecolor('k')
+ax2.tick_params(axis='both', which='major', labelsize=8)
 
 cb1 = plt.colorbar(im1, location='right', ax=[ax1, ax2], label='Success rate')
 
