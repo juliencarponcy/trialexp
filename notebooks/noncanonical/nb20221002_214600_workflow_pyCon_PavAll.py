@@ -167,7 +167,7 @@ groups = None
 # groups = [[280, 282, 299, 300, 301],\
 #     [284, 285, 296, 297, 306, 307]]
 # Window to exctract (in ms)
-trial_window = [-2000, 4000]
+trial_window = [-2000, 6000]
 
 
 # In[367]:
@@ -199,7 +199,7 @@ ev_dataset.set_conditions(conditions=condition_list, aliases=cond_aliases)
 
 
 dist_as_continuous = ev_dataset.compute_distribution(
-        trial_window = [-2000, 6000],
+    trial_window=trial_window,
         bin_size = 100, # do not work as expected with cued-uncued
         normalize = True,
         per_session = True,
@@ -267,7 +267,7 @@ dist_as_continuous.metadata_df.head(50)
 
 import trialexp.utils.pycontrol_utilities as pycutl
 
-dist_as_continuous.set_trial_window([-2, 6], 's')
+dist_as_continuous.set_trial_window([a/1000 for a in trial_window], 's')
 
 figs, axs, df1 = dist_as_continuous.lineplot(
     vars = [ 'spout_dist'],
