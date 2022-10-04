@@ -1,10 +1,15 @@
 # Utility functions for pycontrol and pyphotometry files processing
 
 import json
-
+import pandas as pd
 from matplotlib import pyplot as plt
 import numpy as np
 from sklearn.mixture import GaussianMixture
+
+from sklearn.cluster import DBSCAN
+from sklearn.decomposition import PCA
+from sklearn.metrics import pairwise_distances
+from sklearn.preprocessing import StandardScaler
 
 from scipy.optimize import curve_fit
 from scipy.signal import butter, filtfilt, medfilt
@@ -40,6 +45,41 @@ def fit_exp_func(data, fs: int = 100, medfilt_size: int = 3) -> np.ndarray:
 #----------------------------------------------------------------------------------
 # Processing helper
 #----------------------------------------------------------------------------------
+
+def compute_PCA(
+        data: np.ndarray
+    ):
+    
+    scaler = StandardScaler()
+    pca = PCA(0.7, random_state=33)
+    pca.fit(scaler.fit_transform(X.iloc[past_id]))
+    
+    Xt = pca.inverse_transform(
+        pca.transform(
+            scaler.transform(X.iloc[future_id])
+        ))
+
+
+def dbscan_anomaly_detection(data):
+
+    ### DBSCAN ANOMALY DETECTION ###
+
+    network_ano = {}
+    dbscan = DBSCAN(eps=0.6, min_samples=1, metric="precomputed")
+
+    for trial_idx in range(data.shape[0]+1):
+    
+        trial = data[trial_idx, :,:].squeeze()
+        preds = dbscan.fit_predict(
+            pairwise_distances(trial, metric='correlation')
+        )
+        if (preds > 0).any():
+            ano_features = list(X.columns[np.where(preds > 0)[0]])
+            network_ano[past_id[-1]] = ano_features
+        else:
+            network_ano[past_id[-1]] = None
+
+        
 
 def find_n_gaussians(
         data: np.ndarray,
@@ -106,17 +146,19 @@ def find_n_gaussians(
     # M_best = models[np.argmin(AIC)]
 
     # Customized part tweaked to reduce the nb of gaussian used to the minimum
-    diff_AIC = np.diff(AIC)
-    if diff_AIC[0] > 0:
+    diff_AIC = np.diff(np.diff(AIC))
+    print(diff_AIC)  
+    if diff_AIC[0] < 0:
         n_best = 0
     else:
-        n_best = np.where(diff_AIC == min(diff_AIC))[0][0]+1
-        
+        n_best = np.where(diff_AIC == min(diff_AIC))[0][0]+2
+    
+
     M_best = models[n_best]
     # end of customized part
 
     p, bins = np.histogram(X, bins=np.arange(min(X),max(X),0.0002), density=True)
-
+    print(len(bins))
     x = bins
     logprob = M_best.score_samples(x.reshape(-1, 1))
     # logprob = M_best.score_samples(x)
