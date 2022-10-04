@@ -76,6 +76,7 @@ class Trials_Dataset():
     cond_aliases : list of str
     trial_window : list
         eg [-2000, 6000]
+        The window size relative to trigger for trial-based data fragmentation.  
     time_unit : str
         'ms' | 'milliseconds' | 's' | 'seconds'
 

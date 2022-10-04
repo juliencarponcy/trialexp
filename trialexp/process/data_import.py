@@ -76,12 +76,17 @@ class Session():
     analyzed : bool
     trial_window : list
         eg [-2000, 6000]
+        The time window relative to triggers used for trial-based data fragmentation in Trial_Dataset class.
+        cf. timelim
     triggers : list
         eg ['CS_Go']
     events_to_process : list
     conditions : list
     timelim : list
         eg [0, 2000]
+        The time window used to detect successful trials. 
+        cf. compute_success()
+        cf. trial_window
     df_events : DataFrame
         DataFrame with rows for all the trials. 
     df_conditions : DataFrame
