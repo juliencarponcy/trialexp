@@ -373,37 +373,28 @@ ax.set_title('Uncued')
 plt.colorbar(im1, shrink=0.4)
 
 
-# In[28]:
+# In[57]:
 
 
-ev_dataset.metadata_df
+gr_df, out_list, ax, im1 = ev_dataset.analyse_successrate(bywhat='days',
+                                                          conditions={'cued': True})
+
+ax.set_title('Cued')
+
+plt.colorbar(im1, shrink=0.4)
 
 
-# In[ ]:
+# In[58]:
 
 
+mdf = ev_dataset.metadata_df
 
 
-
-# In[ ]:
-
+# In[61]:
 
 
-
-
-# In[26]:
-
-
-from matplotlib import pyplot as plt
-
-fig, ax = plt.subplots(1,1)
-
-
-ax.plot(1,1)
-ax.__class__
-
-
-
+np.count_nonzero((mdf['group_ID'] == 0) & (
+    mdf['subject_ID'] == 47) & (mdf['success'])  & (mdf['cued'] == True))
 
 
 # ### Set DeepLabCut bodyparts to compute paws centroids

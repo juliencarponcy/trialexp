@@ -985,49 +985,50 @@ class Event_Dataset(Trials_Dataset):
                     ss_sc = [np.NaN] * len(session_nbs)
                     ss_tn = [np.NaN] * len(session_nbs)
                     ss_sr = [np.NaN] * len(session_nbs)
+                    ss_dt = [None] * len(session_nbs)
 
                     for ss_idx, ss in enumerate(session_nbs):
                         if conditions is None:
+                            TF = (metadata_df['group_ID'] == g)  & (metadata_df['subject_ID'] == s) \
+                                & (metadata_df['session_nb'] == ss)
                             ss_sc[ss_idx] = np.count_nonzero(metadata_df.loc[
-                                (metadata_df['group_ID'] == g)
-                                & (metadata_df['subject_ID'] == s)
-                                & (metadata_df['session_nb'] == ss),
-                                'success'])
+                                TF, 'success'])
 
                             ss_tn[ss_idx] = len(metadata_df.loc[
-                                (metadata_df['group_ID'] == g)
-                                & (metadata_df['subject_ID'] == s)
-                                & (metadata_df['session_nb'] == ss),
-                                'success'])
+                                TF, 'success'])
+
+                            dt = (metadata_df.loc[TF, 'datetime'])
+                            if not dt.empty:
+                                ss_dt[ss_idx] = dt[0]
                         else:
 
                             tf_list = [metadata_df[list(conditions)[0]] == list(
                                 conditions.values())[0] for k in range(0,len(conditions))]
 
                             tf = pd.concat(tf_list, axis=1)
+
                             if conditions_bool == 'all':
                                 tf = tf.all(axis=1)
                             elif conditions_bool == 'any':
                                 tf = tf.any(axis=1)
+
+                            TF = (metadata_df['group_ID'] == g) & (metadata_df['subject_ID'] == s) \
+                                & (metadata_df['session_nb'] == ss & (tf))
                             ss_sc[ss_idx] = np.count_nonzero(metadata_df.loc[
-                                (metadata_df['group_ID'] == g)
-                                & (metadata_df['subject_ID'] == s)
-                                & (metadata_df['session_nb'] == ss)
-                                & (tf),
-                                'success'])
+                                TF, 'success'])
 
                             ss_tn[ss_idx] = len(metadata_df.loc[
-                                (metadata_df['group_ID'] == g)
-                                & (metadata_df['subject_ID'] == s)
-                                & (metadata_df['session_nb'] == ss)
-                                & (tf),
-                                'success'])
+                                TF, 'success'])
+
+                            dt = (metadata_df.loc[TF, 'datetime']) #TODO
+                            if not dt.empty: #TODO
+                                ss_dt[ss_idx] = dt[0]                           
                     np.seterr(divide='ignore', invalid='ignore')
                     # https://stackoverflow.com/questions/14861891/runtimewarning-invalid-value-encountered-in-divide
                     ss_sr = (np.array(ss_sc)/np.array(ss_tn)).tolist()
 
-                    ss_df = pd.DataFrame(list(zip(session_nbs, ss_sc, ss_tn, ss_sr)))
-                    ss_df.columns = ['session_nb', 'success_n', 'trial_n', 'success_rate']
+                    ss_df = pd.DataFrame(list(zip(session_nbs, ss_sc, ss_tn, ss_sr, ss_dt)))
+                    ss_df.columns = ['session_nb', 'success_n', 'trial_n', 'success_rate', 'datetime']
 
                     ss_df.astype({'session_nb': 'int', 'success_n': 'int', 'trial_n': 'int'})
 
@@ -1040,7 +1041,7 @@ class Event_Dataset(Trials_Dataset):
                                 columns=['group_ID', 'subject_ID'])
 
             gr_df = pd.merge(gr_df, ss_dfs, 'outer')
-
+            gr_df['date'] = gr_df['datetime'].dt.date()
             return gr_df
         
 
@@ -1065,11 +1066,11 @@ class Event_Dataset(Trials_Dataset):
                     if bywhat == 'days':
                         # gaps are ignored
                         # success rate is computed daily
-                        dates = list(set(thismouse_df.date))
+                        dates = list(set(thismouse_df['datetime'].dt.date()))
                         dates.sort()
                         sr = [None] * len(dates)
                         for d_idx, d in enumerate(dates):
-                            X = thismouse_df.loc[thismouse_df.date == d,
+                            X = thismouse_df.loc[thismouse_df['datetime'].dt.date() == d,
                                 [ 'success_n', 'trial_n']].sum(axis=0)
 
                             sr[d_idx] = X.success_n/X.trial_n
@@ -1080,11 +1081,11 @@ class Event_Dataset(Trials_Dataset):
                     elif bywhat == 'days_with_gaps':
                         # gaps are considered
                         # success rate is computed daily
-                        dates = list(set(thismouse_df.date))
+                        dates = list(set(thismouse_df['datetime'].dt.date()))
                         dates.sort()
                         sr = [None] * len(dates)
                         for d_idx, d in enumerate(dates):
-                            X = thismouse_df.loc[thismouse_df.date == d,
+                            X = thismouse_df.loc[thismouse_df['datetime'].dt.date() == d,
                                                 ['success_n', 'trial_n']].sum(axis=0)
 
                             sr[d_idx] = X.success_n/X.trial_n
@@ -1096,11 +1097,11 @@ class Event_Dataset(Trials_Dataset):
                         # gaps are considered
                         # success rate is computed daily
                         # use dates instead of days
-                        dates = list(set(thismouse_df.date))
+                        dates = list(set(thismouse_df['datetime'].dt.date()))
                         dates.sort()
                         sr = [None] * len(dates)
                         for d_idx, d in enumerate(dates):
-                            X = thismouse_df.loc[thismouse_df.date == d,
+                            X = thismouse_df.loc[thismouse_df['datetime'].dt.date() == d,
                                 [ 'success_n', 'trial_n']].sum(axis=0)
 
                             sr[d_idx] = X.success_n/X.trial_n

@@ -389,7 +389,6 @@ def extract_successrates(gr_df : pd.DataFrame, bywhat):
     subject_IDs = list(
         set(gr_df.loc[gr_df['group_ID'] == g, 'subject_ID']))
 
-    ss_dfs = [0] * len(subject_IDs)
     out_listlist = [None] * len(subject_IDs)
     for s_idx, s in enumerate(subject_IDs):
       thismouse_df = gr_df.loc[(gr_df['group_ID'] == g)
