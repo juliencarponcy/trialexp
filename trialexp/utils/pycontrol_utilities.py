@@ -165,7 +165,16 @@ def cmap10():
 
     return cmap
 
+def get_methods(obj):
+    object_methods = [method_name for method_name in dir(obj)
+                      if callable(getattr(obj, method_name))]
+    print(object_methods)
+    return object_methods
 
+def get_attributes(obj):
+    lst = list(obj.__dict__.keys())
+    print(lst)
+    return lst
 
 #----------------------------------------------------------------------------------
 # Data reorganization
@@ -191,7 +200,7 @@ def copy_files_to_horizontal_folders(root_folders, horizontal_folder_pycontrol, 
                         print(join(path, name))
                         shutil.copyfile(join(path, name),join(horizontal_folder_pycontrol, name))
                 elif name[-4:] == '.ppd':
-                    if not isfile(join(horizontal_folder_photometry,name)):
+                    if not isfile(join(horizontal_folder_photometry, name)):
                         print(join(path, name))
                         shutil.copyfile(join(path, name),join(horizontal_folder_photometry, name))
 

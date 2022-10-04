@@ -12,6 +12,7 @@ import pandas as pd
 
 from matplotlib import pyplot as plt
 from matplotlib import cm
+import matplotlib
 
 # To convert for ML with sktime.org
 # make optional for now
@@ -43,6 +44,63 @@ def load_dataset(fullpath:str):
 
 
 class Trials_Dataset():
+    """
+    Trials_Dataset has subclasses Continuous_Dataset and Event_Dataset.
+    Unlike trialexp.process.data_import.Session, which holds data of an entire session
+    with a linear time vector, Trials_Dataset holds triggered trial data that extends to trial_window.
+    In other words, each trial is provided the equal time vector whose 0 is at the trigger event.
+
+    Attributes
+    ----------
+    data : 
+        pandas.DataFrame (Event_Dataset) 
+        or numpy.ndarray (Continuous_Dataset)
+    metadata_df : DataFrame
+        Rows for trials, holding colums:
+            trial_nb : int
+            trigger : str
+            success : bool
+            valid : bool
+            condition_ID : int 
+            condition : str
+            group_ID : int
+            session_nb : int
+            subject_ID : int or str
+            keep : bool
+            trial_ID : int
+    creation_date : datetime.datetime
+    has_conditions : bool
+    has_groups : bool
+    groups : array
+    conditions : list of dict
+    cond_aliases : list of str
+    trial_window : list
+        eg [-2000, 6000]
+    time_unit : str
+        'ms' | 'milliseconds' | 's' | 'seconds'
+
+
+    Methods
+    -------
+    export()
+    filter_min()
+        These filter_* and filterout_* methods are to modify the values of 'keep' column of metadata_df
+    filter_reset()
+        The values of 'keep' column of metadata_df are all set to True
+    filterout_conditions()
+    filterout_dates()
+    filterout_groups()
+    filterout_if_not_in_all_cond()
+    filterout_subjects()
+    get_groups()
+    get_memory_size()
+    get_session_files()
+    save()
+    set_conditions()
+    set_groups()
+    set_trial_window()
+
+    """
 
     def __init__(self, data, metadata_df: pd.DataFrame):
         self.data = data
@@ -131,9 +189,9 @@ class Trials_Dataset():
         raise NotImplementedError
         
     def save(self, folder: str = None, name: str = None, verbose: bool = True):
-        '''
+        """
         Save Trials_Dataset to pickle file (.pkl)
-        '''
+        """
         if folder:
             fullpath = os.path.join(folder, name + '.pkl')
         else:
@@ -154,22 +212,23 @@ class Trials_Dataset():
         raise NotImplementedError    
 
     def filterout_conditions(self, condition_IDs_to_exclude: list):
-        '''
+        """
         exclude one or several conditions of the dataset using integer condition_IDs_to_exclude
         the index (ID) starting from 0
-        '''
+        """
         if isinstance(condition_IDs_to_exclude, int):
             condition_IDs_to_exclude = [condition_IDs_to_exclude]
         filter = self.metadata_df['condition_ID'].apply(lambda x: x in condition_IDs_to_exclude)
         self.metadata_df.loc[filter,'keep'] = False
 
     def filterout_dates(self, days_to_exclude: list):
-        '''
+        """
         exclude one or several dates of the dataset 
-        '''
-        if isinstance(days_to_exclude, datetime.datetime):
-            days_to_exclude = [days_to_exclude.date()]
-        elif isinstance(days_to_exclude, datetime.date):
+        """
+        import datetime
+        if  all([isinstance(d, datetime.datetime) for d in days_to_exclude])  :
+            days_to_exclude = [d.date() for d in days_to_exclude]
+        elif all([isinstance(d, datetime.date) for d in days_to_exclude]):
             days_to_exclude = [days_to_exclude]
         else:
             raise TypeError("days_to_exclude has to be a list of datetime or date")
@@ -178,25 +237,25 @@ class Trials_Dataset():
         self.metadata_df.loc[filter,'keep'] = False
 
     def filterout_groups(self, group_IDs_to_exclude: list):
-        '''
+        """
         exclude one or several groups of the dataset
-        '''
+        """
         if isinstance(group_IDs_to_exclude, int):
             group_IDs_to_exclude = [group_IDs_to_exclude]
         filter = self.metadata_df['group_ID'].apply(lambda x: x in group_IDs_to_exclude)
         self.metadata_df.loc[filter,'keep'] = False
 
     def filterout_subjects(self, subject_IDs_to_exclude: list):
-        '''
+        """
         exclude one or several subjects of the dataset
-        '''
+        """
         if isinstance(subject_IDs_to_exclude, int):
             subject_IDs_to_exclude = [subject_IDs_to_exclude]
         filter = self.metadata_df['subject_ID'].apply(lambda x: x in subject_IDs_to_exclude)
         self.metadata_df.loc[filter,'keep'] = False
 
     def filter_min(self, min_trials : int = 5):
-        '''
+        """
         filter subjects who do not have sufficient trials in a condition,
         NB: this is not removing the trials of this subject in the other
         conditions! 
@@ -205,7 +264,7 @@ class Trials_Dataset():
 
         <trial_dataset>.filter_min(min_trials = x)
         <trial_dataset>.filterout_if_not_in_all_cond()
-        '''
+        """
 
         nb_trials = self.metadata_df.groupby(['condition_ID', 'group_ID','subject_ID']).agg(len)['trial_ID']
         trials_idx = self.metadata_df.groupby(['condition_ID', 'group_ID','subject_ID']).agg(list)['trial_ID']
@@ -216,11 +275,11 @@ class Trials_Dataset():
             self.metadata_df.loc[idx_filter,'keep'] = False
 
     def filterout_if_not_in_all_cond(self):
-        '''
+        """
         To remove subjects who do not have
         trials in all the conditions.
         Can be used after <trial_dataset>.filter_min()
-        '''
+        """
         
 
         filtered_df = self.metadata_df[self.metadata_df['keep'] == True]
@@ -239,17 +298,49 @@ class Trials_Dataset():
         self.metadata_df.loc[idx_to_remove.index,'keep'] = False
 
     def filter_reset(self):
-        '''
+        """
         reset filters to include all trials as
         at the creation of the dataset
-        '''
+        The values of 'keep' column of metadata_df are all set to True
+        """
 
         self.metadata_df['keep'] = True
 
 class Continuous_Dataset(Trials_Dataset):
+    """
+    Subclass of Trials_Dataset.
 
+    Attributes
+    ----------
+    colnames_dict : dict
+
+
+    Methods
+    -------
+    scatterplot()
+        to be implemented
+    export_to_sktime()
+    transform_variables()
+        to be implemented
+    get_time_vector(self, unit: str = None)
+    set_fs(self, fs: int):
+    lineplot(...)
+        The main plotting method.
+    get_col_names()
+    """
     def __init__(self, data: np.ndarray, metadata_df: pd.DataFrame, colnames_dict: dict):
         super().__init__(data, metadata_df)
+        """
+
+        Arguments
+        ---------
+        self
+        data : numpy.ndarray
+            Has to be 3d?
+            What are dimensions? #TODO
+        metadata_df : pandas.DataFrame
+        colnames_dict : dict
+        """
         # TODO: Consider inputing colnames only as list or tuple
         # and compute the dictionary '<names>': <idx_col(int)> in __init__
         self.colnames_dict = colnames_dict
@@ -407,7 +498,7 @@ class Continuous_Dataset(Trials_Dataset):
             vars: VarsType = 'all',
             time_lim: Optional[list] = None,
             time_unit: str = None,
-            error: str = None,
+            error: str = None, # only for group plot
             is_x_vs_y: bool = False, # implement here or not?
             plot_subjects: bool = True,
             plot_groups: bool = True,
@@ -485,7 +576,8 @@ class Continuous_Dataset(Trials_Dataset):
             fig, axs = plt.subplots(len(vars), len(condition_IDs), sharex= 'all',
                 sharey = 'row', squeeze = False , figsize = figsize)
         
-        
+        group_dfs = [0] * len(condition_IDs)
+        cond_n = [0] * len(condition_IDs) # trial counts per condition
         for c_idx, cond_ID in enumerate(condition_IDs):
 
             # Set title as condition on the first line
@@ -504,11 +596,14 @@ class Continuous_Dataset(Trials_Dataset):
                     axs[0, c_idx].set_title(str(self.conditions[cond_ID]))
 
             # Compute means and sems
+            group_n = [0] * len(group_IDs)
+            subj_dfs = [None] * len(group_IDs)
             for g_idx, group_ID in enumerate(group_IDs):
                 subj_subset = gby.loc[cond_ID, group_ID ,:].index.values
                 # used to work using the following, possibly previous for behaviour only?
                 # subj_subset = gby.loc[cond_ID, group_ID ,:].index.get_level_values(2).values
 
+                subj_n = [0] * len(subj_subset)
                 for subj_idx, subject in enumerate(subj_subset):
                     if verbose:
                         print(f'cond_ID: {cond_ID}, group_idx {group_ID}, subj {subject}')
@@ -523,6 +618,10 @@ class Continuous_Dataset(Trials_Dataset):
                     # sem_subj = np_val.std(axis=0) / np.sqrt(len(trial_idx)-1)
                     # sem_subj = sem_subj[vars_idx, :]
                     
+                    cond_n[c_idx] = cond_n[c_idx] + len(trial_idx)
+                    group_n[g_idx] = group_n[g_idx] + len(trial_idx)
+                    subj_n[subj_idx] = len(trial_idx)
+
                     # Plot
                     if plot_subjects:
                         for ax_idx, var in enumerate(vars_idx):
@@ -539,6 +638,7 @@ class Continuous_Dataset(Trials_Dataset):
                                     label = f'{subject} (n = {len(trial_idx)})',
                                     color = subj_colors(subj_dict[subject]))
 
+
                     if subj_idx == 0:
                         
                         mean_group = mean_subj
@@ -548,12 +648,19 @@ class Continuous_Dataset(Trials_Dataset):
                     else:
                         mean_group = np.concatenate([mean_group, np.expand_dims(mean_subj, axis=0)], axis=0)
                 
+                # subj_dfs[g_idx] = pd.DataFrame(
+                #     [[cond_ID] * len(subj_subset), [group_ID] * len(subj_subset), subj_subset, subj_n])
+                # subj_dfs[g_idx] = subj_dfs[g_idx].transpose()
+                # subj_dfs[g_idx].columns = ['cond_ID', 'group_ID', 'subject_ID', 'subject_trial_n']
+
+                subj_dfs[g_idx] = pd.DataFrame(list(zip([group_ID] * len(subj_subset), subj_subset, subj_n)))
+                subj_dfs[g_idx].columns = ['group_ID', 'subject_ID', 'subject_trial_n']
                 # Group computations
                 if plot_groups:
                     with warnings.catch_warnings():
                         warnings.simplefilter("ignore", category=RuntimeWarning)
                         sem_group = np.nanstd(mean_group, axis=0) / np.sqrt(mean_group.shape[0]-1)
-                        mean_group = np.nanmean(mean_group, axis=0)
+                        mean_group = np.nanmean(mean_group, axis=0) # the mean of the mean per subject(animal), rather than the mean of all trials
 
                     # Group plotting
                     group_lw = 1    
@@ -565,7 +672,8 @@ class Continuous_Dataset(Trials_Dataset):
                             if len(mean_group.shape) > 1:
                                 axs[ax_idx, 0].plot(time_vec, mean_group[ax_idx, :], lw=group_lw,
                                     color = group_colors(cond_ID),
-                                    label = self.cond_aliases[cond_ID])                    
+                                    label=self.cond_aliases[cond_ID] #+ f' (n = {cond_n[cond_ID]})'
+                                    )
                                 
                                 if error is not None:
                                     # fill sem
@@ -578,7 +686,8 @@ class Continuous_Dataset(Trials_Dataset):
                             else:
                                 axs[ax_idx, 0].plot(time_vec, mean_group, lw=group_lw,
                                 color = group_colors(cond_ID),
-                                label = self.cond_aliases[cond_ID])     
+                                label=self.cond_aliases[cond_ID] #+ f' (n = {cond_n[cond_ID]})'
+                                )
 
                         else:
                             if g_idx == 0 and c_idx == 0:
@@ -613,7 +722,27 @@ class Continuous_Dataset(Trials_Dataset):
                                     [ax[0].set_xlabel(time_unit) for ax in axs]
                                 else:
                                     axs[ax_idx, c_idx+1].set_xlabel(time_unit)
-        
+
+            subj_dfs = pd.concat(subj_dfs)
+
+            group_dfs[c_idx] = pd.DataFrame(list(zip([cond_ID] * len(group_IDs),  
+                [str(self.cond_aliases[cond_ID])] * len(group_IDs),  group_IDs, group_n)))
+            group_dfs[c_idx].columns = ['condition_ID', 'condition_alias', 'group_ID', 'group_trial_n']
+
+            group_dfs[c_idx] = pd.merge(group_dfs[c_idx], subj_dfs, 'outer') 
+
+        out_df = pd.DataFrame(list(zip(condition_IDs, cond_n)))
+        out_df.columns=['condition_ID', 'condition_trial_n']
+
+        group_dfs = pd.concat(group_dfs)
+
+        out_df = pd.merge(out_df, group_dfs, 'outer')
+        #TODO Is this format useful? I am not sure! You need to dig a lot.
+        # Instead of nesting, we can have dataframes and list of dataframes etc to be joined when necessary
+        # Or to have already joined, flat big table???
+
+
+                 
         if time_lim:
             axs[0,0].set_xlim([time_lim[0], time_lim[1]])
         else:        
@@ -662,7 +791,7 @@ class Continuous_Dataset(Trials_Dataset):
                         )
         #plt.show()
 
-        return fig, axs
+        return fig, axs, out_df
 
     def scatterplot(self, vars: VarsType, groupby: Optional[list] = ['group_ID', 'subject_ID'], \
             timelim: Optional[list] = None):
@@ -672,7 +801,19 @@ class Continuous_Dataset(Trials_Dataset):
 
 
 class Event_Dataset(Trials_Dataset):
+    """
+    Subclass of Trials_Dataset.
 
+    Methods
+    -------
+    raster()
+        to be implemented
+    peth()
+        to be implemented, can be integrated with raster
+    compute_distribution(...)
+        Compute distribution of events for each session.
+
+    """
     def __init__(self, data: pd.DataFrame, metadata_df: pd.DataFrame):
             super().__init__(data, metadata_df)
             # TODO: Consider inputing colnames only as list or tuple
@@ -690,11 +831,35 @@ class Event_Dataset(Trials_Dataset):
             per_session: bool = False, # if false, compute distribution per animal for all its sessions
             out_as_continuous: bool = False, # if true, output a continuous dataset
             verbose: bool = False):
-        '''
+        """
         Compute distribution of events for each session.
         Output a continuous_dataset instance if out_as_continuous = True
 
-        '''
+        Arguments
+        ---------
+        self
+        trial_window: Iterable = None,
+        bin_size: int = 100, 
+            by default in ms, not adapted yet for seconds
+        normalize: bool = True, 
+            normalize the count of events according to bin_size
+        per_session: bool = False, 
+            if False, compute distribution per animal for all its sessions
+        out_as_continuous: bool = False, 
+            if True, output a Continuous_Dataset object
+        verbose: bool = False
+
+
+        Returns
+        -------
+        grouped_df : DataFrame
+            default
+            only if not out_as_continuous
+        dist_as_continuous : Continuous_Dataset
+            only if out_as_continuous
+
+
+        """
 
         if trial_window == None and hasattr(self, 'trial_window'):
             trial_window = self.trial_window
@@ -769,6 +934,237 @@ class Event_Dataset(Trials_Dataset):
             return dist_as_continuous
         else:
             return grouped_df
+
+    def analyse_successrate(self, subject_IDs: list = None, 
+        group_IDs : list = None, bywhat: str = 'session', 
+        conditions: dict = None,
+        conditions_bool: str = 'all',
+        ax: matplotlib.axes.Axes = None):
+        """
+
+        subject_IDs: list = None
+        group_IDs : list = None
+        btwhat : str
+            'session', 'days', 'days_with_gaps', 'dates'
+        conditions: dict = None,
+            keys and values for metadata_df
+            Should be considered separately from self.conditions
+            eg {'Cued': True}
+            #TODO how about multiple columns? OR or AND?
+        conditions_bool: str = 'all',
+            'all' or 'any' for conditions
+        ax: matplotlib.axes.Axes = None
+
+
+        #TODO Turned out this is useless in case of Go/NoGo or Cued/Uncued
+        where you need to count trials in separate groups
+
+        """
+
+        def get_gr_df(self, group_IDs, subject_IDs, conditions, conditions_bool):
+
+            metadata_df = self.metadata_df.loc[self.metadata_df['keep'] 
+                & self.metadata_df['valid'], :]
+
+            if group_IDs is None:
+                group_IDs = list(set(metadata_df['group_ID']))
+
+            for g in group_IDs:
+                if subject_IDs is None:
+                    subject_IDs_ = list(
+                        set(metadata_df.loc[metadata_df.group_ID == g, 'subject_ID']))
+                else:
+                    subject_IDs_ = subject_IDs
+
+                ss_dfs = [0] * len(subject_IDs_)
+                for s_idx, s in enumerate(subject_IDs_):
+                    session_nbs = list(set(metadata_df.loc[
+                        (metadata_df['group_ID'] == g)
+                        & (metadata_df['subject_ID'] == s),
+                        'session_nb']))
+
+                    ss_sc = [np.NaN] * len(session_nbs)
+                    ss_tn = [np.NaN] * len(session_nbs)
+                    ss_sr = [np.NaN] * len(session_nbs)
+                    ss_dt = [None] * len(session_nbs)
+
+                    for ss_idx, ss in enumerate(session_nbs):
+                        if conditions is None:
+                            TF = (metadata_df['group_ID'] == g)  & (metadata_df['subject_ID'] == s) \
+                                & (metadata_df['session_nb'] == ss)
+                            ss_sc[ss_idx] = np.count_nonzero(metadata_df.loc[
+                                TF, 'success'])
+
+                            ss_tn[ss_idx] = len(metadata_df.loc[
+                                TF, 'success'])
+
+                            dt = (metadata_df.loc[TF, 'datetime'])
+                            if not dt.empty:
+                                ss_dt[ss_idx] = dt[0]
+                        else:
+
+                            tf_list = [metadata_df[list(conditions)[0]] == list(
+                                conditions.values())[0] for k in range(0,len(conditions))]
+
+                            tf = pd.concat(tf_list, axis=1)
+
+                            if conditions_bool == 'all':
+                                tf = tf.all(axis=1)
+                            elif conditions_bool == 'any':
+                                tf = tf.any(axis=1)
+
+                            TF = (metadata_df['group_ID'] == g) & (metadata_df['subject_ID'] == s) \
+                                & (metadata_df['session_nb'] == ss & (tf))
+                            ss_sc[ss_idx] = np.count_nonzero(metadata_df.loc[
+                                TF, 'success'])
+
+                            ss_tn[ss_idx] = len(metadata_df.loc[
+                                TF, 'success'])
+
+                            dt = (metadata_df.loc[TF, 'datetime']) #TODO do this for 'date' as well
+                            if not dt.empty: #TODO
+                                ss_dt[ss_idx] = dt[0]                           
+                    np.seterr(divide='ignore', invalid='ignore')
+                    # https://stackoverflow.com/questions/14861891/runtimewarning-invalid-value-encountered-in-divide
+                    ss_sr = (np.array(ss_sc)/np.array(ss_tn)).tolist()
+
+                    ss_df = pd.DataFrame(list(zip(session_nbs, ss_sc, ss_tn, ss_sr, ss_dt)))
+                    ss_df.columns = ['session_nb', 'success_n', 'trial_n', 'success_rate', 'datetime']
+
+                    ss_df.astype({'session_nb': 'int', 'success_n': 'int', 'trial_n': 'int'})
+
+                    ss_df['subject_ID'] = pd.Series([s] * len(session_nbs))
+
+                    ss_dfs[s_idx] = ss_df
+
+            ss_dfs = pd.concat(ss_dfs)
+            gr_df = pd.DataFrame(list(zip([g] * len(subject_IDs_), subject_IDs_)),
+                                columns=['group_ID', 'subject_ID'])
+
+            gr_df = pd.merge(gr_df, ss_dfs, 'outer')
+            gr_df['date'] = gr_df['datetime'].dt.date()  # TODO
+            return gr_df
+        
+
+        def get_list_df_success_rate(gr_df: pd.DataFrame, bywhat: str, 
+            group_IDs, subject_IDs):
+            if group_IDs is None:
+                group_IDs = list(set(gr_df['group_ID']))
+
+            out_list = [None] * len(group_IDs)
+            for g_idx, g in enumerate(group_IDs):
+                if subject_IDs is None:
+                    subject_IDs_ = list(
+                        set(gr_df.loc[gr_df['group_ID'] == g, 'subject_ID']))
+                else:
+                    subject_IDs_ = subject_IDs
+                
+                out_listlist = [None] * len(subject_IDs_)
+                for s_idx, s in enumerate(subject_IDs_):
+                    thismouse_df = gr_df.loc[(gr_df['group_ID'] == g)
+                        & (gr_df['subject_ID'] == s), :]
+
+                    if bywhat == 'days':
+                        # gaps are ignored
+                        # success rate is computed daily
+                        dates = list(set(thismouse_df['datetime'].dt.date())) #TODO
+                        dates.sort()
+                        sr = [None] * len(dates)
+                        for d_idx, d in enumerate(dates):
+                            X = thismouse_df.loc[thismouse_df['datetime'].dt.date() == d, #TODO
+                                [ 'success_n', 'trial_n']].sum(axis=0)
+
+                            sr[d_idx] = X.success_n/X.trial_n
+
+                        out_listlist[s_idx] = pd.DataFrame(list(zip(range(1, len(dates)+1), sr)), columns=['dayN', str(s)])
+                        out_listlist[s_idx] = out_listlist[s_idx].set_index('dayN')
+
+                    elif bywhat == 'days_with_gaps':
+                        # gaps are considered
+                        # success rate is computed daily
+                        dates = list(set(thismouse_df['datetime'].dt.date())) #TODO
+                        dates.sort()
+                        sr = [None] * len(dates)
+                        for d_idx, d in enumerate(dates):
+                            X = thismouse_df.loc[thismouse_df['datetime'].dt.date() == d, #TODO
+                                                ['success_n', 'trial_n']].sum(axis=0)
+
+                            sr[d_idx] = X.success_n/X.trial_n
+
+                        out_listlist[s_idx] = pd.DataFrame(
+                            list(zip([d - dates[0] for d in dates], sr)), columns=['dayN', str(s)])
+                        out_listlist[s_idx] = out_listlist[s_idx].set_index('dayN')
+                    elif bywhat == 'dates':
+                        # gaps are considered
+                        # success rate is computed daily
+                        # use dates instead of days
+                        dates = list(set(thismouse_df['datetime'].dt.date())) #TODO
+                        dates.sort()
+                        sr = [None] * len(dates)
+                        for d_idx, d in enumerate(dates):
+                            X = thismouse_df.loc[thismouse_df['datetime'].dt.date() == d,  # TODO
+                                [ 'success_n', 'trial_n']].sum(axis=0)
+
+                            sr[d_idx] = X.success_n/X.trial_n
+
+                        out_listlist[s_idx] = pd.DataFrame(list(zip(dates, sr)), columns=['dates', str(s)])
+                        out_listlist[s_idx] = out_listlist[s_idx].set_index('dates')
+                    elif bywhat == 'sessions':
+                        # gaps are ignored
+                        # success rate is computed by session
+                        
+                        out_listlist[s_idx] = thismouse_df.loc[:, ['session_nb', 'success_rate']] 
+                        out_listlist[s_idx] = out_listlist[s_idx].set_index('session_nb')
+                        out_listlist[s_idx].columns = [str(s)]
+                    else:
+                        raise 'bywhat must be ''days'', ''days_with_gap'', ''dates'', or ''sessions'''
+
+                    #out_list[g_idx] = 1 = pd.concat(out_listlist) # TODO this is wrong
+                    # session_nb as index, success_rate as value, subject_ID as columns
+                    out_list[g_idx] = pd.concat(out_listlist, axis=1)
+
+            return out_list
+
+        gr_df = get_gr_df(self, group_IDs, subject_IDs, conditions, conditions_bool)
+
+        out_list = get_list_df_success_rate(
+            gr_df, bywhat, group_IDs, subject_IDs)
+
+        # Plotting
+        #TODO deal with groups
+
+        if ax is None:
+            fig, ax = plt.subplots(1, 1)
+        else:
+            assert isinstance(ax, matplotlib.axes)
+            # may not work for subplotds
+        nml = matplotlib.colors.Normalize(0, 1)
+
+        im1 = ax.imshow(out_list[0].transpose(), norm=nml)
+        if bywhat == 'sessions':
+            ax.set_xlabel('Sessions')
+        elif bywhat == 'days':
+            ax.set_xlabel('Days')
+        elif bywhat == 'days_with_gaps':
+            ax.set_xlabel('Says')
+        elif bywhat == 'dates':
+            ax.set_xlabel('Dates')
+            xticks = ax.get_xticks
+
+            ax.set_xticks(range(0, xticks.max()+1, 
+                xticks[1] - xticks[0])) # needed
+            ax.set_xticklabels(
+                out_list[0].index[range(0, xticks.max()+1, xticks[1] - xticks[0])],
+                rotation=30, ha='right')
+
+        ax.set_ylabel('Mice')
+        ax.set_yticks(range(0,out_list[0].shape[1]))
+        ax.set_yticklabels(out_list[0].columns)
+        ax.set_facecolor('k')
+        ax.tick_params(axis='both', which='major', labelsize=8)
+
+        return gr_df, out_list, ax, im1
+
 
 # TODO: store into helper files
 def histo_only(x: np.array, trial_window: list, bin_size: int):

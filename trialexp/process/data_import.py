@@ -43,31 +43,54 @@ class DeepLabCutFileError(Exception):
 
 
 class Session():
-    '''Import data from a pyControl file and represent it as an object with attributes:
-      - file_name
-      - experiment_name
-      - task_name
-      - setup_ID
-          The COM port of the computer used (can be useful when multiple rigs on one computer)
-      - subject_ID
-          If argument int_subject_IDs is True, suject_ID is stored as an integer,
-          otherwise subject_ID is stored as a string.
-      - datetime
-          The date and time that the session started stored as a datetime object.
-      - datetime_string
-          The date and time that the session started stored as a string of format 'YYYY-MM-DD HH:MM:SS'
-      - events
-          A list of all framework events and state entries in the order they occured. 
-          Each entry is a namedtuple with fields 'time' & 'name', such that you can get the 
-          name and time of event/state entry x with x.name and x.time respectively.
-      - times
-          A dictionary with keys that are the names of the framework events and states and 
-          corresponding values which are Numpy arrays of all the times (in milliseconds since the
+    """
+    Import data from a pyControl file and represent it as an object 
+    
+    Attributes
+    ----------
+    file_name : str
+        .txt file name
+    experiment_name : str
+    task_name : str
+    setup_ID : str
+        The COM port of the computer used (can be useful when multiple rigs on one computer)
+    subject_ID : integer or str
+        If argument int_subject_IDs is True, suject_ID is stored as an integer,
+        otherwise subject_ID is stored as a string.
+    datetime
+        The date and time that the session started stored as a datetime object.
+    datetime_string
+        The date and time that the session started stored as a string of format 'YYYY-MM-DD HH:MM:SS'
+    events : list of namedtuple
+        A list of all framework events and state entries as objects in the order they occurred. 
+        Each entry is a namedtuple with fields 'time' & 'name', such that you can get the 
+        name and time of event/state entry x with x.name and x.time respectively.
+    times : dict
+        A dictionary with keys that are the names of the framework events and states and 
+        corresponding values which are Numpy arrays of all the times (in milliseconds since the
            start of the framework run) at which each event/state entry occured.
-      - print_lines
-          A list of all the lines output by print statements during the framework run, each line starts 
-          with the time in milliseconds at which it was printed.
-    '''
+    print_lines : list
+        A list of all the lines output by print statements during the framework run, each line starts 
+        with the time in milliseconds at which it was printed.
+    number : scalar integer
+    analyzed : bool
+    trial_window : list
+        eg [-2000, 6000]
+    triggers : list
+        eg ['CS_Go']
+    events_to_process : list
+    conditions : list
+    timelim : list
+        eg [0, 2000]
+    df_events : DataFrame
+        DataFrame with rows for all the trials. 
+    df_conditions : DataFrame
+        DataFrame with rows for all the trials and columns for 'trigger', 'valid' and the keys of conditions_list passed to
+        Experiment.behav_events_to_dataset. df_conditions is a subset of df_events with fewer columns (maybe)
+    photometry_rsync
+    photometry_path : str
+    files : dict
+    """
 
     def __init__(self, file_path, int_subject_IDs=True, verbose=False):
 
@@ -499,6 +522,11 @@ class Session():
     # or separate entirely in a more versatile function
     # TODO: identify the most common/likely patterns
     def compute_success(self):
+        """computes success trial numbers
+
+        This methods includes task_name-specific definitions of successful trials.
+        The results are stored in the 'success' columns of self.df_events and self.df_conditions as bool (True or False).
+        """
         self.df_conditions['success'] = False
         self.df_events['success'] = False
         #print(self.task_name)
@@ -1280,15 +1308,22 @@ class Experiment():
    
     Attributes
     ----------
-    folder_name               Path of data folder.
-    path
-    sessions
-    by_trial 
-    subject_IDs               int
-    n_subjects
+    folder_name : str
+        Folder name
+    path : str
+        Path of data folder including folder_name
+    sessions : list
+        List of Session objects
+    by_trial : bool
+    trial_window : list
+        eg [-2000, 6000]
+
+    Properties
+    ----------
+    subject_IDs : int
+    n_subjects : scalar integer
     task_names
     sessions_per_subject
-    trial_window
 
     Methods
     -------
@@ -1480,9 +1515,21 @@ class Experiment():
 
     def process_exp_by_trial(self, trial_window: list, timelim: list,
             tasksfile: str, blank_spurious_event: list = None, blank_timelim: list = [0, 60], verbose = False):
+        """
+        ARGUMENTS
+        ---------
+        self
+        trial_window: list,                eg [-2000, 6000]
+        timelim: list,                     eg [0 2000]
+        tasksfile: str                     full filepath of tasks_params.csv in this repo
+        blank_spurious_event: list = None, #TODO what's this?
+        blank_timelim: list = [0, 60],     reflecting v.spout_detect_timeout
+        verbose = False
 
-        # create emtpy list to store idx of sessions without trials,
-        # can be extended to detect all kind of faulty sessions.
+        create emtpy list to store idx of sessions without trials,
+        can be extended to detect all kind of faulty sessions.
+        """
+
         sessions_idx_to_remove = []
         
         for s_idx, s in enumerate(self.sessions):
@@ -1522,11 +1569,27 @@ class Experiment():
             when = 'all', 
             task_names = 'all',
             trig_on_ev: str = None) -> Event_Dataset: 
-        '''
+        """
         Take all behavioural data from the relevant sessions
         and trials and assemble it as an Event_Dataset
         instance for further analyses.
-        '''
+
+        Arguments
+        ---------
+        self
+        groups : list = None
+        conditions_list : list = None
+            List of dictionary. Used by Session.get_trials_times_from_conditions to create
+            DataFrame Session.df_conditions, the rows of which represent trials. 
+            The dictionary keys are used as part of DataFrame column names (columns) together with 'trigger', and 'valid'.
+            The dictionary keys are used to determine if trials are valid and stored as the 'valid' column.
+            The valid trials of df_conditions are then 
+        cond_aliases : list = None
+            The list of condition names.
+        when = 'all'
+        task_names = 'all'
+        trig_on_ev: str = None
+        """
 
         # TODO: put all redundant args checks in a utility function
         # list: groups, conditions_list, cond_aliases, task_names, trig_on_ev
@@ -1618,6 +1681,9 @@ class Experiment():
                             
                             events_aggreg = pd.concat([events_aggreg,df_ev_cond])
 
+                        events_aggreg['datetime'] = pd.Series([session.datetime] * events_aggreg.shape[0], index = events_aggreg.index)
+                        events_aggreg['datetime_string'] = pd.Series([session.datetime_string] * events_aggreg.shape[0], index =  events_aggreg.index)                     
+
                         idx_all_cond = np.concatenate([idx_all_cond, idx_joint])
                         trials_times_all_cond = np.concatenate([trials_times_all_cond, trials_times])
 
@@ -1629,7 +1695,11 @@ class Experiment():
                         if cond_aliases:
                             # df_events.loc[idx_joint, 'condition'] = cond_aliases[cond_idx]
                             df_conditions.loc[idx_joint, 'condition'] = cond_aliases[cond_idx]
-                    
+                        
+                        df_conditions['datetime'] = pd.Series([session.datetime] * df_conditions.shape[0], index = df_conditions.index)
+                        #df_conditions['datetime_string'] = pd.Series([session.datetime_string] * df_conditions.shape[0], index = df_conditions.index)
+                        df_conditions['date'] = df_conditions['datetime'].dt.date()         
+
                     idx_all_cond = idx_all_cond.astype(int)
                     # df_events.dropna(subset=['condition_ID'], inplace=True)
                     # df_conditions.dropna(subset=['condition_ID'], inplace=True)
