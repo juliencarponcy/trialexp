@@ -562,6 +562,12 @@ row
 row.subject_ID
 
 
+# In[62]:
+
+
+cont_dataset.data
+
+
 # In[ ]:
 
 
