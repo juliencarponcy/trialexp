@@ -266,15 +266,15 @@ print(subject_IDs)
 
 
 
-for subj in subject_IDs:
-    ss_nb = cont_dataset.metadata_df.loc[(cont_dataset.metadata_df['subject_ID'] == subj) & (
-        cont_dataset.metadata_df['group_ID'] == grp), 'session_nb']
+# for subj in subject_IDs:
+#     ss_nb = cont_dataset.metadata_df.loc[(cont_dataset.metadata_df['subject_ID'] == subj) & (
+#         cont_dataset.metadata_df['group_ID'] == grp), 'session_nb']
 
-    # Find the indices for the largest five
-    id = heapq.nlargest(ss_nb, range(len(ss_nb)), key.ss_nb.__getitem__)
+#     # Find the indices for the largest five
+#     id = heapq.nlargest(ss_nb, range(len(ss_nb)), key.ss_nb.__getitem__)
 
 
-# In[31]:
+# In[36]:
 
 
 import datetime
@@ -299,9 +299,7 @@ cont_dataset.filterout_conditions([4, 5, 6]) # Cued only
 # cont_dataset.filterout_dates([ ])
 
 #d = datetime.datetime(2022, 4, 1).date()
-dlist = pd.date_range(datetime.datetime(2022, 4, 1).date(),
-                      datetime.datetime(2022, 9, 18).date()).tolist()
-dlist = [d.date() for d in dlist]
+dlist = pd.date_range(datetime.datetime(2022, 4, 1), datetime.datetime(2022, 9, 18)).tolist()
 cont_dataset.filterout_dates(dlist)
 
 # # exclude some subjects
@@ -316,58 +314,11 @@ cont_dataset.filterout_dates(dlist)
 # # cont_dataset.filter_if_not_in_all_cond()
 
 
-# In[27]:
-
-
-print(dlist)
-
-
-# In[ ]:
+# In[37]:
 
 
 
 cont_dataset.conditions
-
-
-# ### Plot the photometry by condition
-
-# In[ ]:
-
-
-# if this was not set at creation
-import trialexp.utils.pycontrol_utilities as pycutl
-
-cont_dataset.set_trial_window([-2, 6], 's')
-
-fig, axs = cont_dataset.lineplot(
-    vars = ['analog_1_df_over_f'],
-    time_lim = [-2, 2],
-    time_unit = 's',
-    ylim =  None,#[[-0.1, 0.6]],#[[-0.03, 0.1]],#,[-0.005, 0.007]],#[[-0.001, 0.0011],[-0.001, 0.0011]],
-    error = True,
-    colormap = pycutl.cmap10(),
-    legend = True,
-    plot_subjects = True,
-    plot_groups = True,
-    figsize = (25, 5),
-    dpi = 200,
-    verbose = True)
-
-for r in range(axs.shape[0]):
-    if len(axs.shape) > 1:
-        for c in range(axs.shape[1]):
-            axs[r, c].set_xlabel('Relative to Cue onset (s)', fontsize = 14)
-            axs[r, c].set_title(axs[r, c].get_title('center'), fontsize=14)
-
-    else:
-        axs[r].set_xlabel('Relative to Cue onset (s)', fontsize = 14)
-
-axs[0, 0].set_ylabel('\u0394F/F', fontsize=14)
-
-# Return a count of overall number of trials
-cont_dataset.metadata_df['keep'].value_counts()
-
-#TODO how do I know the sample size foe each category?
 
 
 # # Cued, Cue onset, nearly all sessions
@@ -377,9 +328,10 @@ cont_dataset.metadata_df['keep'].value_counts()
 # - **Need to combine this analysis with pyControl analysis**
 # 
 
-# In[ ]:
+# In[39]:
 
 
+import trialexp.utils.pycontrol_utilities as pycutl
 
 exp_cohort = deepcopy(exp_cohort_copy)  # copy back to recover
 
@@ -408,7 +360,8 @@ cont_dataset = exp_cohort.get_photometry_groups(
 cont_dataset.set_trial_window(trial_window, 'ms')
 
 cont_dataset.filterout_conditions([4,5,6]) # Cued only
-
+dlist = pd.date_range(datetime.datetime(2022, 4, 1), datetime.datetime(2022, 9, 18)).tolist()
+cont_dataset.filterout_dates(dlist)
 
 cont_dataset.set_trial_window([-2, 6], 's')
 
@@ -451,7 +404,7 @@ df1
 # - How to narrow this down to good performance only?
 # - **Need to combine this analysis with pyControl analysis**
 
-# In[ ]:
+# In[40]:
 
 
 
@@ -482,7 +435,8 @@ cont_dataset = exp_cohort.get_photometry_groups(
 cont_dataset.set_trial_window(trial_window, 'ms')
 
 cont_dataset.filterout_conditions([4, 5, 6])  # Cued only
-
+dlist = pd.date_range(datetime.datetime(2022, 4, 1), datetime.datetime(2022, 9, 18)).tolist()
+cont_dataset.filterout_dates(dlist)
 
 cont_dataset.set_trial_window([-2, 6], 's')
 
@@ -525,7 +479,7 @@ df2
 # - How to narrow this down to good performance only?
 # - **Need to combine this analysis with pyControl analysis**
 
-# In[ ]:
+# In[42]:
 
 
 
@@ -557,7 +511,8 @@ cont_dataset = exp_cohort.get_photometry_groups(
 cont_dataset.set_trial_window(trial_window, 'ms')
 
 cont_dataset.filterout_conditions([0, 1, 2, 3])  # Uncued only
-
+dlist = pd.date_range(datetime.datetime(2022, 4, 1), datetime.datetime(2022, 9, 18)).tolist()
+cont_dataset.filterout_dates(dlist)
 
 cont_dataset.set_trial_window([-2, 6], 's')
 
@@ -600,7 +555,7 @@ df3
 # - How to narrow this down to good performance only?df
 # - **Need to combine this analysis with pyControl analysis**
 
-# In[ ]:
+# In[41]:
 
 
 
@@ -631,7 +586,8 @@ cont_dataset = exp_cohort.get_photometry_groups(
 cont_dataset.set_trial_window(trial_window, 'ms')
 
 cont_dataset.filterout_conditions([4,5,6])  # Cued only
-
+dlist = pd.date_range(datetime.datetime(2022, 4, 1), datetime.datetime(2022, 9, 18)).tolist()
+cont_dataset.filterout_dates(dlist)
 
 cont_dataset.set_trial_window([-2, 6], 's')
 
@@ -674,7 +630,7 @@ df4
 # - How to narrow this down to good performance only?
 # - **Need to combine this analysis with pyControl analysis**
 
-# In[ ]:
+# In[43]:
 
 
 
@@ -705,7 +661,9 @@ cont_dataset = exp_cohort.get_photometry_groups(
 cont_dataset.set_trial_window(trial_window, 'ms')
 
 cont_dataset.filterout_conditions([0, 1, 2, 3])  # Uncued only
-
+dlist = pd.date_range(datetime.datetime(2022, 4, 1),
+                      datetime.datetime(2022, 9, 18)).tolist()
+cont_dataset.filterout_dates(dlist)
 
 cont_dataset.set_trial_window([-2, 6], 's')
 
@@ -742,136 +700,23 @@ cont_dataset.metadata_df['keep'].value_counts()
 df5
 
 
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-exp_cohort.sessions[1].df_events.head(50)
-
-
-# In[ ]:
-
-
-exp_cohort.sessions[1].df_conditions.head(50)
-
-
-# In[ ]:
-
-
-cont_dataset.get_groups()
-
-
-# ### Optional methods
-
-# In[ ]:
-
-
-# # Get a list of the groups
-# cont_dataset.get_groups()
-# # Get a list of the variables
-# cont_dataset.get_col_names()
-
-# # reset previous filtering of the dataset
-# cont_dataset.filter_reset()
-
-# # exclude some conditions by IDs
-# cont_dataset.filter_conditions([])
-
-# # exclude some groups by IDs
-# cont_dataset.filter_groups([])
-
-# # exclude some subjects
-# cont_dataset.filter_subjects([])
-# #     subjects_IDs_to_exclude = [289, 290, 293, 294, 295, 299, 301, 303, 304, 305, 306])
-
-# # filter subjects/sessions with less than x trials (by condition)
-# cont_dataset.filter_min(min_trials = 1)
-
-# # To remove subjects who do not have
-# # trials in all the conditions
-# cont_dataset.filter_if_not_in_all_cond()
-
-
-# In[ ]:
-
-
-### Plot the photometry by condition
-cont_dataset.set_trial_window([-2, 6], 's')
-
-cont_dataset.lineplot(
-    vars = ['analog_1_df_over_f'],
-    time_lim = [-200, 600],
-    time_unit = 'milliseconds',
-    ylim = [[-0.015, 0.03]],#,[-0.005, 0.007]],#[[-0.001, 0.0011],[-0.001, 0.0011]],
-    colormap = 'jet',
-    legend = True,
-    plot_subjects = False,
-    plot_groups = True,
-    box = False,
-    figsize = (5, 5),
-    dpi = 100,
-    verbose = False)
-
-
-# In[ ]:
-
-
-# dataset_full_path = r'C:\Users\phar0732\Documents\GitHub\pycontrol_share\outputs\photo_go_nogo_mf15_lp30_bar_off.pkl'
-# cont_dataset = load_dataset(dataset_full_path)
-
-
-# ### Optional methods
-
-# In[ ]:
-
-
-# Get a list of the groups
-cont_dataset.get_groups()
-# Get a list of the variables
-cont_dataset.get_col_names()
-
-# reset previous filtering of the dataset
-cont_dataset.filter_reset()
-
-# exclude some conditions by IDs
-cont_dataset.filter_conditions([])
-
-# exclude some groups by IDs
-cont_dataset.filter_groups([])
-
-# exclude some subjects
-cont_dataset.filter_subjects([])
-#     subjects_IDs_to_exclude = [289, 290, 293, 294, 295, 299, 301, 303, 304, 305, 306])
-
-# filter subjects/sessions with less than x trials (by condition)
-cont_dataset.filter_min(min_trials = 1)
-
-# To remove subjects who do not have
-# trials in all the conditions
-cont_dataset.filter_if_not_in_all_cond()
-
-
-# In[ ]:
-
-
-### Plot the photometry by condition
-cont_dataset.set_trial_window([-2, 6], 's')
-
-cont_dataset.lineplot(
-    vars = ['analog_1_df_over_f'],
-    time_lim = [-200, 600],
-    time_unit = 'milliseconds',
-    ylim = [[-0.015, 0.03]],#,[-0.005, 0.007]],#[[-0.001, 0.0011],[-0.001, 0.0011]],
-    colormap = 'jet',
-    legend = True,
-    plot_subjects = False,
-    plot_groups = True,
-    figsize = (5, 5),
-    dpi = 100,
-    verbose = False)
-
+# # Summary of Meeting on 4 Oct 2022
+# 
+# ## Success rate changes
+#   - Not popular
+# 
+# ## Cued/Uncued
+# - They are very similar except a few things
+#   - we don't have the presumably cue-related first peak (T < 0 when relative to bar release) in Uncued
+#   - Because it is far away in time, we don't see bar-hold related dopamine much (how do they bar-hold activity look in Uncued?)
+# - Apart from cue-related responses, dopamine dynamics are very similar between Cued/Uncued
+#   - Yet, **the validity negative-to-positive dopamine change is now confirmed in Uncued condition.**
+# - We can say that we don't know about any other neurons, MSNs or ChAT.
+# - So it's worth a try, but right now, we don't have a strong reason to believe that they fire very differently right now.
+#   - Again, we don't have a hypothesis.
+# - How about subtracting the average curves?
+# 
+# ## Changes
+# - Julien wants to introduce longer ITI for Cued/Uncued
+# - Julien wants to introduce 10% error trials (omit reward); we'll see negative RPE responses of dopamine neurons
+# 
