@@ -144,7 +144,7 @@ exp_cohort.sessions[1].df_events.head(50)
 
 # #### Cued/Uncued
 
-# In[20]:
+# In[13]:
 
 
 # List of uncued conditions as listed on the tasks .csv file for task reaching_go_spout_cued_uncued:
@@ -173,10 +173,10 @@ cond_aliases = [
     'Cued, reward at spout, hit',
     'Cued, reward at bar release, hit',
     'Cued, Pavlovian, hit',
-    'Cued miss',
-    'Uncued spout hit',
-    'Uncued bar hit',
-    'Uncued miss']
+    'Cued, miss',
+    'Uncued, reward at spout, hit',
+    'Uncued, reward at bar release, hit',
+    'Uncued, miss']
 
 # Groups as a list of lists
 groups = None
@@ -186,8 +186,10 @@ groups = None
 #     [284, 285, 296, 297, 306, 307]]
 # Window to exctract (in ms)
 
+trial_window = [-2000, 6000]
 
-# In[21]:
+
+# In[14]:
 
 
 exp_cohort.sessions
@@ -195,7 +197,7 @@ exp_cohort.sessions
 
 # Behaviour: Create a dataset
 
-# In[22]:
+# In[15]:
 
 
 ev_dataset = exp_cohort.behav_events_to_dataset(
@@ -212,11 +214,11 @@ ev_dataset.set_conditions(conditions=condition_list, aliases=cond_aliases)
 
 # Behaviour: Compute distribution
 
-# In[24]:
+# In[16]:
 
 
 dist_as_continuous = ev_dataset.compute_distribution(
-        trial_window = [-2000, 6000],
+    trial_window=trial_window,
         bin_size = 100, # do not work as expected with cued-uncued
         normalize = True,
         per_session = True,
@@ -234,7 +236,7 @@ dist_as_continuous.filterout_subjects([0,1])
 # - At anytime, <trial_dataset>.filter_reset() can be called to re-include all the elements in the analysis (set all "keep" to True)
 # - Comment or uncomment lines and fill the lists according to your needs
 
-# In[25]:
+# In[17]:
 
 
 # # Get a list of the groups
@@ -268,7 +270,7 @@ dist_as_continuous.filterout_subjects([0,1])
 
 # Indicative preview of the behavioural metadata
 
-# In[26]:
+# In[18]:
 
 
 dist_as_continuous.metadata_df.head(50)
@@ -279,12 +281,12 @@ dist_as_continuous.metadata_df.head(50)
 # #TODO what is T = 0?
 # How to plot differently? Or not necessary?
 
-# In[33]:
+# In[19]:
 
 
 import trialexp.utils.pycontrol_utilities as pycutl
 
-dist_as_continuous.set_trial_window([-2, 6], 's')
+dist_as_continuous.set_trial_window([a/1000 for a in trial_window], 's')
 
 figs, axs, df1 = dist_as_continuous.lineplot(
     vars = [ 'spout_dist'],
@@ -305,6 +307,103 @@ axs[0, 0].set_xlabel('Relative to Cue onset (s)', fontsize=14) #TODO not sure
 axs[0, 0].set_ylabel('Spout touches (counts/s)', fontsize=14) #TODO not sure
 # Return a count of overall number of trials
 dist_as_continuous.metadata_df['keep'].value_counts()
+
+
+# # Success rate plots 
+# 
+# ## Sessions
+# 
+# Mmmmm, what about Cued and Uncued blocks!!!
+# 
+# I can look into 'Cued' column, but this cannot be generalised!!!
+# 
+# I need clear definition of what is devided by what in which trials1!!
+# 
+# sucess is alywas counted.
+# 
+# But within what?
+# 
+# {'Cued': True}
+# 
+# or 
+# 
+# {'Cued' : False}
+# 
+# Confusingly this is different from the `conditions` used above which is the list of all the conditions you're interested.
+# 
+# Here you can specify it as logical OR of multiple conditions, but if `conditions` are not thorough, this won't work. 
+
+# In[27]:
+
+
+ev_dataset.analyse_successrate(bywhat='sessions')
+
+
+# In[45]:
+
+
+gr_df, out_list, ax, im1  = ev_dataset.analyse_successrate(bywhat='sessions',
+    conditions={'cued':True})
+
+ax.set_title('Cued')
+
+plt.colorbar(im1, shrink=0.4)
+
+
+# In[44]:
+
+
+
+gr_df, out_list, ax, im1  = ev_dataset.analyse_successrate(bywhat='sessions',
+    conditions={'cued':False})
+
+ax.set_title('Uncued')
+
+plt.colorbar(im1, shrink=0.4)
+
+
+# In[ ]:
+
+
+gr_df, out_list, ax, im1 = ev_dataset.analyse_successrate(bywhat='days',
+                                                          conditions={'cued': False})
+
+ax.set_title('Uncued')
+
+plt.colorbar(im1, shrink=0.4)
+
+
+# In[28]:
+
+
+ev_dataset.metadata_df
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[26]:
+
+
+from matplotlib import pyplot as plt
+
+fig, ax = plt.subplots(1,1)
+
+
+ax.plot(1,1)
+ax.__class__
+
+
+
 
 
 # ### Set DeepLabCut bodyparts to compute paws centroids

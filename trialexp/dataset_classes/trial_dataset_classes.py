@@ -12,6 +12,7 @@ import pandas as pd
 
 from matplotlib import pyplot as plt
 from matplotlib import cm
+import matplotlib
 
 # To convert for ML with sktime.org
 # make optional for now
@@ -932,6 +933,236 @@ class Event_Dataset(Trials_Dataset):
             return dist_as_continuous
         else:
             return grouped_df
+
+    def analyse_successrate(self, subject_IDs: list = None, 
+        group_IDs : list = None, bywhat: str = 'session', 
+        conditions: dict = None,
+        conditions_bool: str = 'all',
+        ax: matplotlib.axes.Axes = None):
+        """
+
+        subject_IDs: list = None
+        group_IDs : list = None
+        btwhat : str
+            'session', 'days', 'days_with_gaps', 'dates'
+        conditions: dict = None,
+            keys and values for metadata_df
+            Should be considered separately from self.conditions
+            eg {'Cued': True}
+            #TODO how about multiple columns? OR or AND?
+        conditions_bool: str = 'all',
+            'all' or 'any' for conditions
+        ax: matplotlib.axes.Axes = None
+
+
+        #TODO Turned out this is useless in case of Go/NoGo or Cued/Uncued
+        where you need to count trials in separate groups
+
+        """
+
+        def get_gr_df(self, group_IDs, subject_IDs, conditions, conditions_bool):
+
+            metadata_df = self.metadata_df.loc[self.metadata_df['keep'] 
+                & self.metadata_df['valid'], :]
+
+            if group_IDs is None:
+                group_IDs = list(set(metadata_df['group_ID']))
+
+            for g in group_IDs:
+                if subject_IDs is None:
+                    subject_IDs_ = list(
+                        set(metadata_df.loc[metadata_df.group_ID == g, 'subject_ID']))
+                else:
+                    subject_IDs_ = subject_IDs
+
+                ss_dfs = [0] * len(subject_IDs_)
+                for s_idx, s in enumerate(subject_IDs_):
+                    session_nbs = list(set(metadata_df.loc[
+                        (metadata_df['group_ID'] == g)
+                        & (metadata_df['subject_ID'] == s),
+                        'session_nb']))
+
+                    ss_sc = [np.NaN] * len(session_nbs)
+                    ss_tn = [np.NaN] * len(session_nbs)
+                    ss_sr = [np.NaN] * len(session_nbs)
+
+                    for ss_idx, ss in enumerate(session_nbs):
+                        if conditions is None:
+                            ss_sc[ss_idx] = np.count_nonzero(metadata_df.loc[
+                                (metadata_df['group_ID'] == g)
+                                & (metadata_df['subject_ID'] == s)
+                                & (metadata_df['session_nb'] == ss),
+                                'success'])
+
+                            ss_tn[ss_idx] = len(metadata_df.loc[
+                                (metadata_df['group_ID'] == g)
+                                & (metadata_df['subject_ID'] == s)
+                                & (metadata_df['session_nb'] == ss),
+                                'success'])
+                        else:
+
+                            tf_list = [metadata_df[list(conditions)[0]] == list(
+                                conditions.values())[0] for k in range(0,len(conditions))]
+
+                            tf = pd.concat(tf_list, axis=1)
+                            if conditions_bool == 'all':
+                                tf = tf.all(axis=1)
+                            elif conditions_bool == 'any':
+                                tf = tf.any(axis=1)
+                            ss_sc[ss_idx] = np.count_nonzero(metadata_df.loc[
+                                (metadata_df['group_ID'] == g)
+                                & (metadata_df['subject_ID'] == s)
+                                & (metadata_df['session_nb'] == ss)
+                                & (tf),
+                                'success'])
+
+                            ss_tn[ss_idx] = len(metadata_df.loc[
+                                (metadata_df['group_ID'] == g)
+                                & (metadata_df['subject_ID'] == s)
+                                & (metadata_df['session_nb'] == ss)
+                                & (tf),
+                                'success'])
+                    np.seterr(divide='ignore', invalid='ignore')
+                    # https://stackoverflow.com/questions/14861891/runtimewarning-invalid-value-encountered-in-divide
+                    ss_sr = (np.array(ss_sc)/np.array(ss_tn)).tolist()
+
+                    ss_df = pd.DataFrame(list(zip(session_nbs, ss_sc, ss_tn, ss_sr)))
+                    ss_df.columns = ['session_nb', 'success_n', 'trial_n', 'success_rate']
+
+                    ss_df.astype({'session_nb': 'int', 'success_n': 'int', 'trial_n': 'int'})
+
+                    ss_df['subject_ID'] = pd.Series([s] * len(session_nbs))
+
+                    ss_dfs[s_idx] = ss_df
+
+            ss_dfs = pd.concat(ss_dfs)
+            gr_df = pd.DataFrame(list(zip([g] * len(subject_IDs_), subject_IDs_)),
+                                columns=['group_ID', 'subject_ID'])
+
+            gr_df = pd.merge(gr_df, ss_dfs, 'outer')
+
+            return gr_df
+        
+
+        def get_list_df_success_rate(gr_df: pd.DataFrame, bywhat: str, 
+            group_IDs, subject_IDs):
+            if group_IDs is None:
+                group_IDs = list(set(gr_df['group_ID']))
+
+            out_list = [None] * len(group_IDs)
+            for g_idx, g in enumerate(group_IDs):
+                if subject_IDs is None:
+                    subject_IDs_ = list(
+                        set(gr_df.loc[gr_df['group_ID'] == g, 'subject_ID']))
+                else:
+                    subject_IDs_ = subject_IDs
+                
+                out_listlist = [None] * len(subject_IDs_)
+                for s_idx, s in enumerate(subject_IDs_):
+                    thismouse_df = gr_df.loc[(gr_df['group_ID'] == g)
+                        & (gr_df['subject_ID'] == s), :]
+
+                    if bywhat == 'days':
+                        # gaps are ignored
+                        # success rate is computed daily
+                        dates = list(set(thismouse_df.date))
+                        dates.sort()
+                        sr = [None] * len(dates)
+                        for d_idx, d in enumerate(dates):
+                            X = thismouse_df.loc[thismouse_df.date == d,
+                                [ 'success_n', 'trial_n']].sum(axis=0)
+
+                            sr[d_idx] = X.success_n/X.trial_n
+
+                        out_listlist[s_idx] = pd.DataFrame(list(zip(range(1, len(dates)+1), sr)), columns=['dayN', str(s)])
+                        out_listlist[s_idx] = out_listlist[s_idx].set_index('dayN')
+
+                    elif bywhat == 'days_with_gaps':
+                        # gaps are considered
+                        # success rate is computed daily
+                        dates = list(set(thismouse_df.date))
+                        dates.sort()
+                        sr = [None] * len(dates)
+                        for d_idx, d in enumerate(dates):
+                            X = thismouse_df.loc[thismouse_df.date == d,
+                                                ['success_n', 'trial_n']].sum(axis=0)
+
+                            sr[d_idx] = X.success_n/X.trial_n
+
+                        out_listlist[s_idx] = pd.DataFrame(
+                            list(zip([d - dates[0] for d in dates], sr)), columns=['dayN', str(s)])
+                        out_listlist[s_idx] = out_listlist[s_idx].set_index('dayN')
+                    elif bywhat == 'dates':
+                        # gaps are considered
+                        # success rate is computed daily
+                        # use dates instead of days
+                        dates = list(set(thismouse_df.date))
+                        dates.sort()
+                        sr = [None] * len(dates)
+                        for d_idx, d in enumerate(dates):
+                            X = thismouse_df.loc[thismouse_df.date == d,
+                                [ 'success_n', 'trial_n']].sum(axis=0)
+
+                            sr[d_idx] = X.success_n/X.trial_n
+
+                        out_listlist[s_idx] = pd.DataFrame(list(zip(dates, sr)), columns=['dates', str(s)])
+                        out_listlist[s_idx] = out_listlist[s_idx].set_index('dates')
+                    elif bywhat == 'sessions':
+                        # gaps are ignored
+                        # success rate is computed by session
+                        
+                        out_listlist[s_idx] = thismouse_df.loc[:, ['session_nb', 'success_rate']] 
+                        out_listlist[s_idx] = out_listlist[s_idx].set_index('session_nb')
+                        out_listlist[s_idx].columns = [str(s)]
+                    else:
+                        raise 'bywhat must be ''days'', ''days_with_gap'', ''dates'', or ''sessions'''
+
+                    #out_list[g_idx] = 1 = pd.concat(out_listlist) # TODO this is wrong
+                    # session_nb as index, success_rate as value, subject_ID as columns
+                    out_list[g_idx] = pd.concat(out_listlist, axis=1)
+
+            return out_list
+
+        gr_df = get_gr_df(self, group_IDs, subject_IDs, conditions, conditions_bool)
+
+        out_list = get_list_df_success_rate(
+            gr_df, bywhat, group_IDs, subject_IDs)
+
+        # Plotting
+        #TODO deal with groups
+
+        if ax is None:
+            fig, ax = plt.subplots(1, 1)
+        else:
+            assert isinstance(ax, matplotlib.axes)
+            # may not work for subplotds
+        nml = matplotlib.colors.Normalize(0, 1)
+
+        im1 = ax.imshow(out_list[0].transpose(), norm=nml)
+        if bywhat == 'sessions':
+            ax.set_xlabel('Sessions')
+        elif bywhat == 'days':
+            ax.set_xlabel('Days')
+        elif bywhat == 'days_with_gaps':
+            ax.set_xlabel('Says')
+        elif bywhat == 'dates':
+            ax.set_xlabel('Dates')
+            xticks = ax.get_xticks
+
+            ax.set_xticks(range(0, xticks.max()+1, 
+                xticks[1] - xticks[0])) # needed
+            ax.set_xticklabels(
+                out_list[0].index[range(0, xticks.max()+1, xticks[1] - xticks[0])],
+                rotation=30, ha='right')
+
+        ax.set_ylabel('Mice')
+        ax.set_yticks(range(0,out_list[0].shape[1]))
+        ax.set_yticklabels(out_list[0].columns)
+        ax.set_facecolor('k')
+        ax.tick_params(axis='both', which='major', labelsize=8)
+
+        return gr_df, out_list, ax, im1
+
 
 # TODO: store into helper files
 def histo_only(x: np.array, trial_window: list, bin_size: int):

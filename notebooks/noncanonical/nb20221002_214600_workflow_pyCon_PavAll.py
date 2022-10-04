@@ -364,9 +364,6 @@ gr_df = pd.DataFrame(list(zip([g] * len(subject_IDs), subject_IDs)),
                      columns=['group_ID', 'subject_ID'])
 
 gr_df = pd.merge(gr_df, ss_dfs, 'outer')
-  
-# I want to add datatime but metadata_df doesn't have it!!!
-
 
 
 # In[380]:
