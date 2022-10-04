@@ -1653,7 +1653,8 @@ class Experiment():
                             df_conditions.loc[idx_joint, 'condition'] = cond_aliases[cond_idx]
                         
                         df_conditions['datetime'] = pd.Series([session.datetime] * df_conditions.shape[0], index = df_conditions.index)
-                        df_conditions['datetime_string'] = pd.Series([session.datetime_string] * df_conditions.shape[0], index = df_conditions.index)                      
+                        #df_conditions['datetime_string'] = pd.Series([session.datetime_string] * df_conditions.shape[0], index = df_conditions.index)
+                        df_conditions['date'] = df_conditions['datetime'].dt.date()         
 
                     idx_all_cond = idx_all_cond.astype(int)
                     # df_events.dropna(subset=['condition_ID'], inplace=True)
