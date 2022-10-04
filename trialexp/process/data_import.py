@@ -68,7 +68,7 @@ class Session():
     times : dict
         A dictionary with keys that are the names of the framework events and states and 
         corresponding values which are Numpy arrays of all the times (in milliseconds since the
-           start of the framework run) at which each event/state entry occured.
+        start of the framework run) at which each event/state entry occurred.
     print_lines : list
         A list of all the lines output by print statements during the framework run, each line starts 
         with the time in milliseconds at which it was printed.
@@ -77,14 +77,18 @@ class Session():
     trial_window : list
         eg [-2000, 6000]
         The time window relative to triggers used for trial-based data fragmentation in Trial_Dataset class.
+        Set by Session.get_task_specs() 
         cf. timelim
     triggers : list
         eg ['CS_Go']
+        Set by Session.get_task_specs() depending on tasksfile `trialexp\params\tasks_params.csv`
     events_to_process : list
+        Set by Session.get_task_specs() depending on tasksfile `trialexp\params\tasks_params.csv`
     conditions : list
+        Set by Session.get_task_specs() depending on tasksfile `trialexp\params\tasks_params.csv`
     timelim : list
         eg [0, 2000]
-        The time window used to detect successful trials. 
+        The time window used to detect successful trials. Set bySession.get_task_specs()
         cf. compute_success()
         cf. trial_window
     df_events : DataFrame
@@ -150,9 +154,18 @@ class Session():
         self.print_lines = [line[2:] for line in all_lines if line[0]=='P']
     
     def get_task_specs(self, tasksfile, trial_window, timelim):
+        """
+        All the df columns named in this function, events and opto_categories must 
+        follow columns of the indicated tasksfile
+        
+        This function sets the values of 
+            self.triggers
+            self.events_to_process
+            self.conditions
+            self.trial_window
+            self.timelim
 
-        # all the df column named in this function, events and opto_categories must 
-        # follow columns of the indicated tasksfile
+        """
 
         tasks_trig_and_events = pd.read_csv(tasksfile)
         # match triggers (events/state used for t0)
