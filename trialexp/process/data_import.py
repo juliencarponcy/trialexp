@@ -1142,7 +1142,8 @@ class Session():
     def get_trials_times_from_conditions(
             self,
             conditions_dict: dict = None, 
-            trig_on_ev: str = None, 
+            trig_on_ev: str = None,
+            last_before: str = None, 
             output_first_ev: bool = False):
 
         if conditions_dict is not None:
@@ -1170,28 +1171,12 @@ class Session():
         else:    
             trials_times = self.df_events.loc[(idx_joint), 'timestamp'].copy()
             
-            
-
-            # implemented due to error at following line
-            # TypeError: 'numpy.int32' object is not iterable?
-            # worked well before? unknown reason
-            
-            def find_min_time_list(x):
-                if len(x) >= 1:
-                    min_time = min([i for i in x if i>0], default=np.NaN)
-                elif isinstance(x, int) and x > 0:
-                    min_time = x
-                elif isinstance(x, int) and x > 0:
-                    min_time = np.NaN
-                elif len(x) == 0:
-                    min_time = np.NaN
-                else:
-                    print(x,type(x))
-                return min_time
-
-
             df_ev_copy = self.df_events.copy()
-            
+            # TODO: continue implementation
+            # if last_before is not None and last_before in set(self.events_to_process):
+            #     ev_before_lim = df_ev_copy.loc[(idx_joint), last_before + '_trial_time'].apply(
+            #         lambda x: find_min_time_list(x))               
+
             first_ev_times = df_ev_copy.loc[(idx_joint), trig_on_ev + '_trial_time'].apply(
                 lambda x: find_min_time_list(x))
             
