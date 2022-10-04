@@ -225,9 +225,10 @@ class Trials_Dataset():
         """
         exclude one or several dates of the dataset 
         """
-        if isinstance(days_to_exclude, datetime.datetime):
-            days_to_exclude = [days_to_exclude.date()]
-        elif isinstance(days_to_exclude, datetime.date):
+        import datetime
+        if  all([isinstance(d, datetime.datetime) for d in days_to_exclude])  :
+            days_to_exclude = [d.date() for d in days_to_exclude]
+        elif all([isinstance(d, datetime.date) for d in days_to_exclude]):
             days_to_exclude = [days_to_exclude]
         else:
             raise TypeError("days_to_exclude has to be a list of datetime or date")
