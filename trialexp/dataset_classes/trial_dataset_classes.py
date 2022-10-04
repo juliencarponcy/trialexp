@@ -1020,7 +1020,7 @@ class Event_Dataset(Trials_Dataset):
                             ss_tn[ss_idx] = len(metadata_df.loc[
                                 TF, 'success'])
 
-                            dt = (metadata_df.loc[TF, 'datetime']) #TODO
+                            dt = (metadata_df.loc[TF, 'datetime']) #TODO do this for 'date' as well
                             if not dt.empty: #TODO
                                 ss_dt[ss_idx] = dt[0]                           
                     np.seterr(divide='ignore', invalid='ignore')
@@ -1041,7 +1041,7 @@ class Event_Dataset(Trials_Dataset):
                                 columns=['group_ID', 'subject_ID'])
 
             gr_df = pd.merge(gr_df, ss_dfs, 'outer')
-            gr_df['date'] = gr_df['datetime'].dt.date()
+            gr_df['date'] = gr_df['datetime'].dt.date()  # TODO
             return gr_df
         
 
@@ -1066,11 +1066,11 @@ class Event_Dataset(Trials_Dataset):
                     if bywhat == 'days':
                         # gaps are ignored
                         # success rate is computed daily
-                        dates = list(set(thismouse_df['datetime'].dt.date()))
+                        dates = list(set(thismouse_df['datetime'].dt.date())) #TODO
                         dates.sort()
                         sr = [None] * len(dates)
                         for d_idx, d in enumerate(dates):
-                            X = thismouse_df.loc[thismouse_df['datetime'].dt.date() == d,
+                            X = thismouse_df.loc[thismouse_df['datetime'].dt.date() == d, #TODO
                                 [ 'success_n', 'trial_n']].sum(axis=0)
 
                             sr[d_idx] = X.success_n/X.trial_n
@@ -1081,11 +1081,11 @@ class Event_Dataset(Trials_Dataset):
                     elif bywhat == 'days_with_gaps':
                         # gaps are considered
                         # success rate is computed daily
-                        dates = list(set(thismouse_df['datetime'].dt.date()))
+                        dates = list(set(thismouse_df['datetime'].dt.date())) #TODO
                         dates.sort()
                         sr = [None] * len(dates)
                         for d_idx, d in enumerate(dates):
-                            X = thismouse_df.loc[thismouse_df['datetime'].dt.date() == d,
+                            X = thismouse_df.loc[thismouse_df['datetime'].dt.date() == d, #TODO
                                                 ['success_n', 'trial_n']].sum(axis=0)
 
                             sr[d_idx] = X.success_n/X.trial_n
@@ -1097,11 +1097,11 @@ class Event_Dataset(Trials_Dataset):
                         # gaps are considered
                         # success rate is computed daily
                         # use dates instead of days
-                        dates = list(set(thismouse_df['datetime'].dt.date()))
+                        dates = list(set(thismouse_df['datetime'].dt.date())) #TODO
                         dates.sort()
                         sr = [None] * len(dates)
                         for d_idx, d in enumerate(dates):
-                            X = thismouse_df.loc[thismouse_df['datetime'].dt.date() == d,
+                            X = thismouse_df.loc[thismouse_df['datetime'].dt.date() == d,  # TODO
                                 [ 'success_n', 'trial_n']].sum(axis=0)
 
                             sr[d_idx] = X.success_n/X.trial_n
