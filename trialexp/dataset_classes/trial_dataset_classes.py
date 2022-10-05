@@ -12,7 +12,11 @@ import pandas as pd
 
 from matplotlib import pyplot as plt
 from matplotlib import cm
-import matplotlib
+from matplotlib import colors
+from matplotlib.axes import Axes
+# import matplotlib
+
+from trialexp.utils.cont_dataset_utlities import *
 
 # To convert for ML with sktime.org
 # make optional for now
@@ -446,6 +450,133 @@ class Continuous_Dataset(Trials_Dataset):
 
         return time_vector
 
+    def cluster_trials(
+            self,
+            vars_to_cluster_on: str = 'analog_2',  # only work with one var for now.
+            dim_reduc_type: str = 'ICA',
+            eps: float =  0.005, 
+            plot: bool = False,
+            plot_lim_pctile: float = 0.1
+            ):
+        
+        """
+        Cluster trials based on computation over a single channel (for now).
+        The features extracted ar in the base_feature_extraction() method,
+        in the cont_dataset_utilities.py file. (in which other features could
+        be implemented)
+        Once this feature extracted, the method perform dimensionality reduction
+        by PCA or ICA, then run the DBSCAN algorithm to group the trials in
+        differnt clusters, to identify noise (cluster: -1) and/or other
+        abnormal trials.
+        Beside optional plotting, the results are stored in the 
+
+        Arguments
+        ---------
+        vars_to_cluster_on: str = 'analog_2',  # only work with one var for now.
+            variable from which to extract feature and perform clustering on
+        dim_reduc_type: str = 'ICA',
+            can be either 'PCA' or 'ICA'
+        eps: float =  0.005, 
+            The most crucial parameter, as it will determine the level
+            of acceptable noise/artifacts in your remaining trials 
+        plot: bool = False,
+            Whether to plot the dimensionality reduction and the clustering
+        plot_lim_pctile: float = 0.1
+            use to scale the plot as artifacted, very far way trials, if all
+            included, may entrain crowding of useful samples in a tiny area 
+            of the plot. 
+            plot_lim_pctile will scale in x and y to display all but 
+            plot_lim_pctile portion of your data, e.g. if 0.1, the scaling
+            of the plot will include 100 - 0.1% (99.8% of the trials) in x/y
+
+        Returns
+        -------
+        None
+            just store the nb of the cluster in the <cont_dataset>.metadata_df
+            in the cluster column. 
+
+        """
+        # TODO, transform feature extraction to not have to transform the data
+        # make available to cluster on more than one variable
+        # 
+        df_panel, _ = self.export_to_sktime()
+
+        df_components = extract_feature_components(
+            df_panel, 
+            variable = vars_to_cluster_on, 
+            type = dim_reduc_type, 
+            plot = plot)
+
+        labels  = DBSCAN_cluster_on_compoonents(
+            np_comp = df_components, 
+            eps =  0.005, 
+            plot = True,
+            plot_lim_pctile = plot_lim_pctile)
+
+
+        self.metadata_df['cluster'] = labels
+
+
+    #TODO adapt to be able to work with only one variable, unlikely for now (axes issue)
+    def plot_clustered_trials(self,
+            vars_to_plot: list = ['analog_2','analog_1_df_over_f'],
+            min_cluster_size_to_plot: int = 20,
+            ylims: list = [[0.2,0.8],[-0.1,0.4]],
+            figsize: tuple = (15,10)
+            ):
+        """
+        Plot all trials (and average) by cluster as defined by the cluster_trials()
+        method.
+
+        Arguments:
+        ----------
+            vars_to_plot: list = ['analog_2','analog_1_df_over_f'],
+                the variables to plot
+            min_cluster_size_to_plot: int = 20,
+                do not create a new plot for clusters smaller than this nb
+            ylims: list = [[0.2,0.8],[-0.1,0.4]],
+                allow you to specify the ylim property of axes, otherwise the
+                plots will be scaled to the most artifacted trials
+            figsize: tuple = (15,10)
+                figure size, so far to manually adapt
+            ):
+
+        """
+        if 'cluster' in self.metadata_df.columns:
+            labels = self.metadata_df['cluster'].values
+        else:
+            raise Exception('Clustering not performed on this dataset, use <cont_dataset>.cluster_trials() method')
+
+        pd_labels = pd.Series(labels)
+        clusters_size = pd_labels.value_counts().to_dict()
+        clusters_size = {k: v for (k, v) in clusters_size.items() if (v >= min_cluster_size_to_plot)}
+
+
+        fig, axs = plt.subplots(nrows = len(vars_to_plot), ncols = clusters_size.__len__(), sharey = 'row', figsize = figsize)
+        timevec_trial = np.linspace(self.trial_window[0], self.trial_window[1], self.data.shape[2])
+
+        for row, var in enumerate(vars_to_plot):
+
+            for col, clust_nb in enumerate(clusters_size.keys()):
+
+                _ = axs[row,col].plot(
+                    
+                    timevec_trial, self.data[labels == clust_nb, self.colnames_dict[var],:].T, alpha=0.3)
+                _ = axs[row,col].plot(timevec_trial, self.data[labels == clust_nb, self.colnames_dict[var],:].mean(0), c='k', alpha=1)
+
+
+                axs[row,col].set_title(f'{var} cluster: {clust_nb}, trials: {clusters_size[clust_nb]}')
+                axs[row,col].set_ylim(ylims[row])
+
+    def filterout_clusters(self, clusters_to_exclude: list):
+        """
+        exclude one or several subjects of the dataset
+        """
+        if isinstance(clusters_to_exclude, int):
+            subject_IDs_to_exclude = [subject_IDs_to_exclude]
+        filter = self.metadata_df['cluster'].apply(lambda x: x in clusters_to_exclude)
+        self.metadata_df.loc[filter,'keep'] = False
+
     def export_to_sktime(self,
             folder: str = None,
             name: str = None,
@@ -456,6 +587,9 @@ class Continuous_Dataset(Trials_Dataset):
         This is the standard format for multivariate timeseries in sktime.org
         sktime is used to perform classification and regression time on uni or
         multi-variate timeseries (unlike scikit-learn, more suited for tabular data)
+
+        if a name is specified (and optionally a folder), the tranformed DataFrame
+        will be stored as a pickle file.
         '''
         if vars_to_export == 'all':
 
@@ -998,7 +1132,7 @@ class Event_Dataset(Trials_Dataset):
         group_IDs : list = None, bywhat: str = 'session', 
         conditions: dict = None,
         conditions_bool: str = 'all',
-        ax: matplotlib.axes.Axes = None):
+        ax = None):
         """
 
         subject_IDs: list = None
@@ -1195,9 +1329,9 @@ class Event_Dataset(Trials_Dataset):
         if ax is None:
             fig, ax = plt.subplots(1, 1)
         else:
-            assert isinstance(ax, matplotlib.axes)
+            assert isinstance(ax, Axes)
             # may not work for subplotds
-        nml = matplotlib.colors.Normalize(0, 1)
+        nml = colors.Normalize(0, 1)
 
         im1 = ax.imshow(out_list[0].transpose(), norm=nml)
         if bywhat == 'sessions':
