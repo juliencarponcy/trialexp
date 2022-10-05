@@ -327,6 +327,8 @@ class Continuous_Dataset(Trials_Dataset):
     set_fs(self, fs: int):
     lineplot(...)
         The main plotting method.
+    heatmap(...)
+        to be implemented
     get_col_names()
     """
     def __init__(self, data: np.ndarray, metadata_df: pd.DataFrame, colnames_dict: dict):
@@ -798,7 +800,29 @@ class Continuous_Dataset(Trials_Dataset):
             timelim: Optional[list] = None):
         ...
 
-
+    def hetamp(self,
+            vars: VarsType = 'all',
+            time_lim: Optional[list] = None,
+            time_unit: str = None,
+            error: str = None, # only for group plot
+            is_x_vs_y: bool = False, # implement here or not?
+            plot_subjects: bool = True,
+            plot_groups: bool = True,
+            ylim: list = None, 
+            colormap: str = 'jet',
+            figsize: tuple = (20, 10),
+            dpi: int = 100,
+            box: bool = False,
+            liney0:bool = True, # draw horizontal gray dashed line at y = 0
+            legend: bool = True,
+            verbose: bool = False):
+        """
+        This function could share most of the comuputation with Continous_Dataset.lineplot()
+        Heatmap representation, rather than line plot, of multiple continuous data, 
+        typically representing individual mice or neurons.
+        """
+        ...
+        # to be implemented
 
 
 class Event_Dataset(Trials_Dataset):
