@@ -1129,7 +1129,8 @@ class Event_Dataset(Trials_Dataset):
             return grouped_df
 
     def analyse_successrate(self, subject_IDs: list = None, 
-        group_IDs : list = None, bywhat: str = 'session', 
+        group_IDs : list = None, 
+        bywhat: str = 'session', 
         conditions: dict = None,
         conditions_bool: str = 'all',
         ax = None):
@@ -1157,7 +1158,7 @@ class Event_Dataset(Trials_Dataset):
         def get_gr_df(self, group_IDs, subject_IDs, conditions, conditions_bool):
 
             metadata_df = self.metadata_df.loc[self.metadata_df['keep'] 
-                & self.metadata_df['valid'], :]
+                & self.metadata_df['valid'], :].copy()
 
             if group_IDs is None:
                 group_IDs = list(set(metadata_df['group_ID']))
@@ -1174,7 +1175,7 @@ class Event_Dataset(Trials_Dataset):
                     session_nbs = list(set(metadata_df.loc[
                         (metadata_df['group_ID'] == g)
                         & (metadata_df['subject_ID'] == s),
-                        'session_nb']))
+                        'session_nb'])).copy()
 
                     ss_sc = [np.NaN] * len(session_nbs)
                     ss_tn = [np.NaN] * len(session_nbs)
@@ -1191,9 +1192,9 @@ class Event_Dataset(Trials_Dataset):
                             ss_tn[ss_idx] = len(metadata_df.loc[
                                 TF, 'success'])
 
-                            dt = (metadata_df.loc[TF, 'datetime'])
+                            dt = (metadata_df.loc[TF, 'datetime']).copy()
                             if not dt.empty:
-                                ss_dt[ss_idx] = dt[0]
+                                ss_dt[ss_idx] = dt.iloc[0]
                         else:
 
                             tf_list = [metadata_df[list(conditions)[0]] == list(
@@ -1214,9 +1215,9 @@ class Event_Dataset(Trials_Dataset):
                             ss_tn[ss_idx] = len(metadata_df.loc[
                                 TF, 'success'])
 
-                            dt = (metadata_df.loc[TF, 'datetime']) #TODO do this for 'date' as well
-                            if not dt.empty: #TODO
-                                ss_dt[ss_idx] = dt[0]                           
+                            dt = (metadata_df.loc[TF, 'datetime'].copy()) #TODO do this for 'date' as well
+                            if not dt.empty:
+                                ss_dt[ss_idx] = dt.iloc[0]                           
                     np.seterr(divide='ignore', invalid='ignore')
                     # https://stackoverflow.com/questions/14861891/runtimewarning-invalid-value-encountered-in-divide
                     ss_sr = (np.array(ss_sc)/np.array(ss_tn)).tolist()
@@ -1235,7 +1236,7 @@ class Event_Dataset(Trials_Dataset):
                                 columns=['group_ID', 'subject_ID'])
 
             gr_df = pd.merge(gr_df, ss_dfs, 'outer')
-            gr_df['date'] = gr_df['datetime'].dt.date()  # TODO
+            gr_df['date'] = gr_df['datetime'].dt.date  # TODO
             return gr_df
         
 
@@ -1260,11 +1261,11 @@ class Event_Dataset(Trials_Dataset):
                     if bywhat == 'days':
                         # gaps are ignored
                         # success rate is computed daily
-                        dates = list(set(thismouse_df['datetime'].dt.date())) #TODO
+                        dates = list(set(thismouse_df['datetime'].dt.date)) 
                         dates.sort()
                         sr = [None] * len(dates)
                         for d_idx, d in enumerate(dates):
-                            X = thismouse_df.loc[thismouse_df['datetime'].dt.date() == d, #TODO
+                            X = thismouse_df.loc[thismouse_df['datetime'].dt.date == d,
                                 [ 'success_n', 'trial_n']].sum(axis=0)
 
                             sr[d_idx] = X.success_n/X.trial_n
@@ -1275,11 +1276,11 @@ class Event_Dataset(Trials_Dataset):
                     elif bywhat == 'days_with_gaps':
                         # gaps are considered
                         # success rate is computed daily
-                        dates = list(set(thismouse_df['datetime'].dt.date())) #TODO
+                        dates = list(set(thismouse_df['datetime'].dt.date)) #TODO
                         dates.sort()
                         sr = [None] * len(dates)
                         for d_idx, d in enumerate(dates):
-                            X = thismouse_df.loc[thismouse_df['datetime'].dt.date() == d, #TODO
+                            X = thismouse_df.loc[thismouse_df['datetime'].dt.date == d, #TODO
                                                 ['success_n', 'trial_n']].sum(axis=0)
 
                             sr[d_idx] = X.success_n/X.trial_n
@@ -1291,11 +1292,11 @@ class Event_Dataset(Trials_Dataset):
                         # gaps are considered
                         # success rate is computed daily
                         # use dates instead of days
-                        dates = list(set(thismouse_df['datetime'].dt.date())) #TODO
+                        dates = list(set(thismouse_df['datetime'].dt.date)) #TODO
                         dates.sort()
                         sr = [None] * len(dates)
                         for d_idx, d in enumerate(dates):
-                            X = thismouse_df.loc[thismouse_df['datetime'].dt.date() == d,  # TODO
+                            X = thismouse_df.loc[thismouse_df['datetime'].dt.date == d,  # TODO
                                 [ 'success_n', 'trial_n']].sum(axis=0)
 
                             sr[d_idx] = X.success_n/X.trial_n
@@ -1315,6 +1316,8 @@ class Event_Dataset(Trials_Dataset):
                     #out_list[g_idx] = 1 = pd.concat(out_listlist) # TODO this is wrong
                     # session_nb as index, success_rate as value, subject_ID as columns
                     out_list[g_idx] = pd.concat(out_listlist, axis=1)
+
+                    out_list[g_idx] = out_list[g_idx].sort_index()
 
             return out_list
 
@@ -1339,13 +1342,13 @@ class Event_Dataset(Trials_Dataset):
         elif bywhat == 'days':
             ax.set_xlabel('Days')
         elif bywhat == 'days_with_gaps':
-            ax.set_xlabel('Says')
+            ax.set_xlabel('Days')
         elif bywhat == 'dates':
             ax.set_xlabel('Dates')
-            xticks = ax.get_xticks
+            xticks = ax.get_xticks()
 
             ax.set_xticks(range(0, xticks.max()+1, 
-                xticks[1] - xticks[0])) # needed
+                xticks[1] - xticks[0])) # needed #TODO
             ax.set_xticklabels(
                 out_list[0].index[range(0, xticks.max()+1, xticks[1] - xticks[0])],
                 rotation=30, ha='right')
