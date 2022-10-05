@@ -568,6 +568,14 @@ class Continuous_Dataset(Trials_Dataset):
                 axs[row,col].set_title(f'{var} cluster: {clust_nb}, trials: {clusters_size[clust_nb]}')
                 axs[row,col].set_ylim(ylims[row])
 
+    def filterout_clusters(self, clusters_to_exclude: list):
+        """
+        exclude one or several subjects of the dataset
+        """
+        if isinstance(clusters_to_exclude, int):
+            subject_IDs_to_exclude = [subject_IDs_to_exclude]
+        filter = self.metadata_df['cluster'].apply(lambda x: x in clusters_to_exclude)
+        self.metadata_df.loc[filter,'keep'] = False
 
     def export_to_sktime(self,
             folder: str = None,
