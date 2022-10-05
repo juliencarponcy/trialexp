@@ -4,7 +4,7 @@
 # ## Workflow to analyze Photometry data
 # 
 # ```bash
-# jupyter nbconvert "D:\OneDrive - Nexus365\Private_Dropbox\Projects\trialexp\notebooks\noncanonical\nb20221005_001400_workflow_pyPhot_PavAll_last5.ipynb" --to="python" --output-dir="D:\OneDrive - Nexus365\Private_Dropbox\Projects\trialexp\notebooks\noncanonical" --output="nb20221005_001400_workflow_pyPhot_PavAll_last5.ipynb"
+# jupyter nbconvert "D:\OneDrive - Nexus365\Private_Dropbox\Projects\trialexp\notebooks\noncanonical\nb20221005_001400_workflow_pyPhot_PavAll_last5.ipynb" --to="python" --output-dir="D:\OneDrive - Nexus365\Private_Dropbox\Projects\trialexp\notebooks\noncanonical" --output="nb20221005_001400_workflow_pyPhot_PavAll_last5"
 # ```
 
 # ### Imports
@@ -195,7 +195,8 @@ trial_window = [-2000, 4000]  # TODO
 # 
 # https://github.com/ThomasAkam/photometry_preprocessing/blob/master/Photometry%20data%20preprocessing.ipynb
 
-# # Cue (CS) onset
+# # Nearly all sessions
+# ## Cue (CS) onset
 # - Still this contains a lot of sessions with bad performance
 # - How to narrow this down to good performance only?
 # - **Need to combine this analysis with pyControl analysis**
@@ -255,8 +256,8 @@ fig, axs, df1 = cont_dataset.lineplot(
 for r in range(axs.shape[0]):
     if len(axs.shape) > 1:
         for c in range(axs.shape[1]):
-            axs[r, c].set_xlabel('Relative to CS onset (s)', fontsize=14)
-            axs[r, c].set_title(axs[r, c].get_title('center'), fontsize=14)
+            axs1[r, c].set_xlabel('Relative to CS onset (s)', fontsize=14)
+            axs1[r, c].set_title(axs[r, c].get_title('center'), fontsize=14)
 
     else:
         axs[r].set_xlabel('Relative to CS onset (s)', fontsize=14)
@@ -269,12 +270,12 @@ cont_dataset.metadata_df['keep'].value_counts()
 df1
 
 
-# # spout touch
+# ## spout touch
 # 
 # - **Why can I plot Miss against spout touch?**
 # - What spout are we talking about?
 
-# In[19]:
+# In[75]:
 
 
 
@@ -337,12 +338,13 @@ for r in range(axs.shape[0]):
 axs[0, 0].set_ylabel('\u0394F/F', fontsize=14)
 
 # Return a count of overall number of trials
-cont_dataset.metadata_df['keep'].value_counts()
+print(cont_dataset.metadata_df['keep'].value_counts())
 
-df2
+list(set(cont_dataset.metadata_df.loc[cont_dataset.metadata_df['keep'] , 'subject_ID' ]))
 
 
-# ## Select the last five trials
+# # Last five sessions
+# ## CS (cue) onset, Select the last five trials
 # 
 # Use 
 # 
@@ -354,10 +356,9 @@ df2
 # ```
 # 
 
-# In[68]:
+# In[86]:
 
 
-import heapq
 exp_cohort = deepcopy(exp_cohort_copy)  # copy back to recover
 
 
@@ -386,27 +387,24 @@ cont_dataset = exp_cohort.get_photometry_groups(
                  'analog_2_filt', 'analog_1_df_over_f'],
     verbose=False)
 
-cont_dataset.filterout_conditions([50, 52]) # Cued only
+
+cont_dataset.filterout_subjects([50, 52]) #TODO
 # dlist = pd.date_range(datetime.datetime(2022, 4, 1), datetime.datetime(2022, 9, 18)).tolist()
 # cont_dataset.filterout_dates(dlist)
 
 # Change cont_dataset.metadata_df['keep'] according to 'session_nb' for each 'subject_ID'
 
+# list(set(cont_dataset.metadata_df.loc[cont_dataset.metadata_df['keep'] , 'subject_ID' ]))
 
-# In[69]:
+
+# In[87]:
 
 
 c = (cont_dataset.metadata_df['session_nb']).value_counts()
 c.sort_index()
 
 
-# In[70]:
-
-
-cont_dataset.metadata_df.head()
-
-
-# In[71]:
+# In[88]:
 
 
 n = 5
@@ -440,7 +438,7 @@ np.count_nonzero(tf)
 del session_nbs, s
 
 
-# In[72]:
+# In[89]:
 
 
 
@@ -448,20 +446,20 @@ cont_dataset.metadata_df.loc[:,'keep'] = False
 cont_dataset.metadata_df.loc[tf,'keep'] = True
 
 
-# In[73]:
+# In[90]:
 
 
-np.count_nonzero(tf)
+df = cont_dataset.metadata_df
 
 
-# In[74]:
+# In[91]:
 
 
 
 cont_dataset.set_trial_window([tw/1000 for tw in trial_window], 's')
 
 
-fig, axs, df1 = cont_dataset.lineplot(
+fig, axs1, df1 = cont_dataset.lineplot(
     vars=['analog_1_df_over_f'],
     time_lim=[-2, 2],
     time_unit='s',
@@ -486,6 +484,125 @@ for r in range(axs.shape[0]):
         axs[r].set_xlabel('Relative to CS onset (s)', fontsize=14)
 
 axs[0, 0].set_ylabel('\u0394F/F', fontsize=14)
+
+# Return a count of overall number of trials
+cont_dataset.metadata_df['keep'].value_counts()
+
+df1
+
+
+# ## spout touch, last five sessions
+
+# In[92]:
+
+
+exp_cohort = deepcopy(exp_cohort_copy)  # copy back to recover
+
+
+
+exp_cohort.sessions = [session for session in exp_cohort.sessions
+                       if 
+                       (session.number > 2)
+                       and (session.task_name == 'pavlovian_nobar_nodelay')]
+
+
+cont_dataset = exp_cohort.get_photometry_groups(
+    groups=None,  # or use groups variable defined above
+    conditions_list=condition_list[0], #TODO Hit only, Spout touches in Miss trials are spurious
+    cond_aliases=cond_aliases[0],      #TODO Hit only, Spout touches in Miss trials are spurious
+    when='all',
+    task_names='pavlovian_nobar_nodelay',  # 'reaching_go_nogo',
+    # align to the first event of a kind e.g. None (meaning CS_Go onset), 'bar_off', 'spout'
+    trig_on_ev='spout',
+    high_pass=None,  # analog_1_df_over_f doesn't work with this
+    low_pass=45,
+    median_filt=3,
+    motion_corr=True,
+    df_over_f=True,
+    downsampling_factor=10,
+    export_vars=['analog_1', 'analog_1_filt', 'analog_2',
+                 'analog_2_filt', 'analog_1_df_over_f'],
+    verbose=False)
+
+print(cont_dataset.metadata_df['keep'].value_counts())
+
+cont_dataset.filterout_subjects([50, 52]) #TODO
+
+# Change cont_dataset.metadata_df['keep'] according to 'session_nb' for each 'subject_ID'
+
+print(cont_dataset.metadata_df['keep'].value_counts())
+
+cont_dataset.filter_lastNsessions(5) #TODO
+
+print(cont_dataset.metadata_df['keep'].value_counts())
+
+
+
+cont_dataset.set_trial_window([tw/1000 for tw in trial_window], 's')
+
+
+
+fig, axs, df1 = cont_dataset.lineplot(
+    vars=['analog_1_df_over_f'],
+    time_lim=[-2, 2],
+    time_unit='s',
+    # [[-0.1, 0.6]],#[[-0.03, 0.1]],#,[-0.005, 0.007]],#[[-0.001, 0.0011],[-0.001, 0.0011]],
+    ylim=None,
+    error=True,
+    colormap=cmap10(),
+    legend=True,
+    plot_subjects=True,
+    plot_groups=True,
+    figsize=(25, 5),
+    dpi=200,
+    verbose=True)
+
+for r in range(axs.shape[0]):
+    if len(axs.shape) > 1:
+        for c in range(axs.shape[1]):
+            axs[r, c].set_xlabel('Relative to the first spout touch (s)', fontsize=14)
+            axs[r, c].set_title(axs[r, c].get_title('center'), fontsize=14)
+
+    else:
+        axs[r].set_xlabel('Relative to the first spout touch (s)', fontsize=14)
+
+axs[0, 0].set_ylabel('\u0394F/F', fontsize=14)
+
+# Return a count of overall number of trials
+cont_dataset.metadata_df['keep'].value_counts()
+
+df1
+
+
+# In[93]:
+
+
+
+fig, axs2, df1 = cont_dataset.lineplot(
+    vars=['analog_1_df_over_f'],
+    time_lim=[-2, 2],
+    time_unit='s',
+    # [[-0.1, 0.6]],#[[-0.03, 0.1]],#,[-0.005, 0.007]],#[[-0.001, 0.0011],[-0.001, 0.0011]],
+    ylim=None,
+    error=True,
+    colormap=cmap10(),
+    legend=True,
+    plot_subjects=True,
+    plot_groups=True,
+    figsize=(25, 5),
+    dpi=200,
+    verbose=True)
+
+for r in range(axs2.shape[0]):
+    if len(axs2.shape) > 1:
+        for c in range(axs.shape[1]):
+            axs2[r, c].set_xlabel('Relative to the first spout touch (s)', fontsize=14)
+            axs2[r, c].set_title(axs2[r, c].get_title('center'), fontsize=14)
+
+    else:
+        axs21[r].set_xlabel('Relative to the first spout touch (s)', fontsize=14)
+
+axs2[0, 0].set_ylabel('\u0394F/F', fontsize=14)
 
 # Return a count of overall number of trials
 cont_dataset.metadata_df['keep'].value_counts()
