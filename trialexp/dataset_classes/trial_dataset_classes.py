@@ -275,7 +275,7 @@ class Trials_Dataset():
             idx_filter = np.concatenate(trials_idx[discarded].values)
             self.metadata_df.loc[idx_filter,'keep'] = False
 
-    def filter_lastNsessions(self, n):
+    def filter_lastNsessions(self, n : int):
         """
         Only keep the last n sessions for each animal.
         The five sessions are counted for the sessions with 'keep' == True
