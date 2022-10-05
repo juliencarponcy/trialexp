@@ -354,7 +354,7 @@ df2
 # ```
 # 
 
-# In[20]:
+# In[68]:
 
 
 import heapq
@@ -386,40 +386,75 @@ cont_dataset = exp_cohort.get_photometry_groups(
                  'analog_2_filt', 'analog_1_df_over_f'],
     verbose=False)
 
-# cont_dataset.filterout_conditions([4,5,6]) # Cued only
+cont_dataset.filterout_conditions([50, 52]) # Cued only
 # dlist = pd.date_range(datetime.datetime(2022, 4, 1), datetime.datetime(2022, 9, 18)).tolist()
 # cont_dataset.filterout_dates(dlist)
 
 # Change cont_dataset.metadata_df['keep'] according to 'session_nb' for each 'subject_ID'
 
 
-# In[32]:
+# In[69]:
+
+
+c = (cont_dataset.metadata_df['session_nb']).value_counts()
+c.sort_index()
+
+
+# In[70]:
+
+
+cont_dataset.metadata_df.head()
+
+
+# In[71]:
 
 
 n = 5
 subject_IDs = list(set(cont_dataset.metadata_df['subject_ID']))
 subject_IDs.sort()
 
+
 tf = pd.Series([False] * cont_dataset.metadata_df.shape[0])
 for s in subject_IDs:
-
-    session_nbs = cont_dataset.metadata_df.loc[:, 'session_nb']
+    session_nbs = cont_dataset.metadata_df.loc[:, 'session_nb'].copy() #NOTE copy() is needed
 
     session_nbs.loc[(
         (cont_dataset.metadata_df['subject_ID'] != s)
         | (cont_dataset.metadata_df['keep'] != True)
         )] = -1
 
-    ind = heapq.nlargest(n, range(len(session_nbs)), key=session_nbs.__getitem__)
-    tf.loc[ind] = True # largest n values are set to True
+    largestNs = list(set(session_nbs))
+    largestNs.sort(reverse=True)
+
+    largestNs = largestNs[0:n]
+
+    if -1  in largestNs:
+        largestNs.remove(-1)
+
+    for k in largestNs:
+        tf.loc[session_nbs == k] = True
+
+
+np.count_nonzero(tf)
+
+del session_nbs, s
+
+
+# In[72]:
+
+
 
 cont_dataset.metadata_df.loc[:,'keep'] = False
 cont_dataset.metadata_df.loc[tf,'keep'] = True
 
 
-# In[ ]:
+# In[73]:
 
 
+np.count_nonzero(tf)
+
+
+# In[74]:
 
 
 
