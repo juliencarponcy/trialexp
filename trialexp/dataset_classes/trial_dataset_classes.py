@@ -80,6 +80,7 @@ class Trials_Dataset():
     cond_aliases : list of str
     trial_window : list
         eg [-2000, 6000]
+        The window size relative to trigger for trial-based data fragmentation.  
     time_unit : str
         'ms' | 'milliseconds' | 's' | 'seconds'
 
@@ -278,6 +279,40 @@ class Trials_Dataset():
             idx_filter = np.concatenate(trials_idx[discarded].values)
             self.metadata_df.loc[idx_filter,'keep'] = False
 
+    def filter_lastNsessions(self, n):
+        """
+        Only keep the last n sessions for each animal.
+        The five sessions are counted for the sessions with 'keep' == True
+
+        """
+        subject_IDs = list(set(self.metadata_df['subject_ID']))
+        subject_IDs.sort()
+
+        tf = pd.Series([False] * self.metadata_df.shape[0])
+        for s in subject_IDs:
+            # NOTE copy() is needed
+            session_nbs = self.metadata_df.loc[:, 'session_nb'].copy()
+
+            session_nbs.loc[(
+                (self.metadata_df['subject_ID'] != s)
+                | (self.metadata_df['keep'] != True)
+            )] = -1
+
+            largestNs = list(set(session_nbs))
+            largestNs.sort(reverse=True)
+
+            largestNs = largestNs[0:n]
+
+            if -1 in largestNs:
+                largestNs.remove(-1)
+
+            for k in largestNs:
+                tf.loc[session_nbs == k] = True
+
+
+        self.metadata_df.loc[:,'keep'] = False
+        self.metadata_df.loc[tf,'keep'] = True
+
     def filterout_if_not_in_all_cond(self):
         """
         To remove subjects who do not have
@@ -330,6 +365,8 @@ class Continuous_Dataset(Trials_Dataset):
     set_fs(self, fs: int):
     lineplot(...)
         The main plotting method.
+    heatmap(...)
+        to be implemented
     get_col_names()
     """
     def __init__(self, data: np.ndarray, metadata_df: pd.DataFrame, colnames_dict: dict):
@@ -923,7 +960,29 @@ class Continuous_Dataset(Trials_Dataset):
             timelim: Optional[list] = None):
         ...
 
-
+    def hetamp(self,
+            vars: VarsType = 'all',
+            time_lim: Optional[list] = None,
+            time_unit: str = None,
+            error: str = None, # only for group plot
+            is_x_vs_y: bool = False, # implement here or not?
+            plot_subjects: bool = True,
+            plot_groups: bool = True,
+            ylim: list = None, 
+            colormap: str = 'jet',
+            figsize: tuple = (20, 10),
+            dpi: int = 100,
+            box: bool = False,
+            liney0:bool = True, # draw horizontal gray dashed line at y = 0
+            legend: bool = True,
+            verbose: bool = False):
+        """
+        This function could share most of the comuputation with Continous_Dataset.lineplot()
+        Heatmap representation, rather than line plot, of multiple continuous data, 
+        typically representing individual mice or neurons.
+        """
+        ...
+        # to be implemented
 
 
 class Event_Dataset(Trials_Dataset):
