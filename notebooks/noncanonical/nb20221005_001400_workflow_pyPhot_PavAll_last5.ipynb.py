@@ -341,3 +341,119 @@ cont_dataset.metadata_df['keep'].value_counts()
 
 df2
 
+
+# ## Select the last five trials
+# 
+# Use 
+# 
+# ```python
+# import heapq
+# >>> fr = [8,4,1,1,12]
+# >>> heapq.nlargest(3, xrange(len(fr)), key=fr.__getitem__)
+# [4, 0, 1]
+# ```
+# 
+
+# In[20]:
+
+
+import heapq
+exp_cohort = deepcopy(exp_cohort_copy)  # copy back to recover
+
+
+
+exp_cohort.sessions = [session for session in exp_cohort.sessions
+                       if 
+                       (session.number > 2)
+                       and (session.task_name == 'pavlovian_nobar_nodelay')]
+
+
+cont_dataset = exp_cohort.get_photometry_groups(
+    groups=None,  # or use groups variable defined above
+    conditions_list=condition_list,
+    cond_aliases=cond_aliases,
+    when='all',
+    task_names='pavlovian_nobar_nodelay',  # 'reaching_go_nogo',
+    # align to the first event of a kind e.g. None (meaning CS_Go onset), 'bar_off', 'spout'
+    trig_on_ev=None,
+    high_pass=None,  # analog_1_df_over_f doesn't work with this
+    low_pass=45,
+    median_filt=3,
+    motion_corr=True,
+    df_over_f=True,
+    downsampling_factor=10,
+    export_vars=['analog_1', 'analog_1_filt', 'analog_2',
+                 'analog_2_filt', 'analog_1_df_over_f'],
+    verbose=False)
+
+# cont_dataset.filterout_conditions([4,5,6]) # Cued only
+# dlist = pd.date_range(datetime.datetime(2022, 4, 1), datetime.datetime(2022, 9, 18)).tolist()
+# cont_dataset.filterout_dates(dlist)
+
+# Change cont_dataset.metadata_df['keep'] according to 'session_nb' for each 'subject_ID'
+
+
+# In[32]:
+
+
+n = 5
+subject_IDs = list(set(cont_dataset.metadata_df['subject_ID']))
+subject_IDs.sort()
+
+tf = pd.Series([False] * cont_dataset.metadata_df.shape[0])
+for s in subject_IDs:
+
+    session_nbs = cont_dataset.metadata_df.loc[:, 'session_nb']
+
+    session_nbs.loc[(
+        (cont_dataset.metadata_df['subject_ID'] != s)
+        | (cont_dataset.metadata_df['keep'] != True)
+        )] = -1
+
+    ind = heapq.nlargest(n, range(len(session_nbs)), key=session_nbs.__getitem__)
+    tf.loc[ind] = True # largest n values are set to True
+
+cont_dataset.metadata_df.loc[:,'keep'] = False
+cont_dataset.metadata_df.loc[tf,'keep'] = True
+
+
+# In[ ]:
+
+
+
+
+
+cont_dataset.set_trial_window([tw/1000 for tw in trial_window], 's')
+
+
+fig, axs, df1 = cont_dataset.lineplot(
+    vars=['analog_1_df_over_f'],
+    time_lim=[-2, 2],
+    time_unit='s',
+    # [[-0.1, 0.6]],#[[-0.03, 0.1]],#,[-0.005, 0.007]],#[[-0.001, 0.0011],[-0.001, 0.0011]],
+    ylim=None,
+    error=True,
+    colormap=cmap10(),
+    legend=True,
+    plot_subjects=True,
+    plot_groups=True,
+    figsize=(25, 5),
+    dpi=200,
+    verbose=True)
+
+for r in range(axs.shape[0]):
+    if len(axs.shape) > 1:
+        for c in range(axs.shape[1]):
+            axs[r, c].set_xlabel('Relative to CS onset (s)', fontsize=14)
+            axs[r, c].set_title(axs[r, c].get_title('center'), fontsize=14)
+
+    else:
+        axs[r].set_xlabel('Relative to CS onset (s)', fontsize=14)
+
+axs[0, 0].set_ylabel('\u0394F/F', fontsize=14)
+
+# Return a count of overall number of trials
+cont_dataset.metadata_df['keep'].value_counts()
+
+df1
+
