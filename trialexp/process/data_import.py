@@ -1339,8 +1339,6 @@ class Experiment():
     plot, 
     process_exp_by_trial,
     save
-
-    To know the number of sessions included in an Experiment object, use len(obj.sessions)
             
     """
 
@@ -1361,10 +1359,10 @@ class Experiment():
 
         # Import sessions.
 
-        self.sessions = []
+        self._sessions = []
         try: # Load sessions from saved sessions.pkl file.
             with open(os.path.join(self.path, 'sessions.pkl'),'rb') as sessions_file:
-                self.sessions = pickle.load(sessions_file)
+                self._sessions = pickle.load(sessions_file)
             print('Saved sessions loaded from: sessions.pkl')
             # TODO: precise and refine use of this by_trial attribute
             self.by_trial = True
@@ -1372,7 +1370,7 @@ class Experiment():
             self.by_trial = False
             pass
 
-        old_files = [session.file_name for session in self.sessions]
+        old_files = [session.file_name for session in self._sessions]
         files = os.listdir(self.path)
         new_files = [f for f in files if f[-4:] == '.txt' and f not in old_files]
 
@@ -1382,12 +1380,13 @@ class Experiment():
             self.by_trial = False
             for file_name in new_files:
                 try:
-                    self.sessions.append(Session(os.path.join(self.path, file_name), int_subject_IDs))
+                    self._sessions.append(Session(os.path.join(self.path, file_name), int_subject_IDs))
                 except Exception as error_message:
                     if verbose:
                         print('Unable to import file: ' + file_name)
                         print(error_message)
 
+        self.sessions = self._sessions # force to call the setter
         # Assign session numbers.
 
         # self.subject_IDs = list(set([s.subject_ID for s in self.sessions]))
@@ -1397,41 +1396,48 @@ class Experiment():
 
         # self.sessions.sort(key = lambda s:s.datetime_string + str(s.subject_ID))
         
-        # self.sessions_per_subject = {}
-        # for subject_ID in self.subject_IDs:
-        #     subject_sessions = self.get_sessions(subject_IDs=subject_ID)
-
-        #     for i, session in enumerate(subject_sessions):
-        #         session.number = i+1
-        #         if verbose:
-        #             print('session nb: ', session.number, session.subject_ID, session.datetime_string, session.task_name)
-        #     self.sessions_per_subject[subject_ID] = subject_sessions[-1].number
-
-    @property
-    def subject_IDs(self):
-        return list(set([s.subject_ID for s in self.sessions]))
-
-    @property
-    def n_subjects(self):
-        return len(self.subject_IDs)
-
-    @property
-    def task_names(self):
-        return list(set([s.task_name for s in self.sessions]))
-
-    @property
-    def sessions_per_subject(self):
-        sessions_per_subject_ = {}
+        self.sessions_per_subject = {}
         for subject_ID in self.subject_IDs:
             subject_sessions = self.get_sessions(subject_IDs=subject_ID)
 
             for i, session in enumerate(subject_sessions):
                 session.number = i+1
-                # if verbose:
-                #    print('session nb: ', session.number, session.subject_ID, session.datetime_string, session.task_name)
-            sessions_per_subject_[subject_ID] = subject_sessions[-1].number
+                if verbose:
+                    print('session nb: ', session.number, session.subject_ID, session.datetime_string, session.task_name)
+            self.sessions_per_subject[subject_ID] = subject_sessions[-1].number
 
-        return sessions_per_subject_
+    @property
+    def sessions(self):    
+        return self._sessions
+
+    @sessions.setter
+    def sessions(self,value):
+        self.subject_IDs = list(set([s.subject_ID for s in value]))
+        self.n_subjects = len(self.subject_IDs)
+
+        self.task_names = list(set([s.task_name for s in value]))
+
+        value.sort(key = lambda s:s.datetime_string + str(s.subject_ID))
+        
+        # self.sessions_per_subject = {}
+        # for subject_ID in self.subject_IDs:
+        #     subject_sessions = self.get_sessions(subject_IDs=subject_ID)
+
+        #     for i, session in enumerate(subject_sessions):
+        #         session.number = i+1 #TODO this will update session.number when Experiment.sessions is edited. Ideally this should be only done in __init__
+        #         # if verbose:
+        #         #    print('session nb: ', session.number, session.subject_ID, session.datetime_string, session.task_name)
+        #     self.sessions_per_subject[subject_ID] = subject_sessions[-1].number       
+        self._sessions = value
+    
+    @sessions.deleter
+    def sessions(self):
+        self.subject_IDs = []
+        self.n_subjects = None
+        self.task_names = []
+        self.sessions_per_subject = {}
+        del self._sessions
+
 
     def save(self):
         '''Save all sessions as .pkl file. Speeds up subsequent instantiation of 
@@ -1522,11 +1528,18 @@ class Experiment():
         ARGUMENTS
         ---------
         self
-        trial_window: list,                eg [-2000, 6000]
-        timelim: list,                     eg [0 2000]
-        tasksfile: str                     full filepath of tasks_params.csv in this repo
-        blank_spurious_event: list = None, #TODO what's this?
+        trial_window: list,                
+            eg [-2000, 6000]
+            Time window as to trigger for trial-based fragmentationof data.
+        timelim: list,                     
+            eg [0 2000]
+            Time window for determining success
+        tasksfile: str                     
+            full filepath of tasks_params.csv in this repo
+        blank_spurious_event: list = None, 
+            Name(s) of event as to which spurious events will be discared within blank_timelim
         blank_timelim: list = [0, 60],     reflecting v.spout_detect_timeout
+            Set time window to discard spurious events around blank_spurious_event
         verbose = False
 
         create emtpy list to store idx of sessions without trials,
