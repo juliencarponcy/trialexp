@@ -1697,8 +1697,10 @@ class Experiment():
                             
                             events_aggreg = pd.concat([events_aggreg,df_ev_cond])
 
-                        events_aggreg['datetime'] = pd.Series([session.datetime] * events_aggreg.shape[0], index = events_aggreg.index)
-                        events_aggreg['datetime_string'] = pd.Series([session.datetime_string] * events_aggreg.shape[0], index =  events_aggreg.index)                     
+                        events_aggreg['datetime'] = pd.Series([session.datetime] * events_aggreg.shape[0], 
+                            index = events_aggreg.index, dtype='datetime64[ns]')
+                        events_aggreg['datetime_string'] = pd.Series([session.datetime_string] * events_aggreg.shape[0],
+                             index =  events_aggreg.index, dtype='datetime64[ns]')                     
 
                         idx_all_cond = np.concatenate([idx_all_cond, idx_joint])
                         trials_times_all_cond = np.concatenate([trials_times_all_cond, trials_times])
@@ -1730,7 +1732,14 @@ class Experiment():
                     # consider implementing session_nb metadata in Session methods
 
                     df_events_exp = pd.concat([df_events_exp, events_aggreg], ignore_index = True)
-                    df_conditions_exp = pd.concat([df_conditions_exp, df_conditions], ignore_index = True)
+
+                    # if not df_conditions_exp.empty:
+                    #    df_conditions_exp.astype({df_conditions_exp.columns[x]:bool for x in range(2,12)})
+                    df_conditions_exp = pd.concat([df_conditions_exp, df_conditions], ignore_index = True) #TODO
+                    # FutureWarning: In a future version, object-dtype columns with all-bool values will not be 
+                    # included in reductions with bool_only=True. Explicitly cast to bool dtype instead.
+                    # https://stackoverflow.com/questions/73800841/add-series-as-a-new-row-into-dataframe-triggers-futurewarning
+                    # https://stackoverflow.com/questions/71465386/why-pd-concat-of-two-dataframe-leads-to-futurewarning-behavior-when-concatena
         
         df_conditions_exp['condition_ID'] = df_conditions_exp['condition_ID'].astype(int)         
         ev_dataset = Event_Dataset(df_events_exp, df_conditions_exp)
