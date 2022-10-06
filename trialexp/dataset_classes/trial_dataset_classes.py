@@ -1128,39 +1128,81 @@ class Event_Dataset(Trials_Dataset):
         else:
             return grouped_df
 
-    def analyse_successrate(self, subject_IDs: list = None, 
+    def analyse_successrate(self, 
+        conditions_succcess: list,
+        conditions_failure : list,
+        subject_IDs: list = None, 
         group_IDs : list = None, 
         bywhat: str = 'session', 
         conditions: dict = None,
         conditions_bool: str = 'all',
         ax = None):
         """
+        - susscess is alreday computed by Experiment.compute_success
+            but you still need to specify conditions from conditions_list
+        - failure, on the other hand, is less clear
 
+        conditions_succcess : list
+            list of integers
+                eg. [0]
+                To specify conditions for success from self.conditions and self.cond_aliases
+                The index starts from 0.
+            or (list or Series of bool)
+                To directly specifiy which trials to be considered success.
+                The length must match the height of the self.metadata_df.
+        conditions_failure : list
+            (list of integers) 
+                eg. [1]
+                To specify conditions for success from self.conditions and self.cond_aliases
+                The index starts from 0.
+            or (list or Series of bool)
+                To directly specifiy which trials to be considered success.
+                The length must match the height of the self.metadata_df.
         subject_IDs: list = None
         group_IDs : list = None
         bywhat : str
             'session', 'days', 'days_with_gaps', 'dates'
-
-        #TODO Rather, just to use 'keep' == True might be more flexible???
-        #TODO Is ther any rational to include 'keep' == False for successrate???
-        #TODO Use a switch like 'keeponly : bool'?
-        conditions: dict = None,                 
-            keys and values for metadata_df
-            Should be considered separately from self.conditions
-            eg {'Cued': True}
-            #TODO how about multiple columns? OR or AND?
-        conditions_bool: str = 'all',
-            'all' or 'any' for conditions
-        #TODO
         ax: matplotlib.axes.Axes = None
-
+        #TODO need to use 'keep'???
 
         #TODO Turned out this is useless in case of Go/NoGo or Cued/Uncued
         where you need to count trials in separate groups
 
         """
+     
 
-        def get_gr_df(self, group_IDs, subject_IDs, conditions, conditions_bool):
+        def get_gr_df(self, conditions_succcess, conditions_failure, group_IDs, subject_IDs):
+
+           # parse conditions_succcess and conditions_failure
+            if type(conditions_succcess) is list:
+                if all([type(c) is int for c in conditions_succcess]):
+                    is_cond_success_int = True
+                elif all([type(c) is bool for c in conditions_succcess]):
+                    assert len(conditions_succcess) == self.metadata_df.shape[0]
+                    is_cond_success_int = False
+                    conditions_succcess = pd.Series(conditions_succcess)
+                else:
+                    raise Exception('conditions_succcess is invalid')
+            elif type(conditions_succcess) is pd.core.series.Series:
+                is_cond_success_int = False
+            else:
+                raise Exception('conditions_succcess is invalid')
+
+            if type(conditions_failure) is list:
+                if all([type(c) is int for c in conditions_failure]):
+                    is_cond_failure_int = True
+                elif all([type(c) is bool for c in conditions_failure]):
+                    assert len(
+                        conditions_failure) == self.metadata_df.shape[0]
+                    is_cond_failure_int = False
+                    conditions_failure = pd.Series(conditions_failure)
+                else:
+                    raise Exception('conditions_failure is invalid')
+            elif type(conditions_failure) is pd.core.series.Series:
+                is_cond_failure_int = False
+            else:
+                raise Exception('conditions_failure is invalid')
+
 
             metadata_df = self.metadata_df.loc[self.metadata_df['keep'] 
                 & self.metadata_df['valid'], :].copy()
@@ -1183,54 +1225,50 @@ class Event_Dataset(Trials_Dataset):
                         'session_nb'])).copy()
 
                     ss_sc = [np.NaN] * len(session_nbs)
+                    ss_fl = [np.NaN] * len(session_nbs)
                     ss_tn = [np.NaN] * len(session_nbs)
                     ss_sr = [np.NaN] * len(session_nbs)
-                    ss_dt = [None] * len(session_nbs)
+                    ss_dt = [None] * len(session_nbs) # import datetime; datetime.time()
 
                     for ss_idx, ss in enumerate(session_nbs):
-                        if conditions is None:
-                            TF = (metadata_df['group_ID'] == g)  & (metadata_df['subject_ID'] == s) \
-                                & (metadata_df['session_nb'] == ss)
-                            ss_sc[ss_idx] = np.count_nonzero(metadata_df.loc[
-                                TF, 'success'])
-
-                            ss_tn[ss_idx] = len(metadata_df.loc[
-                                TF, 'success'])
-
-                            dt = (metadata_df.loc[TF, 'datetime']).copy()
-                            if not dt.empty:
-                                ss_dt[ss_idx] = dt.iloc[0]
+                        if is_cond_success_int:
+                            tf1 = pd.concat([metadata_df['condition_ID'] == c 
+                                for c in conditions_succcess], axis=1).any(axis=1)
                         else:
+                            tf1 = conditions_succcess
+                        TF_success = (metadata_df['group_ID'] == g) & (metadata_df['subject_ID'] == s) \
+                            & (metadata_df['session_nb'] == ss) \
+                            & (tf1)
 
-                            tf_list = [metadata_df[list(conditions)[0]] == list(
-                                conditions.values())[0] for k in range(0,len(conditions))]
+                        ss_sc[ss_idx] = np.count_nonzero(metadata_df.loc[
+                            TF_success, 'success'])
 
-                            tf = pd.concat(tf_list, axis=1)
+                        if is_cond_failure_int:
+                            tf2 = pd.concat([metadata_df['condition_ID'] == c
+                                             for c in conditions_failure], axis=1).any(axis=1)
+                        else:
+                            tf2 = conditions_failure
+                        TF_failure = (metadata_df['group_ID'] == g) & (metadata_df['subject_ID'] == s) \
+                            & (metadata_df['session_nb'] == ss) \
+                            & (tf2)
 
-                            if conditions_bool == 'all':
-                                tf = tf.all(axis=1)
-                            elif conditions_bool == 'any':
-                                tf = tf.any(axis=1)
+                        ss_fl[ss_idx] = np.count_nonzero(~metadata_df.loc[
+                            TF_failure, 'success'])
 
-                            TF = (metadata_df['group_ID'] == g) & (metadata_df['subject_ID'] == s) \
-                                & (metadata_df['session_nb'] == ss & (tf))
-                            ss_sc[ss_idx] = np.count_nonzero(metadata_df.loc[
-                                TF, 'success'])
+                        ss_tn[ss_idx] = ss_sc[ss_idx] + ss_fl[ss_idx]
 
-                            ss_tn[ss_idx] = len(metadata_df.loc[
-                                TF, 'success'])
-
-                            dt = (metadata_df.loc[TF, 'datetime'].copy()) #TODO do this for 'date' as well
-                            if not dt.empty:
-                                ss_dt[ss_idx] = dt.iloc[0]                           
+                        dt = (metadata_df.loc[(TF_success) | (TF_failure), 'datetime']).copy()
+                        if not dt.empty:
+                            ss_dt[ss_idx] = dt.iloc[0]
+                      
                     np.seterr(divide='ignore', invalid='ignore')
                     # https://stackoverflow.com/questions/14861891/runtimewarning-invalid-value-encountered-in-divide
                     ss_sr = (np.array(ss_sc)/np.array(ss_tn)).tolist()
 
-                    ss_df = pd.DataFrame(list(zip(session_nbs, ss_sc, ss_tn, ss_sr, ss_dt)))
-                    ss_df.columns = ['session_nb', 'success_n', 'trial_n', 'success_rate', 'datetime']
+                    ss_df = pd.DataFrame(list(zip(session_nbs, ss_sc, ss_fl, ss_tn, ss_sr, ss_dt)))
+                    ss_df.columns = ['session_nb', 'success_n', 'failure_n','trial_n', 'success_rate', 'datetime']
 
-                    ss_df.astype({'session_nb': 'int', 'success_n': 'int', 'trial_n': 'int'})
+                    ss_df.astype({'session_nb': 'int', 'success_n': 'int', 'failure_n': 'int', 'trial_n': 'int'})
 
                     ss_df['subject_ID'] = pd.Series([s] * len(session_nbs))
 
@@ -1326,7 +1364,8 @@ class Event_Dataset(Trials_Dataset):
 
             return out_list
 
-        gr_df = get_gr_df(self, group_IDs, subject_IDs, conditions, conditions_bool)
+        gr_df = get_gr_df(self, conditions_succcess, conditions_failure,
+                        group_IDs, subject_IDs)
 
         out_list = get_list_df_success_rate(
             gr_df, bywhat, group_IDs, subject_IDs)
