@@ -9,7 +9,7 @@
 
 # ### Imports
 
-# In[2]:
+# In[1]:
 
 
 # Import Session and Experiment class with helper functions
@@ -22,7 +22,7 @@ from trialexp.process.data_import import *
 
 # ### Variables
 
-# In[3]:
+# In[2]:
 
 
 import pandas as pd
@@ -54,7 +54,7 @@ video_dir = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\videos'
 # - A tasks definition file (.csv) contains all the information to perform the extractions of behaviorally relevant information from **PyControl** files, for each **task** file. It includes what are the **triggers** of different trial types, what **events** to extract (with time data), and what are events or printed lines that could be relevant to determine the **conditions** (e.g: free reward, optogenetic stimulation type, etc.)
 # - To analyze a new task you need to append task characteristics like **task** filename, **triggers**, **events** and **conditions**
 
-# In[4]:
+# In[3]:
 
 
 tasks = pd.read_csv(tasksfile, usecols = [1,2,3,4], index_col = False)
@@ -65,7 +65,7 @@ tasks
 # 
 # 1m 7s
 
-# In[5]:
+# In[4]:
 
 
 photo_root_dir = 'T:\\Data\\head-fixed\\pyphotometry\\data'
@@ -83,7 +83,7 @@ copy_files_to_horizontal_folders(
 # 
 # This will include all the pycontrol files present in the folder_path directory (do not include subdirectories)
 
-# In[6]:
+# In[5]:
 
 
 # Folder of a full experimental batch, all animals included
@@ -105,7 +105,7 @@ exp_cohort.by_trial = True
 
 # ## retain only pavlovian sessions
 
-# In[7]:
+# In[6]:
 
 
 exp_cohort.sessions = exp_cohort.get_sessions(task_names='reaching_go_spout_cued_uncued')
@@ -117,7 +117,7 @@ len(exp_cohort.sessions )
 # 
 # 3m 7.6s
 
-# In[8]:
+# In[7]:
 
 
 # Process the whole experimental folder by trials
@@ -128,13 +128,13 @@ exp_cohort.process_exp_by_trial(trial_window, timelim, tasksfile,
 # exp_cohort.save()
 
 
-# In[9]:
+# In[8]:
 
 
 len(exp_cohort.sessions)
 
 
-# In[10]:
+# In[9]:
 
 
 exp_cohort.sessions[1].df_events.head(50)
@@ -144,7 +144,7 @@ exp_cohort.sessions[1].df_events.head(50)
 
 # #### Cued/Uncued
 
-# In[11]:
+# In[10]:
 
 
 # List of uncued conditions as listed on the tasks .csv file for task reaching_go_spout_cued_uncued:
@@ -189,7 +189,7 @@ groups = None
 trial_window = [-2000, 6000]
 
 
-# In[12]:
+# In[11]:
 
 
 exp_cohort.sessions
@@ -197,7 +197,7 @@ exp_cohort.sessions
 
 # Behaviour: Create a dataset
 
-# In[13]:
+# In[12]:
 
 
 ev_dataset = exp_cohort.behav_events_to_dataset(
@@ -214,7 +214,7 @@ ev_dataset.set_conditions(conditions=condition_list, aliases=cond_aliases)
 
 # Behaviour: Compute distribution
 
-# In[14]:
+# In[13]:
 
 
 dist_as_continuous = ev_dataset.compute_distribution(
@@ -236,7 +236,7 @@ dist_as_continuous.filterout_subjects([0,1])
 # - At anytime, <trial_dataset>.filter_reset() can be called to re-include all the elements in the analysis (set all "keep" to True)
 # - Comment or uncomment lines and fill the lists according to your needs
 
-# In[15]:
+# In[14]:
 
 
 # # Get a list of the groups
@@ -270,7 +270,7 @@ dist_as_continuous.filterout_subjects([0,1])
 
 # Indicative preview of the behavioural metadata
 
-# In[16]:
+# In[15]:
 
 
 dist_as_continuous.metadata_df.head(50)
@@ -281,7 +281,7 @@ dist_as_continuous.metadata_df.head(50)
 # #TODO what is T = 0?
 # How to plot differently? Or not necessary?
 
-# In[17]:
+# In[16]:
 
 
 
@@ -310,7 +310,7 @@ dist_as_continuous.metadata_df['keep'].value_counts()
 
 # ## For presentation
 
-# In[18]:
+# In[17]:
 
 
 dist_as_continuous = ev_dataset.compute_distribution(
@@ -326,7 +326,7 @@ dist_as_continuous.filterout_subjects([0,1])
 dist_as_continuous.filterout_conditions([1, 2, 4, 5, 6])
 
 
-# In[19]:
+# In[18]:
 
 
 
@@ -368,8 +368,9 @@ print(df1)
 # 
 # ## Sessions
 # 
+# - #TODO Session Number needs to be recalcuated for Cued/Uncued task only, excluding Pavlovian
 
-# In[30]:
+# In[21]:
 
 
 
@@ -398,6 +399,8 @@ print(gr_df1)
 print(out_list1)
 
 ax1.set_title('Cued')
+ax1.set_xlabel('')
+ax1.xaxis.set_ticklabels([])
 
 
 gr_df2, out_list2, _, _ = ev_dataset1.analyse_successrate([4],[5,6],
@@ -411,104 +414,147 @@ ax2.set_title('Uncued')
 
 
 # ## Days
+# 
+# - xlim needs to be matched between plots
 
-# In[ ]:
+# In[30]:
 
 
-gr_df, out_list, _, _ = ev_dataset.analyse_successrate(bywhat='days')
 
-print(gr_df)
+from matplotlib.pyplot import subplots
 
-print(out_list)
+
+ev_dataset1 = exp_cohort.behav_events_to_dataset(
+    groups=groups,
+    conditions_list=condition_list,
+    cond_aliases=cond_aliases,
+    when='all',
+    task_names='reaching_go_spout_cued_uncued',
+    trig_on_ev=None)
+
+ev_dataset1.set_trial_window(trial_window=trial_window, unit='milliseconds')
+ev_dataset1.set_conditions(conditions=condition_list, aliases=cond_aliases)
+
+plt.ion()
+fig, (ax1, ax2) = subplots(2,1)
+
+
+gr_df1, out_list1, _, _ = ev_dataset1.analyse_successrate([0], [1,2,3], bywhat='days', ax=ax1)
+
+print(gr_df1)
+
+print(out_list1)
+
+ax1.set_title('Cued')
+ax1.set_xlabel('')
+ax1.xaxis.set_ticklabels([])
+
+gr_df2, out_list2, _, _ = ev_dataset1.analyse_successrate([4],[5,6],
+    bywhat='days', ax=ax2)
+
+print(gr_df2)
+
+print(out_list2)
+
+ax2.set_title('Uncued')
+
+xlim1 = ax1.get_xlim()
+xlim2 = ax2.get_xlim()
+
+if max(xlim1) > max(xlim2):
+    ax2.set_xlim(xlim1)
+else:
+    ax1.set_xlim(xlim2)
+
 
 
 # ## Days with gaps
 
-# In[ ]:
+# In[28]:
 
 
-gr_df, out_list, _, _ = ev_dataset.analyse_successrate(bywhat='days_with_gaps')
 
-print(gr_df)
+from matplotlib.pyplot import subplots
 
-print(out_list)
+
+ev_dataset1 = exp_cohort.behav_events_to_dataset(
+    groups=groups,
+    conditions_list=condition_list,
+    cond_aliases=cond_aliases,
+    when='all',
+    task_names='reaching_go_spout_cued_uncued',
+    trig_on_ev=None)
+
+ev_dataset1.set_trial_window(trial_window=trial_window, unit='milliseconds')
+ev_dataset1.set_conditions(conditions=condition_list, aliases=cond_aliases)
+
+plt.ion()
+fig, (ax1, ax2) = subplots(2,1)
+
+
+gr_df1, out_list1, _, _ = ev_dataset1.analyse_successrate(
+    [0], [1, 2, 3], bywhat='days_with_gaps', ax=ax1)
+
+print(gr_df1)
+
+print(out_list1)
+
+ax1.set_title('Cued')
+ax1.set_xlabel('')
+ax1.xaxis.set_ticklabels([])
+
+
+gr_df2, out_list2, _, _ = ev_dataset1.analyse_successrate([4],[5,6],
+    bywhat='days_with_gaps', ax=ax2)
+
+print(gr_df2)
+
+print(out_list2)
+
+ax2.set_title('Uncued')
 
 
 # ## Dates
 
-# In[ ]:
-
-
-gr_df, out_list, _, _ = ev_dataset.analyse_successrate(bywhat='dates')
-
-print(gr_df)
-
-print(out_list)
-
-
-# In[ ]:
-
-
-gr_df, out_list, ax, im1  = ev_dataset.analyse_successrate(bywhat='sessions',
-    conditions={'cued':True})
-
-ax.set_title('Cued')
-
-plt.colorbar(im1, shrink=0.4)
-
-
-# In[ ]:
+# In[29]:
 
 
 
-gr_df, out_list, ax, im1  = ev_dataset.analyse_successrate(bywhat='sessions',
-    conditions={'cued':False})
-
-ax.set_title('Uncued')
-
-plt.colorbar(im1, shrink=0.4)
+from matplotlib.pyplot import subplots
 
 
-# In[ ]:
+ev_dataset1 = exp_cohort.behav_events_to_dataset(
+    groups=groups,
+    conditions_list=condition_list,
+    cond_aliases=cond_aliases,
+    when='all',
+    task_names='reaching_go_spout_cued_uncued',
+    trig_on_ev=None)
+
+ev_dataset1.set_trial_window(trial_window=trial_window, unit='milliseconds')
+ev_dataset1.set_conditions(conditions=condition_list, aliases=cond_aliases)
+
+plt.ion()
+fig, (ax1, ax2) = subplots(2,1)
 
 
-gr_df, out_list, ax, im1 = ev_dataset.analyse_successrate(bywhat='days',
-                                                          conditions={'cued': False})
+gr_df1, out_list1, _, _ = ev_dataset1.analyse_successrate([0], [1,2,3], bywhat='dates', ax=ax1)
 
-ax.set_title('Uncued')
+print(gr_df1)
 
-plt.colorbar(im1, shrink=0.4)
+print(out_list1)
 
-
-# In[ ]:
-
-
-gr_df, out_list, ax, im1 = ev_dataset.analyse_successrate(bywhat='days',
-                                                          conditions={'cued': True})
-
-ax.set_title('Cued')
-
-plt.colorbar(im1, shrink=0.4)
+ax1.set_title('Cued')
+ax1.set_xlabel('')
+ax1.xaxis.set_ticklabels([])
 
 
-# In[ ]:
+gr_df2, out_list2, _, _ = ev_dataset1.analyse_successrate([4],[5,6],
+    bywhat='dates', ax=ax2)
 
+print(gr_df2)
 
-mdf = ev_dataset.metadata_df
+print(out_list2)
 
-
-# In[ ]:
-
-
-np.count_nonzero((mdf['group_ID'] == 0) & (
-    mdf['subject_ID'] == 47) & (mdf['success'])  & (mdf['cued'] == True))
-
-
-# In[ ]:
-
-
-get_ipython().run_line_magic('load_ext', 'autoreload')
-get_ipython().run_line_magic('autoreload', '2')
-
-from trial_dataset_classes import *
+ax2.set_title('Uncued')
 
