@@ -474,6 +474,10 @@ class Session():
             else:
                 self.df_conditions.loc[(self.df_events.timestamp > block_lim),'cued'] = True
                 self.df_conditions.loc[(self.df_events.timestamp < block_lim),'cued'] = False
+            self.df_conditions['cued'] = self.df_conditions['cued'].astype('bool') 
+            # to avoid FurureWarning
+            # FutureWarning: In a future version, object-dtype columns with all-bool values will not be 
+            # included in reductions with bool_only=True. Explicitly cast to bool dtype instead.
 
             # change triggers name for this task to cued and uncued
             self.triggers = ['cued', 'uncued']
@@ -1733,8 +1737,14 @@ class Experiment():
 
                     df_events_exp = pd.concat([df_events_exp, events_aggreg], ignore_index = True)
 
-                    # if not df_conditions_exp.empty:
-                    #    df_conditions_exp.astype({df_conditions_exp.columns[x]:bool for x in range(2,12)})
+                    # workaround for FutureWarning
+                    l1 = [all([type(r) is bool for r in df_conditions[c]]) for c in df_conditions.columns]
+                    l2 = [df_conditions[c].dtype is not np.dtype('bool') for c in df_conditions.columns]
+                    l3 = [a and b for a, b in zip(l1, l2)]
+                    for c, d in zip(l3, df_conditions.columns):
+                        if c:
+                            df_conditions[d] = df_conditions[d].astype('bool')
+
                     df_conditions_exp = pd.concat([df_conditions_exp, df_conditions], ignore_index = True) #TODO
                     # FutureWarning: In a future version, object-dtype columns with all-bool values will not be 
                     # included in reductions with bool_only=True. Explicitly cast to bool dtype instead.
