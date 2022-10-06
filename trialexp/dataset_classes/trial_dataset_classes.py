@@ -1138,15 +1138,20 @@ class Event_Dataset(Trials_Dataset):
 
         subject_IDs: list = None
         group_IDs : list = None
-        btwhat : str
+        bywhat : str
             'session', 'days', 'days_with_gaps', 'dates'
-        conditions: dict = None,
+
+        #TODO Rather, just to use 'keep' == True might be more flexible???
+        #TODO Is ther any rational to include 'keep' == False for successrate???
+        #TODO Use a switch like 'keeponly : bool'?
+        conditions: dict = None,                 
             keys and values for metadata_df
             Should be considered separately from self.conditions
             eg {'Cued': True}
             #TODO how about multiple columns? OR or AND?
         conditions_bool: str = 'all',
             'all' or 'any' for conditions
+        #TODO
         ax: matplotlib.axes.Axes = None
 
 
