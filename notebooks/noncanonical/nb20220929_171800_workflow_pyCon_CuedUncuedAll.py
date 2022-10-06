@@ -144,7 +144,7 @@ exp_cohort.sessions[1].df_events.head(50)
 
 # #### Cued/Uncued
 
-# In[13]:
+# In[10]:
 
 
 # List of uncued conditions as listed on the tasks .csv file for task reaching_go_spout_cued_uncued:
@@ -189,7 +189,7 @@ groups = None
 trial_window = [-2000, 6000]
 
 
-# In[14]:
+# In[11]:
 
 
 exp_cohort.sessions
@@ -197,7 +197,7 @@ exp_cohort.sessions
 
 # Behaviour: Create a dataset
 
-# In[15]:
+# In[12]:
 
 
 ev_dataset = exp_cohort.behav_events_to_dataset(
@@ -214,7 +214,7 @@ ev_dataset.set_conditions(conditions=condition_list, aliases=cond_aliases)
 
 # Behaviour: Compute distribution
 
-# In[16]:
+# In[13]:
 
 
 dist_as_continuous = ev_dataset.compute_distribution(
@@ -236,7 +236,7 @@ dist_as_continuous.filterout_subjects([0,1])
 # - At anytime, <trial_dataset>.filter_reset() can be called to re-include all the elements in the analysis (set all "keep" to True)
 # - Comment or uncomment lines and fill the lists according to your needs
 
-# In[17]:
+# In[14]:
 
 
 # # Get a list of the groups
@@ -270,7 +270,7 @@ dist_as_continuous.filterout_subjects([0,1])
 
 # Indicative preview of the behavioural metadata
 
-# In[18]:
+# In[15]:
 
 
 dist_as_continuous.metadata_df.head(50)
@@ -281,7 +281,7 @@ dist_as_continuous.metadata_df.head(50)
 # #TODO what is T = 0?
 # How to plot differently? Or not necessary?
 
-# In[19]:
+# In[16]:
 
 
 import trialexp.utils.pycontrol_utilities as pycutl
@@ -332,14 +332,22 @@ dist_as_continuous.metadata_df['keep'].value_counts()
 # Confusingly this is different from the `conditions` used above which is the list of all the conditions you're interested.
 # 
 # Here you can specify it as logical OR of multiple conditions, but if `conditions` are not thorough, this won't work. 
+# 
+# ----
+# 
+# `out_list`s index is starting from 10 and increases, but at the bottom there are **very strange session numbers!**
 
 # In[27]:
 
 
-ev_dataset.analyse_successrate(bywhat='sessions')
+gr_df, out_list, _, _ = ev_dataset.analyse_successrate(bywhat='sessions')
+
+print(gr_df)
+
+print(out_list)
 
 
-# In[45]:
+# In[ ]:
 
 
 gr_df, out_list, ax, im1  = ev_dataset.analyse_successrate(bywhat='sessions',
@@ -350,7 +358,7 @@ ax.set_title('Cued')
 plt.colorbar(im1, shrink=0.4)
 
 
-# In[44]:
+# In[ ]:
 
 
 
@@ -373,7 +381,7 @@ ax.set_title('Uncued')
 plt.colorbar(im1, shrink=0.4)
 
 
-# In[57]:
+# In[ ]:
 
 
 gr_df, out_list, ax, im1 = ev_dataset.analyse_successrate(bywhat='days',
@@ -384,192 +392,24 @@ ax.set_title('Cued')
 plt.colorbar(im1, shrink=0.4)
 
 
-# In[58]:
+# In[ ]:
 
 
 mdf = ev_dataset.metadata_df
 
 
-# In[61]:
+# In[ ]:
 
 
 np.count_nonzero((mdf['group_ID'] == 0) & (
     mdf['subject_ID'] == 47) & (mdf['success'])  & (mdf['cued'] == True))
 
 
-# ### Set DeepLabCut bodyparts to compute paws centroids
-
-# In[158]:
-
-
-# Name of the labelled body parts from both upper limbs
-# The bodyparts from which we draw here are user-defined
-# when creating a new DeepLabCut project (config.yaml)
-
-L_paw_parts  = ['MCP II', 'MCP III', 'MCP IV', 'MCP V', 'IP II', 'IP III',     'IP IV', 'IP V', 'tip II', 'tip III', 'tip IV', 'tip V'] 
-
-R_paw_parts = ['r MCP II', 'r MCP III', 'r MCP IV', 'r MCP V', 'r IP II',     'r IP III', 'r IP IV', 'r IP V', 'r tip II', 'r tip III', 'r tip IV', 'r tip V']
-
-names_of_ave_regions = ['Left_paw','Right_paw']
-
-
-# ### Extract DeepLabCut trials and create a Continuous_Dataset
-
 # In[ ]:
-
-
-cont_dataset = exp_cohort.get_deeplabcut_groups(
-        groups = None,
-        conditions_list = condition_list,
-        cond_aliases = cond_aliases,
-        when='all', 
-        task_names = ['reaching_go_nogo'],
-        bodyparts_to_ave = [L_paw_parts, R_paw_parts],
-        names_of_ave_regions = ['Left_paw','Right_paw'], 
-        bodyparts_to_store = ['spout', 'jaw', 'ear', 'tongue', 'tip III',  'IP III', 'MCP III'],
-        normalize_between = ['Left_paw', 'spout'],
-        bins_nb = 100,
-        three_dims = False, 
-        p_thresh = 0.9,
-        camera_fps = 100, # not yet functional
-        camera_keyword = 'Side', 
-        trig_on_ev = None, 
-        verbose = True)
-
-
-# ### Save DLC Dataset
-
-# In[338]:
-
-
-folder_path = r'C:\Users\phar0732\Documents\GitHub\pycontrol_share\outputs'
-
-cont_dataset.save(folder_path, 'DLC_dataset_gonogo')
-
-
-# ### Reload a pre-existing dataset
-
-# In[110]:
-
-
-dataset_full_path = r'C:\Users\phar0732\Documents\GitHub\pycontrol_share\outputs\DLC_dataset_opto_continuous_full.pkl'
-cont_dataset = load_dataset(dataset_full_path)
-
-
-# In[111]:
-
-
-cont_dataset.metadata_df
-
-
-# ### Optional methods
-
-# In[374]:
-
-
-# Get a list of the groups
-cont_dataset.get_groups()
-# Get a list of the variables
-cont_dataset.get_col_names()
-
-# reset previous filtering of the dataset
-cont_dataset.filter_reset()
-
-# exclude some conditions by IDs
-cont_dataset.filter_conditions([])
-
-# exclude some groups by IDs
-cont_dataset.filter_groups([])
-
-# exclude some subjects
-cont_dataset.filter_subjects([0, 1,289,299,305,306])
-#     subjects_IDs_to_exclude = [289, 290, 293, 294, 295, 299, 301, 303, 304, 305, 306])
-
-# filter subjects/sessions with less than x trials (by condition)
-cont_dataset.filter_min(min_trials = 10)
-
-# To remove subjects who do not have
-# trials in all the conditions
-# cont_dataset.filter_if_not_in_all_cond()
-
-# method to build (not finished)
-# cont_dataset.set_groups()
-
-
-# In[375]:
 
 
 get_ipython().run_line_magic('load_ext', 'autoreload')
 get_ipython().run_line_magic('autoreload', '2')
 
 from trial_dataset_classes import *
-
-
-# In[378]:
-
-
-### Plot the photometry by condition
-cont_dataset.set_trial_window([-2, 6], 's')
-cont_dataset.set_conditions(condition_list, cond_aliases)
-cont_dataset.lineplot(
-    vars = ['Left_paw_x'],
-    time_lim = [-2000, 6000],
-    time_unit = 'milliseconds',
-    error = True,
-    ylim = [[-0.05, 0.8]], #[[-0.1, 1]],#,[-0.005, 0.007]],#[[-0.001, 0.0011],[-0.001, 0.0011]],
-    colormap = 'jet',
-    legend = True,
-    plot_subjects = False,
-    plot_groups = True,
-    figsize = (5,5),
-    dpi = 100,
-    verbose = False)
-
-# Return a count of overall number of trials
-cont_dataset.metadata_df['keep'].value_counts()
-
-
-# In[ ]:
-
-
-get_ipython().run_line_magic('load_ext', 'autoreload')
-get_ipython().run_line_magic('autoreload', '2')
-cont_dataset.set_groups(groups)
-
-
-# In[276]:
-
-
-cont_dataset.metadata_df.keep[cont_dataset.metadata_df.subject_ID == 307].value_counts()
-
-
-# In[177]:
-
-
-for row in cont_dataset.metadata_df.itertuples():
-    print(row.group_ID)
-
-
-# In[171]:
-
-
-row
-
-
-# In[172]:
-
-
-row.subject_ID
-
-
-# In[62]:
-
-
-cont_dataset.data
-
-
-# In[ ]:
-
-
-
 
