@@ -202,7 +202,7 @@ trial_window = [-2000, 4000]  # TODO
 # - **Need to combine this analysis with pyControl analysis**
 # 
 
-# In[10]:
+# In[11]:
 
 
 
@@ -256,8 +256,8 @@ fig, axs, df1 = cont_dataset.lineplot(
 for r in range(axs.shape[0]):
     if len(axs.shape) > 1:
         for c in range(axs.shape[1]):
-            axs1[r, c].set_xlabel('Relative to CS onset (s)', fontsize=14)
-            axs1[r, c].set_title(axs[r, c].get_title('center'), fontsize=14)
+            axs[r, c].set_xlabel('Relative to CS onset (s)', fontsize=14)
+            axs[r, c].set_title(axs[r, c].get_title('center'), fontsize=14)
 
     else:
         axs[r].set_xlabel('Relative to CS onset (s)', fontsize=14)
@@ -275,7 +275,7 @@ df1
 # - **Why can I plot Miss against spout touch?**
 # - What spout are we talking about?
 
-# In[ ]:
+# In[12]:
 
 
 
@@ -356,7 +356,7 @@ list(set(cont_dataset.metadata_df.loc[cont_dataset.metadata_df['keep'] , 'subjec
 # ```
 # 
 
-# In[ ]:
+# In[13]:
 
 
 exp_cohort = deepcopy(exp_cohort_copy)  # copy back to recover
@@ -397,14 +397,14 @@ cont_dataset.filterout_subjects([50, 52]) #TODO
 # list(set(cont_dataset.metadata_df.loc[cont_dataset.metadata_df['keep'] , 'subject_ID' ]))
 
 
-# In[ ]:
+# In[14]:
 
 
 c = (cont_dataset.metadata_df['session_nb']).value_counts()
 c.sort_index()
 
 
-# In[ ]:
+# In[15]:
 
 
 n = 5
@@ -438,7 +438,7 @@ np.count_nonzero(tf)
 del session_nbs, s
 
 
-# In[ ]:
+# In[16]:
 
 
 
@@ -446,13 +446,13 @@ cont_dataset.metadata_df.loc[:,'keep'] = False
 cont_dataset.metadata_df.loc[tf,'keep'] = True
 
 
-# In[ ]:
+# In[17]:
 
 
 df = cont_dataset.metadata_df
 
 
-# In[ ]:
+# In[18]:
 
 
 
@@ -493,7 +493,7 @@ df1
 
 # ## spout touch, last five sessions
 
-# In[ ]:
+# In[19]:
 
 
 exp_cohort = deepcopy(exp_cohort_copy)  # copy back to recover
@@ -574,7 +574,7 @@ cont_dataset.metadata_df['keep'].value_counts()
 df1
 
 
-# In[ ]:
+# In[20]:
 
 
 
