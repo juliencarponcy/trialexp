@@ -11,12 +11,13 @@ from sklearn import metrics
 
 def DBSCAN_cluster_on_compoonents(
         np_comp: np.ndarray, 
-        eps: float, 
+        eps: float,
+        min_samples_by_cluster: int = 20, 
         plot: bool = True,
         plot_lim_pctile: float = 0.1
         ):
         
-    db = DBSCAN(eps=eps, min_samples=10).fit(np_comp)
+    db = DBSCAN(eps=eps, min_samples = min_samples_by_cluster).fit(np_comp)
     core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
     core_samples_mask[db.core_sample_indices_] = True
     labels = db.labels_
@@ -98,21 +99,21 @@ def extract_feature_components(panel_df,
     if scaled:
 
         scaler = StandardScaler()
-        df_scaled = scaler.fit_transform(df_feat)
+        np_scaled = scaler.fit_transform(df_feat)
 
     else:
-        df_scaled = df_feat
+        np_scaled = df_feat
     
     if type == 'PCA':
         
-        comp_obj = PCA(n_components = df_scaled.shape[1])
+        comp_obj = PCA(n_components = np_scaled.shape[1])
     
     if type == 'ICA':
         
-        comp_obj = FastICA(n_components = df_scaled.shape[1])
+        comp_obj = FastICA(n_components = np_scaled.shape[1])
 
     
-    np_comp = comp_obj.fit_transform(df_scaled)
+    np_comp = comp_obj.fit_transform(np_scaled)
 
     if plot:
         fig, axs = plt.subplots(1,1, figsize=(10,10))
@@ -122,10 +123,8 @@ def extract_feature_components(panel_df,
         
         axs.set_xlim(xlim)
         axs.set_ylim(ylim)
-        return np_comp, axs
-    
-    else: 
-        return np_comp
+ 
+    return np_comp
 
 def ts_to_features(ts):
     # progress_apply exists after running tqdm.pandas() and yields a progress bar

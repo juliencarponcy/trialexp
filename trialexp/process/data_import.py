@@ -2019,8 +2019,8 @@ class Experiment():
                         photometry_array_exp = photometry_array
             
             if 'df_meta_photo_exp' not in locals():
-                raise Exception(f'The following group: {subject_IDs} do not contain photometry trials. \
-                    \r\n consider looking for more sessions with when, or broadening conditions')
+                raise Exception(f'The following Experimental group: {subject_IDs} do not contain photometry trials. \
+                    \r\n consider checking the task_names requested, include more sessions, or broadening conditions')
     
         cont_dataset = Continuous_Dataset(photometry_array_exp, df_meta_photo_exp, col_names_numpy)
         cont_dataset.set_fs(fs_exp)
