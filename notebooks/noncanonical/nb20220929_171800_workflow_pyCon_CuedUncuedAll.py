@@ -3,13 +3,13 @@
 
 # ## Workflow to analyze pyControl data
 # 
-# ```bash
+# ```batch script
 # jupyter nbconvert "D:\OneDrive - Nexus365\Private_Dropbox\Projects\trialexp\notebooks\noncanonical\nb20220929_171800_workflow_pyCon_CuedUncuedAll.ipynb" --to="python" --output-dir="D:\OneDrive - Nexus365\Private_Dropbox\Projects\trialexp\notebooks\noncanonical" --output="nb20220929_171800_workflow_pyCon_CuedUncuedAll"
 # ```
 
 # ### Imports
 
-# In[1]:
+# In[2]:
 
 
 # Import Session and Experiment class with helper functions
@@ -22,7 +22,7 @@ from trialexp.process.data_import import *
 
 # ### Variables
 
-# In[2]:
+# In[3]:
 
 
 import pandas as pd
@@ -54,7 +54,7 @@ video_dir = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\videos'
 # - A tasks definition file (.csv) contains all the information to perform the extractions of behaviorally relevant information from **PyControl** files, for each **task** file. It includes what are the **triggers** of different trial types, what **events** to extract (with time data), and what are events or printed lines that could be relevant to determine the **conditions** (e.g: free reward, optogenetic stimulation type, etc.)
 # - To analyze a new task you need to append task characteristics like **task** filename, **triggers**, **events** and **conditions**
 
-# In[3]:
+# In[4]:
 
 
 tasks = pd.read_csv(tasksfile, usecols = [1,2,3,4], index_col = False)
@@ -65,7 +65,7 @@ tasks
 # 
 # 1m 7s
 
-# In[4]:
+# In[5]:
 
 
 photo_root_dir = 'T:\\Data\\head-fixed\\pyphotometry\\data'
@@ -83,7 +83,7 @@ copy_files_to_horizontal_folders(
 # 
 # This will include all the pycontrol files present in the folder_path directory (do not include subdirectories)
 
-# In[5]:
+# In[6]:
 
 
 # Folder of a full experimental batch, all animals included
@@ -105,7 +105,7 @@ exp_cohort.by_trial = True
 
 # ## retain only pavlovian sessions
 
-# In[6]:
+# In[7]:
 
 
 exp_cohort.sessions = exp_cohort.get_sessions(task_names='reaching_go_spout_cued_uncued')
@@ -117,7 +117,7 @@ len(exp_cohort.sessions )
 # 
 # 3m 7.6s
 
-# In[7]:
+# In[8]:
 
 
 # Process the whole experimental folder by trials
@@ -128,13 +128,13 @@ exp_cohort.process_exp_by_trial(trial_window, timelim, tasksfile,
 # exp_cohort.save()
 
 
-# In[8]:
+# In[9]:
 
 
 len(exp_cohort.sessions)
 
 
-# In[9]:
+# In[10]:
 
 
 exp_cohort.sessions[1].df_events.head(50)
@@ -144,7 +144,7 @@ exp_cohort.sessions[1].df_events.head(50)
 
 # #### Cued/Uncued
 
-# In[10]:
+# In[11]:
 
 
 # List of uncued conditions as listed on the tasks .csv file for task reaching_go_spout_cued_uncued:
@@ -172,11 +172,11 @@ condition_list = [conditions_dict0, conditions_dict1, conditions_dict2, conditio
 cond_aliases = [
     'Cued, reward at spout, hit',
     'Cued, reward at bar release, hit',
-    'Cued, Pavlovian, hit',
-    'Cued, miss',
+    'Cued, Pavlovian, hit', # not clean 
+    'Cued, miss', # dodgy
     'Uncued, reward at spout, hit',
     'Uncued, reward at bar release, hit',
-    'Uncued, miss']
+    'Uncued, miss'] # dodgy
 
 # Groups as a list of lists
 groups = None
@@ -189,7 +189,7 @@ groups = None
 trial_window = [-2000, 6000]
 
 
-# In[11]:
+# In[12]:
 
 
 exp_cohort.sessions
@@ -197,7 +197,7 @@ exp_cohort.sessions
 
 # Behaviour: Create a dataset
 
-# In[12]:
+# In[13]:
 
 
 ev_dataset = exp_cohort.behav_events_to_dataset(
@@ -214,7 +214,7 @@ ev_dataset.set_conditions(conditions=condition_list, aliases=cond_aliases)
 
 # Behaviour: Compute distribution
 
-# In[13]:
+# In[14]:
 
 
 dist_as_continuous = ev_dataset.compute_distribution(
@@ -236,7 +236,7 @@ dist_as_continuous.filterout_subjects([0,1])
 # - At anytime, <trial_dataset>.filter_reset() can be called to re-include all the elements in the analysis (set all "keep" to True)
 # - Comment or uncomment lines and fill the lists according to your needs
 
-# In[14]:
+# In[15]:
 
 
 # # Get a list of the groups
@@ -270,7 +270,7 @@ dist_as_continuous.filterout_subjects([0,1])
 
 # Indicative preview of the behavioural metadata
 
-# In[15]:
+# In[16]:
 
 
 dist_as_continuous.metadata_df.head(50)
@@ -281,10 +281,9 @@ dist_as_continuous.metadata_df.head(50)
 # #TODO what is T = 0?
 # How to plot differently? Or not necessary?
 
-# In[16]:
+# In[17]:
 
 
-import trialexp.utils.pycontrol_utilities as pycutl
 
 dist_as_continuous.set_trial_window([a/1000 for a in trial_window], 's')
 
@@ -294,7 +293,7 @@ figs, axs, df1 = dist_as_continuous.lineplot(
     time_unit='s',
     error = True,
     ylim = None,#[[-0.1,1.6]], #[[-0.1, 0.7]], #[[-0.1, 1]],#,[-0.005, 0.007]],#[[-0.001, 0.0011],[-0.001, 0.0011]],
-    colormap = pycutl.cmap10(),
+    colormap = cmap10(),
     legend = True,
     plot_subjects = False,
     plot_groups = True,
@@ -309,38 +308,138 @@ axs[0, 0].set_ylabel('Spout touches (counts/s)', fontsize=14) #TODO not sure
 dist_as_continuous.metadata_df['keep'].value_counts()
 
 
+# ## For presentation
+
+# In[18]:
+
+
+dist_as_continuous = ev_dataset.compute_distribution(
+    trial_window=trial_window,
+        bin_size = 100, # do not work as expected with cued-uncued
+        normalize = True,
+        per_session = True,
+        out_as_continuous = True)
+dist_as_continuous.set_conditions(conditions=condition_list, aliases=cond_aliases)
+# Remove test files
+dist_as_continuous.filterout_subjects([0,1])
+
+dist_as_continuous.filterout_conditions([1, 2, 4, 5, 6])
+
+
+# In[19]:
+
+
+
+dist_as_continuous.set_trial_window([a/1000 for a in trial_window], 's')
+
+figs, axs, df1 = dist_as_continuous.lineplot(
+    vars = [ 'spout_dist'],
+    time_lim = [-1,3],
+    time_unit='s',
+    error = True,
+    ylim = None,#[[-0.1,1.6]], #[[-0.1, 0.7]], #[[-0.1, 1]],#,[-0.005, 0.007]],#[[-0.001, 0.0011],[-0.001, 0.0011]],
+    colormap = cmap10(),
+    legend = True,
+    plot_subjects = False,
+    plot_groups = True,
+    figsize = (5*1.618, 5),
+    dpi = 200,
+    verbose = False)
+
+
+axs[0, 0].set_xlabel('Relative to Cue onset (s)', fontsize=14) #TODO not sure
+axs[0, 0].set_ylabel('Spout touches (counts/s)', fontsize=14) #TODO not sure
+# Return a count of overall number of trials
+dist_as_continuous.metadata_df['keep'].value_counts()
+
+print(df1)
+
+
 # # Success rate plots 
+# 
+# - Cued and Uncued are not distinguished.
+# - This may require special handling.
+# - `matadata_df['Cued'] == True` ---> Cued, `False` ---> Uncued
+# - Manually edit `keep` to exclude Cued or Uncued
+# - Success rate computation must be done for `'keep' == True` only
+# - `filterout_conditions`  reflects `condition_ID` column of the DF.
+# 
+# 
 # 
 # ## Sessions
 # 
-# Mmmmm, what about Cued and Uncued blocks!!!
-# 
-# I can look into 'Cued' column, but this cannot be generalised!!!
-# 
-# I need clear definition of what is devided by what in which trials1!!
-# 
-# sucess is alywas counted.
-# 
-# But within what?
-# 
-# {'Cued': True}
-# 
-# or 
-# 
-# {'Cued' : False}
-# 
-# Confusingly this is different from the `conditions` used above which is the list of all the conditions you're interested.
-# 
-# Here you can specify it as logical OR of multiple conditions, but if `conditions` are not thorough, this won't work. 
-# 
-# ----
-# 
-# `out_list`s index is starting from 10 and increases, but at the bottom there are **very strange session numbers!**
 
-# In[27]:
+# In[30]:
 
 
-gr_df, out_list, _, _ = ev_dataset.analyse_successrate(bywhat='sessions')
+
+from matplotlib.pyplot import subplots
+
+
+ev_dataset1 = exp_cohort.behav_events_to_dataset(
+    groups=groups,
+    conditions_list=condition_list,
+    cond_aliases=cond_aliases,
+    when='all',
+    task_names='reaching_go_spout_cued_uncued',
+    trig_on_ev=None)
+
+ev_dataset1.set_trial_window(trial_window=trial_window, unit='milliseconds')
+ev_dataset1.set_conditions(conditions=condition_list, aliases=cond_aliases)
+
+plt.ion()
+fig, (ax1, ax2) = subplots(2,1)
+
+
+gr_df1, out_list1, _, _ = ev_dataset1.analyse_successrate([0], [1,2,3], bywhat='sessions', ax=ax1)
+
+print(gr_df1)
+
+print(out_list1)
+
+ax1.set_title('Cued')
+
+
+gr_df2, out_list2, _, _ = ev_dataset1.analyse_successrate([4],[5,6],
+    bywhat='sessions', ax=ax2)
+
+print(gr_df2)
+
+print(out_list2)
+
+ax2.set_title('Uncued')
+
+
+# ## Days
+
+# In[ ]:
+
+
+gr_df, out_list, _, _ = ev_dataset.analyse_successrate(bywhat='days')
+
+print(gr_df)
+
+print(out_list)
+
+
+# ## Days with gaps
+
+# In[ ]:
+
+
+gr_df, out_list, _, _ = ev_dataset.analyse_successrate(bywhat='days_with_gaps')
+
+print(gr_df)
+
+print(out_list)
+
+
+# ## Dates
+
+# In[ ]:
+
+
+gr_df, out_list, _, _ = ev_dataset.analyse_successrate(bywhat='dates')
 
 print(gr_df)
 
