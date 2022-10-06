@@ -306,59 +306,64 @@ dist_as_continuous.metadata_df['keep'].value_counts()
 # 
 # 
 
-# In[26]:
-
-
-gr_df, out_list, _, _ = ev_dataset.analyse_successrate(bywhat='sessions')
-
-print(gr_df)
-
-print(out_list)
-
-
-# In[31]:
-
-
-gr_df, out_list, _, _ = ev_dataset.analyse_successrate(bywhat='days')
-
-print(gr_df)
-
-print(out_list)
-
-
-# In[36]:
-
-
-gr_df, out_list, _, _ = ev_dataset.analyse_successrate(bywhat='days_with_gaps')
-
-print(gr_df)
-
-print(out_list)
-
-
-# In[37]:
-
-
-gr_df, out_list, _, _ = ev_dataset.analyse_successrate(bywhat='dates')
-
-print(gr_df)
-
-print(out_list)
-
-
 # ### By Days, Dates, or By Sessions?
 # 
 
 # ### sessions
 
+# In[17]:
+
+
+gr_df, out_list, _, _ = ev_dataset.analyse_successrate(
+    [0], [1], bywhat='sessions')
+
+print(gr_df)
+
+print(out_list)
+
+
 # ### days
+
+# In[18]:
+
+
+gr_df, out_list, _, _ = ev_dataset.analyse_successrate([0], [1], bywhat='days')
+
+print(gr_df)
+
+print(out_list)
+
 
 # ### days_with_gaps
 
+# In[19]:
+
+
+gr_df, out_list, _, _ = ev_dataset.analyse_successrate(
+    [0], [1], bywhat='days_with_gaps')
+
+print(gr_df)
+
+print(out_list)
+
+
 # ### Dates
 
-# In[ ]:
+# In[32]:
 
 
+out_list[0].index
 
+
+# In[45]:
+
+
+gr_df, out_list, ax, _ = ev_dataset.analyse_successrate([0], [1], bywhat='dates')
+
+print(gr_df)
+
+print(out_list)
+
+ax.set_xticks(range(0, len(out_list[0].index), 5))
+ax.set_xticklabels(out_list[0].index[range(0, len(out_list[0].index), 5)])
 

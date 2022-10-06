@@ -1391,11 +1391,8 @@ class Event_Dataset(Trials_Dataset):
             ax.set_xlabel('Dates')
             xticks = ax.get_xticks()
 
-            ax.set_xticks(range(0, xticks.max()+1, 
-                xticks[1] - xticks[0])) # needed #TODO
-            ax.set_xticklabels(
-                out_list[0].index[range(0, xticks.max()+1, xticks[1] - xticks[0])],
-                rotation=30, ha='right')
+            ax.set_xticks(range(0, len(out_list[0].index),  int(xticks[1] - xticks[0])))
+            ax.set_xticklabels(out_list[0].index[range(0, len(out_list[0].index),  int(xticks[1] - xticks[0]))])
 
         ax.set_ylabel('Mice')
         ax.set_yticks(range(0,out_list[0].shape[1]))
