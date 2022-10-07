@@ -113,6 +113,8 @@ class Trials_Dataset():
         self.metadata_df['keep'] = True
         self.metadata_df['trial_ID'] = self.metadata_df.index.values
         self.creation_date = datetime.now()
+        self._trial_window = []
+        self._time_unit = ''
         
         if self.data.shape[0] != self.metadata_df.shape[0]:
             raise ValueError(' \
@@ -129,6 +131,14 @@ class Trials_Dataset():
             _ = self.get_groups()
         else:
             self.has_groups = False
+
+    @property
+    def trial_window(self):
+        return self._trial_window
+
+    @property
+    def time_unit(self):
+        return self._time_unit
 
     def set_conditions(self, conditions: ConditionsType, aliases: Iterable = None):
         if isinstance(conditions, list) and not all([isinstance(conditions[c],dict) for c in range(len(conditions))]):
@@ -178,8 +188,8 @@ class Trials_Dataset():
 
 
     def set_trial_window(self, trial_window: Iterable, unit: str = None):
-        self.trial_window = trial_window
-        self.time_unit = unit
+        self._trial_window = trial_window
+        self._time_unit = unit
 
     def get_memory_size(self, verbose=True):
         mem_mb = sys.getsizeof(self.data)/1024/1024
@@ -397,8 +407,8 @@ class Continuous_Dataset(Trials_Dataset):
         self.sampling_rate = fs
 
     def set_trial_window(self, trial_window: Iterable, unit: str = None):
-        self.trial_window = trial_window
-        self.time_unit = unit
+        self._trial_window = trial_window
+        self._time_unit = unit
         if hasattr(self, 'sampling_rate'):
             self.time_vector = self.get_time_vector(unit)
 
