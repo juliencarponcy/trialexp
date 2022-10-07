@@ -464,7 +464,8 @@ class Continuous_Dataset(Trials_Dataset):
             self,
             vars_to_cluster_on: str = 'analog_2',  # only work with one var for now.
             dim_reduc_type: str = 'ICA',
-            eps: float =  0.005, 
+            eps: float =  0.005,
+            min_samples_by_cluster: int = 20, 
             plot: bool = False,
             plot_lim_pctile: float = 0.1
             ):
@@ -488,7 +489,10 @@ class Continuous_Dataset(Trials_Dataset):
             can be either 'PCA' or 'ICA'
         eps: float =  0.005, 
             The most crucial parameter, as it will determine the level
-            of acceptable noise/artifacts in your remaining trials 
+            of acceptable noise/artifacts in your remaining trials
+        min_samples_by_cluster: int = 20,
+            The minimum number of samples that could constitute a cluster for
+            the DBSCAN algorithm
         plot: bool = False,
             Whether to plot the dimensionality reduction and the clustering
         plot_lim_pctile: float = 0.1
@@ -515,12 +519,13 @@ class Continuous_Dataset(Trials_Dataset):
             df_panel, 
             variable = vars_to_cluster_on, 
             type = dim_reduc_type, 
-            plot = plot)
+            plot = False)
 
         labels  = DBSCAN_cluster_on_compoonents(
             np_comp = df_components, 
-            eps =  0.005, 
-            plot = True,
+            eps = eps,
+            min_samples_by_cluster = min_samples_by_cluster, 
+            plot = plot,
             plot_lim_pctile = plot_lim_pctile)
 
 
@@ -580,7 +585,7 @@ class Continuous_Dataset(Trials_Dataset):
 
     def filterout_clusters(self, clusters_to_exclude: list):
         """
-        exclude one or several subjects of the dataset
+        exclude one or several cluster of trials of the dataset
         """
         if isinstance(clusters_to_exclude, int):
             subject_IDs_to_exclude = [subject_IDs_to_exclude]
