@@ -108,17 +108,11 @@ exp_cohort = Experiment(pycontrol_files_path)
 exp_cohort.by_trial = True
 
 
-# In[6]:
-
-
-exp_cohort.sessions[0].df_conditions
-
-
 # ### Perform extraction of behavioural information by trial
 # 
 # 5m55.4s
 
-# In[7]:
+# In[6]:
 
 
 # Process the whole experimental folder by trials
@@ -139,7 +133,7 @@ exp_cohort.process_exp_by_trial(trial_window, timelim, tasksfile, blank_spurious
 # 2m10.9s
 # 
 
-# In[8]:
+# In[7]:
 
 
 # Find if there is a matching photometry file and if it can be used:
@@ -163,7 +157,7 @@ exp_cohort_copy = deepcopy(exp_cohort)
 
 # Example in progress for Cued-Uncued
 
-# In[9]:
+# In[8]:
 
 
 # List of uncued conditions as listed on the tasks .csv file for task reaching_go_spout_cued_uncued:
@@ -197,7 +191,6 @@ groups = None
 # groups = [[280, 282, 299, 300, 301],\
 #     [284, 285, 296, 297, 306, 307]]
 # Window to exctract (in ms)
-trial_window = [-2000, 4000]
 
 
 # ### Extract Photometry trials and create a Continuous_Dataset
@@ -206,46 +199,6 @@ trial_window = [-2000, 4000]
 # 
 # https://github.com/ThomasAkam/photometry_preprocessing/blob/master/Photometry%20data%20preprocessing.ipynb
 
-# In[10]:
-
-
-exp_cohort = deepcopy(exp_cohort_copy)
-
-
-# In[11]:
-
-
-
-
-exp_cohort.sessions = [session  for session in exp_cohort.sessions 
-  if (session.subject_ID == 47) and (session.number > 2) and (session.task_name == 'reaching_go_spout_cued_uncued')] 
-  
-#TODO can I specify the last five sessions for each mouse?
-
-
-# In[12]:
-
-
-
-cont_dataset = exp_cohort.get_photometry_groups(
-        groups = None, # or use groups variable defined above
-        conditions_list = condition_list, 
-        cond_aliases = cond_aliases, 
-        when = 'all', 
-        task_names = 'reaching_go_spout_cued_uncued', #'reaching_go_nogo',
-        trig_on_ev = None, # align to the first event of a kind e.g. None (meaning CS_Go onset), 'bar_off', 'spout'
-        high_pass = None, # analog_1_df_over_f doesn't work with this
-        low_pass = 45, 
-        median_filt = 3,
-        motion_corr = True, 
-        df_over_f = True, 
-        downsampling_factor = 10, 
-        export_vars = ['analog_1','analog_1_filt','analog_2','analog_2_filt','analog_1_df_over_f'], 
-        verbose = False)
-
-cont_dataset.set_trial_window(trial_window, 'ms')
-
-
 # # Cued, Cue onset, last five sessions
 # 
 # - Still this contains a lot of sessions with bad performance
@@ -253,7 +206,7 @@ cont_dataset.set_trial_window(trial_window, 'ms')
 # - **Need to combine this analysis with pyControl analysis**
 # 
 
-# In[21]:
+# In[9]:
 
 
 
@@ -286,7 +239,6 @@ cont_dataset = exp_cohort.get_photometry_groups(
 
 cont_dataset.filterout_conditions([1, 2, 4, 5, 6]) # Cued 0 hit and 3 miss
 cont_dataset.filter_lastNsessions(5)
-
 cont_dataset.set_trial_window([t/1000 for t in trial_window], 's')
 
 
@@ -328,7 +280,7 @@ df1
 # - How to narrow this down to good performance only?
 # - **Need to combine this analysis with pyControl analysis**
 
-# In[22]:
+# In[10]:
 
 
 
@@ -400,7 +352,7 @@ df2
 # - How to narrow this down to good performance only?df
 # - **Need to combine this analysis with pyControl analysis**
 
-# In[23]:
+# In[11]:
 
 
 
@@ -472,7 +424,7 @@ df4
 # - How to narrow this down to good performance only?
 # - **Need to combine this analysis with pyControl analysis**
 
-# In[24]:
+# In[12]:
 
 
 
@@ -542,7 +494,7 @@ df3
 
 # # Cued/Uncued, spout
 
-# In[32]:
+# In[13]:
 
 
 
@@ -615,7 +567,7 @@ df3
 # - How to narrow this down to good performance only?
 # - **Need to combine this analysis with pyControl analysis**
 
-# In[25]:
+# In[14]:
 
 
 
@@ -683,7 +635,7 @@ df5
 
 # # Cued/Uncued, bar release
 
-# In[31]:
+# In[15]:
 
 
 
@@ -749,18 +701,9 @@ cont_dataset.metadata_df['keep'].value_counts()
 df5
 
 
-# In[ ]:
-
-
-
-
-
-
-
-
 # # Cued/Uncued, bar holding
 
-# In[28]:
+# In[16]:
 
 
 
@@ -843,7 +786,7 @@ cont_dataset.metadata_df['keep'].value_counts()
 #             raise Exception('trig_on_ev not in events_to_process')
 # ```
 
-# In[27]:
+# In[17]:
 
 
 
