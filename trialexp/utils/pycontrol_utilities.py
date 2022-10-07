@@ -52,7 +52,7 @@ def plot_longitudinal(results, plot_individuals=True):
 #----------------------------------------------------------------------------------
 
 def find_matching_files(subject_ID, datetime_to_match, files_df, ext):
-    '''
+    """
     Helper function for match_sessions_to_files, find files with
     the same subject_ID in the filename, and taken the same day
     as the pycontrol session, return the file(s) with the shortest
@@ -69,24 +69,28 @@ def find_matching_files(subject_ID, datetime_to_match, files_df, ext):
 
             Returns:
                     match_df (pd.Dataframe): containing filenames of matching files
-    ''' 
+    """ 
 
     if ext not in ['nwb','h5']:
         # for videos, avoid integrating DeepLabCut labelled videos
-        match_df = files_df[(files_df['datetime'].apply(lambda x: Timestamp.date(x)) == datetime_to_match.date()) &
+        match_df = files_df.loc[(files_df['datetime'].apply(lambda x: Timestamp.date(x)) == datetime_to_match.date()) &
             (files_df['filename'].str.contains(str(subject_ID))) &
-            ~(files_df['filename'].str.contains('DLC'))]
+            ~(files_df['filename'].str.contains('DLC'))].copy() #TODO match_df is not a view or copy
 
         # will not avoid DLC-containing filenames in case of searching DLC .nwb data files
     else:
-        match_df = files_df[(files_df['datetime'].apply(lambda x: Timestamp.date(x)) == datetime_to_match.date()) &
-             (files_df['filename'].str.contains(str(subject_ID)))]
+        match_df = files_df.loc[(files_df['datetime'].apply(lambda x: Timestamp.date(x)) == datetime_to_match.date()) &
+                                (files_df['filename'].str.contains(str(subject_ID)))].copy() #TODO match_df is not a view or copy
 
     
     # match_df = match_df.to_frame(name='matching_filename')
     if ~match_df.empty:
       
-        match_df['timedelta'] = match_df['datetime'].apply(lambda x: abs(datetime_to_match-x))
+        # A value is trying to be set on a copy of a slice from a DataFrame.
+        # Try using .loc[row_indexer, col_indexer] = value instead
+        match_df['timedelta'] = match_df['datetime'].apply(
+            lambda x: abs(datetime_to_match-x))
+
         match_df = match_df[match_df['timedelta'] == match_df['timedelta'].min()]
         #print(match_df['timedelta'])
         match_df['timedelta'] = match_df['timedelta'].apply(lambda x: x.seconds)
