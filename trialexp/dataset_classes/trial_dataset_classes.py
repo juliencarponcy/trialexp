@@ -669,7 +669,7 @@ class Continuous_Dataset(Trials_Dataset):
             vars: VarsType = 'all',
             time_lim: Optional[list] = None,
             time_unit: str = None,
-            error: str = None, # only for group plot
+            error: bool = None, # only for group plot
             is_x_vs_y: bool = False, # implement here or not?
             plot_subjects: bool = True,
             plot_groups: bool = True,
@@ -681,7 +681,50 @@ class Continuous_Dataset(Trials_Dataset):
             liney0:bool = True, # draw horizontal gray dashed line at y = 0
             legend: bool = True,
             verbose: bool = False):
+        """
 
+        Arguments
+        ---------
+        self
+        vars: VarsType = 'all',
+            #TODO what to expect?
+        time_lim: Optional[list] = None,
+            #TODO better called xlim?
+            Specify the xlim of Axes
+        time_unit: str = None,
+            's', 'seconds', 'ms', or 'milliseconds'
+        error: bool = None, 
+            Only for group plot
+        is_x_vs_y: bool = False, 
+            implement here or not?
+        plot_subjects: bool = True,
+            Whether to plot individual subject data.
+        plot_groups: bool = True,
+            Whether to plot group data.
+        ylim: list = None, 
+        colormap: str = 'jet',
+            trialexp.utils.pycontrol_utilities.cmap10 provides the 10 default plotting colors in matplotlib as a colormap
+        figsize: tuple = (20, 10),
+        dpi: int = 100,
+        box: bool = False,
+        liney0:bool = True, 
+            draw horizontal gray dashed line at y = 0
+        #TODO linex0 :bool = True, 
+        legend: bool = True,
+        verbose: bool = False
+
+        Returns
+        _______
+        fig, 
+        axs, 
+        out_df : DataFrame
+            A summary table to show the counting sample numbers.
+            Can be improved.
+            #TODO Is this format useful? I am not sure! You need to dig a lot.
+            Instead of nesting, we can have dataframes and list of dataframes etc to be joined when necessary
+            Or to have already joined, flat big table???      
+
+        """
         plt.ion()
         plt.rcParams["figure.dpi"] = dpi
         plt.rcParams['font.family'] = ['Arial']
