@@ -202,7 +202,7 @@ trial_window = [-2000, 4000]  # TODO
 # - **Need to combine this analysis with pyControl analysis**
 # 
 
-# In[11]:
+# In[10]:
 
 
 
@@ -275,7 +275,7 @@ df1
 # - **Why can I plot Miss against spout touch?**
 # - What spout are we talking about?
 
-# In[12]:
+# In[11]:
 
 
 
@@ -356,7 +356,7 @@ list(set(cont_dataset.metadata_df.loc[cont_dataset.metadata_df['keep'] , 'subjec
 # ```
 # 
 
-# In[13]:
+# In[12]:
 
 
 exp_cohort = deepcopy(exp_cohort_copy)  # copy back to recover
@@ -397,14 +397,14 @@ cont_dataset.filterout_subjects([50, 52]) #TODO
 # list(set(cont_dataset.metadata_df.loc[cont_dataset.metadata_df['keep'] , 'subject_ID' ]))
 
 
-# In[14]:
+# In[13]:
 
 
 c = (cont_dataset.metadata_df['session_nb']).value_counts()
 c.sort_index()
 
 
-# In[15]:
+# In[14]:
 
 
 n = 5
@@ -438,7 +438,7 @@ np.count_nonzero(tf)
 del session_nbs, s
 
 
-# In[16]:
+# In[15]:
 
 
 
@@ -446,13 +446,13 @@ cont_dataset.metadata_df.loc[:,'keep'] = False
 cont_dataset.metadata_df.loc[tf,'keep'] = True
 
 
-# In[17]:
+# In[16]:
 
 
 df = cont_dataset.metadata_df
 
 
-# In[18]:
+# In[17]:
 
 
 
@@ -493,7 +493,7 @@ df1
 
 # ## spout touch, last five sessions
 
-# In[19]:
+# In[18]:
 
 
 exp_cohort = deepcopy(exp_cohort_copy)  # copy back to recover
@@ -574,7 +574,7 @@ cont_dataset.metadata_df['keep'].value_counts()
 df1
 
 
-# In[20]:
+# In[19]:
 
 
 
