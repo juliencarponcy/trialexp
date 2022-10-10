@@ -1191,9 +1191,7 @@ class Event_Dataset(Trials_Dataset):
         conditions_failure : list,
         subject_IDs: list = None, 
         group_IDs : list = None, 
-        bywhat: str = 'session', 
-        conditions: dict = None,
-        conditions_bool: str = 'all',
+        bywhat: str = 'sessions', 
         ax = None):
         """
         - susscess is alreday computed by Experiment.compute_success
@@ -1218,8 +1216,12 @@ class Event_Dataset(Trials_Dataset):
                 The length must match the height of the self.metadata_df.
         subject_IDs: list = None
         group_IDs : list = None
-        bywhat : str
-            'session', 'days', 'days_with_gaps', 'dates'
+        bywhat : str = 'sessions'
+            'sessions', 'sessions_with_gaps', 'days', 'days_with_gaps', 'dates'
+            'sessions' will renumber sessions so there will be no gaps shown.
+            'days' will recount days so there will be no gaps shown.
+            'session_with_gaps' 'days_with_gaps', and 'dates'will include gaps.
+
         ax: matplotlib.axes.Axes = None
         #TODO need to use 'keep'???
 
@@ -1228,6 +1230,7 @@ class Event_Dataset(Trials_Dataset):
 
         """
      
+        assert bywhat in ['sessions', 'sessions_with_gaps', 'days', 'days_with_gaps', 'dates'], "bywhat is invalid"
 
         def get_gr_df(self, conditions_succcess, conditions_failure, group_IDs, subject_IDs):
 
@@ -1357,7 +1360,7 @@ class Event_Dataset(Trials_Dataset):
                 out_listlist = [None] * len(subject_IDs_)
                 for s_idx, s in enumerate(subject_IDs_):
                     thismouse_df = gr_df.loc[(gr_df['group_ID'] == g)
-                        & (gr_df['subject_ID'] == s), :]
+                        & (gr_df['subject_ID'] == s), :].copy()
 
                     if bywhat == 'days':
                         # gaps are ignored
@@ -1389,6 +1392,7 @@ class Event_Dataset(Trials_Dataset):
                         out_listlist[s_idx] = pd.DataFrame(
                             list(zip([d - dates[0] for d in dates], sr)), columns=['dayN', str(s)])
                         out_listlist[s_idx] = out_listlist[s_idx].set_index('dayN')
+
                     elif bywhat == 'dates':
                         # gaps are considered
                         # success rate is computed daily
@@ -1404,15 +1408,29 @@ class Event_Dataset(Trials_Dataset):
 
                         out_listlist[s_idx] = pd.DataFrame(list(zip(dates, sr)), columns=['dates', str(s)])
                         out_listlist[s_idx] = out_listlist[s_idx].set_index('dates')
+
                     elif bywhat == 'sessions':
                         # gaps are ignored
+                        # session number always starts with 1
                         # success rate is computed by session
-                        
-                        out_listlist[s_idx] = thismouse_df.loc[:, ['session_nb', 'success_rate']] 
+                        #TODO renumber sessions for each animals skipping NaNs
+                        df1 = thismouse_df.loc[:, ['session_nb', 'success_rate']].copy()
+                        df1.sort_values(by=['session_nb'],inplace=True)
+                        df1 = df1.reset_index(drop=True)
+                        df1['session_nb'] = pd.Series(range(1, df1.shape[0]+1), dtype='int64')
+
+                        out_listlist[s_idx] = df1.set_index('session_nb')
+                        out_listlist[s_idx].columns = [str(s)]
+                    
+                    elif bywhat == 'sessions_with_gaps':
+                        # gaps are maintained
+                        # success rate is computed by session
+                        out_listlist[s_idx] = thismouse_df.loc[:, ['session_nb', 'success_rate']].copy() 
                         out_listlist[s_idx] = out_listlist[s_idx].set_index('session_nb')
                         out_listlist[s_idx].columns = [str(s)]
+
                     else:
-                        raise 'bywhat must be ''days'', ''days_with_gap'', ''dates'', or ''sessions'''
+                        raise 'bywhat must be  ''sessions'', ''sessions_with_gaps'' ,''days'', ''days_with_gap'', or ''dates'''
 
                     #out_list[g_idx] = 1 = pd.concat(out_listlist) # TODO this is wrong
                     # session_nb as index, success_rate as value, subject_ID as columns
