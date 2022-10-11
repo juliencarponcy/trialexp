@@ -355,20 +355,10 @@ print(df1)
 
 # # Success rate plots 
 # 
-# - Cued and Uncued are not distinguished.
-# - This may require special handling.
-# - `matadata_df['Cued'] == True` ---> Cued, `False` ---> Uncued
-# - Manually edit `keep` to exclude Cued or Uncued
-# - Success rate computation must be done for `'keep' == True` only
-# - `filterout_conditions`  reflects `condition_ID` column of the DF.
-# 
-# 
-# 
 # ## Sessions
 # 
-# - #TODO Session Number needs to be recalcuated for Cued/Uncued task only, excluding Pavlovian
 
-# In[24]:
+# In[19]:
 
 
 from matplotlib.pyplot import subplots
@@ -412,8 +402,10 @@ ax2.set_title('Uncued')
 
 
 # ## sessions with gaps
+# 
+# #TODO Sessions with no trial should be removed and skipped, but still included.
 
-# In[25]:
+# In[26]:
 
 
 from matplotlib.pyplot import subplots
@@ -460,7 +452,7 @@ ax2.set_title('Uncued')
 # 
 # - xlim needs to be matched between plots
 
-# In[28]:
+# In[22]:
 
 
 from matplotlib.pyplot import subplots
@@ -513,7 +505,7 @@ else:
 
 # ## Days with gaps
 
-# In[ ]:
+# In[23]:
 
 
 from matplotlib.pyplot import subplots
@@ -537,9 +529,9 @@ fig, (ax1, ax2) = subplots(2,1)
 gr_df1, out_list1, _, _ = ev_dataset1.analyse_successrate(
     [0], [1, 2, 3], bywhat='days_with_gaps', ax=ax1)
 
-print(gr_df1)
+# print(gr_df1)
 
-print(out_list1)
+# print(out_list1)
 
 ax1.set_title('Cued')
 ax1.set_xlabel('')
@@ -549,9 +541,9 @@ ax1.xaxis.set_ticklabels([])
 gr_df2, out_list2, _, _ = ev_dataset1.analyse_successrate([4],[5,6],
     bywhat='days_with_gaps', ax=ax2)
 
-print(gr_df2)
+# print(gr_df2)
 
-print(out_list2)
+# print(out_list2)
 
 ax2.set_title('Uncued')
 
@@ -559,7 +551,7 @@ ax2.set_title('Uncued')
 
 # ## Dates
 
-# In[ ]:
+# In[24]:
 
 
 from matplotlib.pyplot import subplots
@@ -582,9 +574,9 @@ fig, (ax1, ax2) = subplots(2,1)
 
 gr_df1, out_list1, _, _ = ev_dataset1.analyse_successrate([0], [1,2,3], bywhat='dates', ax=ax1)
 
-print(gr_df1)
+# print(gr_df1)
 
-print(out_list1)
+# print(out_list1)
 
 ax1.set_title('Cued')
 ax1.set_xlabel('')
@@ -594,9 +586,9 @@ ax1.xaxis.set_ticklabels([])
 gr_df2, out_list2, _, _ = ev_dataset1.analyse_successrate([4],[5,6],
     bywhat='dates', ax=ax2)
 
-print(gr_df2)
+# print(gr_df2)
 
-print(out_list2)
+# print(out_list2)
 
 ax2.set_title('Uncued')
 
