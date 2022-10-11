@@ -1197,6 +1197,7 @@ class Event_Dataset(Trials_Dataset):
         - susscess is alreday computed by Experiment.compute_success
             but you still need to specify conditions from conditions_list
         - failure, on the other hand, is less clear
+        - Sessions with 0 trial (success or failure) are ignored.
 
         conditions_succcess : list
             list of integers
@@ -1223,10 +1224,8 @@ class Event_Dataset(Trials_Dataset):
             'session_with_gaps' 'days_with_gaps', and 'dates'will include gaps.
 
         ax: matplotlib.axes.Axes = None
-        #TODO need to use 'keep'???
 
-        #TODO Turned out this is useless in case of Go/NoGo or Cued/Uncued
-        where you need to count trials in separate groups
+        #TODO to support the removal of human interventions
 
         """
      
@@ -1297,6 +1296,7 @@ class Event_Dataset(Trials_Dataset):
                                 for c in conditions_succcess], axis=1).any(axis=1)
                         else:
                             tf1 = conditions_succcess
+
                         TF_success = (metadata_df['group_ID'] == g) & (metadata_df['subject_ID'] == s) \
                             & (metadata_df['session_nb'] == ss) \
                             & (tf1)
@@ -1317,6 +1317,7 @@ class Event_Dataset(Trials_Dataset):
                             TF_failure, 'success'])
 
                         ss_tn[ss_idx] = ss_sc[ss_idx] + ss_fl[ss_idx]
+                        # if ss_tn[ss_idx] == 0, then this session is invalid. We should not count this.
 
                         dt = (metadata_df.loc[(TF_success) | (TF_failure), 'datetime']).copy()
                         if not dt.empty:
@@ -1332,6 +1333,9 @@ class Event_Dataset(Trials_Dataset):
                     ss_df.astype({'session_nb': 'int', 'success_n': 'int', 'failure_n': 'int', 'trial_n': 'int'})
 
                     ss_df['subject_ID'] = pd.Series([s] * len(session_nbs))
+
+                    ss_df.drop(labels = [ i for i, x in enumerate([np.isnan(sr) for sr in ss_sr]) if x],
+                        axis='index', inplace=True) # drop the rows with sr being NaN (also meaning trial_n == 0)
 
                     ss_dfs[s_idx] = ss_df
 
@@ -1366,6 +1370,13 @@ class Event_Dataset(Trials_Dataset):
                         # gaps are ignored
                         # success rate is computed daily
                         dates = list(set(thismouse_df['datetime'].dt.date)) 
+
+                        # delete NaT from the list because sort() doesn't like it
+                        # But why there are NaT for dates????
+                        for idx, tf in enumerate([pd.isnull(d) for d in dates]):
+                            if tf:
+                                del dates[idx]
+
                         dates.sort()
                         sr = [None] * len(dates)
                         for d_idx, d in enumerate(dates):
@@ -1374,8 +1385,11 @@ class Event_Dataset(Trials_Dataset):
 
                             sr[d_idx] = X.success_n/X.trial_n
 
-                        out_listlist[s_idx] = pd.DataFrame(list(zip(range(1, len(dates)+1), sr)), columns=['dayN', str(s)])
-                        out_listlist[s_idx] = out_listlist[s_idx].set_index('dayN')
+                        df1 = pd.DataFrame(list(zip(range(1, len(dates)+1), sr)), columns=['dayN', str(s)])
+                        df1 = df1.drop(df1[np.isnan(df1[str(s)])].index) # drop NaN rows
+                        df1['dayN'] = range(1, df1.shape[0]+1)
+
+                        out_listlist[s_idx] = df1.set_index('dayN')
 
                     elif bywhat == 'days_with_gaps':
                         # gaps are considered
@@ -1389,8 +1403,11 @@ class Event_Dataset(Trials_Dataset):
 
                             sr[d_idx] = X.success_n/X.trial_n
 
+                        #TODO get rid of NaT from dates
                         out_listlist[s_idx] = pd.DataFrame(
                             list(zip([d - dates[0] for d in dates], sr)), columns=['dayN', str(s)])
+                        # unsupported operand type(s) for -: 'datetime.date' and 'NaTType'
+
                         out_listlist[s_idx] = out_listlist[s_idx].set_index('dayN')
 
                     elif bywhat == 'dates':
@@ -1411,10 +1428,12 @@ class Event_Dataset(Trials_Dataset):
 
                     elif bywhat == 'sessions':
                         # gaps are ignored
+                        # session with NaN will be ignored
                         # session number always starts with 1
                         # success rate is computed by session
-                        #TODO renumber sessions for each animals skipping NaNs
+
                         df1 = thismouse_df.loc[:, ['session_nb', 'success_rate']].copy()
+                        df1 = df1.drop(df1[np.isnan(df1['success_rate'])].index) # drop NaN rows
                         df1.sort_values(by=['session_nb'],inplace=True)
                         df1 = df1.reset_index(drop=True)
                         df1['session_nb'] = pd.Series(range(1, df1.shape[0]+1), dtype='int64')
@@ -1457,12 +1476,17 @@ class Event_Dataset(Trials_Dataset):
         nml = colors.Normalize(0, 1)
 
         im1 = ax.imshow(out_list[0].transpose(), norm=nml)
+
         if bywhat == 'sessions':
             ax.set_xlabel('Sessions')
+        elif bywhat == 'sessions_with_gaps':
+            ax.set_xlabel('Sessions')
+
         elif bywhat == 'days':
             ax.set_xlabel('Days')
         elif bywhat == 'days_with_gaps':
             ax.set_xlabel('Days')
+
         elif bywhat == 'dates':
             ax.set_xlabel('Dates')
             xticks = ax.get_xticks()
