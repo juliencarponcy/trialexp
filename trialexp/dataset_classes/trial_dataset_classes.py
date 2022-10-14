@@ -14,7 +14,7 @@ from matplotlib import pyplot as plt
 from matplotlib import cm
 from matplotlib import colors
 from matplotlib.axes import Axes
-# import matplotlib
+import matplotlib
 
 from trialexp.utils.cont_dataset_utlities import *
 
@@ -695,6 +695,7 @@ class Continuous_Dataset(Trials_Dataset):
             box: bool = False,
             liney0:bool = True, # draw horizontal gray dashed line at y = 0
             legend: bool = True,
+            axs: Axes = None,
             verbose: bool = False):
         """
 
@@ -790,21 +791,55 @@ class Continuous_Dataset(Trials_Dataset):
             in enumerate(filtered_df['subject_ID'].unique())}
        
         # Adapt layout, this could be in a separate class/method
-        if len(group_IDs) == 1:
-            group_colors = cm.get_cmap(colormap, len(self.conditions))
-            if plot_groups and not plot_subjects:
-                
-                fig, axs = plt.subplots(len(vars), 1, sharex= 'all',
-                    sharey = 'row', squeeze = False , figsize = figsize)
+        if axs is None:
+            # Set title as condition on the first line
+            if len(group_IDs) == 1:
+                group_colors = cm.get_cmap(colormap, len(self.conditions))
+                if plot_groups and not plot_subjects:
+                    
+                    fig, axs = plt.subplots(len(vars), 1, sharex= 'all',
+                        sharey = 'row', squeeze = False , figsize = figsize)
+                else:
+                    fig, axs = plt.subplots(len(vars), len(condition_IDs)+1, sharex= 'all',
+                        sharey = 'row', squeeze = False , figsize = figsize)
             else:
-                fig, axs = plt.subplots(len(vars), len(condition_IDs)+1, sharex= 'all',
+                group_colors = cm.get_cmap(colormap, len(self.groups))
+
+                fig, axs = plt.subplots(len(vars), len(condition_IDs), sharex= 'all',
                     sharey = 'row', squeeze = False , figsize = figsize)
         else:
-            group_colors = cm.get_cmap(colormap, len(self.groups))
+            if axs.ndim == 1:
+                axs = axs.reshape(1, -1)
 
-            fig, axs = plt.subplots(len(vars), len(condition_IDs), sharex= 'all',
-                sharey = 'row', squeeze = False , figsize = figsize)
-        
+            for a in axs:
+                for b in a:
+                    assert isinstance(b, matplotlib.axes.Axes), \
+                        f'axs must be an array (like) of matplotlib.axes.Axes '
+
+            fig = None
+            assert axs.shape[0] == len(vars), \
+                f'The row numner of axs {axs.shape[0]} must match length of vars {len(vars)}'
+
+            if len(group_IDs) == 1:
+                group_colors = cm.get_cmap(colormap, len(self.conditions))
+
+                if plot_groups and not plot_subjects:
+                        
+                    assert axs.shape[1] == len(vars), \
+                        f'The column numner of axs {axs.shape[0]} must be 1'
+
+                else:
+
+                    assert axs.shape[1] == len(condition_IDs)+1, \
+                        f'The column numner of axs {axs.shape[1]} must be {len(condition_IDs)+1}'
+                   
+            else:
+                group_colors = cm.get_cmap(colormap, len(self.groups))
+
+                assert axs.shape[1] == len(condition_IDs)+1, \
+                    f'The column numner of axs {axs.shape[1]} must be {len(condition_IDs)}'
+
+      
         group_dfs = [0] * len(condition_IDs)
         cond_n = [0] * len(condition_IDs) # trial counts per condition
         for c_idx, cond_ID in enumerate(condition_IDs):
