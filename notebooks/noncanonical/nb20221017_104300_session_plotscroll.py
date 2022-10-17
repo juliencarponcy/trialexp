@@ -170,25 +170,27 @@ exp_cohort_copy = deepcopy(exp_cohort)
 
 # ## Visualise a session using Plotly
 
-# In[17]:
+# In[55]:
 
 
-import plotly.express as px
 import plotly.graph_objects as go
+from datetime import time as ideal_time
 
 
-# In[11]:
+# In[62]:
 
 
-exp_cohort.sessions[0].__dict__
+import math
+from re import T
+import secrets
+ss = exp_cohort.sessions[0]
 
+hh = [math.floor(t/(1000*60*60)) for t in ss.times['CS_Go']]
+mm = [math.floor((t - hh_*1000*60*60)/(1000*60)) for t, hh_ in zip(ss.times['CS_Go'], hh)]   # math.floor((ss.times['CS_Go'] - hh)/(1000*60))
+sec = [math.floor((t - hh_*1000*60*60 - mm_*1000*60)/(1000)) for t, hh_, mm_ in zip(ss.times['CS_Go'], hh, mm)]
+mis = [math.floor((t - hh_*1000*60*60 - mm_*1000*60 - sec_*1000)*1000) for t, hh_, mm_, sec_ in zip(ss.times['CS_Go'], hh, mm, sec)]
 
-
-
-# In[14]:
-
-
-exp_cohort.sessions[0].times
+T = [ideal_time(hour=hh_, minute=mm_, second=sec_, microsecond=mis_) for hh_, mm_, sec_, mis_ in zip(hh, mm, sec, mis)]
 
 
 # %TODO
@@ -197,7 +199,7 @@ exp_cohort.sessions[0].times
 # - drowdown to change time units
 # - express states by lines ... requires manual definition of each state
 
-# In[41]:
+# In[52]:
 
 
 ss = exp_cohort.sessions[0]
@@ -212,6 +214,46 @@ for kind, k in enumerate(keys):
     fig.add_trace(sc)
 
 fig.update_xaxes(title='Time (s)')
+
+
+fig.update_layout(
+    updatemenus=[
+        dict(
+            buttons=list([
+                dict(
+                    args=["type", "milliseconds"],
+                    label="milliseconds",
+                    method="restyle"
+                ),
+                dict(
+                    args=["type", "seconds"],
+                    label="seconds",
+                    method="restyle"
+                ),
+                dict(
+                    args=["type", "minutes"],
+                    label="minutes",
+                    method="restyle"
+                )
+            ]),
+            direction="down",
+            pad={"r": 10, "t": 10},
+            showactive=True,
+            x=0.04,
+            xanchor="left",
+            y=1.2,
+            yanchor="top"
+        ),
+    ]
+)
+
+fig.update_layout(
+    annotations=[
+        dict(text="Time unit:", showarrow=False,
+        x=-0, y=1.14, xref="paper", yref="paper", align="left")
+    ]
+)
+
 fig.show()
 
 
