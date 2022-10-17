@@ -174,23 +174,23 @@ exp_cohort_copy = deepcopy(exp_cohort)
 
 
 import plotly.graph_objects as go
+
+
+# In[64]:
+
+
 from datetime import time as ideal_time
-
-
-# In[62]:
-
-
 import math
-from re import T
-import secrets
-ss = exp_cohort.sessions[0]
 
-hh = [math.floor(t/(1000*60*60)) for t in ss.times['CS_Go']]
-mm = [math.floor((t - hh_*1000*60*60)/(1000*60)) for t, hh_ in zip(ss.times['CS_Go'], hh)]   # math.floor((ss.times['CS_Go'] - hh)/(1000*60))
-sec = [math.floor((t - hh_*1000*60*60 - mm_*1000*60)/(1000)) for t, hh_, mm_ in zip(ss.times['CS_Go'], hh, mm)]
-mis = [math.floor((t - hh_*1000*60*60 - mm_*1000*60 - sec_*1000)*1000) for t, hh_, mm_, sec_ in zip(ss.times['CS_Go'], hh, mm, sec)]
+def ms2idealtime(t_ms):
 
-T = [ideal_time(hour=hh_, minute=mm_, second=sec_, microsecond=mis_) for hh_, mm_, sec_, mis_ in zip(hh, mm, sec, mis)]
+    hh = [math.floor(t/(1000*60*60)) for t in t_ms]
+    mm = [math.floor((t - hh_*1000*60*60)/(1000*60)) for t, hh_ in zip(t_ms, hh)]   # math.floor((t_ms - hh)/(1000*60))
+    sec = [math.floor((t - hh_*1000*60*60 - mm_*1000*60)/(1000)) for t, hh_, mm_ in zip(t_ms, hh, mm)]
+    mis = [math.floor((t - hh_*1000*60*60 - mm_*1000*60 - sec_*1000)*1000) for t, hh_, mm_, sec_ in zip(t_ms, hh, mm, sec)]
+
+    t = [ideal_time(hour=hh_, minute=mm_, second=sec_, microsecond=mis_) for hh_, mm_, sec_, mis_ in zip(hh, mm, sec, mis)]
+    return t
 
 
 # %TODO
@@ -199,7 +199,17 @@ T = [ideal_time(hour=hh_, minute=mm_, second=sec_, microsecond=mis_) for hh_, mm
 # - drowdown to change time units
 # - express states by lines ... requires manual definition of each state
 
-# In[52]:
+# In[75]:
+
+
+9 % 2
+
+
+# In[77]:
+
+
+raw_symbols  = plotly.validators.scatter.marker.SymbolValidator().values
+symbols = [raw_symbols[i+2] for i in range(0, len(raw_symbols), 12)]
 
 
 ss = exp_cohort.sessions[0]
@@ -209,8 +219,9 @@ fig = go.Figure()
 keys = ss.times.keys()
 
 for kind, k in enumerate(keys):
+
     sc = go.Line(x=ss.times[k]/1000, y=[k]
-                 * len(ss.times[k]), name=k, mode='markers')
+                 * len(ss.times[k]), name=k, mode='markers', marker_symbol=symbols[kind % 40])
     fig.add_trace(sc)
 
 fig.update_xaxes(title='Time (s)')
@@ -255,20 +266,4 @@ fig.update_layout(
 )
 
 fig.show()
-
-
-# In[40]:
-
-
-fig = go.Figure()
-
-ss.times['CS_Go']
-sc = go.Line(x=ss.times['CS_Go']/1000, y=['CS_Go']
-                * len(ss.times[k]), name=k, mode='markers')
-
-fig.add_trace(sc)
-
-fig.update_xaxes(title='Time (s)')
-fig.show()
-
 
