@@ -594,7 +594,11 @@ class Session():
             self.df_events.loc[(go_success_idx),'success'] = True
 
         # To perform for cued-uncued version of the go task
-        elif self.task_name in ['reaching_go_spout_cued_uncued']:
+        elif self.task_name in ['reaching_go_spout_cued_uncued', 'cued_uncued_oct22']:
+            # reformatting trigger name for that one task, with lower case
+            if self.task_name in ['cued_uncued_oct22']:
+                self.df_conditions.trigger = self.df_conditions.trigger.str.lower()
+                self.df_events.trigger = self.df_events.trigger.str.lower()
 
             # for cued trials, find if spout event within timelim           
             cued_success = self.df_events.loc[
@@ -951,7 +955,6 @@ class Session():
             if verbose:
                 print(f'condition {condition_ID} trials: {len(trials_idx)}')
 
-            # TODO: Test when no trials in first or second condition
             if len(photometry_idx) == 0 :
                 continue
 
@@ -999,8 +1002,13 @@ class Session():
                 # concatenate with previous dataframe
                 df_meta_photo = pd.concat([df_meta_photo, df_meta_photo_temp], axis=0, ignore_index=True)
                 # concatenate with previous numpy array
+                
+                # Take into account when there is no trial in first condition
+                if 'photo_array' in locals():
+                    photo_array = np.concatenate((photo_array, photo_array_temp), axis=0)
+                else:
+                    photo_array = photo_array_temp
 
-                photo_array = np.concatenate((photo_array, photo_array_temp), axis=0)
 
         if remove_artifacts == True:
             
@@ -1989,7 +1997,7 @@ class Experiment():
                             motion_corr = motion_corr, 
                             df_over_f = df_over_f, 
                             downsampling_factor = downsampling_factor, 
-                            return_full_session = False,#
+                            return_full_session = False,
                             export_vars = export_vars,
                             remove_artifacts = remove_artifacts,
                             verbose = verbose)
