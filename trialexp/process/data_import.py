@@ -19,6 +19,9 @@ from math import ceil
 from scipy.signal import butter, filtfilt, decimate
 from scipy.stats import linregress, zscore
 
+import plotly.graph_objects as go
+from plotly.validators.scatter.marker import SymbolValidator
+
 from trialexp.utils.pycontrol_utilities import *
 from trialexp.utils.pyphotometry_utilities import *
 from trialexp.utils.rsync import *
@@ -1323,9 +1326,6 @@ class Session():
 
 
         """
-
-        import plotly.graph_objects as go
-        from plotly.validators.scatter.marker import SymbolValidator
 
         raw_symbols  = SymbolValidator().values
         symbols = [raw_symbols[i+2] for i in range(0, len(raw_symbols), 12)]
