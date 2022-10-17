@@ -21,6 +21,7 @@ from scipy.stats import linregress, zscore
 
 import plotly.graph_objects as go
 from plotly.validators.scatter.marker import SymbolValidator
+from plotly.subplots import make_subplots
 
 from trialexp.utils.pycontrol_utilities import *
 from trialexp.utils.pyphotometry_utilities import *
@@ -1316,7 +1317,7 @@ class Session():
                     # list_of_list = self.df_events.loc[(self.df_conditions['valid'] == True) & (self.df_conditions['trigger'] == trig), ev + '_trial_time'].values
                     # flat_list_times = [item for sublist in list_of_list for item in sublist]
         return self
-
+    
     def plot_session(self):
         """
         Visualise a session using Plotly as ascrollable figure
@@ -1388,6 +1389,74 @@ class Session():
 
         fig.show()
 
+    # Should be implemented for Event_dataset() possibly, in trial_dataset_classes as data_import grows out of control
+    def plot_trials(self):
+
+        raw_symbols  = SymbolValidator().values
+        symbols = [raw_symbols[i+2] for i in range(0, len(raw_symbols), 12)]
+
+        event_cols = [event_col for event_col in self.df_events.columns if '_trial_time' in event_col]
+        event_names = [event_col.split('_trial_time')[0] for event_col in event_cols]
+
+        plot_names =  [trig + ' ' + event for event in self.events_to_process for trig in self.triggers]
+
+        fig = make_subplots(
+            rows= len(event_cols), 
+            cols= len(self.triggers), 
+            shared_xaxes= True,
+            subplot_titles= plot_names
+        )
+
+        for trig_idx, trigger in enumerate(self.triggers):
+            
+            # sub-selection of df_events based on trigger, should be condition for event_dataset class
+            df_subset = self.df_events[self.df_events.trigger == trigger]
+
+            for ev_idx, event_col in enumerate(event_cols):
+
+                ev_times = df_subset[event_cols[0]].apply(lambda x: np.array(x)).values
+                ev_trial_nb = [np.ones(len(array)) * df_subset.index[idx] for idx, array in enumerate(ev_times)]
+
+                ev_trial_nb = np.concatenate(ev_trial_nb)
+                ev_times =  np.concatenate(ev_times)
+
+                fig.add_trace(
+                    go.Scatter(
+                        x=ev_times/1000,
+                        y=ev_trial_nb,
+                        name=event_names[ev_idx],
+                        mode='markers',
+                        marker_symbol=symbols[ev_idx % 40]
+
+                    ), row= ev_idx+1, col = trig_idx+1)
+
+                fig.update_xaxes(
+                    ticks="inside",
+                    ticklen=6,
+                    tickwidth=2,
+                    tickfont_size=12,
+                    range=[self.trial_window[0]/1000, self.trial_window[1]/1000],
+                    showline=True,
+                    linecolor='black'
+                    )
+                
+                fig.update_yaxes(    
+                    ticks="inside",
+                    ticklen=6,
+                    tickwidth=2,   
+                    tickfont_size=12,
+                    showline=True,
+                    linecolor='black'
+                    )
+
+
+        fig.update_layout(
+
+            height=800,
+            width=600,
+        )
+
+        fig.show()
 
 
 #----------------------------------------------------------------------------------
