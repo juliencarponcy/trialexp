@@ -1306,6 +1306,82 @@ class Session():
                     # flat_list_times = [item for sublist in list_of_list for item in sublist]
         return self
 
+    def plot_session(self):
+        """
+        Visualise a session using Plotly as ascrollable figure
+
+        #TODO option to specify 'states', whose definitions are lost in Session data
+        #TODO cannot change the time unit from the dropdown
+
+
+        """
+
+        import plotly.graph_objects as go
+        from plotly.validators.scatter.marker import SymbolValidator
+
+        raw_symbols  = SymbolValidator().values
+        symbols = [raw_symbols[i+2] for i in range(0, len(raw_symbols), 12)]
+        # 40 symbols
+
+        fig = go.Figure()
+
+        keys = self.times.keys()
+
+        for kind, k in enumerate(keys):
+
+            sc = go.Line(x=self.times[k]/1000, y=[k]
+                        * len(self.times[k]), name=k, mode='markers', marker_symbol=symbols[kind % 40])
+            fig.add_trace(sc)
+
+        fig.update_xaxes(title='Time (s)')
+        fig.update_xaxes(title='Time (s)')
+
+
+        fig.update_layout(
+            title =dict(
+                text = f"{self.task_name}, {self.subject_ID} #{self.number}, on {self.datetime_string} via {self.setup_ID}"
+            ),
+            updatemenus=[
+                dict(
+                    buttons=list([
+                        dict(
+                            args=["type", "milliseconds"],
+                            label="milliseconds",
+                            method="restyle"
+                        ),
+                        dict(
+                            args=["type", "seconds"],
+                            label="seconds",
+                            method="restyle"
+                        ),
+                        dict(
+                            args=["type", "minutes"],
+                            label="minutes",
+                            method="restyle"
+                        )
+                    ]),
+                    direction="down",
+                    pad={"r": 10, "t": 10},
+                    showactive=True,
+                    x=0.04,
+                    xanchor="left",
+                    y=1.2,
+                    yanchor="top"
+                ),
+            ]
+        )
+
+        fig.update_layout(
+            annotations=[
+                dict(text="Time unit:", showarrow=False,
+                x=-0, y=1.14, xref="paper", yref="paper", align="left")
+            ]
+        )
+
+        fig.show()
+
+
+
 #----------------------------------------------------------------------------------
 # Experiment class
 #----------------------------------------------------------------------------------
