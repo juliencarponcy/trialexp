@@ -1390,13 +1390,33 @@ class Session():
         fig.show()
 
     # Should be implemented for Event_dataset() possibly, in trial_dataset_classes as data_import grows out of control
-    def plot_trials(self):
+    def plot_trials(self, events_to_plot:list = 'all'):
 
         raw_symbols  = SymbolValidator().values
         symbols = [raw_symbols[i+2] for i in range(0, len(raw_symbols), 12)]
 
-        event_cols = [event_col for event_col in self.df_events.columns if '_trial_time' in event_col]
-        event_names = [event_col.split('_trial_time')[0] for event_col in event_cols]
+        if events_to_plot == 'all':
+            event_cols = [event_col for event_col in self.df_events.columns if '_trial_time' in event_col]
+            event_names = [event_col.split('_trial_time')[0] for event_col in event_cols]
+        
+        elif isinstance(events_to_plot, list):
+            event_names = events_to_plot
+
+            # check if events requested exist
+            check = all(ev in self.events_to_process for ev in event_names)
+
+            if not check:
+                raise Exception('Check your list of requested events, event not found')
+            event_cols = [ev + '_trial_time' for ev in events_to_plot]
+        
+        elif isinstance(events_to_plot, str):
+            if events_to_plot not in self.events_to_process:
+                raise Exception('Check the name of your requested event, event not found')
+            event_names = [events_to_plot]
+            event_cols = [ev + '_trial_time' for ev in event_names]
+
+        else:
+            raise Exception('bad format for requesting plot_trials events')
 
         plot_names =  [trig + ' ' + event for event in self.events_to_process for trig in self.triggers]
 
@@ -1404,17 +1424,18 @@ class Session():
             rows= len(event_cols), 
             cols= len(self.triggers), 
             shared_xaxes= True,
+            shared_yaxes= True,
             subplot_titles= plot_names
         )
 
-        for trig_idx, trigger in enumerate(self.triggers):
+        for trig_idx, trigger in enumerate(self.df_events.trigger.unique()):
             
             # sub-selection of df_events based on trigger, should be condition for event_dataset class
             df_subset = self.df_events[self.df_events.trigger == trigger]
 
             for ev_idx, event_col in enumerate(event_cols):
 
-                ev_times = df_subset[event_cols[0]].apply(lambda x: np.array(x)).values
+                ev_times = df_subset[event_cols[ev_idx]].apply(lambda x: np.array(x)).values
                 ev_trial_nb = [np.ones(len(array)) * df_subset.index[idx] for idx, array in enumerate(ev_times)]
 
                 ev_trial_nb = np.concatenate(ev_trial_nb)
@@ -1446,14 +1467,15 @@ class Session():
                     tickwidth=2,   
                     tickfont_size=12,
                     showline=True,
-                    linecolor='black'
+                    linecolor='black',
+                    autorange=True
                     )
 
 
         fig.update_layout(
 
-            height=800,
-            width=600,
+            height=1200,
+            width=800,
         )
 
         fig.show()
