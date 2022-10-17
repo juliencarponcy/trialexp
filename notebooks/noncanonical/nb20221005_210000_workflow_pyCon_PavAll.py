@@ -6,7 +6,7 @@
 # 
 
 # ```batch script
-# jupyter nbconvert "D:\OneDrive - Nexus365\Private_Dropbox\Projects\trialexp\notebooks\noncanonical\nb20221005_210000_workflow_pyCon_PavAll.ipynb" --to="python" --output-dir="D:\OneDrive - Nexus365\Private_Dropbox\Projects\trialexp\notebooks\noncanonical" --output="nb20221005_210000_workflow_pyCon_PavAll"'
+# jupyter nbconvert "D:\OneDrive - Nexus365\Private_Dropbox\Projects\trialexp\notebooks\noncanonical\nb20221005_210000_workflow_pyCon_PavAll.ipynb" --to="python" --output-dir="D:\OneDrive - Nexus365\Private_Dropbox\Projects\trialexp\notebooks\noncanonical" --output="nb20221005_210000_workflow_pyCon_PavAll"
 # ```
 
 # ### Imports
@@ -311,7 +311,7 @@ dist_as_continuous.metadata_df['keep'].value_counts()
 
 # ### sessions
 
-# In[17]:
+# In[26]:
 
 
 gr_df, out_list, _, _ = ev_dataset.analyse_successrate(
@@ -322,9 +322,22 @@ print(gr_df)
 print(out_list)
 
 
+# ### sessions with gaps
+
+# In[27]:
+
+
+gr_df, out_list, _, _ = ev_dataset.analyse_successrate(
+    [0], [1], bywhat='sessions_with_gaps')
+
+print(gr_df)
+
+print(out_list)
+
+
 # ### days
 
-# In[18]:
+# In[28]:
 
 
 gr_df, out_list, _, _ = ev_dataset.analyse_successrate([0], [1], bywhat='days')
@@ -336,7 +349,7 @@ print(out_list)
 
 # ### days_with_gaps
 
-# In[19]:
+# In[29]:
 
 
 gr_df, out_list, _, _ = ev_dataset.analyse_successrate(
@@ -349,13 +362,13 @@ print(out_list)
 
 # ### Dates
 
-# In[32]:
+# In[30]:
 
 
 out_list[0].index
 
 
-# In[45]:
+# In[31]:
 
 
 gr_df, out_list, ax, _ = ev_dataset.analyse_successrate([0], [1], bywhat='dates')

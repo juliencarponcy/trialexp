@@ -14,7 +14,7 @@ from matplotlib import pyplot as plt
 from matplotlib import cm
 from matplotlib import colors
 from matplotlib.axes import Axes
-# import matplotlib
+import matplotlib
 
 from trialexp.utils.cont_dataset_utlities import *
 
@@ -113,6 +113,8 @@ class Trials_Dataset():
         self.metadata_df['keep'] = True
         self.metadata_df['trial_ID'] = self.metadata_df.index.values
         self.creation_date = datetime.now()
+        self._trial_window = []
+        self._time_unit = ''
         
         if self.data.shape[0] != self.metadata_df.shape[0]:
             raise ValueError(' \
@@ -129,6 +131,14 @@ class Trials_Dataset():
             _ = self.get_groups()
         else:
             self.has_groups = False
+
+    @property
+    def trial_window(self):
+        return self._trial_window
+
+    @property
+    def time_unit(self):
+        return self._time_unit
 
     def set_conditions(self, conditions: ConditionsType, aliases: Iterable = None):
         if isinstance(conditions, list) and not all([isinstance(conditions[c],dict) for c in range(len(conditions))]):
@@ -178,8 +188,8 @@ class Trials_Dataset():
 
 
     def set_trial_window(self, trial_window: Iterable, unit: str = None):
-        self.trial_window = trial_window
-        self.time_unit = unit
+        self._trial_window = trial_window
+        self._time_unit = unit
 
     def get_memory_size(self, verbose=True):
         mem_mb = sys.getsizeof(self.data)/1024/1024
@@ -397,8 +407,8 @@ class Continuous_Dataset(Trials_Dataset):
         self.sampling_rate = fs
 
     def set_trial_window(self, trial_window: Iterable, unit: str = None):
-        self.trial_window = trial_window
-        self.time_unit = unit
+        self._trial_window = trial_window
+        self._time_unit = unit
         if hasattr(self, 'sampling_rate'):
             self.time_vector = self.get_time_vector(unit)
 
@@ -674,7 +684,7 @@ class Continuous_Dataset(Trials_Dataset):
             vars: VarsType = 'all',
             time_lim: Optional[list] = None,
             time_unit: str = None,
-            error: str = None, # only for group plot
+            error: bool = None, # only for group plot
             is_x_vs_y: bool = False, # implement here or not?
             plot_subjects: bool = True,
             plot_groups: bool = True,
@@ -685,8 +695,52 @@ class Continuous_Dataset(Trials_Dataset):
             box: bool = False,
             liney0:bool = True, # draw horizontal gray dashed line at y = 0
             legend: bool = True,
+            axs: Axes = None,
             verbose: bool = False):
+        """
 
+        Arguments
+        ---------
+        self
+        vars: VarsType = 'all',
+            #TODO what to expect?
+        time_lim: Optional[list] = None,
+            #TODO better called xlim?
+            Specify the xlim of Axes
+        time_unit: str = None,
+            's', 'seconds', 'ms', or 'milliseconds'
+        error: bool = None, 
+            Only for group plot
+        is_x_vs_y: bool = False, 
+            implement here or not?
+        plot_subjects: bool = True,
+            Whether to plot individual subject data.
+        plot_groups: bool = True,
+            Whether to plot group data.
+        ylim: list = None, 
+        colormap: str = 'jet',
+            trialexp.utils.pycontrol_utilities.cmap10 provides the 10 default plotting colors in matplotlib as a colormap
+        figsize: tuple = (20, 10),
+        dpi: int = 100,
+        box: bool = False,
+        liney0:bool = True, 
+            draw horizontal gray dashed line at y = 0
+        #TODO linex0 :bool = True, 
+        legend: bool = True,
+        verbose: bool = False
+
+        Returns
+        _______
+        fig, 
+        axs, 
+        out_df : DataFrame
+            A summary table to show the counting sample numbers.
+            Can be improved.
+            #TODO Is this format useful? I am not sure! You need to dig a lot.
+            Instead of nesting, we can have dataframes and list of dataframes etc to be joined when necessary
+            Or to have already joined, flat big table???      
+
+        """
         plt.ion()
         plt.rcParams["figure.dpi"] = dpi
         plt.rcParams['font.family'] = ['Arial']
@@ -737,21 +791,55 @@ class Continuous_Dataset(Trials_Dataset):
             in enumerate(filtered_df['subject_ID'].unique())}
        
         # Adapt layout, this could be in a separate class/method
-        if len(group_IDs) == 1:
-            group_colors = cm.get_cmap(colormap, len(self.conditions))
-            if plot_groups and not plot_subjects:
-                
-                fig, axs = plt.subplots(len(vars), 1, sharex= 'all',
-                    sharey = 'row', squeeze = False , figsize = figsize)
+        if axs is None:
+            # Set title as condition on the first line
+            if len(group_IDs) == 1:
+                group_colors = cm.get_cmap(colormap, len(self.conditions))
+                if plot_groups and not plot_subjects:
+                    
+                    fig, axs = plt.subplots(len(vars), 1, sharex= 'all',
+                        sharey = 'row', squeeze = False , figsize = figsize)
+                else:
+                    fig, axs = plt.subplots(len(vars), len(condition_IDs)+1, sharex= 'all',
+                        sharey = 'row', squeeze = False , figsize = figsize)
             else:
-                fig, axs = plt.subplots(len(vars), len(condition_IDs)+1, sharex= 'all',
+                group_colors = cm.get_cmap(colormap, len(self.groups))
+
+                fig, axs = plt.subplots(len(vars), len(condition_IDs), sharex= 'all',
                     sharey = 'row', squeeze = False , figsize = figsize)
         else:
-            group_colors = cm.get_cmap(colormap, len(self.groups))
+            if axs.ndim == 1:
+                axs = axs.reshape(1, -1)
 
-            fig, axs = plt.subplots(len(vars), len(condition_IDs), sharex= 'all',
-                sharey = 'row', squeeze = False , figsize = figsize)
-        
+            for a in axs:
+                for b in a:
+                    assert isinstance(b, matplotlib.axes.Axes), \
+                        f'axs must be an array (like) of matplotlib.axes.Axes '
+
+            fig = None
+            assert axs.shape[0] == len(vars), \
+                f'The row numner of axs {axs.shape[0]} must match length of vars {len(vars)}'
+
+            if len(group_IDs) == 1:
+                group_colors = cm.get_cmap(colormap, len(self.conditions))
+
+                if plot_groups and not plot_subjects:
+                        
+                    assert axs.shape[1] == len(vars), \
+                        f'The column numner of axs {axs.shape[0]} must be 1'
+
+                else:
+
+                    assert axs.shape[1] == len(condition_IDs)+1, \
+                        f'The column numner of axs {axs.shape[1]} must be {len(condition_IDs)+1}'
+                   
+            else:
+                group_colors = cm.get_cmap(colormap, len(self.groups))
+
+                assert axs.shape[1] == len(condition_IDs)+1, \
+                    f'The column numner of axs {axs.shape[1]} must be {len(condition_IDs)}'
+
+      
         group_dfs = [0] * len(condition_IDs)
         cond_n = [0] * len(condition_IDs) # trial counts per condition
         for c_idx, cond_ID in enumerate(condition_IDs):
@@ -1138,14 +1226,13 @@ class Event_Dataset(Trials_Dataset):
         conditions_failure : list,
         subject_IDs: list = None, 
         group_IDs : list = None, 
-        bywhat: str = 'session', 
-        conditions: dict = None,
-        conditions_bool: str = 'all',
+        bywhat: str = 'sessions', 
         ax = None):
         """
         - susscess is alreday computed by Experiment.compute_success
             but you still need to specify conditions from conditions_list
         - failure, on the other hand, is less clear
+        - Sessions with 0 trial (success or failure) are ignored.
 
         conditions_succcess : list
             list of integers
@@ -1165,16 +1252,19 @@ class Event_Dataset(Trials_Dataset):
                 The length must match the height of the self.metadata_df.
         subject_IDs: list = None
         group_IDs : list = None
-        bywhat : str
-            'session', 'days', 'days_with_gaps', 'dates'
-        ax: matplotlib.axes.Axes = None
-        #TODO need to use 'keep'???
+        bywhat : str = 'sessions'
+            'sessions', 'sessions_with_gaps', 'days', 'days_with_gaps', 'dates'
+            'sessions' will renumber sessions so there will be no gaps shown.
+            'days' will recount days so there will be no gaps shown.
+            'session_with_gaps' 'days_with_gaps', and 'dates'will include gaps.
 
-        #TODO Turned out this is useless in case of Go/NoGo or Cued/Uncued
-        where you need to count trials in separate groups
+        ax: matplotlib.axes.Axes = None
+
+        #TODO to support the removal of human interventions
 
         """
      
+        assert bywhat in ['sessions', 'sessions_with_gaps', 'days', 'days_with_gaps', 'dates'], "bywhat is invalid"
 
         def get_gr_df(self, conditions_succcess, conditions_failure, group_IDs, subject_IDs):
 
@@ -1241,6 +1331,7 @@ class Event_Dataset(Trials_Dataset):
                                 for c in conditions_succcess], axis=1).any(axis=1)
                         else:
                             tf1 = conditions_succcess
+
                         TF_success = (metadata_df['group_ID'] == g) & (metadata_df['subject_ID'] == s) \
                             & (metadata_df['session_nb'] == ss) \
                             & (tf1)
@@ -1261,6 +1352,7 @@ class Event_Dataset(Trials_Dataset):
                             TF_failure, 'success'])
 
                         ss_tn[ss_idx] = ss_sc[ss_idx] + ss_fl[ss_idx]
+                        # if ss_tn[ss_idx] == 0, then this session is invalid. We should not count this.
 
                         dt = (metadata_df.loc[(TF_success) | (TF_failure), 'datetime']).copy()
                         if not dt.empty:
@@ -1276,6 +1368,9 @@ class Event_Dataset(Trials_Dataset):
                     ss_df.astype({'session_nb': 'int', 'success_n': 'int', 'failure_n': 'int', 'trial_n': 'int'})
 
                     ss_df['subject_ID'] = pd.Series([s] * len(session_nbs))
+
+                    ss_df.drop(labels = [ i for i, x in enumerate([np.isnan(sr) for sr in ss_sr]) if x],
+                        axis='index', inplace=True) # drop the rows with sr being NaN (also meaning trial_n == 0)
 
                     ss_dfs[s_idx] = ss_df
 
@@ -1304,12 +1399,19 @@ class Event_Dataset(Trials_Dataset):
                 out_listlist = [None] * len(subject_IDs_)
                 for s_idx, s in enumerate(subject_IDs_):
                     thismouse_df = gr_df.loc[(gr_df['group_ID'] == g)
-                        & (gr_df['subject_ID'] == s), :]
+                        & (gr_df['subject_ID'] == s), :].copy()
 
                     if bywhat == 'days':
                         # gaps are ignored
                         # success rate is computed daily
                         dates = list(set(thismouse_df['datetime'].dt.date)) 
+
+                        # delete NaT from the list because sort() doesn't like it
+                        # But why there are NaT for dates????
+                        for idx, tf in enumerate([pd.isnull(d) for d in dates]):
+                            if tf:
+                                del dates[idx]
+
                         dates.sort()
                         sr = [None] * len(dates)
                         for d_idx, d in enumerate(dates):
@@ -1318,8 +1420,11 @@ class Event_Dataset(Trials_Dataset):
 
                             sr[d_idx] = X.success_n/X.trial_n
 
-                        out_listlist[s_idx] = pd.DataFrame(list(zip(range(1, len(dates)+1), sr)), columns=['dayN', str(s)])
-                        out_listlist[s_idx] = out_listlist[s_idx].set_index('dayN')
+                        df1 = pd.DataFrame(list(zip(range(1, len(dates)+1), sr)), columns=['dayN', str(s)])
+                        df1 = df1.drop(df1[np.isnan(df1[str(s)])].index) # drop NaN rows
+                        df1['dayN'] = range(1, df1.shape[0]+1)
+
+                        out_listlist[s_idx] = df1.set_index('dayN')
 
                     elif bywhat == 'days_with_gaps':
                         # gaps are considered
@@ -1333,9 +1438,13 @@ class Event_Dataset(Trials_Dataset):
 
                             sr[d_idx] = X.success_n/X.trial_n
 
+                        #TODO get rid of NaT from dates
                         out_listlist[s_idx] = pd.DataFrame(
                             list(zip([d - dates[0] for d in dates], sr)), columns=['dayN', str(s)])
+                        # unsupported operand type(s) for -: 'datetime.date' and 'NaTType'
+
                         out_listlist[s_idx] = out_listlist[s_idx].set_index('dayN')
+
                     elif bywhat == 'dates':
                         # gaps are considered
                         # success rate is computed daily
@@ -1351,15 +1460,31 @@ class Event_Dataset(Trials_Dataset):
 
                         out_listlist[s_idx] = pd.DataFrame(list(zip(dates, sr)), columns=['dates', str(s)])
                         out_listlist[s_idx] = out_listlist[s_idx].set_index('dates')
+
                     elif bywhat == 'sessions':
                         # gaps are ignored
+                        # session with NaN will be ignored
+                        # session number always starts with 1
                         # success rate is computed by session
-                        
-                        out_listlist[s_idx] = thismouse_df.loc[:, ['session_nb', 'success_rate']] 
+
+                        df1 = thismouse_df.loc[:, ['session_nb', 'success_rate']].copy()
+                        df1 = df1.drop(df1[np.isnan(df1['success_rate'])].index) # drop NaN rows
+                        df1.sort_values(by=['session_nb'],inplace=True)
+                        df1 = df1.reset_index(drop=True)
+                        df1['session_nb'] = pd.Series(range(1, df1.shape[0]+1), dtype='int64')
+
+                        out_listlist[s_idx] = df1.set_index('session_nb')
+                        out_listlist[s_idx].columns = [str(s)]
+                    
+                    elif bywhat == 'sessions_with_gaps':
+                        # gaps are maintained
+                        # success rate is computed by session
+                        out_listlist[s_idx] = thismouse_df.loc[:, ['session_nb', 'success_rate']].copy() 
                         out_listlist[s_idx] = out_listlist[s_idx].set_index('session_nb')
                         out_listlist[s_idx].columns = [str(s)]
+
                     else:
-                        raise 'bywhat must be ''days'', ''days_with_gap'', ''dates'', or ''sessions'''
+                        raise 'bywhat must be  ''sessions'', ''sessions_with_gaps'' ,''days'', ''days_with_gap'', or ''dates'''
 
                     #out_list[g_idx] = 1 = pd.concat(out_listlist) # TODO this is wrong
                     # session_nb as index, success_rate as value, subject_ID as columns
@@ -1386,12 +1511,17 @@ class Event_Dataset(Trials_Dataset):
         nml = colors.Normalize(0, 1)
 
         im1 = ax.imshow(out_list[0].transpose(), norm=nml)
+
         if bywhat == 'sessions':
             ax.set_xlabel('Sessions')
+        elif bywhat == 'sessions_with_gaps':
+            ax.set_xlabel('Sessions')
+
         elif bywhat == 'days':
             ax.set_xlabel('Days')
         elif bywhat == 'days_with_gaps':
             ax.set_xlabel('Days')
+
         elif bywhat == 'dates':
             ax.set_xlabel('Dates')
             xticks = ax.get_xticks()

@@ -2121,27 +2121,35 @@ class Experiment():
             photometry_dir, 
             rsync_chan: int = 2, 
             verbose: bool = True):
-        '''
+        """
         This function is a class method for Experiment objects. 
         For each session, it checks into an horizontal photometry file repository,
         trying to find a .ppd file matching subject and date and takes the closest
         file. It then try to create a rsync aligment object into the corresponding
         session if the pulses match.
 
-                Parameters:
-                        self (Experiment): An Experiment object instance
-                        photometry_dir (str): Path of the photometry repository
-                            Note: On windows, double antislash must be entered
-                            between each level. 
-                            e.g.: 'C:\\Users\\Documents\\GitHub\\photometry_repo'
-                        rsync_chan (int): Channel on which pulses have been
-                            recorded on the py_photometry device.
-                        verbose (bool): display match/no match messages for each file
+            Parameters:
+                self (Experiment): An Experiment object instance
+                photometry_dir (str): Path of the photometry repository
+                    Note: On windows, double antislash must be entered
+                    between each level. 
+                    e.g.: 'C:\\Users\\Documents\\GitHub\\photometry_repo'
+                rsync_chan (int): Channel on which pulses have been
+                    recorded on the py_photometry device.
+                verbose (bool): display match/no match messages for each file
 
-                Returns:
-                        None
+            Returns:
+                    None
+
+            The warning:
+                KMeans is known to have a memory leak on Windows with MKL, when there are less chunks than available threads...
+            
+            is due to rsync function.
+
+            https://stackoverflow.com/questions/69596239/how-to-avoid-memory-leak-when-dealing-with-kmeans-for-example-in-this-code-i-am
+            Follow the answer and set the einvironment variable OMP_NUM_THREADS to supress the warning.
                     
-        '''
+        """
             
         pycontrol_subjects = [session.subject_ID for session in self.sessions]
         pycontrol_datetime = [session.datetime for session in self.sessions]

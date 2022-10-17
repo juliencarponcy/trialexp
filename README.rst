@@ -52,10 +52,11 @@ Usage
 
 ``conda activate trialexp``
 
-Do this to make modules in the repo available
+* Do this in the virtual environment to make modules in the repo available:
 
 ``pip install -e .``
-   
+
+* Launch Jupyter
 ``jupyter-notebook``
     
 

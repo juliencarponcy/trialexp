@@ -87,7 +87,7 @@ copy_files_to_horizontal_folders(root_folders, horizontal_folder_pycontrol, hori
 # 
 # This will include all the pycontrol files present in the folder_path directory (do not include subdirectories)
 
-# In[14]:
+# In[5]:
 
 
 # Folder of a full experimental batch, all animals included
@@ -108,7 +108,7 @@ exp_cohort = Experiment(pycontrol_files_path)
 exp_cohort.by_trial = True
 
 
-# In[13]:
+# In[6]:
 
 
 exp_cohort.sessions[0].df_conditions
@@ -118,7 +118,7 @@ exp_cohort.sessions[0].df_conditions
 # 
 # 5m55.4s
 
-# In[15]:
+# In[7]:
 
 
 # Process the whole experimental folder by trials
@@ -139,7 +139,7 @@ exp_cohort.process_exp_by_trial(trial_window, timelim, tasksfile, blank_spurious
 # 2m10.9s
 # 
 
-# In[16]:
+# In[8]:
 
 
 # Find if there is a matching photometry file and if it can be used:
@@ -163,7 +163,7 @@ exp_cohort_copy = deepcopy(exp_cohort)
 
 # Pavlovian
 
-# In[17]:
+# In[9]:
 
 
 
@@ -202,7 +202,7 @@ trial_window = [-2000, 4000]  # TODO
 # - **Need to combine this analysis with pyControl analysis**
 # 
 
-# In[18]:
+# In[10]:
 
 
 
@@ -256,8 +256,8 @@ fig, axs, df1 = cont_dataset.lineplot(
 for r in range(axs.shape[0]):
     if len(axs.shape) > 1:
         for c in range(axs.shape[1]):
-            axs1[r, c].set_xlabel('Relative to CS onset (s)', fontsize=14)
-            axs1[r, c].set_title(axs[r, c].get_title('center'), fontsize=14)
+            axs[r, c].set_xlabel('Relative to CS onset (s)', fontsize=14)
+            axs[r, c].set_title(axs[r, c].get_title('center'), fontsize=14)
 
     else:
         axs[r].set_xlabel('Relative to CS onset (s)', fontsize=14)
@@ -275,7 +275,7 @@ df1
 # - **Why can I plot Miss against spout touch?**
 # - What spout are we talking about?
 
-# In[75]:
+# In[11]:
 
 
 
@@ -356,7 +356,7 @@ list(set(cont_dataset.metadata_df.loc[cont_dataset.metadata_df['keep'] , 'subjec
 # ```
 # 
 
-# In[86]:
+# In[12]:
 
 
 exp_cohort = deepcopy(exp_cohort_copy)  # copy back to recover
@@ -397,14 +397,14 @@ cont_dataset.filterout_subjects([50, 52]) #TODO
 # list(set(cont_dataset.metadata_df.loc[cont_dataset.metadata_df['keep'] , 'subject_ID' ]))
 
 
-# In[87]:
+# In[13]:
 
 
 c = (cont_dataset.metadata_df['session_nb']).value_counts()
 c.sort_index()
 
 
-# In[88]:
+# In[14]:
 
 
 n = 5
@@ -438,7 +438,7 @@ np.count_nonzero(tf)
 del session_nbs, s
 
 
-# In[89]:
+# In[15]:
 
 
 
@@ -446,20 +446,20 @@ cont_dataset.metadata_df.loc[:,'keep'] = False
 cont_dataset.metadata_df.loc[tf,'keep'] = True
 
 
-# In[90]:
+# In[16]:
 
 
 df = cont_dataset.metadata_df
 
 
-# In[91]:
+# In[17]:
 
 
 
 cont_dataset.set_trial_window([tw/1000 for tw in trial_window], 's')
 
 
-fig, axs1, df1 = cont_dataset.lineplot(
+fig, axs, df1 = cont_dataset.lineplot(
     vars=['analog_1_df_over_f'],
     time_lim=[-2, 2],
     time_unit='s',
@@ -493,7 +493,7 @@ df1
 
 # ## spout touch, last five sessions
 
-# In[92]:
+# In[18]:
 
 
 exp_cohort = deepcopy(exp_cohort_copy)  # copy back to recover
@@ -574,7 +574,7 @@ cont_dataset.metadata_df['keep'].value_counts()
 df1
 
 
-# In[93]:
+# In[19]:
 
 
 
