@@ -134,6 +134,18 @@ def blank_spurious_detection(df_item, blank_timelim):
         tlist = [t for t in df_item if (t < 0 or t > 60)]
         return tlist
 
+def find_last_time_before_list(x):
+    if len(x) >= 1:
+        min_time = min([i for i in x if i>0], default=np.NaN)
+    elif isinstance(x, int) and x > 0:
+        min_time = x
+    elif len(x) == 0:
+        min_time = np.NaN
+    else:
+        print(x,type(x))
+    return min_time
+
+
 def find_min_time_list(x):
     if len(x) >= 1:
         min_time = min([i for i in x if i>0], default=np.NaN)
