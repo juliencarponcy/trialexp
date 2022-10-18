@@ -328,7 +328,7 @@ data.shape
 
 
 from cProfile import label
-from  matplotlib import pyplot as plt
+from matplotlib import pyplot as plt
 from matplotlib import cm
 
 plt.ion()
@@ -352,3 +352,32 @@ plt.colorbar(pcm, label='\u0394F/F')
 
 # - "Baseline" is far from 0
 # - How is delta F/F computed?
+
+# px.imshow() is **much** slower than ax.pcolormesh()
+
+# In[63]:
+
+
+import plotly.express as px
+
+fig2 = px.imshow(data,
+    labels=dict(x="Time (s)", y="Trials", color="\u0394F/F"), color_continuous_scale='RdBu_r')
+fig2.show()
+
+
+# In[70]:
+
+
+import plotly.graph_objects as go
+
+fig3 = go.Figure(data=go.Heatmap(
+        z=data,
+        zmin=-0.15,
+        zmax=0.15,
+        x=cont_dataset.time_vector,
+        y= list(range(1, data.shape[0]+1)),
+        colorscale='RdBu_r'))
+fig3.update_xaxes(title_text = 'Time (s)')
+fig3.update_yaxes(title_text = 'Trials')
+fig3.show()
+
