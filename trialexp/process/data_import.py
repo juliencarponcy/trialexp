@@ -1732,8 +1732,12 @@ class Experiment():
 
 
     def save(self):
-        '''Save all sessions as .pkl file. Speeds up subsequent instantiation of 
-        experiment as sessions do not need to be reimported from data files.''' 
+        """
+        Save all sessions as .pkl file. Speeds up subsequent instantiation of 
+        experiment as sessions do not need to be reimported from data files.
+
+        Saved data will be used by __init__()
+        """ 
         
         with open(os.path.join(self.path, 'sessions.pkl'),'wb') as sessions_file:
             pickle.dump(self.sessions, sessions_file)
