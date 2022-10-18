@@ -1322,7 +1322,6 @@ class Session():
         """
         Visualise a session using Plotly as ascrollable figure
 
-        #TODO option to specify 'states', whose definitions are lost in Session data
         #TODO cannot change the time unit from the dropdown
 
         state_def: dict, list, or None = None
@@ -1335,7 +1334,7 @@ class Session():
                 'offset' : list
                     List of timestamps in ms
             or list of such dictionaries
-
+        For each onset, find the first offset event before the next onset 
         """
 
         raw_symbols  = SymbolValidator().values
@@ -1352,6 +1351,7 @@ class Session():
                         * len(self.times[k]), name=k, mode='markers', marker_symbol=symbols[kind % 40])
             fig.add_trace(line1)
 
+
         def find_states(state_def_dict: dict):
             """
             state_def_dict: dict
@@ -1362,43 +1362,40 @@ class Session():
                         List of timestamps in ms
                     'offset' : list
                         List of timestamps in ms
-            Currently assuming onset and offset are alternating.
-            #TODO Would be more useful, if this detects the first offset after each onset
+            For each onset, find the first offset event before the next onset 
             """
             if state_def_dict is None:
                 return None
             
-            x1_ms = self.times[state_def_dict['onset']]
-            x2_ms = self.times[state_def_dict['offset']]
+            all_on_ms = self.times[state_def_dict['onset']]
+            all_off_ms = self.times[state_def_dict['offset']]
 
-            # Need to handle cases in which onset and offset are not matched well
-            k1 = 0
-            if x1_ms[0] < x2_ms[0]:
-                # OK
-                k2 = 0
-            elif x1_ms[0] > x2_ms[0]:
-                k2 = 1 # skip the first
-            else:
-                warnings.warn( f'Onset/offset was not identified for { state_def_dict["name"]}', UserWarning)
-                return None
+            onsets_ms = [np.NaN] * len(all_on_ms)
+            offsets_ms = [np.NaN] * len(all_on_ms)
 
-            k2_end = k2 + len(x1_ms)-1
-            k1_end = len(x1_ms) -1
-            if len(x2_ms) -1 >= k2 + len(x1_ms)-1:
-                k1_end = len(x1_ms) -1
-                k2_end = k2 + len(x1_ms)-1
-            elif len(x2_ms) -1 < k2 + len(x1_ms)-1:
-                k1_end = len(x1_ms) -2
-                k2_end = k2 + len(x1_ms)-2
-                
-            if not x1_ms[k1_end] < x2_ms[k2_end]:
-                warnings.warn( f'Onset/offset was not identified for { state_def_dict["name"]}', UserWarning)  
-                return None
             
-            state_ms = map(list, zip(x1_ms[k1:k1_end], x2_ms[k2:k2_end], [np.NaN] * (k1_end - k1 +1) ))
+            for i, this_onset in enumerate(all_on_ms): # slow
+                good_offset_list_ms = []
+                for j, _ in enumerate(all_off_ms):
+                    if i < len(all_on_ms)-1:
+                        if all_on_ms[i] < all_off_ms[j] and all_off_ms[j] < all_on_ms[i+1]:
+                            good_offset_list_ms.append(all_off_ms[j]) 
+                    else:
+                        if all_on_ms[i] < all_off_ms[j]:
+                            good_offset_list_ms.append(all_off_ms[j])
+
+                if len(good_offset_list_ms) > 0:
+                    onsets_ms[i] = this_onset
+                    offsets_ms[i] = good_offset_list_ms[0]
+                else:
+                    ... # keep them as nan
+
+            onsets_ms = [ x for x in onsets_ms if not np.isnan(x)]  # remove nan     
+            offsets_ms = [ x for x in offsets_ms if not np.isnan(x)]   
+            
+            state_ms = map(list, zip(onsets_ms, offsets_ms, [np.NaN] * len(onsets_ms) ))
             state_ms = [item for sublist in state_ms for item in sublist] # [onset1, offset1, NaN, onset2, offset2, NaN, ....]
             return state_ms
-
 
         if state_def is not None:
             # Draw states as gapped lines
@@ -1428,9 +1425,10 @@ class Session():
              
 
         fig.update_xaxes(title='Time (s)')
-
+        fig.update_yaxes(fixedrange=True) # Fix the Y axis
 
         fig.update_layout(
+            
             title =dict(
                 text = f"{self.task_name}, {self.subject_ID} #{self.number}, on {self.datetime_string} via {self.setup_ID}"
             ),
@@ -1739,6 +1737,7 @@ class Experiment():
         
         with open(os.path.join(self.path, 'sessions.pkl'),'wb') as sessions_file:
             pickle.dump(self.sessions, sessions_file)
+            print(f"saved {os.path.join(self.path, 'sessions.pkl')}") # I think it's a good practice that whener you make changes to files/folders print something
 
     # def match_photometry_files(self, photometry_dir):
 
