@@ -1431,35 +1431,35 @@ class Session():
             
             title =dict(
                 text = f"{self.task_name}, {self.subject_ID} #{self.number}, on {self.datetime_string} via {self.setup_ID}"
-            ),
-            updatemenus=[
-                dict(
-                    buttons=list([
-                        dict(
-                            args=["type", "milliseconds"],
-                            label="milliseconds",
-                            method="restyle"
-                        ),
-                        dict(
-                            args=["type", "seconds"],
-                            label="seconds",
-                            method="restyle"
-                        ),
-                        dict(
-                            args=["type", "minutes"],
-                            label="minutes",
-                            method="restyle"
-                        )
-                    ]),
-                    direction="down",
-                    pad={"r": 10, "t": 10},
-                    showactive=True,
-                    x=0.04,
-                    xanchor="left",
-                    y=1.2,
-                    yanchor="top"
-                ),
-            ]
+            )#,
+            # updatemenus=[  # Plotly itself doesn't seem to support callback (Dash does) so you cannot change time unit
+            #     dict(
+            #         buttons=list([
+            #             dict(
+            #                 args=["type", "milliseconds"],
+            #                 label="milliseconds",
+            #                 method="restyle"
+            #             ),
+            #             dict(
+            #                 args=["type", "seconds"],
+            #                 label="seconds",
+            #                 method="restyle"
+            #             ),
+            #             dict(
+            #                 args=["type", "minutes"],
+            #                 label="minutes",
+            #                 method="restyle"
+            #             )
+            #         ]),
+            #         direction="down",
+            #         pad={"r": 10, "t": 10},
+            #         showactive=True,
+            #         x=0.04,
+            #         xanchor="left",
+            #         y=1.2,
+            #         yanchor="top"
+            #     ),
+            # ]
         )
 
         fig.update_layout(
