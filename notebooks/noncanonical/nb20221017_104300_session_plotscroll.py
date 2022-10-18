@@ -24,7 +24,7 @@
 
 # ### Imports
 
-# In[2]:
+# In[1]:
 
 
 # allow for automatic reloading of classes and function when updating the code
@@ -37,7 +37,7 @@ from trialexp.process.data_import import *
 
 # ### Variables
 
-# In[3]:
+# In[2]:
 
 
 import pandas as pd
@@ -69,7 +69,7 @@ video_dir = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\videos'
 # - A tasks definition file (.csv) contains all the information to perform the extractions of behaviorally relevant information from **PyControl** files, for each **task** file. It includes what are the **triggers** of different trial types, what **events** to extract (with time data), and what are events or printed lines that could be relevant to determine the **conditions** (e.g: free reward, optogenetic stimulation type, etc.)
 # - To analyze a new task you need to append task characteristics like **task** filename, **triggers**, **events** and **conditions**
 
-# In[4]:
+# In[3]:
 
 
 tasks = pd.read_csv(tasksfile, usecols = [1,2,3,4], index_col = False)
@@ -85,7 +85,7 @@ tasks
 # If we obtain list of files in source and dest at first and then only perform comparison on them,
 # This should be much faster
 
-# In[5]:
+# In[4]:
 
 
 photo_root_dir = 'T:\\Data\\head-fixed\\pyphotometry\\data'
@@ -102,7 +102,7 @@ copy_files_to_horizontal_folders(root_folders, horizontal_folder_pycontrol, hori
 # 
 # This will include all the pycontrol files present in the folder_path directory (do not include subdirectories)
 
-# In[6]:
+# In[5]:
 
 
 # Folder of a full experimental batch, all animals included
@@ -127,7 +127,7 @@ exp_cohort.by_trial = True
 # 
 # 5m55.4s
 
-# In[7]:
+# In[6]:
 
 
 # Process the whole experimental folder by trials
@@ -148,7 +148,7 @@ exp_cohort.process_exp_by_trial(trial_window, timelim, tasksfile, blank_spurious
 # 2m10.9s
 # 
 
-# In[8]:
+# In[7]:
 
 
 # Find if there is a matching photometry file and if it can be used:
@@ -170,7 +170,7 @@ exp_cohort_copy = deepcopy(exp_cohort)
 
 # ## Visualise a session using Plotly
 
-# In[55]:
+# In[8]:
 
 
 import plotly.graph_objects as go
@@ -182,10 +182,12 @@ import plotly.graph_objects as go
 # - drowdown to change time units
 # - express states by lines ... requires manual definition of each state
 
-# In[77]:
+# In[10]:
 
 
-raw_symbols  = plotly.validators.scatter.marker.SymbolValidator().values
+from plotly.validators.scatter.marker import SymbolValidator
+
+raw_symbols  = SymbolValidator().values
 symbols = [raw_symbols[i+2] for i in range(0, len(raw_symbols), 12)]
 
 
@@ -245,8 +247,29 @@ fig.update_layout(
 fig.show()
 
 
-# In[89]:
+# In[13]:
 
 
 exp_cohort.sessions[0].plot_session()
+
+
+# In[22]:
+
+
+exp_cohort.sessions[0].plot_session(state_def= dict(
+    name='trial', onset='CS_Go', offset = 'refrac_period'))
+# TODO trial is not plotted as line
+
+
+# Line with a gap
+
+# In[23]:
+
+
+fig = go.Figure()
+
+line1 = go.Line(x=[1, 2, nan, 3, 5, nan, 7, 10], y=['hoge']*8, 
+    name='hoge', mode='lines', line=dict(width=10))
+fig.add_trace(line1)
+fig.show()
 

@@ -1306,13 +1306,23 @@ class Session():
                     # flat_list_times = [item for sublist in list_of_list for item in sublist]
         return self
 
-    def plot_session(self):
+    def plot_session(self, state_def: list = None):
         """
         Visualise a session using Plotly as ascrollable figure
 
         #TODO option to specify 'states', whose definitions are lost in Session data
         #TODO cannot change the time unit from the dropdown
 
+        state_def: dict, list, or None = None
+            must be None (default)
+            or dictionary of 
+                'name' : str
+                    Channel name
+                'onset' : list 
+                    List of timestamps in ms
+                'offset' : list
+                    List of timestamps in ms
+            or list of such dictionaries
 
         """
 
@@ -1329,11 +1339,85 @@ class Session():
 
         for kind, k in enumerate(keys):
 
-            sc = go.Line(x=self.times[k]/1000, y=[k]
+            line1 = go.Line(x=self.times[k]/1000, y=[k]
                         * len(self.times[k]), name=k, mode='markers', marker_symbol=symbols[kind % 40])
-            fig.add_trace(sc)
+            fig.add_trace(line1)
 
-        fig.update_xaxes(title='Time (s)')
+        def find_states(state_def_dict: dict):
+            """
+            state_def_dict: dict
+                must be None or dictionary of 
+                    'name' : str
+                        Channel name
+                    'onset' : list 
+                        List of timestamps in ms
+                    'offset' : list
+                        List of timestamps in ms
+            Currently assuming onset and offset are alternating.
+            #TODO Would be more useful, if this detects the first offset after each onset
+            """
+            if state_def_dict is None:
+                return None
+            
+            x1_ms = self.times[state_def_dict['onset']]
+            x2_ms = self.times[state_def_dict['offset']]
+
+            # Need to handle cases in which onset and offset are not matched well
+            k1 = 0
+            if x1_ms[0] < x2_ms[0]:
+                # OK
+                k2 = 0
+            elif x1_ms[0] > x2_ms[0]:
+                k2 = 1 # skip the first
+            else:
+                warnings.warn( f'Onset/offset was not identified for { state_def_dict["name"]}', UserWarning)
+                return None
+
+            k2_end = k2 + len(x1_ms)-1
+            k1_end = len(x1_ms) -1
+            if len(x2_ms) -1 >= k2 + len(x1_ms)-1:
+                k1_end = len(x1_ms) -1
+                k2_end = k2 + len(x1_ms)-1
+            elif len(x2_ms) -1 < k2 + len(x1_ms)-1:
+                k1_end = len(x1_ms) -2
+                k2_end = k2 + len(x1_ms)-2
+                
+            if not x1_ms[k1_end] < x2_ms[k2_end]:
+                warnings.warn( f'Onset/offset was not identified for { state_def_dict["name"]}', UserWarning)  
+                return None
+            
+            state_ms = map(list, zip(x1_ms[k1:k1_end], x2_ms[k2:k2_end], [np.NaN] * (k1_end - k1 +1) ))
+            state_ms = [item for sublist in state_ms for item in sublist] # [onset1, offset1, NaN, onset2, offset2, NaN, ....]
+            return state_ms
+
+
+        if state_def is not None:
+            # Draw states as gapped lines
+            # Assuming a list of lists of two names
+
+            if isinstance(state_def, dict):
+                state_ms = find_states(state_def)
+
+                line1 = go.Line(x=[x/1000 for x in state_ms], y=[state_def['name']] * len(state_ms), 
+                    name=state_def['name'], mode='lines', line=dict(width=5))
+                fig.add_trace(line1)
+
+            elif isinstance(state_def, list):
+                state_ms = None
+                for i in state_def:
+                    assert isinstance(i, dict)
+                    #TODO to be tested
+                    state_ms = find_states(i)
+
+                    line1 = go.Line(x=[x/1000 for x in state_ms], y=[i['name']] * len(state_ms), 
+                        name=i['name'], mode='lines', line=dict(width=5))
+                    fig.add_trace(line1)                 
+            else:
+                state_ms = None
+        else:
+            state_ms = None
+             
+
         fig.update_xaxes(title='Time (s)')
 
 
@@ -1379,7 +1463,6 @@ class Session():
         )
 
         fig.show()
-
 
 
 #----------------------------------------------------------------------------------
