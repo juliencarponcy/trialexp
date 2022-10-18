@@ -192,15 +192,63 @@ def cmap10():
     return cmap
 
 def get_methods(obj):
-    object_methods = [method_name for method_name in dir(obj)
-                      if callable(getattr(obj, method_name))]
-    print(object_methods)
-    return object_methods
+    """
+    obj.__dict__
+    vars(obj)
+    These return attribute names and values.
 
-def get_attributes(obj):
-    lst = list(obj.__dict__.keys())
-    print(lst)
-    return lst
+    dir(obj)
+    returns both attributes and methods
+
+    See also:
+    get_methods(get_attributes_and_properties)
+
+    https://stackoverflow.com/questions/34439/finding-what-methods-a-python-object-has
+    """
+
+    spacing=20
+    methodList = []
+    for method_name in dir(object):
+        try:
+            if callable(getattr(object, method_name)):
+                methodList.append(str(method_name))
+        except Exception:
+            methodList.append(str(method_name))
+    processFunc = (lambda s: ' '.join(s.split())) or (lambda s: s)
+    for method in methodList:
+        try:
+            print(str(method.ljust(spacing)) + ' ' +
+                processFunc(str(getattr(object, method).__doc__)[0:90]))
+        except Exception:
+            print(method.ljust(spacing) + ' ' + ' getattr() failed')
+
+        object_methods = [method_name for method_name in dir(obj)
+                if callable(getattr(obj, method_name))]
+        print(object_methods)
+        return object_methods
+
+def get_attributes_and_properties(obj):
+    """
+    obj.__dict__
+    vars(obj)
+    These return attribute names and values.
+
+    dir(obj)
+    returns both attributes and methods
+
+    See also:
+    get_methods(obj)
+    """
+    attrnames = list(obj.__dict__.keys())
+
+    propnames = [p for p in dir(obj) if isinstance(getattr(obj, p), property)]
+
+    print('Attributes:')
+    print(attrnames)
+    print('Properties:')
+    print(propnames)
+
+    return [attrnames, propnames]
 
 #----------------------------------------------------------------------------------
 # Data reorganization
