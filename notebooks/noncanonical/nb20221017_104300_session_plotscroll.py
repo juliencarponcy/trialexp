@@ -24,7 +24,7 @@
 
 # ### Imports
 
-# In[1]:
+# In[24]:
 
 
 # allow for automatic reloading of classes and function when updating the code
@@ -37,7 +37,7 @@ from trialexp.process.data_import import *
 
 # ### Variables
 
-# In[2]:
+# In[25]:
 
 
 import pandas as pd
@@ -69,7 +69,7 @@ video_dir = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\videos'
 # - A tasks definition file (.csv) contains all the information to perform the extractions of behaviorally relevant information from **PyControl** files, for each **task** file. It includes what are the **triggers** of different trial types, what **events** to extract (with time data), and what are events or printed lines that could be relevant to determine the **conditions** (e.g: free reward, optogenetic stimulation type, etc.)
 # - To analyze a new task you need to append task characteristics like **task** filename, **triggers**, **events** and **conditions**
 
-# In[3]:
+# In[26]:
 
 
 tasks = pd.read_csv(tasksfile, usecols = [1,2,3,4], index_col = False)
@@ -85,7 +85,7 @@ tasks
 # If we obtain list of files in source and dest at first and then only perform comparison on them,
 # This should be much faster
 
-# In[4]:
+# In[27]:
 
 
 photo_root_dir = 'T:\\Data\\head-fixed\\pyphotometry\\data'
@@ -102,7 +102,7 @@ copy_files_to_horizontal_folders(root_folders, horizontal_folder_pycontrol, hori
 # 
 # This will include all the pycontrol files present in the folder_path directory (do not include subdirectories)
 
-# In[5]:
+# In[28]:
 
 
 # Folder of a full experimental batch, all animals included
@@ -127,7 +127,7 @@ exp_cohort.by_trial = True
 # 
 # 5m55.4s
 
-# In[6]:
+# In[29]:
 
 
 # Process the whole experimental folder by trials
@@ -148,7 +148,7 @@ exp_cohort.process_exp_by_trial(trial_window, timelim, tasksfile, blank_spurious
 # 2m10.9s
 # 
 
-# In[7]:
+# In[30]:
 
 
 # Find if there is a matching photometry file and if it can be used:
@@ -170,106 +170,175 @@ exp_cohort_copy = deepcopy(exp_cohort)
 
 # ## Visualise a session using Plotly
 
-# In[8]:
+# In[31]:
 
 
 import plotly.graph_objects as go
 
 
 # %TODO
-# 
-# - markers
 # - drowdown to change time units
-# - express states by lines ... requires manual definition of each state
+# 
 
-# In[10]:
-
-
-from plotly.validators.scatter.marker import SymbolValidator
-
-raw_symbols  = SymbolValidator().values
-symbols = [raw_symbols[i+2] for i in range(0, len(raw_symbols), 12)]
-
-
-session1 = exp_cohort.sessions[0]
-
-fig = go.Figure()
-
-keys = session1.times.keys()
-
-for kind, k in enumerate(keys):
-
-    sc = go.Line(x=session1.times[k]/1000, y=[k]
-                 * len(session1.times[k]), name=k, mode='markers', marker_symbol=symbols[kind % 40])
-    fig.add_trace(sc)
-
-fig.update_xaxes(title='Time (s)')
-
-
-fig.update_layout(
-    updatemenus=[
-        dict(
-            buttons=list([
-                dict(
-                    args=["type", "milliseconds"],
-                    label="milliseconds",
-                    method="restyle"
-                ),
-                dict(
-                    args=["type", "seconds"],
-                    label="seconds",
-                    method="restyle"
-                ),
-                dict(
-                    args=["type", "minutes"],
-                    label="minutes",
-                    method="restyle"
-                )
-            ]),
-            direction="down",
-            pad={"r": 10, "t": 10},
-            showactive=True,
-            x=0.04,
-            xanchor="left",
-            y=1.2,
-            yanchor="top"
-        ),
-    ]
-)
-
-fig.update_layout(
-    annotations=[
-        dict(text="Time unit:", showarrow=False,
-        x=-0, y=1.14, xref="paper", yref="paper", align="left")
-    ]
-)
-
-fig.show()
-
-
-# In[13]:
+# In[32]:
 
 
 exp_cohort.sessions[0].plot_session()
 
 
-# In[22]:
+# In[33]:
 
 
-exp_cohort.sessions[0].plot_session(state_def= dict(
-    name='trial', onset='CS_Go', offset = 'refrac_period'))
-# TODO trial is not plotted as line
+session = exp_cohort.sessions[50]
+
+
+# In[34]:
+
+
+exp_cohort.sessions[0].plot_session(state_def=dict(
+    name='trial', onset='CS_Go', offset='refrac_period'))
+
+
+# In[35]:
 
 
 # Line with a gap
 
-# In[23]:
-
-
 fig = go.Figure()
 
-line1 = go.Line(x=[1, 2, nan, 3, 5, nan, 7, 10], y=['hoge']*8, 
-    name='hoge', mode='lines', line=dict(width=10))
+line1 = go.Line(x=[1, 2, nan, 3, 5, nan, 7, 10], y=['hoge']*8,
+                name='hoge', mode='lines', line=dict(width=10))
 fig.add_trace(line1)
-fig.show()
+
+
+# In[36]:
+
+
+from plotly.graph_objects.scatter import Marker
+
+
+# In[37]:
+
+
+# ev_array = np.array(session.df_events.loc[(trial), event_col])
+event_cols = [event_col for event_col in session.df_events.columns if '_trial_time' in event_col]
+event_names = [event_col.split('_trial_time')[0] for event_col in event_cols]
+
+
+
+
+print(ev_trial_nb.shape, ev_times.shape)
+
+
+# In[ ]:
+
+
+session.df_events[event_cols[0]].apply(lambda x: np.array(x)).values
+
+
+# In[ ]:
+
+
+plot_names =  [trig + ' ' + event for event in session.events_to_process for trig in session.triggers]
+plot_names
+
+
+# In[38]:
+
+
+from plotly.validators.scatter.marker import SymbolValidator
+from plotly.subplots import make_subplots
+
+def plot_trials(session):
+
+    raw_symbols  = SymbolValidator().values
+    symbols = [raw_symbols[i+2] for i in range(0, len(raw_symbols), 12)]
+
+    event_cols = [event_col for event_col in session.df_events.columns if '_trial_time' in event_col]
+    event_names = [event_col.split('_trial_time')[0] for event_col in event_cols]
+
+    plot_names =  [trig + ' ' + event for event in session.events_to_process for trig in session.triggers]
+
+    fig = make_subplots(
+        rows= len(event_cols), 
+        cols= len(session.triggers), 
+        shared_xaxes= True,
+        subplot_titles= plot_names
+    )
+
+    for trig_idx, trigger in enumerate(session.triggers):
+        
+        # sub-selection of df_events based on trigger, should be condition for event_dataset class
+        df_subset = session.df_events[session.df_events.trigger == trigger]
+
+        for ev_idx, event_col in enumerate(event_cols):
+
+            ev_times = df_subset[event_cols[0]].apply(lambda x: np.array(x)).values
+            ev_trial_nb = [np.ones(len(array)) * df_subset.index[idx] for idx, array in enumerate(ev_times)]
+
+            ev_trial_nb = np.concatenate(ev_trial_nb)
+            ev_times =  np.concatenate(ev_times)
+
+            fig.add_trace(
+                go.Scatter(
+                    x=ev_times/1000,
+                    y=ev_trial_nb,
+                    name=event_names[ev_idx],
+                    mode='markers',
+                    marker_symbol=symbols[ev_idx % 40]
+
+                ), row= ev_idx+1, col = trig_idx+1)
+
+            fig.update_xaxes(
+                ticks="inside",
+                ticklen=6,
+                tickwidth=2,
+                tickfont_size=12,
+                range=[session.trial_window[0]/1000, session.trial_window[1]/1000],
+                showline=True,
+                linecolor='black'
+                )
+            
+            fig.update_yaxes(    
+                ticks="inside",
+                ticklen=6,
+                tickwidth=2,   
+                tickfont_size=12,
+                showline=True,
+                linecolor='black'
+                )
+
+
+    fig.update_layout(
+
+        height=800,
+        width=600,
+    )
+
+    fig.show()
+            
+
+
+# In[ ]:
+
+
+
+
+
+# In[39]:
+
+
+session.plot_trials()
+
+
+# In[40]:
+
+
+exp_cohort.sessions[50].df_events
+
+
+# In[ ]:
+
+
+
 
