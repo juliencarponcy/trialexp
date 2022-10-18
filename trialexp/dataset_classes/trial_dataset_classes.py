@@ -3,6 +3,9 @@ import sys
 from datetime import datetime
 from typing import Iterable, Union, Optional, Tuple
 import os
+from dataclasses import dataclass
+from abc import ABC, abstractmethod
+
 import pickle
 from re import search
 import warnings
@@ -606,33 +609,7 @@ class Continuous_Dataset(Trials_Dataset):
         if a name is specified (and optionally a folder), the tranformed DataFrame
         will be stored as a pickle file.
         '''
-        if vars_to_export == 'all':
-
-            cols_idx = [i for i in range(self.data.shape[1])]
-            cols_names = list(self.colnames_dict.keys())
-
-        # to check vars_to_export as a list of column names
-        elif isinstance(vars_to_export, list) and all(
-            [var in self.colnames_dict.keys() for var in vars_to_export]):
-
-            cols_idx = [self.colnames_dict[var] for var in vars_to_export]
-            cols_names = vars_to_export
-        
-        # to check vars_to_export as a list of column numbers
-        elif isinstance(vars_to_export, list) and all(
-            [var in self.colnames_dict.values() for var in vars_to_export]):
-            
-            cols_idx = vars_to_export
-            cols_names = [list(self.colnames_dict.keys()
-                )[list(self.colnames_dict.values()).index(col_idx)] for col_idx in cols_idx] 
-
-        elif isinstance(vars_to_export, str) and vars_to_export in self.colnames_dict.keys():
-            
-            cols_idx = self.colnames_dict[vars_to_export]
-            cols_names = [vars_to_export]
-
-        else:
-            raise ValueError('vars_to_export appears not correct')
+        cols_idx, cols_names = self.checker_vars_to_export(vars_to_export)
 
         if len(cols_idx) > 1:
 
@@ -674,6 +651,32 @@ class Continuous_Dataset(Trials_Dataset):
                 print(str_mem)
 
         return X, y
+
+    def checker_vars_to_export(self, vars_to_export):
+        if vars_to_export == 'all':
+            cols_idx = [i for i in range(self.data.shape[1])]
+            cols_names = list(self.colnames_dict.keys())
+
+        # to check vars_to_export as a list of column names
+        elif isinstance(vars_to_export, list) and all(
+            [var in self.colnames_dict.keys() for var in vars_to_export]):
+            cols_idx = [self.colnames_dict[var] for var in vars_to_export]
+            cols_names = vars_to_export
+        
+        # to check vars_to_export as a list of column numbers
+        elif isinstance(vars_to_export, list) and all(
+            [var in self.colnames_dict.values() for var in vars_to_export]):
+            cols_idx = vars_to_export
+            cols_names = [list(self.colnames_dict.keys()
+                )[list(self.colnames_dict.values()).index(col_idx)] for col_idx in cols_idx] 
+
+        elif isinstance(vars_to_export, str) and vars_to_export in self.colnames_dict.keys():
+            cols_idx = self.colnames_dict[vars_to_export]
+            cols_names = [vars_to_export]
+
+        else:
+            raise ValueError('vars_to_export appears not correct')
+        return cols_idx,cols_names
 
     def transform_variables(self, on_vars: VarsType, function: callable, deriv_name: str):
         ...
