@@ -1390,8 +1390,9 @@ class Session():
         fig.show()
 
     # Should be implemented for Event_dataset() possibly, in trial_dataset_classes as data_import grows out of control
-    def plot_trials(self, events_to_plot:list = 'all'):
+    def plot_trials(self, events_to_plot:list = 'all', sort:bool = False):
 
+        # I dont get that K, review symbol selection? 
         raw_symbols  = SymbolValidator().values
         symbols = [raw_symbols[i+2] for i in range(0, len(raw_symbols), 12)]
 
@@ -1418,8 +1419,12 @@ class Session():
         else:
             raise Exception('bad format for requesting plot_trials events')
 
-        plot_names =  [trig + ' ' + event for event in self.events_to_process for trig in self.triggers]
+        # Implement this as abstract method to check requested arguments (events) match the session obj.
 
+        plot_names =  [trig + ' ' + event for event in event_cols for trig in self.triggers]
+
+        # https://plotly.com/python/subplots/
+        # https://plotly.com/python/line-charts/
         fig = make_subplots(
             rows= len(event_cols), 
             cols= len(self.triggers), 
@@ -1433,7 +1438,11 @@ class Session():
             # sub-selection of df_events based on trigger, should be condition for event_dataset class
             df_subset = self.df_events[self.df_events.trigger == trigger]
 
+
             for ev_idx, event_col in enumerate(event_cols):
+                # if sort:
+                #     min_times = df_subset[event_cols[ev_idx]].apply(lambda x: find_min_time_list(x))
+                #     min_times = np.sort(min_times)
 
                 ev_times = df_subset[event_cols[ev_idx]].apply(lambda x: np.array(x)).values
                 ev_trial_nb = [np.ones(len(array)) * df_subset.index[idx] for idx, array in enumerate(ev_times)]
@@ -1441,41 +1450,62 @@ class Session():
                 ev_trial_nb = np.concatenate(ev_trial_nb)
                 ev_times =  np.concatenate(ev_times)
 
+                fig.add_shape(type="line",
+                    x0=0, y0=1, x1=0, y1= ev_trial_nb.max(),
+                    line=dict(
+                    color="Grey",
+                    width=2,
+                    dash="dot"
+                    ),
+                    row= ev_idx+1,
+                    col = trig_idx+1)
+
                 fig.add_trace(
                     go.Scatter(
-                        x=ev_times/1000,
-                        y=ev_trial_nb,
-                        name=event_names[ev_idx],
+                        x= ev_times/1000,
+                        y= ev_trial_nb,
+                        name= event_names[ev_idx],
                         mode='markers',
                         marker_symbol=symbols[ev_idx % 40]
+                        ),
+                        row= ev_idx+1,
+                        col = trig_idx+1)
 
-                    ), row= ev_idx+1, col = trig_idx+1)
+                    
 
                 fig.update_xaxes(
-                    ticks="inside",
-                    ticklen=6,
-                    tickwidth=2,
-                    tickfont_size=12,
-                    range=[self.trial_window[0]/1000, self.trial_window[1]/1000],
-                    showline=True,
-                    linecolor='black'
+                    title_text = 'time (s)',
+                    ticks = 'outside',
+                    ticklen = 6,
+                    tickwidth = 2,
+                    tickfont_size = 12,
+                    showline = True,
+                    linecolor = 'black',
+                    # range=[self.trial_window[0]/1000, self.trial_window[1]/1000]
+                    autorange = True,
+                    row = ev_idx+1,
+                    col = trig_idx+1
                     )
                 
-                fig.update_yaxes(    
-                    ticks="inside",
-                    ticklen=6,
-                    tickwidth=2,   
-                    tickfont_size=12,
-                    showline=True,
-                    linecolor='black',
-                    autorange=True
+                fig.update_yaxes( 
+                    title_text = 'trial nb', 
+                    ticks = 'outside',
+                    ticklen = 6,
+                    tickwidth = 2,   
+                    tickfont_size = 12,
+                    showline = True,
+                    linecolor = 'black',
+                    range = [1, ev_trial_nb.max()],
+                    showgrid=True,
+                    row = ev_idx+1,
+                    col = trig_idx+1
                     )
 
-
         fig.update_layout(
-
-            height=1200,
-            width=800,
+            title_text= f'Events Raster plot, ID:{self.subject_ID} / {self.task_name} / {self.datetime_string}',
+            height=800,
+            width=800
+                        
         )
 
         fig.show()
