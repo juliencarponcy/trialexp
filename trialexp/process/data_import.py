@@ -19,6 +19,10 @@ from math import ceil
 from scipy.signal import butter, filtfilt, decimate
 from scipy.stats import linregress, zscore
 
+import plotly.graph_objects as go
+from plotly.validators.scatter.marker import SymbolValidator
+from plotly.subplots import make_subplots
+
 from trialexp.utils.pycontrol_utilities import *
 from trialexp.utils.pyphotometry_utilities import *
 from trialexp.utils.rsync import *
@@ -594,7 +598,11 @@ class Session():
             self.df_events.loc[(go_success_idx),'success'] = True
 
         # To perform for cued-uncued version of the go task
-        elif self.task_name in ['reaching_go_spout_cued_uncued']:
+        elif self.task_name in ['reaching_go_spout_cued_uncued', 'cued_uncued_oct22']:
+            # reformatting trigger name for that one task, with lower case
+            if self.task_name in ['cued_uncued_oct22']:
+                self.df_conditions.trigger = self.df_conditions.trigger.str.lower()
+                self.df_events.trigger = self.df_events.trigger.str.lower()
 
             # for cued trials, find if spout event within timelim           
             cued_success = self.df_events.loc[
@@ -951,7 +959,6 @@ class Session():
             if verbose:
                 print(f'condition {condition_ID} trials: {len(trials_idx)}')
 
-            # TODO: Test when no trials in first or second condition
             if len(photometry_idx) == 0 :
                 continue
 
@@ -999,8 +1006,13 @@ class Session():
                 # concatenate with previous dataframe
                 df_meta_photo = pd.concat([df_meta_photo, df_meta_photo_temp], axis=0, ignore_index=True)
                 # concatenate with previous numpy array
+                
+                # Take into account when there is no trial in first condition
+                if 'photo_array' in locals():
+                    photo_array = np.concatenate((photo_array, photo_array_temp), axis=0)
+                else:
+                    photo_array = photo_array_temp
 
-                photo_array = np.concatenate((photo_array, photo_array_temp), axis=0)
 
         if remove_artifacts == True:
             
@@ -1326,9 +1338,6 @@ class Session():
 
         """
 
-        import plotly.graph_objects as go
-        from plotly.validators.scatter.marker import SymbolValidator
-
         raw_symbols  = SymbolValidator().values
         symbols = [raw_symbols[i+2] for i in range(0, len(raw_symbols), 12)]
         # 40 symbols
@@ -1464,6 +1473,98 @@ class Session():
 
         fig.show()
 
+    # Should be implemented for Event_dataset() possibly, in trial_dataset_classes as data_import grows out of control
+    def plot_trials(self, events_to_plot:list = 'all'):
+
+        raw_symbols  = SymbolValidator().values
+        symbols = [raw_symbols[i+2] for i in range(0, len(raw_symbols), 12)]
+
+        if events_to_plot == 'all':
+            event_cols = [event_col for event_col in self.df_events.columns if '_trial_time' in event_col]
+            event_names = [event_col.split('_trial_time')[0] for event_col in event_cols]
+        
+        elif isinstance(events_to_plot, list):
+            event_names = events_to_plot
+
+            # check if events requested exist
+            check = all(ev in self.events_to_process for ev in event_names)
+
+            if not check:
+                raise Exception('Check your list of requested events, event not found')
+            event_cols = [ev + '_trial_time' for ev in events_to_plot]
+        
+        elif isinstance(events_to_plot, str):
+            if events_to_plot not in self.events_to_process:
+                raise Exception('Check the name of your requested event, event not found')
+            event_names = [events_to_plot]
+            event_cols = [ev + '_trial_time' for ev in event_names]
+
+        else:
+            raise Exception('bad format for requesting plot_trials events')
+
+        plot_names =  [trig + ' ' + event for event in self.events_to_process for trig in self.triggers]
+
+        fig = make_subplots(
+            rows= len(event_cols), 
+            cols= len(self.triggers), 
+            shared_xaxes= True,
+            shared_yaxes= True,
+            subplot_titles= plot_names
+        )
+
+        for trig_idx, trigger in enumerate(self.df_events.trigger.unique()):
+            
+            # sub-selection of df_events based on trigger, should be condition for event_dataset class
+            df_subset = self.df_events[self.df_events.trigger == trigger]
+
+            for ev_idx, event_col in enumerate(event_cols):
+
+                ev_times = df_subset[event_cols[ev_idx]].apply(lambda x: np.array(x)).values
+                ev_trial_nb = [np.ones(len(array)) * df_subset.index[idx] for idx, array in enumerate(ev_times)]
+
+                ev_trial_nb = np.concatenate(ev_trial_nb)
+                ev_times =  np.concatenate(ev_times)
+
+                fig.add_trace(
+                    go.Scatter(
+                        x=ev_times/1000,
+                        y=ev_trial_nb,
+                        name=event_names[ev_idx],
+                        mode='markers',
+                        marker_symbol=symbols[ev_idx % 40]
+
+                    ), row= ev_idx+1, col = trig_idx+1)
+
+                fig.update_xaxes(
+                    ticks="inside",
+                    ticklen=6,
+                    tickwidth=2,
+                    tickfont_size=12,
+                    range=[self.trial_window[0]/1000, self.trial_window[1]/1000],
+                    showline=True,
+                    linecolor='black'
+                    )
+                
+                fig.update_yaxes(    
+                    ticks="inside",
+                    ticklen=6,
+                    tickwidth=2,   
+                    tickfont_size=12,
+                    showline=True,
+                    linecolor='black',
+                    autorange=True
+                    )
+
+
+        fig.update_layout(
+
+            height=1200,
+            width=800,
+        )
+
+        fig.show()
+
+        fig.show()
 
 #----------------------------------------------------------------------------------
 # Experiment class
@@ -2148,7 +2249,7 @@ class Experiment():
                             motion_corr = motion_corr, 
                             df_over_f = df_over_f, 
                             downsampling_factor = downsampling_factor, 
-                            return_full_session = False,#
+                            return_full_session = False,
                             export_vars = export_vars,
                             remove_artifacts = remove_artifacts,
                             verbose = verbose)
