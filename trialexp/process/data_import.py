@@ -459,7 +459,7 @@ class Session():
             df_conditions_summed = self.df_conditions
 
 
-        # Compute if trials are cued or uncued for this specific task
+        # Compute if trials are cued or uncued for this specific task, to be removed asap
         if self.task_name == 'reaching_go_spout_cued_uncued':
             # FORCED: timestamp threshold, assume that blocks are 20min long, adapt otherwise
             block_lim = 20*60*1000
@@ -492,6 +492,17 @@ class Session():
         # print(self.df_events.shape, self.df_conditions.shape)
         return self
 
+    def create_metadata_dict(self):
+        metadata_dict = {
+            'subject_ID' : self.subject_ID,
+            'datetime' : self.datetime,
+            'task' : self.task_name,
+            'trial_window' : self.trial_window,
+            'success_time_lim' : self.timelim,
+            'com_port' : self.setup_ID
+        }
+        return metadata_dict
+        
     # Perform all the pretreatments to analyze behavioural file by trials
     def get_session_by_trial(self, trial_window: list, timelim: list,
             tasksfile, blank_spurious_event: list, blank_timelim: list, verbose=False):
@@ -518,10 +529,13 @@ class Session():
                 self = self.extract_data_from_session()
                 self = self.compute_trial_nb()
                 if blank_spurious_event is not None:
-                    self.df_events[blank_spurious_event + '_trial_time'] = self.df_events[blank_spurious_event + '_trial_time'].apply(lambda x: blank_spurious_detection(x, blank_timelim))
+                    self.df_events[blank_spurious_event + '_trial_time'] = \
+                        self.df_events[blank_spurious_event + '_trial_time'].apply(lambda x: blank_spurious_detection(x, blank_timelim))
 
                 self = self.compute_conditions_by_trial()
                 self = self.compute_success()
+                self.df_conditions
+                self.metadata_dict = self.create_metadata_dict()
                 self.analyzed = True
                 return self
                 #pycontrol_utilities method
@@ -1431,35 +1445,35 @@ class Session():
             
             title =dict(
                 text = f"{self.task_name}, {self.subject_ID} #{self.number}, on {self.datetime_string} via {self.setup_ID}"
-            )#,
-            # updatemenus=[  # Plotly itself doesn't seem to support callback (Dash does) so you cannot change time unit
-            #     dict(
-            #         buttons=list([
-            #             dict(
-            #                 args=["type", "milliseconds"],
-            #                 label="milliseconds",
-            #                 method="restyle"
-            #             ),
-            #             dict(
-            #                 args=["type", "seconds"],
-            #                 label="seconds",
-            #                 method="restyle"
-            #             ),
-            #             dict(
-            #                 args=["type", "minutes"],
-            #                 label="minutes",
-            #                 method="restyle"
-            #             )
-            #         ]),
-            #         direction="down",
-            #         pad={"r": 10, "t": 10},
-            #         showactive=True,
-            #         x=0.04,
-            #         xanchor="left",
-            #         y=1.2,
-            #         yanchor="top"
-            #     ),
-            # ]
+            ),
+            updatemenus=[
+                dict(
+                    buttons=list([
+                        dict(
+                            args=["type", "milliseconds"],
+                            label="milliseconds",
+                            method="restyle"
+                        ),
+                        dict(
+                            args=["type", "seconds"],
+                            label="seconds",
+                            method="restyle"
+                        ),
+                        dict(
+                            args=["type", "minutes"],
+                            label="minutes",
+                            method="restyle"
+                        )
+                    ]),
+                    direction="down",
+                    pad={"r": 10, "t": 10},
+                    showactive=True,
+                    x=0.04,
+                    xanchor="left",
+                    y=1.2,
+                    yanchor="top"
+                ),
+            ]
         )
 
         fig.update_layout(
@@ -1472,34 +1486,13 @@ class Session():
         fig.show()
 
     # Should be implemented for Event_dataset() possibly, in trial_dataset_classes as data_import grows out of control
-    def plot_trials(self, events_to_plot:list = 'all', sort:bool = False):
+    def plot_trials(self, events_to_plot:list = 'all',  sort:bool = False):
 
         # I dont get that K, review symbol selection? 
         raw_symbols  = SymbolValidator().values
         symbols = [raw_symbols[i+2] for i in range(0, len(raw_symbols), 12)]
 
-        if events_to_plot == 'all':
-            event_cols = [event_col for event_col in self.df_events.columns if '_trial_time' in event_col]
-            event_names = [event_col.split('_trial_time')[0] for event_col in event_cols]
-        
-        elif isinstance(events_to_plot, list):
-            event_names = events_to_plot
-
-            # check if events requested exist
-            check = all(ev in self.events_to_process for ev in event_names)
-
-            if not check:
-                raise Exception('Check your list of requested events, event not found')
-            event_cols = [ev + '_trial_time' for ev in events_to_plot]
-        
-        elif isinstance(events_to_plot, str):
-            if events_to_plot not in self.events_to_process:
-                raise Exception('Check the name of your requested event, event not found')
-            event_names = [events_to_plot]
-            event_cols = [ev + '_trial_time' for ev in event_names]
-
-        else:
-            raise Exception('bad format for requesting plot_trials events')
+        event_cols, event_names = self.checker_events_request(events_to_plot)
 
         # Implement this as abstract method to check requested arguments (events) match the session obj.
 
@@ -1593,6 +1586,8 @@ class Session():
         fig.show()
 
         fig.show()
+
+
 
 #----------------------------------------------------------------------------------
 # Experiment class
@@ -1732,12 +1727,8 @@ class Experiment():
 
 
     def save(self):
-        """
-        Save all sessions as .pkl file. Speeds up subsequent instantiation of 
-        experiment as sessions do not need to be reimported from data files.
-
-        Saved data will be used by __init__()
-        """ 
+        '''Save all sessions as .pkl file. Speeds up subsequent instantiation of 
+        experiment as sessions do not need to be reimported from data files.''' 
         
         with open(os.path.join(self.path, 'sessions.pkl'),'wb') as sessions_file:
             pickle.dump(self.sessions, sessions_file)
