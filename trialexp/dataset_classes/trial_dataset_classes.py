@@ -3,8 +3,8 @@ import sys
 from datetime import datetime
 from typing import Iterable, Union, Optional, Tuple
 import os
-from dataclasses import dataclass
-from abc import ABC, abstractmethod
+# from dataclasses import dataclass
+# from abc import ABC, abstractmethod
 
 import pickle
 from re import search
@@ -18,6 +18,10 @@ from matplotlib import cm
 from matplotlib import colors
 from matplotlib.axes import Axes
 import matplotlib
+
+import plotly.graph_objects as go
+from plotly.validators.scatter.marker import SymbolValidator
+from plotly.subplots import make_subplots
 
 from trialexp.utils.cont_dataset_utlities import *
 
@@ -1111,6 +1115,147 @@ class Event_Dataset(Trials_Dataset):
     def raster(self, kvargs):
         ...
         #TODO this is important
+
+    
+
+    def checker_events_request(self, events_to_plot: list = 'all'):
+        """
+        Helper function that helps to validate and match events requested as an argument of 
+        a particular function to the proper dataframe columns of the dataset
+        
+        """
+
+        event_cols = [event_col for event_col in self.data.columns if '_trial_time' in event_col]
+        event_names = [event_col.split('_trial_time')[0] for event_col in event_cols]
+
+        if events_to_plot == 'all':
+            pass
+        
+        elif isinstance(events_to_plot, list):
+
+            # check if events requested exist
+            check = all(ev in event_names for ev in events_to_plot)
+
+            if not check:
+                raise Exception('Check your list of requested events, event not found')
+            
+            event_cols = [ev + '_trial_time' for ev in events_to_plot]
+            event_names = events_to_plot
+
+        elif isinstance(events_to_plot, str):
+            if events_to_plot not in event_names:
+                raise Exception('Check the name of your requested event, event not found')
+            
+            event_cols = [events_to_plot + '_trial_time']
+            event_names = [events_to_plot]
+
+        else:
+            raise Exception('bad format for requesting plot_trials events')
+        
+        return event_cols, event_names
+
+    def plot_trials(self, events_to_plot:list = 'all',  sort:bool = False):
+
+        # I dont get that K, review symbol selection? 
+        raw_symbols  = SymbolValidator().values
+        symbols = [raw_symbols[i+2] for i in range(0, len(raw_symbols), 12)]
+
+        event_cols, event_names = self.checker_events_request(events_to_plot)
+
+        # Implement this as abstract method to check requested arguments (events) match the session obj.
+
+        plot_names =  [trig + ' ' + event for event in event_cols for trig in self.data.trigger.unique()]
+
+        # https://plotly.com/python/subplots/
+        # https://plotly.com/python/line-charts/
+        fig = make_subplots(
+            rows= len(event_cols), 
+            cols= len(self.data.trigger.unique()), 
+            shared_xaxes= True,
+            shared_yaxes= True,
+            subplot_titles= plot_names
+        )
+
+        for trig_idx, trigger in enumerate(self.data.trigger.unique()):
+            
+            # sub-selection of df_events based on trigger, should be condition for event_dataset class
+            df_subset = self.data[self.data.trigger == trigger]
+
+
+            for ev_idx, event_col in enumerate(event_cols):
+                # if sort:
+                #     min_times = df_subset[event_cols[ev_idx]].apply(lambda x: find_min_time_list(x))
+                #     min_times = np.sort(min_times)
+
+                ev_times = df_subset[event_cols[ev_idx]].apply(lambda x: np.array(x)).values
+                ev_trial_nb = [np.ones(len(array)) * df_subset.index[idx] for idx, array in enumerate(ev_times)]
+
+                ev_trial_nb = np.concatenate(ev_trial_nb)
+                ev_times =  np.concatenate(ev_times)
+
+                fig.add_shape(type="line",
+                    x0=0, y0=1, x1=0, y1= ev_trial_nb.max(),
+                    line=dict(
+                    color="Grey",
+                    width=2,
+                    dash="dot"
+                    ),
+                    row= ev_idx+1,
+                    col = trig_idx+1)
+
+                fig.add_trace(
+                    go.Scatter(
+                        x= ev_times/1000,
+                        y= ev_trial_nb,
+                        name= event_names[ev_idx],
+                        mode='markers',
+                        marker_symbol=symbols[ev_idx % 40]
+                        ),
+                        row= ev_idx+1,
+                        col = trig_idx+1)
+
+                    
+
+                fig.update_xaxes(
+                    title_text = 'time (s)',
+                    ticks = 'outside',
+                    ticklen = 6,
+                    tickwidth = 2,
+                    tickfont_size = 12,
+                    showline = True,
+                    linecolor = 'black',
+                    # range=[self.trial_window[0]/1000, self.trial_window[1]/1000]
+                    autorange = True,
+                    row = ev_idx+1,
+                    col = trig_idx+1
+                    )
+                
+                fig.update_yaxes( 
+                    title_text = 'trial nb', 
+                    ticks = 'outside',
+                    ticklen = 6,
+                    tickwidth = 2,   
+                    tickfont_size = 12,
+                    showline = True,
+                    linecolor = 'black',
+                    range = [0, ev_trial_nb.max()+1],
+                    showgrid=True,
+                    row = ev_idx+1,
+                    col = trig_idx+1
+                    )
+
+        fig.update_layout(
+            # get metadata right
+            # title_text= f'Events Raster plot, ID:{self.subject_ID} / {self.task_name} / {self.datetime_string}',
+            height=800,
+            width=800
+                        
+        )
+
+        fig.show()
+
+        return fig
+
 
     def compute_distribution(
             self,
