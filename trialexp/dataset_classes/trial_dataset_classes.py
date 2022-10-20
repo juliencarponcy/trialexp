@@ -642,7 +642,7 @@ class Continuous_Dataset(Trials_Dataset):
                 cells_as_numpy=False)
         else:
 
-            data = self.data[:,cols_idx,:].squeeze
+            data = self.data[:,cols_idx,:].squeeze()
 
             X = convert.from_2d_array_to_nested(
                 data, 
@@ -692,7 +692,7 @@ class Continuous_Dataset(Trials_Dataset):
                 )[list(self.colnames_dict.values()).index(col_idx)] for col_idx in cols_idx] 
 
         elif isinstance(vars_to_export, str) and vars_to_export in self.colnames_dict.keys():
-            cols_idx = self.colnames_dict[vars_to_export]
+            cols_idx = [self.colnames_dict[vars_to_export]]
             cols_names = [vars_to_export]
 
         else:
@@ -1708,3 +1708,22 @@ def histo_only(x: np.array, trial_window: list, bin_size: int):
     histo, _ = np.histogram(x,
         bins = range(trial_window[0], trial_window[1]+1, bin_size))
     return histo
+
+def load_sktime_dataset(fullpath: str = None):
+    """
+    Load dataset previously prepared for timeseries ML with sktime
+
+    Returns
+    _______
+
+    X : DataFrame
+        panel format of timeseries for sktime dependant variables
+    y: np.array 
+        array of strings corresponding to the condition aliases
+
+    """
+
+    with open(fullpath, 'rb') as file:
+        X_y = pickle.load(file)     
+
+    return X_y[0], X_y[1]
