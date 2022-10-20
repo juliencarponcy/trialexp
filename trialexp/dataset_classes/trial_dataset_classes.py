@@ -590,6 +590,23 @@ class Continuous_Dataset(Trials_Dataset):
                 axs[row,col].set_title(f'{var} cluster: {clust_nb}, trials: {clusters_size[clust_nb]}')
                 axs[row,col].set_ylim(ylims[row])
 
+    def delete_artifact_trials(self):
+        """
+        Removes permanently from the dataset the cluster of outliers trials
+        as classified by cluster_trials() (metadata_df.clusters == -1)
+        """
+
+        outliers_idx = self.metadata_df.index[self.metadata_df.cluster == -1].values
+
+        self.metadata_df.drop(outliers_idx, axis=0, inplace=True)
+        self.metadata_df.reset_index(inplace=True)
+        self.metadata_df['trial_ID'] = self.metadata_df.index.values
+        self.data = np.delete(self.data, outliers_idx, 0)
+
+
+        print(f'removed {len(outliers_idx)} outliers trials from the dataset \r\n \
+            {self.data.shape[0]} trials remaining')
+
     def filterout_clusters(self, clusters_to_exclude: list):
         """
         exclude one or several cluster of trials of the dataset
@@ -879,7 +896,7 @@ class Continuous_Dataset(Trials_Dataset):
                     if verbose:
                         print(f'cond_ID: {cond_ID}, group_idx {group_ID}, subj {subject}')
 
-                    trial_idx = gby.loc[(cond_ID, group_ID, subject),'trial_ID']
+                    trial_idx = np.array(gby.loc[(cond_ID, group_ID, subject),'trial_ID'])
                     np_val = self.data[trial_idx,:,:]
                     with warnings.catch_warnings():
                         warnings.simplefilter("ignore", category=RuntimeWarning)
