@@ -502,7 +502,7 @@ class Session():
             'com_port' : self.setup_ID
         }
         return metadata_dict
-        
+
     # Perform all the pretreatments to analyze behavioural file by trials
     def get_session_by_trial(self, trial_window: list, timelim: list,
             tasksfile, blank_spurious_event: list, blank_timelim: list, verbose=False):
@@ -535,6 +535,7 @@ class Session():
                 self = self.compute_conditions_by_trial()
                 self = self.compute_success()
                 self.df_conditions
+                
                 self.metadata_dict = self.create_metadata_dict()
                 self.analyzed = True
                 return self
@@ -1485,110 +1486,6 @@ class Session():
 
         fig.show()
 
-    # Should be implemented for Event_dataset() possibly, in trial_dataset_classes as data_import grows out of control
-    def plot_trials(self, events_to_plot:list = 'all',  sort:bool = False):
-
-        # I dont get that K, review symbol selection? 
-        raw_symbols  = SymbolValidator().values
-        symbols = [raw_symbols[i+2] for i in range(0, len(raw_symbols), 12)]
-
-        event_cols, event_names = self.checker_events_request(events_to_plot)
-
-        # Implement this as abstract method to check requested arguments (events) match the session obj.
-
-        plot_names =  [trig + ' ' + event for event in event_cols for trig in self.triggers]
-
-        # https://plotly.com/python/subplots/
-        # https://plotly.com/python/line-charts/
-        fig = make_subplots(
-            rows= len(event_cols), 
-            cols= len(self.triggers), 
-            shared_xaxes= True,
-            shared_yaxes= True,
-            subplot_titles= plot_names
-        )
-
-        for trig_idx, trigger in enumerate(self.df_events.trigger.unique()):
-            
-            # sub-selection of df_events based on trigger, should be condition for event_dataset class
-            df_subset = self.df_events[self.df_events.trigger == trigger]
-
-
-            for ev_idx, event_col in enumerate(event_cols):
-                # if sort:
-                #     min_times = df_subset[event_cols[ev_idx]].apply(lambda x: find_min_time_list(x))
-                #     min_times = np.sort(min_times)
-
-                ev_times = df_subset[event_cols[ev_idx]].apply(lambda x: np.array(x)).values
-                ev_trial_nb = [np.ones(len(array)) * df_subset.index[idx] for idx, array in enumerate(ev_times)]
-
-                ev_trial_nb = np.concatenate(ev_trial_nb)
-                ev_times =  np.concatenate(ev_times)
-
-                fig.add_shape(type="line",
-                    x0=0, y0=1, x1=0, y1= ev_trial_nb.max(),
-                    line=dict(
-                    color="Grey",
-                    width=2,
-                    dash="dot"
-                    ),
-                    row= ev_idx+1,
-                    col = trig_idx+1)
-
-                fig.add_trace(
-                    go.Scatter(
-                        x= ev_times/1000,
-                        y= ev_trial_nb,
-                        name= event_names[ev_idx],
-                        mode='markers',
-                        marker_symbol=symbols[ev_idx % 40]
-                        ),
-                        row= ev_idx+1,
-                        col = trig_idx+1)
-
-                    
-
-                fig.update_xaxes(
-                    title_text = 'time (s)',
-                    ticks = 'outside',
-                    ticklen = 6,
-                    tickwidth = 2,
-                    tickfont_size = 12,
-                    showline = True,
-                    linecolor = 'black',
-                    # range=[self.trial_window[0]/1000, self.trial_window[1]/1000]
-                    autorange = True,
-                    row = ev_idx+1,
-                    col = trig_idx+1
-                    )
-                
-                fig.update_yaxes( 
-                    title_text = 'trial nb', 
-                    ticks = 'outside',
-                    ticklen = 6,
-                    tickwidth = 2,   
-                    tickfont_size = 12,
-                    showline = True,
-                    linecolor = 'black',
-                    range = [1, ev_trial_nb.max()],
-                    showgrid=True,
-                    row = ev_idx+1,
-                    col = trig_idx+1
-                    )
-
-        fig.update_layout(
-            title_text= f'Events Raster plot, ID:{self.subject_ID} / {self.task_name} / {self.datetime_string}',
-            height=800,
-            width=800
-                        
-        )
-
-        fig.show()
-
-        fig.show()
-
-
-
 #----------------------------------------------------------------------------------
 # Experiment class
 #----------------------------------------------------------------------------------
@@ -1895,24 +1792,10 @@ class Experiment():
         trig_on_ev: str = None
         """
 
-        # TODO: put all redundant args checks in a utility function
-        # list: groups, conditions_list, cond_aliases, task_names, trig_on_ev
-
-        if isinstance(groups, int):
-            groups = [[groups]]
-        elif groups == None:
-            subject_IDs = list(set([session.subject_ID for session in self.sessions]))
-            groups = [subject_IDs]
-            group_ID = 0
-        elif len(groups) > 0 and isinstance(groups[0], int):
-            groups = [groups]
-            group_ID = 0
+        groups = self.check_groups(groups)
 
         if isinstance(conditions_list, dict):
             conditions_list = [conditions_list]
-
-
-        # Checks to put in dedicated function until here
 
         df_events_exp = pd.DataFrame()
         df_conditions_exp = pd.DataFrame()
@@ -2045,6 +1928,7 @@ class Experiment():
             ev_dataset.set_trial_window(self.trial_window)
         return ev_dataset
 
+    # Todo move out in utilities
     def match_sessions_to_files(self, files_dir, ext='mp4', verbose=False):
         '''
         Take an experiment instance and look for files within a directory

@@ -643,12 +643,12 @@ class Continuous_Dataset(Trials_Dataset):
         else:
 
             data = self.data[:,cols_idx,:].squeeze()
-
-            X = convert.from_2d_array_to_nested(
-                data, 
-                index = self.metadata_df.index.values,
-                time_index = self.time_vector,
-                cells_as_numpy = False)
+            X = data
+            # X = convert.from_2d_array_to_nested(
+            #     data, 
+            #     index = self.metadata_df.index.values,
+            #     time_index = self.time_vector,
+            #     cells_as_numpy = False)
             
         if hasattr(self, 'cond_aliases'):
             y = np.array([self.cond_aliases[cond] for cond in 
