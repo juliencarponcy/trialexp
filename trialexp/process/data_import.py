@@ -2211,7 +2211,7 @@ class Experiment():
                 # recovering all the sessions for one subject
                 sessions = self.get_sessions(subject_IDs=subject_ID, when=when, task_names=task_names)
                 # Only take sessions which have a photometry file matching:
-                sessions = [session for session in sessions if session.files['ppd'][0] != ]
+                sessions = [session for session in sessions if session.photometry_rsync is not None]
                 # if this subject has no photometry data
                 if sessions == []:
                     continue
