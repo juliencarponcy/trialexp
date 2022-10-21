@@ -25,6 +25,7 @@ from plotly.subplots import make_subplots
 
 from trialexp.utils.pycontrol_utilities import *
 from trialexp.utils.pyphotometry_utilities import *
+from trialexp.utils.DLC_utilities import *
 from trialexp.utils.rsync import *
 
 from trialexp.dataset_classes.trial_dataset_classes import *
@@ -40,6 +41,7 @@ class DeepLabCutFileError(Exception):
         self.message = f'No DLC file matching {subject_ID} at {datetime} \
             on camera {camera_keyword}'
         super().__init__(self.message)
+
 
 #----------------------------------------------------------------------------------
 # Session class
@@ -668,12 +670,9 @@ class Session():
         if not isinstance(conditions_list, list):
             conditions_list= [conditions_list] 
         
-        if not hasattr(self, 'files'):
-            raise Exception('The session has not been matched with a deeplabcut (.nwb / .csv) file, \
+        if not hasattr(self, 'files') or 'h5' not in self.files:
+            raise Exception('The session has not been matched with a deeplabcut (.h5 / .nwb / .csv) file, \
                 build an experimental object, then run <Exp_name>.match_sessions_to_files(files_dir, ext=''h5'')')
-        elif 'h5' not in self.files:
-             raise Exception('The session has not been matched with a deeplabcut (.nwb / .csv) file, \
-                build an experimental object, then run <Exp_name>.match_sessions_to_files(files_dir, ext=''h5'')')  
 
         # Check consistency of names_of_ave_regions and bodyparts_to_ave:
         if names_of_ave_regions or bodyparts_to_ave:
@@ -685,34 +684,34 @@ class Session():
             elif not names_of_ave_regions and bodyparts_to_store:
                 raise Exception('You need indicate names of the bodyparts_to_ave (names_of_ave_regions arguments -> List of str)')
 
-        dlc_file_to_score = []
+        dlc_file_to_read = []
         for dlc_file in self.files['h5']:
             if search(camera_keyword, dlc_file):
-                dlc_file_to_score.append(dlc_file)
+                dlc_file_to_read.append(dlc_file)
         
         # Check how many DLC file are matching the video
-        if len(dlc_file_to_score) == 0:
+        if len(dlc_file_to_read) == 0:
             raise DeepLabCutFileError(
                 self.subject_ID, self.datime, camera_keyword)
 
         # TODO: implement a DLC network keyword argument 
         # for when there is more than one DLC file per vid 
-        elif len(dlc_file_to_score) > 1:
-            dlc_file_to_score = os.path.realpath(dlc_file_to_score[0])
+        elif len(dlc_file_to_read) > 1:
+            dlc_file_to_read = os.path.realpath(dlc_file_to_read[0])
             print(f' Warning: multiple DLC files matching {self.subject_ID} at {self.datetime} on camera {camera_keyword}: \n\r \
-                will use {dlc_file_to_score}')
+                will use {dlc_file_to_read}')
         
         # when one single DLC file match the video (normal case)
         else:
-            dlc_file_to_score = dlc_file_to_score[0]
+            dlc_file_to_read = dlc_file_to_read[0]
 
         # normalize file path format
-        dlc_file_to_score = os.path.realpath(dlc_file_to_score)
+        dlc_file_to_read = os.path.realpath(dlc_file_to_read)
 
         # load DLC data
-        df_dlc = pd.read_hdf(dlc_file_to_score)
+        df_dlc = pd.read_hdf(dlc_file_to_read)
         if verbose:
-            print(f'Successfully loaded DLC file: {os.path.split(dlc_file_to_score)[1]}')
+            print(f'Successfully loaded DLC file: {os.path.split(dlc_file_to_read)[1]}')
         scorer = df_dlc.columns.get_level_values(0).unique().values[0]
         bodyparts = df_dlc.columns.get_level_values(1).unique().values.tolist()
         len_dlc = df_dlc.shape[0]
@@ -725,14 +724,7 @@ class Session():
 
         coord_dict = dict()
 
-        # block to determine which regions to keep
-        if names_of_ave_regions or bodyparts_to_store:
-            if names_of_ave_regions and bodyparts_to_store:
-                regions_to_store = names_of_ave_regions + bodyparts_to_store
-            elif names_of_ave_regions and not bodyparts_to_store:
-                regions_to_store = bodyparts_to_ave
-            elif not names_of_ave_regions and bodyparts_to_store:
-                regions_to_store = bodyparts_to_store
+        regions_to_store = get_regions_to_store(bodyparts_to_ave, names_of_ave_regions, bodyparts_to_store)
                 
         if bodyparts_to_ave:
             for r_idx, r in enumerate(names_of_ave_regions):
@@ -1756,6 +1748,62 @@ class Experiment():
         self.trial_window = trial_window
         self.by_trial = True
 
+    def list_vids_to_run_in_dlc(
+            self,
+            list_filepath: str = '\\\\ettin\\Magill_Lab\\Julien\\Models\\to_DLC.csv',
+            camera_keyword: str = 'Side', 
+            vid_ext: str = 'mp4',
+            dlc_ext: str = 'h5',
+            scorer: str = None
+            ) -> list:
+        """
+        After sessions have been linked to their respective videos and deeplabcut files
+        using <experiment>.match_sessions_to_files(), this function write a .csv file
+        with the videos full path which do not have a DeepLabCut match for the camera
+        keyword or the specified DeepLabCut scorer 
+
+        Arguments
+        ---------
+        self : Experiment object
+        list_filepath : str = '\\\\ettin\\Magill_Lab\\Julien\\Models\\to_DLC.csv'
+            full path where to write a table the videos to be scored by DeepLabCut
+            in the form of a .csv file
+        camera_keyword : str = 'Side'
+            keyword present in the video filename which indicates which view of the
+            setup it corresponds to, for multi-camera rigs
+        vid_ext : str = 'mp4'
+            Extension for the video files, usually mp4
+        dlc_ext : str = 'h5'
+            Extension for the DeepLabCut scored files, usually h5
+        scorer : str = None
+            Name of the scorer (trained Neural Network) requested/used for the videos
+            e.g.: 'DLC_resnet50_side_2_hands_newobjAug26shuffle1_500000'
+
+        Return
+        ------
+        unscored_vids : list
+            list containing all the filenames of the videos to be scored by DeepLabCut
+        """
+        vidfiles = [[vidfile for vidfile in session.files[vid_ext] if camera_keyword in vidfile] 
+            for session in self.sessions]    
+
+        if scorer:
+            dlcfiles = [[dlcfile for dlcfile in session.files[dlc_ext] if (camera_keyword in dlcfile) 
+            and (scorer in dlcfile)] for session in self.sessions]
+        else:
+            dlcfiles = [[dlcfile for dlcfile in session.files[dlc_ext] if camera_keyword in dlcfile] 
+                for session in self.sessions]
+
+
+        unscored_vids = [vidfile for idx, vidfile in enumerate(vidfiles) if dlcfiles[idx] == []]
+        unscored_vids = [item for sublist in unscored_vids for item in sublist]
+
+        if list_filepath:
+            unscored_df = pd.DataFrame(unscored_vids,columns=['video_path'])
+            unscored_df.to_csv(list_filepath)
+        
+        return unscored_vids
+
 
     # TODO: For this method in particular but for the
     # whole Experiment and Session classes, get rid of all
@@ -1974,7 +2022,7 @@ class Experiment():
     def sync_photometry_files(self,  
             rsync_chan: int = 2,
             delete_unsynced: bool = True, 
-            verbose: bool = True):
+            verbose: bool = False):
         """
         This function create a rsync aligment object into the corresponding
         session if the rsync pulses match betwwen pycontrol and pyphotometry files.

@@ -10,6 +10,22 @@ import numpy as np
 # Helpers
 #----------------------------------------------------------------------------------
 
+def get_regions_to_store(bodyparts_to_ave, names_of_ave_regions, bodyparts_to_store):
+    '''
+    determine which regions to store in a coordinates dict, based on the parameters
+    used for get_deeplabcut_trials() method
+    '''
+    
+    
+    if names_of_ave_regions or bodyparts_to_store:
+        if names_of_ave_regions and bodyparts_to_store:
+            regions_to_store = names_of_ave_regions + bodyparts_to_store
+        elif names_of_ave_regions and not bodyparts_to_store:
+            regions_to_store = bodyparts_to_ave
+        elif not names_of_ave_regions and bodyparts_to_store:
+            regions_to_store = bodyparts_to_store
+    return regions_to_store
+
 #----------------------------------------------------------------------------------
 # Processing helper
 #----------------------------------------------------------------------------------

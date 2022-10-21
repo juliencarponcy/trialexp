@@ -1,7 +1,12 @@
 # Adapted from
 # https://refactoring.guru/design-patterns/abstract-factory/python/example
 
+from abc import abstractmethod
 from dataclasses import ABC, dataclass
+from datetime import datetime
+from typing import Any
+
+from importlib.metadata import metadata
 
 ###############################################
 #                                             #
@@ -10,7 +15,6 @@ from dataclasses import ABC, dataclass
 ###############################################
 
 @dataclass(frozen=True) # frozen True to emulate pseudo-immutability
-
 class Metadata:
     '''
     Parent class for metadata of Dataset classes
@@ -52,6 +56,7 @@ class Metadata:
     '''
     metadata_dict: dict
     metadata_df : pd.DataFrame
+    metadata_creation: datetime
     metadata_type: str = 'ND'
 
     def get_shape() -> tuple:
@@ -65,22 +70,22 @@ class Metadata:
     def get_conditions() -> tuple:
         ...
 
-class PhotometryMetadata(Metadata): 
-    def __post_init__(self):
-        photo_dict = {'getThisKey':'GetThatValue'}
-        #
-        # extract Metadata without data
-        #
-        self.__setitem__('metadata_dict', photo_dict)
+# class PhotometryMetadata(Metadata): 
+#     def __post_init__(self):
+#         photo_dict = {'getThisKey':'GetThatValue'}
+#         #
+#         # extract Metadata without data
+#         #
+#         self.__setitem__('metadata_dict', photo_dict)
 
-class DlcMetadata(Metadata):
+# class DlcMetadata(Metadata):
 
-    def get_scorer():
-        ...
+#     def get_scorer():
+#         ...
 
-class PyControlMetadata(Metadata):
+# class PyControlMetadata(Metadata):
     
-    ...
+#     ...
 
 class TrialAxes:
     """
@@ -100,39 +105,59 @@ class TrialFigure:
 #                                             #
 ###############################################
 
+
 class DatasetFactory(ABC):
     """
     Abstract Base Class for all trialexp datasets
-
-    
     
     """
+    data: Any
+    metadata: Metadata
+    source: str
+
     @abstractmethod
-    def create_continuous_dataset(self) -> ContinuousDataset:
+    def create_dataset(self, data, metadata, source) -> ContinuousDataset:
         pass
 
     @abstractmethod
     def create_event_dataset(self) -> EventDataset:
         pass
 
-class ContinuousDataset(ABC):
+    @abstractmethod
+    def join_dataset(self, continuous_ds_to_join) -> ContinuousDataset:
+        ...
+
+
+#Abstract datasets types
+class ContinuousDatasetFactory(DatasetFactory):
     """
     Abstract Base Class for all continuous datasets
     """
-    @abstractmethod
-    def create_dataset(self) -> ContinuousDataset:
+
+    def create_dataset(self, data, metadata, source) -> ContinuousDataset:
+        return PycontrolDataset()
+
+    if source == 'deeplabcut':
+        ...
+        
+    def join_dataset(self, continuous_ds_to_join) -> ContinuousDataset:
         ...
 
     def get_metadata(self) -> Metadata:
         ...
 
-class EventDataset(ABC):
+class EventDatasetFactory(DatasetFactory):
     """
     Abstract Base Class for all events datasets
     """
     
+    data: pd.DataFrame
+    metadata : Metadata
+
     ...
 
+# Concrete datasets types
+@dataclass
 class PycontrolDataset(EventDataset):
     """
     subclass for pycontrol datasets
@@ -145,19 +170,28 @@ class PycontrolDataset(EventDataset):
         # fetch metadata here
         ...
 
+@dataclass
 class DlcDataset(ContinuousDataset):
     """
     subclass for DLC datasets
     """
     ...
 
+@dataclass
 class PhotometryDataset(ContinuousDataset):
     """
     subclass for photometry datasets
     """
+    metadata: PhotometryMetadata
+    
     def get_metadata() -> PhotometryMetadata:
         ...
+
+
+
 # rest of the example
+
+
 class ConcreteFactory1(DatasetFactory):
     """
     Concrete Factories produce a family of products that belong to a single
@@ -172,14 +206,22 @@ class ConcreteFactory1(DatasetFactory):
     def create_product_b(self) -> AbstractProductB:
         return ConcreteProductB1()
 
-def client_code(factory: AbstractFactory) -> None:
+
+
+
+def dataset_creation(factory: DatasetFactory) -> None:
     """
     The client code works with factories and products only through abstract
     types: AbstractFactory and AbstractProduct. This lets you pass any factory
     or product subclass to the client code without breaking it.
     """
-    product_a = factory.create_product_a()
-    product_b = factory.create_product_b()
+    dataset_photo = factory.create_continuous_dataset(data, metadata, source)
+    dataset_pycontrol = factory.create_event_dataset(data, metadata, source)
 
     print(f"{product_b.useful_function_b()}")
     print(f"{product_b.another_useful_function_b(product_a)}", end="")
+
+
+dataset_creation(ContinuousDatasetFactory())
+
+dataset_creation(EventDatasetFactory())

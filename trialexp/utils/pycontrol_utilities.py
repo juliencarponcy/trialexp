@@ -97,12 +97,14 @@ def find_matching_files(subject_ID, datetime_to_match, files_df, ext):
     
     return match_df
     
-def get_datetime_from_datestr(datestr):
-    # here is the order and format of Year(2 or 4 digits)-months-day and time which matters.
-    # All possibilities present in a folder should be listed
-    # for an exhaustive list of possibilities see:
-    # https://www.programiz.com/python-programming/datetime/strptime 
-    #     
+def get_datetime_from_datestr(datestr: str):
+    '''
+    here is the order and format of Year(2 or 4 digits)-months-day and time which matters.
+    All possibilities present in a folder should be listed
+    for an exhaustive list of possibilities see:
+    https://www.programiz.com/python-programming/datetime/strptime 
+    '''
+
     date_patterns = ["%Y-%m-%d_%H-%M-%S", "%y-%m-%d_%H-%M-%S", "%m-%d-%y_%H-%M-%S", "%Y-%m-%d-%H%M%S"]
 
     for pattern in date_patterns:
@@ -114,28 +116,37 @@ def get_datetime_from_datestr(datestr):
             #print(s_date,'exception')
             continue
 
-def get_datestr_from_filename(filename):
-    
-    # list all the possible decimal format for date strings
-    # here the order of year month and date doesn't matter
-    # datestring will be later processed as a datetime
-    
-    # Add more patterns as needed
+def get_datestr_from_filename(filename: str):
+    '''   
+        list all the possible decimal format for date strings
+        here the order of year month and date doesn't matter
+        datestring will be later processed as a datetime
+        
+        Add more patterns as needed
+    '''
+
     re_patterns = [
         '\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}', 
         '\d{2}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}',
         '\d{4}-\d{2}-\d{2}-\d{6}' # ppd files date format
         ]
     
-    
+    # loop over all the date patterns to find a match
     for idx, redate in enumerate(re_patterns):
         # print(idx)
         match_str = search(redate, filename)
         if match_str:
-            continue
+            break
     
-    datestr = match_str.group(0)
+    # return datestr if match
+    if match_str is not None:
+        datestr = match_str.group(0)
+    # or empty str if no match
+    else:
+        datestr = ''
+    
     return datestr
+
 
 def blank_spurious_detection(df_item, blank_timelim):
     '''
