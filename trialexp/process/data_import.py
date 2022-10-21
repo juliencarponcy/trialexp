@@ -101,7 +101,6 @@ class Session():
         DataFrame with rows for all the trials and columns for 'trigger', 'valid' and the keys of conditions_list passed to
         Experiment.behav_events_to_dataset. df_conditions is a subset of df_events with fewer columns (maybe)
     photometry_rsync
-    photometry_path : str
     files : dict
     """
 
@@ -873,10 +872,10 @@ class Session():
         if not isinstance(export_vars, list):
             export_vars= [export_vars] 
 
-        if not hasattr(self, 'photometry_path'):
+        if not hasattr(self, 'photometry_rsync'):
             raise Exception('The session has not been matched with a .ppd file, \
                 please run experiment.match_to_photometry_files(kvargs)')
-        elif self.photometry_path == None:
+        elif self.photometry_rsync == None:
             raise Exception('The session has no matching .ppd file, or no alignment \
                 could be performed between rsync pulses')
         
@@ -887,7 +886,7 @@ class Session():
     
         # import of raw and filtered data from full photometry session
 
-        photometry_dict = import_ppd(self.photometry_path, high_pass=high_pass, low_pass=low_pass, median_filt=median_filt)
+        photometry_dict = import_ppd(self.files['ppd'][0], high_pass=high_pass, low_pass=low_pass, median_filt=median_filt)
 
         #----------------------------------------------------------------------------------
         # Filtering / Motion correction / resampling block below
@@ -1950,6 +1949,9 @@ class Experiment():
         files_list = [f for f in os.listdir(files_dir) if os.path.isfile(
             os.path.join(files_dir, f)) and ext in f]
 
+        if len(files_list) == 0:
+            raise Exception(f'No files with the .{ext} extension where found in the following folder: {files_dir}')
+
         files_df = pd.DataFrame(columns=['filename','datetime'])
 
         files_df['filename'] = pd.DataFrame(files_list)
@@ -1964,7 +1966,81 @@ class Experiment():
                 self.sessions[s_idx].files = dict()
             
             self.sessions[s_idx].files[ext] = [os.path.join(files_dir, filepath) for filepath in match_df['filename'].to_list()]
-        
+    
+    # consider deleting and using match_sessions_to_files,
+    # then only compute rsync aligner at extraction (or not
+    # since it is good to know in advance which photometry
+    # files are actually useful)
+    def sync_photometry_files(self,  
+            rsync_chan: int = 2,
+            delete_unsynced: bool = True, 
+            verbose: bool = True):
+        """
+        This function create a rsync aligment object into the corresponding
+        session if the rsync pulses match betwwen pycontrol and pyphotometry files.
+
+            Parameters:
+                self (Experiment): An Experiment object instance
+                rsync_chan (int): Channel on which pulses have been
+                    recorded on the py_photometry device.
+                delete_unsynced (bool): Delete the photometry file path in
+                    session.files['ppd'] if rsync does not match
+                verbose (bool): display match/no match messages for each file
+
+            Returns:
+                    None
+
+            The warning:
+                KMeans is known to have a memory leak on Windows with MKL, when there are less chunks than available threads...
+            
+            is due to rsync function.
+
+            https://stackoverflow.com/questions/69596239/how-to-avoid-memory-leak-when-dealing-with-kmeans-for-example-in-this-code-i-am
+            Follow the answer and set the einvironment variable OMP_NUM_THREADS to supress the warning.
+                    
+        """
+            
+        for id_f, session in enumerate(self.sessions):
+
+            if session.files['ppd'] != []:
+                # try to align times with rsync
+                try:
+                    # Gives KeyError exception if no rsync pulses on pycontrol file
+                    pycontrol_rsync_times = session.times['rsync']
+                
+                    photometry_dict = import_ppd(session.files['ppd'][0])
+                    
+                    photometry_rsync_times = photometry_dict['pulse_times_' + str(rsync_chan)]
+
+                    pyphoto_aligner = Rsync_aligner(pulse_times_A= pycontrol_rsync_times, 
+                        pulse_times_B= photometry_rsync_times, plot=False)
+                    
+                    if verbose:
+                        print('pycontrol: ', session.subject_ID, session.datetime,
+                        '/ pyphotometry: ', session.files['ppd'][0], ' : rsync does match')
+                    
+                    self.sessions[id_f].photometry_rsync = pyphoto_aligner
+
+                # if rsync aligner fails    
+                except (RsyncError, ValueError, KeyError):
+                    self.sessions[id_f].photometry_rsync = None
+
+                    if verbose:
+                        print('pycontrol: ', session.subject_ID, session.datetime,
+                        '/ pyphotometry: ', session.files['ppd'][0], ' : rsync does not match')
+
+                    if delete_unsynced:
+                        self.sessions[id_f].files['ppd'] = []
+
+            # if there is no subject + date match in .ppd files
+            else: 
+                self.sessions[id_f].photometry_rsync = None
+
+                if verbose:
+                    print('pycontrol: ', session.subject_ID, session.datetime,
+                    '/ pyphotometry: no file matching both subject and date')
+
+
     def get_deeplabcut_groups(
             self, 
             groups: list = None, # list of 
@@ -2135,7 +2211,7 @@ class Experiment():
                 # recovering all the sessions for one subject
                 sessions = self.get_sessions(subject_IDs=subject_ID, when=when, task_names=task_names)
                 # Only take sessions which have a photometry file matching:
-                sessions = [session for session in sessions if session.photometry_path is not None]
+                sessions = [session for session in sessions if session.files['ppd'][0] != ]
                 # if this subject has no photometry data
                 if sessions == []:
                     continue
@@ -2281,132 +2357,7 @@ class Experiment():
 
         return results
 
-    # consider deleting and using match_sessions_to_files,
-    # then only compute rsync aligner at extraction (or not
-    # since it is good to know in advance which photometry
-    # files are actually useful)
-    def match_to_photometry_files(self, 
-            photometry_dir, 
-            rsync_chan: int = 2, 
-            verbose: bool = True):
-        """
-        This function is a class method for Experiment objects. 
-        For each session, it checks into an horizontal photometry file repository,
-        trying to find a .ppd file matching subject and date and takes the closest
-        file. It then try to create a rsync aligment object into the corresponding
-        session if the pulses match.
-
-            Parameters:
-                self (Experiment): An Experiment object instance
-                photometry_dir (str): Path of the photometry repository
-                    Note: On windows, double antislash must be entered
-                    between each level. 
-                    e.g.: 'C:\\Users\\Documents\\GitHub\\photometry_repo'
-                rsync_chan (int): Channel on which pulses have been
-                    recorded on the py_photometry device.
-                verbose (bool): display match/no match messages for each file
-
-            Returns:
-                    None
-
-            The warning:
-                KMeans is known to have a memory leak on Windows with MKL, when there are less chunks than available threads...
-            
-            is due to rsync function.
-
-            https://stackoverflow.com/questions/69596239/how-to-avoid-memory-leak-when-dealing-with-kmeans-for-example-in-this-code-i-am
-            Follow the answer and set the einvironment variable OMP_NUM_THREADS to supress the warning.
-                    
-        """
-            
-        pycontrol_subjects = [session.subject_ID for session in self.sessions]
-        pycontrol_datetime = [session.datetime for session in self.sessions]
-
-        all_photo_files = [f for f in os.listdir(photometry_dir) if os.path.isfile(
-        os.path.join(photometry_dir, f)) and ".ppd" in f]
-
-        # parsing filenames to extract integer of subject_name (aka subject_ID)
-        photometry_subjects = [int(re.split('(\d+)', f.split('-')[0])[1]) for f in all_photo_files]
-        # only extract datetime string from the filename (leave appart subject ID and .ppd extension)
-        photometry_datestr = [f.split('-',1)[1][:-4] for f in all_photo_files]
-        # convert date-time string to datetime format
-        photometry_datetime = [datetime.strptime(datestr, "%Y-%m-%d-%H%M%S") for datestr in photometry_datestr]
-
-        for id_f, pycontrol_subject in enumerate(pycontrol_subjects):
-            # find photometry files which match subject and date of the pycontrol session
-            subject_date_match_idx = [photo_idx for (photo_idx, photo_subject) in enumerate(photometry_subjects) 
-                if photo_subject == pycontrol_subject and
-                photometry_datetime[photo_idx].date() == pycontrol_datetime[id_f].date()]
-
-            # if a match is detected
-            if len(subject_date_match_idx) > 0:
-                # compute absolute time difference of all possible files matching
-                time_diff = [abs(pycontrol_datetime[id_f] - photometry_datetime[match_idx]).seconds
-                    for match_idx in subject_date_match_idx]
-                # extract the idx of the photometry file with the shortest time difference  
-                # compared to the pycontrol files
-                best_match_idx = subject_date_match_idx[time_diff.index(min(time_diff))]
-                
-                # try to align times with rsync
-                try:
-                    # Gives KeyError exception if no rsync pulses on pycontrol file
-                    pycontrol_rsync_times = self.sessions[id_f].times['rsync']
-                
-                    photometry_dict = import_ppd(os.path.join(photometry_dir,all_photo_files[best_match_idx]))
-                    
-                    photometry_rsync_times = photometry_dict['pulse_times_' + str(rsync_chan)]
-
-                    pyphoto_aligner = Rsync_aligner(pulse_times_A= pycontrol_rsync_times, 
-                        pulse_times_B= photometry_rsync_times, plot=False)
-                    
-                    if verbose:
-                        print('pycontrol: ', pycontrol_subjects[id_f], pycontrol_datetime[id_f],
-                        '/ pyphotometry: ', photometry_datetime[best_match_idx], ' : rsync does match')
-                    
-                    self.sessions[id_f].photometry_rsync = pyphoto_aligner
-                    self.sessions[id_f].photometry_path = os.path.join(photometry_dir,all_photo_files[best_match_idx])
-
-                    # # TODO: take out that mean and std computation and possibly bring to get_photometry_trials(Session_method)
-                    # # If no filter limit specified, take raw values
-                    # if all([low_pass == None, high_pass == None]):
-                    #     self.sessions[id_f].photometry_mean = [np.mean(photometry_dict['analog_1']), 
-                    #         np.mean(photometry_dict['analog_2'])]
-
-                    #     print(photometry_dict['analog_1'])
-
-                    #     self.sessions[id_f].photometry_std = [np.std(photometry_dict['analog_1']), 
-                    #         np.std(photometry_dict['analog_2'])]
-                    # # Otherwise, take filtered values
-                    # else:
-                    #     self.sessions[id_f].photometry_mean = [np.mean(photometry_dict['analog_1_filt']), 
-                    #         np.mean(photometry_dict['analog_2_filt'])]
-
-                    #     self.sessions[id_f].photometry_std = [np.std(photometry_dict['analog_1_filt']), 
-                    #         np.std(photometry_dict['analog_2_filt'])]
-                
-                # if rsync aligner fails    
-                except (RsyncError, ValueError):
-                    self.sessions[id_f].photometry_rsync = None
-                    self.sessions[id_f].photometry_path = None
-                    if verbose:
-                        print('pycontrol: ', pycontrol_subjects[id_f], pycontrol_datetime[id_f],
-                        '/ pyphotometry: ', photometry_datetime[best_match_idx], ' : rsync does not match')
-
-                except KeyError:
-                    self.sessions[id_f].photometry_rsync = None
-                    self.sessions[id_f].photometry_path = None
-                    if verbose:
-                        print('pycontrol: ', pycontrol_subjects[id_f], pycontrol_datetime[id_f],
-                        '/ pyphotometry: ', photometry_datetime[best_match_idx], ' : rsync does not match')
-            
-            # if there is no subject + date match in .ppd files
-            else: 
-                self.sessions[id_f].photometry_rsync = None
-                self.sessions[id_f].photometry_path = None
-                if verbose:
-                    print('pycontrol: ', pycontrol_subjects[id_f], pycontrol_datetime[id_f],
-                    '/ pyphotometry: no file matching both subject and date')
-
+   
 #----------------------------------------------------------------------------------
 # Helpers
 #----------------------------------------------------------------------------------

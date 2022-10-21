@@ -72,17 +72,17 @@ def find_matching_files(subject_ID, datetime_to_match, files_df, ext):
     """ 
 
     if ext not in ['nwb','h5']:
-        # for videos, avoid integrating DeepLabCut labelled videos
+        # for videos, avoid integrating DeepLabCut labelled videos "['filename'].str.contains('DLC')"
+        #TODO match_df is not a view or copy
         match_df = files_df.loc[(files_df['datetime'].apply(lambda x: Timestamp.date(x)) == datetime_to_match.date()) &
             (files_df['filename'].str.contains(str(subject_ID))) &
-            ~(files_df['filename'].str.contains('DLC'))].copy() #TODO match_df is not a view or copy
+            ~(files_df['filename'].str.contains('DLC'))].copy() 
 
         # will not avoid DLC-containing filenames in case of searching DLC .nwb data files
     else:
         match_df = files_df.loc[(files_df['datetime'].apply(lambda x: Timestamp.date(x)) == datetime_to_match.date()) &
                                 (files_df['filename'].str.contains(str(subject_ID)))].copy() #TODO match_df is not a view or copy
 
-    
     # match_df = match_df.to_frame(name='matching_filename')
     if ~match_df.empty:
       
@@ -119,7 +119,15 @@ def get_datestr_from_filename(filename):
     # list all the possible decimal format for date strings
     # here the order of year month and date doesn't matter
     # datestring will be later processed as a datetime
-    re_patterns = ['\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}', '\d{2}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}']
+    
+    # Add more patterns as needed
+    re_patterns = [
+        '\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}', 
+        '\d{2}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}',
+        '\d{4}-\d{2}-\d{2}-\d{6}' # ppd files date format
+        ]
+    
+    
     for idx, redate in enumerate(re_patterns):
         # print(idx)
         match_str = search(redate, filename)
@@ -135,7 +143,7 @@ def blank_spurious_detection(df_item, blank_timelim):
     unwanted contacts (e.g. drop to whisker), or artifacts in the detections.
     '''
     if isinstance(df_item, list):
-        tlist = [t for t in df_item if (t < 0 or t > 60)]
+        tlist = [t for t in df_item if (t < blank_timelim[0] or t > blank_timelim[1])]
         return tlist
 
 def find_last_time_before_list(x):

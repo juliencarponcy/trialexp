@@ -641,7 +641,8 @@ class Continuous_Dataset(Trials_Dataset):
                 column_names = cols_names,
                 cells_as_numpy=False)
         else:
-
+            # if only one columns, output a 2D numpy array
+            # dimensions = samples x timepoints 
             data = self.data[:,cols_idx,:].squeeze()
             X = data
             # X = convert.from_2d_array_to_nested(

@@ -7,7 +7,7 @@ from pandas import DataFrame
 class Metadata:
     '''
     Parent class for metadata of Dataset classes
-
+.
        Attributes
     ----------
     metadata_dict : dict
