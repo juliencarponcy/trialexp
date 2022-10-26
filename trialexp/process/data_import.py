@@ -1517,7 +1517,12 @@ class Experiment():
             
     """
 
-    def __init__(self, folder_path, int_subject_IDs=True, verbose=False):
+    def __init__(
+            self, 
+            folder_path: str, 
+            int_subject_IDs: bool = True, 
+            update: bool = False, 
+            verbose=False):
         """
         Import all sessions from specified folder to create experiment object.  Only sessions in the 
         specified folder (not in subfolders) will be imported.
@@ -1529,47 +1534,59 @@ class Experiment():
 
         """
 
-        self.folder_name = os.path.split(folder_path)[1]
-        self.path = folder_path
-
-        # Import sessions.
-
-        self._sessions = []
-        try: # Load sessions from saved sessions.pkl file.
-            with open(os.path.join(self.path, 'sessions.pkl'),'rb') as sessions_file:
+        if folder_path[-4:] == '.pkl':
+            base = os.path.split(folder_path)[0]
+            self.folder_name =  os.path.split(base)[1]
+            self.path = base
+            with open(folder_path,'rb') as sessions_file:
                 self._sessions = pickle.load(sessions_file)
-            print('Saved sessions loaded from: sessions.pkl')
-            # TODO: precise and refine use of this by_trial attribute
-            self.by_trial = True
-        except IOError:
-            self.by_trial = False
-            pass
 
-        old_files = [session.file_name for session in self._sessions]
-        files = os.listdir(self.path)
-        new_files = [f for f in files if f[-4:] == '.txt' and f not in old_files]
+        else:
+            self.folder_name = os.path.split(folder_path)[1]
+            self.path = folder_path
 
-        if len(new_files) > 0:
-            if verbose:
-                print('Loading new data files..')
-            self.by_trial = False
-            for file_name in new_files:
-                try:
-                    self._sessions.append(Session(os.path.join(self.path, file_name), int_subject_IDs))
-                except Exception as error_message:
-                    if verbose:
-                        print('Unable to import file: ' + file_name)
-                        print(error_message)
+            # Import sessions.
 
-        self.sessions = self._sessions # force to call the setter
+            self._sessions = []
+
+            
+            try: # Load sessions from saved sessions.pkl file.
+                with open(os.path.join(self.path, 'sessions.pkl'),'rb') as sessions_file:
+                    self._sessions = pickle.load(sessions_file)
+                print('Saved sessions loaded from: sessions.pkl')
+                # TODO: precise and refine use of this by_trial attribute
+                self.by_trial = True
+            except IOError:
+                self.by_trial = False
+                pass
+
+
+        if update and folder_path[-4:] != '.pkl':
+            old_files = [session.file_name for session in self._sessions]
+            files = os.listdir(self.path)
+            new_files = [f for f in files if f[-4:] == '.txt' and f not in old_files]
+
+            if len(new_files) > 0:
+                if verbose:
+                    print('Loading new data files..')
+                self.by_trial = False
+                for file_name in new_files:
+                    try:
+                        self._sessions.append(Session(os.path.join(self.path, file_name), int_subject_IDs))
+                    except Exception as error_message:
+                        if verbose:
+                            print('Unable to import file: ' + file_name)
+                            print(error_message)
+
+            self.sessions = self._sessions # force to call the setter
         # Assign session numbers.
 
-        # self.subject_IDs = list(set([s.subject_ID for s in self.sessions]))
-        # self.n_subjects = len(self.subject_IDs)
+        self.subject_IDs = list(set([s.subject_ID for s in self.sessions]))
+        self.n_subjects = len(self.subject_IDs)
 
-        # self.task_names = list(set([s.task_name for s in self.sessions]))
+        self.task_names = list(set([s.task_name for s in self.sessions]))
 
-        # self.sessions.sort(key = lambda s:s.datetime_string + str(s.subject_ID))
+        self.sessions.sort(key = lambda s:s.datetime_string + str(s.subject_ID))
         
         self.sessions_per_subject = {}
         for subject_ID in self.subject_IDs:
@@ -1614,13 +1631,28 @@ class Experiment():
         del self._sessions
 
 
-    def save(self):
+    def save(self, name: str):
         '''Save all sessions as .pkl file. Speeds up subsequent instantiation of 
-        experiment as sessions do not need to be reimported from data files.''' 
+        experiment as sessions do not need to be reimported from data files.
         
-        with open(os.path.join(self.path, 'sessions.pkl'),'wb') as sessions_file:
-            pickle.dump(self.sessions, sessions_file)
-            print(f"saved {os.path.join(self.path, 'sessions.pkl')}") # I think it's a good practice that whener you make changes to files/folders print something
+        Arguments:
+            name: str
+                Do not include '.pkl' in name, it is append automatically
+                If not None, save the pickle file in its original folder as
+                <name>.pkl
+        ''' 
+        if name is not None:
+
+            with open(os.path.join(self.path, name + '.pkl'),'wb') as sessions_file:
+                pickle.dump(self.sessions, sessions_file)
+                print(f"saved {os.path.join(self.path, name + '.pkl')}") # I think it's a good practice that whener you make changes to files/folders print something
+
+        else: 
+            
+            with open(os.path.join(self.path, 'sessions.pkl'),'wb') as sessions_file:
+                pickle.dump(self.sessions, sessions_file)
+                print(f"saved {os.path.join(self.path, 'sessions.pkl')}") # I think it's a good practice that whener you make changes to files/folders print something
+
 
     # def match_photometry_files(self, photometry_dir):
 
