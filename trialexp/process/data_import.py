@@ -1962,6 +1962,24 @@ class Experiment():
         return unscored_vids
 
 
+    def check_groups(self, groups):
+
+        # TODO: put all redundant args checks in a utility function
+        # list: groups, conditions_list, cond_aliases, task_names, trig_on_ev
+
+        if isinstance(groups, int):
+            groups = [[groups]]
+        elif groups == None:
+            subject_IDs = list(set([session.subject_ID for session in self.sessions]))
+            groups = [subject_IDs]
+            group_ID = 0
+        elif len(groups) > 0 and isinstance(groups[0], int):
+            groups = [groups]
+            group_ID = 0
+        return groups
+
+
+
     # TODO: For this method in particular but for the
     # whole Experiment and Session classes, get rid of all
     # the redundancies between df_events and df_conditions
