@@ -147,6 +147,12 @@ class Trials_Dataset():
     def time_unit(self):
         return self._time_unit
 
+    @property
+    def triggers(self):
+        trg = self.metadata_df['trigger']
+        trg = list(set(trg))
+        return trg
+
     def set_conditions(self, conditions: ConditionsType, aliases: Iterable = None):
         if isinstance(conditions, list) and not all([isinstance(conditions[c],dict) for c in range(len(conditions))]):
             raise TypeError(f'conditions must be of any of the follwing types \
