@@ -1,6 +1,7 @@
 # Python classes for storing, plotting and transform data by trials
+from hmac import trans_36
 import sys
-from datetime import datetime
+from datetime import datetime, date
 from typing import Iterable, Union, Optional, Tuple
 import os
 # from dataclasses import dataclass
@@ -253,10 +254,9 @@ class Trials_Dataset():
         """
         exclude one or several dates of the dataset 
         """
-        import datetime
-        if  all([isinstance(d, datetime.datetime) for d in days_to_exclude])  :
+        if  all([isinstance(d, datetime) for d in days_to_exclude])  :
             days_to_exclude = [d.date() for d in days_to_exclude]
-        elif all([isinstance(d, datetime.date) for d in days_to_exclude]):
+        elif all([isinstance(d, date) for d in days_to_exclude]):
             days_to_exclude = [days_to_exclude]
         else:
             raise TypeError("days_to_exclude has to be a list of datetime or date")

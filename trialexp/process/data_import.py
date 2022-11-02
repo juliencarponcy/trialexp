@@ -1724,7 +1724,7 @@ class Experiment():
             self.sessions_per_subject[subject_ID] = subject_sessions[-1].number
 
     @property
-    def sessions(self):    
+    def sessions(self):
         return self._sessions
 
     @sessions.setter
