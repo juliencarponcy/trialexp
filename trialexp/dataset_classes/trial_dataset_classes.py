@@ -282,6 +282,15 @@ class Trials_Dataset():
         filter = self.metadata_df['subject_ID'].apply(lambda x: x in subject_IDs_to_exclude)
         self.metadata_df.loc[filter,'keep'] = False
 
+    def filterin_subjects(self, subject_IDs_to_include: list):
+        """
+        include one or several subjects of the dataset
+        """
+        if isinstance(subject_IDs_to_include, int):
+            subject_IDs_to_include = [subject_IDs_to_include]
+        filter = self.metadata_df['subject_ID'].apply(lambda x: x in subject_IDs_to_include)
+        self.metadata_df.loc[filter,'keep'] = True
+
     def filter_min(self, min_trials : int = 5):
         """
         filter subjects who do not have sufficient trials in a condition,
