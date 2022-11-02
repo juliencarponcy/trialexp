@@ -359,6 +359,14 @@ class Trials_Dataset():
 
         self.metadata_df.loc[idx_to_remove.index,'keep'] = False
 
+    def filter_flip(self):
+
+        tf = pd.Series([True] * self.metadata_df.shape[0])
+        
+        tf.loc[self.metadata_df['keep']] = False
+
+        self.metadata_df['keep'] = tf
+
     def filter_reset(self):
         """
         reset filters to include all trials as
