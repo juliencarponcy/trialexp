@@ -254,10 +254,13 @@ class Trials_Dataset():
         """
         exclude one or several dates of the dataset 
         """
-        if  all([isinstance(d, datetime) for d in days_to_exclude])  :
+        if not isinstance(days_to_exclude, list):
+            days_to_exclude = [days_to_exclude]
+
+        if all([isinstance(d, datetime) for d in days_to_exclude]):
             days_to_exclude = [d.date() for d in days_to_exclude]
         elif all([isinstance(d, date) for d in days_to_exclude]):
-            days_to_exclude = [days_to_exclude]
+            days_to_exclude = days_to_exclude
         else:
             raise TypeError("days_to_exclude has to be a list of datetime or date")
         filter = self.metadata_df['datetime'].apply(
@@ -417,10 +420,13 @@ class Trials_Dataset():
         https://docs.python.org/3/library/datetime.html#datetime.date
 
         """
+        if not isinstance(days_to_include, list):
+            days_to_include = [days_to_include]
+
         if all([isinstance(d, datetime) for d in days_to_include]):
             days_to_include = [d.date() for d in days_to_include]
         elif all([isinstance(d, date) for d in days_to_include]):
-            days_to_include = [days_to_include]
+            days_to_include = days_to_include
         else:
             raise TypeError(
                 "days_to_include has to be a list of datetime.datetime or datetime..date")
