@@ -289,10 +289,12 @@ ev_dataset.triggers
 ev_dataset.data.head()
 
 
-# In[54]:
+# In[58]:
 
 
 from  matplotlib import pyplot as plt
+
+plt.rcParams['font.family'] = ['Arial']
 
 event_cols = [
     event_col for event_col in ev_dataset.data.columns if '_trial_time' in event_col]
@@ -311,11 +313,12 @@ for trig_idx, trigger in enumerate(triggers):
     df_subset = df_subset.reset_index()
 
     for ev_idx, event_col in enumerate(event_cols):
-
+        
         for r in range(0,df_subset.shape[0]):
-            ev_times = df_subset.at[r, event_col] #TODO
+           
+            ev_times = df_subset.at[r, event_col]
             
-            X = np.array(df_subset.at[r,'bar_trial_time'])
+            X = np.array(ev_times)
             X.shape = (1, len(X))
             X = np.tile(X,(2,1))/1000 # ms
 
@@ -329,13 +332,7 @@ for trig_idx, trigger in enumerate(triggers):
 
             event_name_stem = event_col.split('_trial_time')[0] 
 
-            # ax[ev_idx][trig_idx].text(-0.25, 0.5, event_name_stem,
-            #     transform=ax[ev_idx][trig_idx].transAxes,
-            #     fontfamily='Arial',
-            #     fontstyle='normal',
-            #     rotation=90)
-
-            ax[ev_idx][trig_idx].set_ylabel('Trials ' + event_name_stem)
+            ax[ev_idx][trig_idx].set_ylabel('Trials: ' + event_name_stem)
 
             ax[ev_idx][trig_idx].spines['top'].set_visible(False)
             ax[ev_idx][trig_idx].spines['right'].set_visible(False)
