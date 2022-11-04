@@ -1019,7 +1019,7 @@ class Session():
                 else:
                     photo_array = photo_array_temp
 
-
+        # DEPRECATED, possibly better done by Continuous_Dataset() methods
         if remove_artifacts == True:
             
             # dbscan_anomaly_detection(photo_array)
@@ -1050,11 +1050,11 @@ class Session():
                         ha='left', va='top', transform=ax.transAxes)
                 # plt.xlim(xlim)
                 # plt.ylim(ylim)
-                plt.legend();
+                plt.legend()
                 plt.show()
 
 
-            red_data = photo_array[:,:,col_names_numpy['analog_2_filt']]
+            # red_data = photo_array[:,:,col_names_numpy['analog_2_filt']]
 
             # find how many gaussian in red channel
             nb_gauss_in_red_chan = find_n_gaussians(
@@ -1240,7 +1240,10 @@ class Session():
             return idx_joint, trials_times
 
     def compute_behav_metrics(self, conditions_dict, events=None):
-        ''' if two events are passed, time_delta between the first occurence of events[0]
+        ''' 
+        Early function, decide whether to keep or not
+
+        if two events are passed, time_delta between the first occurence of events[0]
         "t0(events[0])" and the first occurence of events[1] *after t0(events[0])*
         will be computed. Results will be stored in mean_timedelta and std_timedelta
 
@@ -2271,8 +2274,8 @@ class Experiment():
         '''
         # TODO: Elaborate docstring. mention that return_full_session is not possible for an Experiment
         
-        if self.by_trial == False:
-            raise Exception('Process experiment by trial first: experiment.process_exp_by_trial(trial_window, timelim, tasksfile)')
+        # if self.by_trial == False:
+        #     raise Exception('Process experiment by trial first: experiment.process_exp_by_trial(trial_window, timelim, tasksfile)')
 
         if isinstance(conditions_list, dict):
             conditions_list = [conditions_list]

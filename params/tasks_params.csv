@@ -19,3 +19,4 @@
 17,reaching_go_spout_cued_uncued,CS_Go,bar; bar_off; spout; hold_start,free_reward_timer; reward spout cued; reward bar cued; reward bar_off; reward spout uncued; reward bar uncued; reward free; reward free_uncued,,,,,,,
 18,pavlovian_nobar_nodelay,CS_Go,bar; bar_off; spout,,,,,,,,
 19,cued_uncued_oct22,Cued; UnCued,bar; bar_off; spout; reward_delay_timer,delayed reward spout cued; delayed reward spout uncued; error_trial; reward free_uncued; reward free; reward bar_off; reward bar uncued; button_press,,,,,,,
+20,go_rewarding_aversive,Go_water; Go_air,bar; bar_off; spout,free_reward; Go_water spout success; Go_air spout success; Go_air spout miss; Go_water bar success; Go_air bar success,,,,,,,
