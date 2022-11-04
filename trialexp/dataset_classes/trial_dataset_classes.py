@@ -1,6 +1,7 @@
 # Python classes for storing, plotting and transform data by trials
+from hmac import trans_36
 import sys
-from datetime import datetime
+from datetime import datetime, date
 from typing import Iterable, Union, Optional, Tuple
 import os
 # from dataclasses import dataclass
@@ -147,6 +148,12 @@ class Trials_Dataset():
     def time_unit(self):
         return self._time_unit
 
+    @property
+    def triggers(self):
+        trg = self.metadata_df['trigger']
+        trg = list(set(trg))
+        return trg
+
     def set_conditions(self, conditions: ConditionsType, aliases: Iterable = None):
         if isinstance(conditions, list) and not all([isinstance(conditions[c],dict) for c in range(len(conditions))]):
             raise TypeError(f'conditions must be of any of the follwing types \
@@ -247,11 +254,13 @@ class Trials_Dataset():
         """
         exclude one or several dates of the dataset 
         """
-        import datetime
-        if  all([isinstance(d, datetime.datetime) for d in days_to_exclude])  :
-            days_to_exclude = [d.date() for d in days_to_exclude]
-        elif all([isinstance(d, datetime.date) for d in days_to_exclude]):
+        if not isinstance(days_to_exclude, list):
             days_to_exclude = [days_to_exclude]
+
+        if all([isinstance(d, datetime) for d in days_to_exclude]):
+            days_to_exclude = [d.date() for d in days_to_exclude]
+        elif all([isinstance(d, date) for d in days_to_exclude]):
+            days_to_exclude = days_to_exclude
         else:
             raise TypeError("days_to_exclude has to be a list of datetime or date")
         filter = self.metadata_df['datetime'].apply(
@@ -353,6 +362,14 @@ class Trials_Dataset():
 
         self.metadata_df.loc[idx_to_remove.index,'keep'] = False
 
+    def filter_flip(self):
+
+        tf = pd.Series([True] * self.metadata_df.shape[0])
+        
+        tf.loc[self.metadata_df['keep']] = False
+
+        self.metadata_df['keep'] = tf
+
     def filter_reset(self):
         """
         reset filters to include all trials as
@@ -361,6 +378,123 @@ class Trials_Dataset():
         """
 
         self.metadata_df['keep'] = True
+
+    def set_keep(self, tfkeep):
+        """
+        Set the value of 'keep' column (used as a filter) of metadata_df
+        self.metadata_df['keep'] = tfkeep
+
+        See also:
+        get_tfkeep_subjects()
+        get_tfkeep_dates()
+        get_tfkeep_conditions()
+        get_tfkeep_lastNsessions()
+        get_tfkeep_groups()
+        """
+        self.metadata_df['keep'] = tfkeep
+
+    def get_tfkeep_subjects(self, subject_IDs_to_include: list):
+        """
+        return a bool vector (pd.Series) that have True for one or several subjects of the dataset.
+        The vector tfkeep can be used for boolean operations 
+        eg. tfkeep3 = (tfkeep1) & (tfkeep2) 
+        and then used to set the value of obj.set_keep(tfkeep3)
+        """
+        if isinstance(subject_IDs_to_include, int):
+            subject_IDs_to_include = [subject_IDs_to_include]
+        tfkeep = self.metadata_df['subject_ID'].apply(lambda x: x in subject_IDs_to_include)
+        return tfkeep
+
+    def get_tfkeep_dates(self, days_to_include: list):
+        """
+        return a bool vector (pd.Series) that have True for one or several dates of the dataset 
+
+        days_to_include
+            list of datetime.datetime or list of datetime.date
+
+        The vector tfkeep can be used for boolean operations 
+        eg. tfkeep3 = (tfkeep1) & (tfkeep2) 
+        and then used to set the value of obj.set_keep(tfkeep3)
+
+        https://docs.python.org/3/library/datetime.html#datetime.datetime
+        https://docs.python.org/3/library/datetime.html#datetime.date
+
+        """
+        if not isinstance(days_to_include, list):
+            days_to_include = [days_to_include]
+
+        if all([isinstance(d, datetime) for d in days_to_include]):
+            days_to_include = [d.date() for d in days_to_include]
+        elif all([isinstance(d, date) for d in days_to_include]):
+            days_to_include = days_to_include
+        else:
+            raise TypeError(
+                "days_to_include has to be a list of datetime.datetime or datetime..date")
+        tfkeep = self.metadata_df['datetime'].apply(
+            lambda x: x.date() in days_to_include)
+        return tfkeep
+
+    def get_tfkeep_conditions(self, condition_IDs: list):
+        """
+        return a bool vector (pd.Series) that have True for one or several conditions of the dataset using integer condition_IDs
+        the index (ID) starting from 0
+        The vector tfkeep can be used for boolean operations 
+        eg. tfkeep3 = (tfkeep1) & (tfkeep2) 
+        and then used to set the value of obj.set_keep(tfkeep3)
+        """
+        if isinstance(condition_IDs, int):
+            condition_IDs = [condition_IDs]
+        tfkeep = self.metadata_df['condition_ID'].apply(
+            lambda x: x in condition_IDs)
+        return tfkeep
+
+    def get_tfkeep_lastNsessions(self, n : int):
+        """
+        return a bool vector (pd.Series) that have True for the last n sessions for each animal.
+        The five sessions are counted for the sessions with 'keep' == True
+        The vector tfkeep can be used for boolean operations 
+        eg.tfkeep3 = (tfkeep1) & (tfkeep2) 
+        and then used to set the value of obj.set_keep(tfkeep3)
+        """
+        subject_IDs = list(set(self.metadata_df['subject_ID']))
+        subject_IDs.sort()
+
+        tfkeep = pd.Series([False] * self.metadata_df.shape[0])
+        for s in subject_IDs:
+            # NOTE copy() is needed
+            session_nbs = self.metadata_df.loc[:, 'session_nb'].copy()
+
+            session_nbs.loc[(
+                (self.metadata_df['subject_ID'] != s)
+                | (self.metadata_df['keep'] != True)
+            )] = -1
+
+            largestNs = list(set(session_nbs))
+            largestNs.sort(reverse=True)
+
+            largestNs = largestNs[0:n]
+
+            if -1 in largestNs:
+                largestNs.remove(-1)
+
+            for k in largestNs:
+                tfkeep.loc[session_nbs == k] = True
+
+        return tfkeep
+
+    def get_tfkeep_groups(self, group_IDs_to_exclude: list):
+        """
+        return a bool vector (pd.Series) that have True for one or several groups of the dataset
+
+        The vector tfkeep can be used for boolean operations 
+        eg. tfkeep3 = (tfkeep1) & (tfkeep2) 
+        and then used to set the value of obj.set_keep(tfkeep3)
+        """
+        if isinstance(group_IDs_to_exclude, int):
+            group_IDs_to_exclude = [group_IDs_to_exclude]
+        tfkeep = self.metadata_df['group_ID'].apply(lambda x: x in group_IDs_to_exclude)
+        return tfkeep  
+
 
 class Continuous_Dataset(Trials_Dataset):
     """
