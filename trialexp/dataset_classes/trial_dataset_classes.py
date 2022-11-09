@@ -1836,6 +1836,141 @@ class Event_Dataset(Trials_Dataset):
         ax.tick_params(axis='both', which='major', labelsize=8)
 
         return gr_df, out_list, ax, im1
+    
+    def plot_raster(self, keys: list = None, triggers : list = None, separate: bool = True,
+        raster_y: str = 'trial', ax: np.array = None):
+        """
+        Raster plot for Event_Dataset
+
+        keys : list = None
+            what to plot
+            Must match the names containing '*_trial_time' in the colums of self.data
+
+        triggers : list = None
+            what to use as triggers
+            Must be subset of the self.triggers
+        
+        separate : bool = True
+            If false, overlaid with different colors
+
+        raster_y : char = 'trial' #TODO
+            'trial' or 'time'
+
+        ax: np.array
+            If separate is True, ax is an m by n np.arary of matplotlib.axes.Axes. 
+            m is the number of columns with the name '*_trial_time' in self.data, 
+            if keys is None or the length of keys if keys is not None.
+            n is the number of triggers.
+
+            If separate is False, ax is a matplotlib.axes.Axes object
+        """
+
+        plt.rcParams['font.family'] = ['Arial']
+
+        plt.ion
+
+        event_cols = [
+            event_col for event_col in self.data.columns if '_trial_time' in event_col]
+
+        def intersection(lst1, lst2):
+            lst3 = [value for value in lst1 if value in lst2]
+            return lst3
+
+        if keys is not None:
+
+            event_cols = intersection(event_cols, keys)
+
+            if not event_cols:
+                print('No keys were found in self.data')
+                return None
+
+        if triggers is None:
+            triggers = self.triggers
+
+        if separate:
+
+            if ax is None:
+                cm = 1/2.54  # centimeters in inches
+                fig, ax = plt.subplots(len(event_cols), len(triggers),
+                                    sharex=True, sharey=True, figsize=(21.0*cm, 29.7*cm))
+            else:
+                assert isinstance(ax, Axes)
+                assert len(event_cols) == ax.shape[0]
+                assert len(triggers) == ax.shape[1]
+
+        else:
+            if ax is None:
+                cm = 1/2.54  # centimeters in inches
+                fig, ax = plt.subplots(1, len(triggers), figsize=(21.0*cm, 29.7*cm))
+
+                for axi in ax:
+                    box = axi.get_position()
+                    axi.set_position([box.x0, box.y0 + box.height * 0.15,
+                        box.width, box.height * 0.85])
+                
+            else:
+                assert isinstance(ax, Axes)
+                assert ax.shape[0] == 1
+                assert len(triggers) == ax.shape[1]
+
+            ax = ax.reshape(1,len(ax))
+
+
+        for trig_idx, trigger in enumerate(triggers):
+
+            df_subset = self.data.loc[(self.data['trigger'] == trigger) & (
+                self.metadata_df['keep']), :]  # only include keep
+
+            df_subset = df_subset.reset_index()
+
+            L = [None] * len(event_cols) # placeholder for the first line of each event_col
+
+            for ev_idx_, event_col in enumerate(event_cols):
+                if separate:
+                    ev_idx = ev_idx_ # you cannot override the iterator
+                    color = 'k'
+                else:
+                    ev_idx = 0
+                    color = 'C' + str(ev_idx_)       
+
+                for r in range(0, df_subset.shape[0]):
+
+                    ev_times = df_subset.at[r, event_col]
+
+                    X = np.array(ev_times)
+                    X.shape = (1, len(X))
+                    X = np.tile(X, (2, 1))/1000  # ms
+
+                    Y = np.array([r, r+1])
+                    Y.shape = (2, 1)
+                    Y = np.tile(Y, (1, X.shape[1]))
+
+                    L_ = ax[ev_idx][trig_idx].plot(
+                        X, Y, '-', color=color, linewidth=0.5, label = event_col)
+
+                    if (L[ev_idx_] is None) & (bool(L_)):
+                        L[ev_idx_] = L_[0]
+
+                    plot_names = trigger + ' ' + event_col
+
+                    event_name_stem = event_col.split('_trial_time')[0]
+
+                    if separate:
+                        ax[ev_idx][trig_idx].set_ylabel('Trials: ' + event_name_stem)
+                    else:
+                        ax[ev_idx][trig_idx].set_ylabel('Trials')
+
+                    ax[ev_idx][trig_idx].spines['top'].set_visible(False)
+                    ax[ev_idx][trig_idx].spines['right'].set_visible(False)
+
+            ax[0][trig_idx].set_title(trigger)
+
+            ax[ev_idx][trig_idx].set_xlabel('Time (s)')
+
+            if not separate:
+                ax[ev_idx][trig_idx].legend(handles = [ln for ln in L if ln is not None], 
+                    bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left",
+                    mode='expand', ncol=1)
 
 
 # TODO: store into helper files

@@ -10,7 +10,7 @@
 
 # ### Imports
 
-# In[1]:
+# In[45]:
 
 
 # allow for automatic reloading of classes and function when updating the code
@@ -23,7 +23,7 @@ from trialexp.process.data_import import *
 
 # ### Variables
 
-# In[2]:
+# In[ ]:
 
 
 import pandas as pd
@@ -55,7 +55,7 @@ video_dir = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\videos'
 # - A tasks definition file (.csv) contains all the information to perform the extractions of behaviorally relevant information from **PyControl** files, for each **task** file. It includes what are the **triggers** of different trial types, what **events** to extract (with time data), and what are events or printed lines that could be relevant to determine the **conditions** (e.g: free reward, optogenetic stimulation type, etc.)
 # - To analyze a new task you need to append task characteristics like **task** filename, **triggers**, **events** and **conditions**
 
-# In[3]:
+# In[ ]:
 
 
 tasks = pd.read_csv(tasksfile, usecols = [1,2,3,4], index_col = False)
@@ -71,7 +71,7 @@ tasks
 # If we obtain list of files in source and dest at first and then only perform comparison on them,
 # This should be much faster
 
-# In[4]:
+# In[ ]:
 
 
 photo_root_dir = 'T:\\Data\\head-fixed\\pyphotometry\\data'
@@ -88,7 +88,7 @@ copy_files_to_horizontal_folders(root_folders, horizontal_folder_pycontrol, hori
 # 
 # This will include all the pycontrol files present in the folder_path directory (do not include subdirectories)
 
-# In[5]:
+# In[ ]:
 
 
 # Folder of a full experimental batch, all animals included
@@ -109,11 +109,11 @@ exp_cohort = Experiment(pycontrol_files_path)
 exp_cohort.by_trial = True
 
 
-# ### Perform extraction of behavioural information by trial
+# ### Perform extraction of behavioural information by trial (SLOW)
 # 
 # 5m55.4s
 
-# In[6]:
+# In[ ]:
 
 
 # Process the whole experimental folder by trials
@@ -123,7 +123,7 @@ exp_cohort.process_exp_by_trial(trial_window, timelim, tasksfile, blank_spurious
 # exp_cohort.save() # Do I need to save this???
 
 
-# ### Match with photometry, videos, and DeepLabCut files
+# ### Match with photometry, videos, and DeepLabCut files (SLOW)
 # 
 # The following Warning : 
 # 
@@ -134,7 +134,7 @@ exp_cohort.process_exp_by_trial(trial_window, timelim, tasksfile, blank_spurious
 # 2m10.9s
 # 
 
-# In[7]:
+# In[ ]:
 
 
 # Find if there is a matching photometry file and if it can be used:
@@ -159,7 +159,7 @@ exp_cohort.save()
 
 
 
-# In[9]:
+# In[ ]:
 
 
 # Many combinations possible
@@ -197,13 +197,13 @@ groups = None
 # 
 # 15 s
 
-# In[10]:
+# In[ ]:
 
 
 exp_cohort = Experiment(pycontrol_files_path)
 
 
-# In[12]:
+# In[ ]:
 
 
 exp_cohort.sessions = [session for session in exp_cohort.sessions
@@ -228,7 +228,7 @@ ev_dataset.set_conditions(conditions=condition_list, aliases=cond_aliases)
 # - drowdown to change time units
 # 
 
-# In[22]:
+# In[ ]:
 
 
 print(len(ev_dataset.metadata_df['keep']))
@@ -236,27 +236,20 @@ print(len(ev_dataset.metadata_df['keep']))
 print(np.count_nonzero(ev_dataset.metadata_df['keep'] == True))
 
 
-# In[30]:
+# In[ ]:
 
 
 ev_dataset.metadata_df.columns
 
 
-# In[28]:
-
-
-subj = ev_dataset.metadata_df['subject_ID']
-set(subj)
-
-
-# In[26]:
+# In[ ]:
 
 
 dates = ev_dataset.metadata_df['datetime'].apply( lambda x: x.date()  )
 set(dates)
 
 
-# In[31]:
+# In[ ]:
 
 
 tf = (ev_dataset.get_tfkeep_subjects(47)) & (ev_dataset.get_tfkeep_dates(date(2022,9,26)))
@@ -264,17 +257,16 @@ tf = (ev_dataset.get_tfkeep_subjects(47)) & (ev_dataset.get_tfkeep_dates(date(20
 np.count_nonzero(tf)
 
 
-# In[34]:
+# In[ ]:
 
 
 set(ev_dataset.metadata_df.session_nb[tf])
 
 
-# In[35]:
+# In[ ]:
 
 
 ev_dataset.set_keep(tf)
-
 
 
 # In[ ]:
@@ -289,7 +281,7 @@ ev_dataset.triggers
 ev_dataset.data.head()
 
 
-# In[58]:
+# In[ ]:
 
 
 from  matplotlib import pyplot as plt
@@ -344,17 +336,19 @@ for trig_idx, trigger in enumerate(triggers):
 
 
 
+# # Event_Dataset.plot_raster()
+
 # In[ ]:
 
 
-raw_symbols  = SymbolValidator().values
-symbols = [raw_symbols[i+2] for i in range(0, len(raw_symbols), 12)]
+ev_dataset.plot_raster()
 
-event_cols = [event_col for event_col in session.df_events.columns if '_trial_time' in event_col]
-event_names = [event_col.split('_trial_time')[0] for event_col in event_cols]
 
-plot_names =  [trig + ' ' + event for event in session.events_to_process for trig in session.triggers]
 
+# In[55]:
+
+
+ev_dataset.plot_raster(separate=False)
 
 
 # In[ ]:
