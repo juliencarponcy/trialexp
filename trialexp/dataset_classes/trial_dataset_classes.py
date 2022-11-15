@@ -1837,7 +1837,7 @@ class Event_Dataset(Trials_Dataset):
 
         return gr_df, out_list, ax, im1
     
-    def plot_raster(self, keys: list = None, triggers : list = None, separate: bool = True,
+    def plot_raster(self, keys: list = None, triggers : list = None, separate: bool = True, colors : list = 'default',
         raster_y: str = 'trial', ax: np.array = None):
         """
         Raster plot for Event_Dataset
@@ -1855,6 +1855,12 @@ class Event_Dataset(Trials_Dataset):
 
         raster_y : char = 'trial' #TODO
             'trial' or 'time'
+
+        colors : list = 'default' #TODO
+            Specify plot colors for keys as list.
+            By default, 'k' is used for separate = True, while 'C1', 'C2', ... is used for separate = False
+
+            https://matplotlib.org/stable/tutorials/colors/colors.html
 
         ax: np.array
             If separate is True, ax is an m by n np.arary of matplotlib.axes.Axes. 
@@ -1916,6 +1922,16 @@ class Event_Dataset(Trials_Dataset):
             ax = ax.reshape(1,len(ax))
 
 
+        if colors == 'default':
+            if separate:
+                colors = ['k'] * len(event_cols)
+            else:
+                colors = [ 'C' + str(i)  for i, _ in enumerate(event_cols)]
+        else:
+            assert isinstance(colors, list)
+            assert len(colors) == len(event_cols)
+
+
         for trig_idx, trigger in enumerate(triggers):
 
             df_subset = self.data.loc[(self.data['trigger'] == trigger) & (
@@ -1928,10 +1944,8 @@ class Event_Dataset(Trials_Dataset):
             for ev_idx_, event_col in enumerate(event_cols):
                 if separate:
                     ev_idx = ev_idx_ # you cannot override the iterator
-                    color = 'k'
                 else:
                     ev_idx = 0
-                    color = 'C' + str(ev_idx_)       
 
                 for r in range(0, df_subset.shape[0]):
 
@@ -1946,7 +1960,7 @@ class Event_Dataset(Trials_Dataset):
                     Y = np.tile(Y, (1, X.shape[1]))
 
                     L_ = ax[ev_idx][trig_idx].plot(
-                        X, Y, '-', color=color, linewidth=0.5, label = event_col)
+                        X, Y, '-', color=colors[ev_idx_], linewidth=0.5, label = event_col)
 
                     if (L[ev_idx_] is None) & (bool(L_)):
                         L[ev_idx_] = L_[0]

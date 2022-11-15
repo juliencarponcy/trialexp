@@ -10,7 +10,7 @@
 
 # ### Imports
 
-# In[45]:
+# In[3]:
 
 
 # allow for automatic reloading of classes and function when updating the code
@@ -23,7 +23,7 @@ from trialexp.process.data_import import *
 
 # ### Variables
 
-# In[ ]:
+# In[4]:
 
 
 import pandas as pd
@@ -55,7 +55,7 @@ video_dir = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\videos'
 # - A tasks definition file (.csv) contains all the information to perform the extractions of behaviorally relevant information from **PyControl** files, for each **task** file. It includes what are the **triggers** of different trial types, what **events** to extract (with time data), and what are events or printed lines that could be relevant to determine the **conditions** (e.g: free reward, optogenetic stimulation type, etc.)
 # - To analyze a new task you need to append task characteristics like **task** filename, **triggers**, **events** and **conditions**
 
-# In[ ]:
+# In[5]:
 
 
 tasks = pd.read_csv(tasksfile, usecols = [1,2,3,4], index_col = False)
@@ -71,7 +71,7 @@ tasks
 # If we obtain list of files in source and dest at first and then only perform comparison on them,
 # This should be much faster
 
-# In[ ]:
+# In[6]:
 
 
 photo_root_dir = 'T:\\Data\\head-fixed\\pyphotometry\\data'
@@ -88,7 +88,7 @@ copy_files_to_horizontal_folders(root_folders, horizontal_folder_pycontrol, hori
 # 
 # This will include all the pycontrol files present in the folder_path directory (do not include subdirectories)
 
-# In[ ]:
+# In[7]:
 
 
 # Folder of a full experimental batch, all animals included
@@ -158,8 +158,7 @@ exp_cohort.save()
 
 
 
-
-# In[ ]:
+# In[8]:
 
 
 # Many combinations possible
@@ -172,8 +171,7 @@ conditions_dict5 = {'trigger': 'uncued', 'valid': True, 'reward bar uncued': Tru
 conditions_dict6 = {'trigger': 'uncued', 'valid': True, 'reward free_uncued': True} # reward after [20, 30] s
 
 # Aggregate all condition dictionaries in a list
-condition_list = [conditions_dict0, conditions_dict1, conditions_dict2, conditions_dict3, \
-                  conditions_dict4, conditions_dict5, conditions_dict6]
+condition_list = [conditions_dict0, conditions_dict1, conditions_dict2, conditions_dict3,                   conditions_dict4, conditions_dict5, conditions_dict6]
 # Aliases for conditions
 cond_aliases = [
     'Cued, reward at spout, hit', 
@@ -197,13 +195,14 @@ groups = None
 # 
 # 15 s
 
-# In[ ]:
+# In[9]:
 
 
 exp_cohort = Experiment(pycontrol_files_path)
 
 
-# In[ ]:
+# In[10]:
+
 
 
 exp_cohort.sessions = [session for session in exp_cohort.sessions
@@ -228,7 +227,7 @@ ev_dataset.set_conditions(conditions=condition_list, aliases=cond_aliases)
 # - drowdown to change time units
 # 
 
-# In[ ]:
+# In[11]:
 
 
 print(len(ev_dataset.metadata_df['keep']))
@@ -236,20 +235,20 @@ print(len(ev_dataset.metadata_df['keep']))
 print(np.count_nonzero(ev_dataset.metadata_df['keep'] == True))
 
 
-# In[ ]:
+# In[12]:
 
 
 ev_dataset.metadata_df.columns
 
 
-# In[ ]:
+# In[13]:
 
 
 dates = ev_dataset.metadata_df['datetime'].apply( lambda x: x.date()  )
 set(dates)
 
 
-# In[ ]:
+# In[14]:
 
 
 tf = (ev_dataset.get_tfkeep_subjects(47)) & (ev_dataset.get_tfkeep_dates(date(2022,9,26)))
@@ -257,31 +256,32 @@ tf = (ev_dataset.get_tfkeep_subjects(47)) & (ev_dataset.get_tfkeep_dates(date(20
 np.count_nonzero(tf)
 
 
-# In[ ]:
+# In[15]:
 
 
 set(ev_dataset.metadata_df.session_nb[tf])
 
 
-# In[ ]:
+# In[16]:
 
 
 ev_dataset.set_keep(tf)
 
 
-# In[ ]:
+# In[17]:
 
 
 ev_dataset.triggers
 
 
-# In[ ]:
+# In[18]:
 
 
 ev_dataset.data.head()
 
 
-# In[ ]:
+# In[19]:
+
 
 
 from  matplotlib import pyplot as plt
@@ -335,20 +335,26 @@ for trig_idx, trigger in enumerate(triggers):
 
 
 
-
 # # Event_Dataset.plot_raster()
 
-# In[ ]:
+# In[22]:
 
 
 ev_dataset.plot_raster()
 
 
-
-# In[55]:
+# In[25]:
 
 
 ev_dataset.plot_raster(separate=False)
+
+
+# In[29]:
+
+
+# specify colors
+
+ev_dataset.plot_raster(separate=False, colors = ['gold','k','magenta','teal'])
 
 
 # In[ ]:
@@ -380,6 +386,7 @@ plot_names
 # # Plotly
 
 # In[ ]:
+
 
 
 from plotly.validators.scatter.marker import SymbolValidator
@@ -484,10 +491,4 @@ pyc_dataset.plot_trials()
 
 
 pyc_dataset.metadata_df
-
-
-# In[ ]:
-
-
-
 
