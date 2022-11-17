@@ -2002,7 +2002,6 @@ class Event_Dataset(Trials_Dataset):
                 X = np.concatenate(X, axis=1)
                 Y = np.concatenate(Y, axis=1)
 
-
                 if module == 'matplotlib':
                     L_ = ax[ev_idx][trig_idx].plot(
                         X, Y, '-', color=colors[ev_idx_], linewidth=0.5, label = event_col)
@@ -2019,13 +2018,30 @@ class Event_Dataset(Trials_Dataset):
                     ax[ev_idx][trig_idx].spines['top'].set_visible(False)
                     ax[ev_idx][trig_idx].spines['right'].set_visible(False)
                 elif module == 'plotly':
-                    #TODO https://plotly.com/python/line-charts/#connect-data-gaps
+                    #see https://plotly.com/python/line-charts/#connect-data-gaps
+                    # convert 2 x n array to 1 x 3n vector with NaN as a separater 
+
+                    X_ = np.zeros((X.shape[1]*3))
+                    X_[:] = np.nan
+                    Y_ = np.zeros((Y.shape[1]*3))
+                    Y_[:] = np.nan
+
+                    for c in range(0, X.shape[1]):
+                        X_[c*3:c*3+2] = np.transpose(X[:,c])
+                        Y_[c*3:c*3+2] = np.transpose(Y[:,c])
+
+                    print(X_[0:36])
+                    print(Y_[0:36])
+
+                    fig.show()
+
                     fig.add_trace(
                         go.Scatter(
                             x=X,
                             y=Y,
                             name=event_col,
                             mode='lines',
+                            connectgaps=False
                         ), row= ev_idx+1, col = trig_idx+1)
 
 
@@ -2040,7 +2056,9 @@ class Event_Dataset(Trials_Dataset):
                             bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left",
                             mode='expand', ncol=1)
                 elif module == 'plotly':
-
+                    
+                    fig.update_xaxes(type='linear')
+                    fig.update_yaxes(type='linear')
                     fig.show()
 
 

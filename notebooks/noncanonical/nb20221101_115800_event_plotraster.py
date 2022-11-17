@@ -363,7 +363,45 @@ ev_dataset.plot_raster(separate=False, colors = ['gold','k','magenta','teal'])
 
 # # Plotly
 
-# In[60]:
+# In[83]:
+
+
+
+fig = make_subplots(
+    rows=1,
+    cols=1,
+)
+
+X = [-1.152, -1.152,    nan,  0.547,  0.547,    nan,  4.532,  4.532,    nan,  4.64,
+  4.64,     nan,  4.935,  4.935,    nan,  5.034,  5.034,    nan]
+
+Y = [0,  1, nan,  0,  1, nan, 0,  1, nan,  0,  1, nan,  0,  1, nan,  1,  2, nan]
+
+fig.add_trace(
+    go.Scatter(
+        x=X,
+        y=Y,
+        name=event_col,
+        marker_symbol='circle',
+        mode='lines',
+        connectgaps=False
+        ), row= 1, col = 1)
+fig.show()
+    
+
+
+# - I don't understand why the axes are split and Y axis is always 0 2 4.
+# - Why nothing is shown?
+# - Why the xaxis.type and yaxis.type can change into category?
+# 
+
+# In[ ]:
+
+
+ev_dataset.plot_raster(module='plotly')
+
+
+# In[67]:
 
 
 
@@ -373,11 +411,6 @@ fig = make_subplots(
     )
 
 fig.show()
-
-
-# In[62]:
-
-
 df_subset = ev_dataset.data.loc[(ev_dataset.data['trigger'] == trigger) & (
     ev_dataset.metadata_df['keep']), :]
 df_subset = df_subset.reset_index(drop=True)
@@ -386,20 +419,17 @@ df_subset = df_subset.reset_index(drop=True)
 
 event_col = 'spout_trial_time'
 
-for r in [50]: # range(0, df_subset.shape[0]):
+for r in range(0, df_subset.shape[0]):
     ev_times = df_subset.at[r, event_col]
 
     X = np.array(ev_times)
     X.shape = (1, len(X))
     X = np.tile(X, (2, 1))/1000  # ms
 
-    print(X)
 
     Y = np.array([r, r+1])
     Y.shape = (2, 1)
     Y = np.tile(Y, (1, X.shape[1]))
-
-    print(Y)
 
     fig.add_trace(
         go.Scatter(
@@ -408,15 +438,10 @@ for r in [50]: # range(0, df_subset.shape[0]):
             name=event_col,
             marker_symbol='circle',
             mode='markers',
+            connectgaps=False
             ), row= 1, col = 1)
 
 fig.show()
-
-
-# In[ ]:
-
-
-ev_dataset.plot_raster(module='plotly')
 
 
 # In[32]:
