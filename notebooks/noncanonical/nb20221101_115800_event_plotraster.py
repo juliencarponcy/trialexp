@@ -10,7 +10,7 @@
 
 # ### Imports
 
-# In[3]:
+# In[4]:
 
 
 # allow for automatic reloading of classes and function when updating the code
@@ -23,7 +23,7 @@ from trialexp.process.data_import import *
 
 # ### Variables
 
-# In[4]:
+# In[5]:
 
 
 import pandas as pd
@@ -55,7 +55,7 @@ video_dir = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\videos'
 # - A tasks definition file (.csv) contains all the information to perform the extractions of behaviorally relevant information from **PyControl** files, for each **task** file. It includes what are the **triggers** of different trial types, what **events** to extract (with time data), and what are events or printed lines that could be relevant to determine the **conditions** (e.g: free reward, optogenetic stimulation type, etc.)
 # - To analyze a new task you need to append task characteristics like **task** filename, **triggers**, **events** and **conditions**
 
-# In[5]:
+# In[6]:
 
 
 tasks = pd.read_csv(tasksfile, usecols = [1,2,3,4], index_col = False)
@@ -71,7 +71,7 @@ tasks
 # If we obtain list of files in source and dest at first and then only perform comparison on them,
 # This should be much faster
 
-# In[6]:
+# In[8]:
 
 
 photo_root_dir = 'T:\\Data\\head-fixed\\pyphotometry\\data'
@@ -88,7 +88,7 @@ copy_files_to_horizontal_folders(root_folders, horizontal_folder_pycontrol, hori
 # 
 # This will include all the pycontrol files present in the folder_path directory (do not include subdirectories)
 
-# In[7]:
+# In[9]:
 
 
 # Folder of a full experimental batch, all animals included
@@ -158,7 +158,7 @@ exp_cohort.save()
 
 
 
-# In[8]:
+# In[10]:
 
 
 # Many combinations possible
@@ -193,15 +193,15 @@ groups = None
 
 # # Load saved Experiment
 # 
-# 15 s
+# 4 s
 
-# In[9]:
+# In[11]:
 
 
 exp_cohort = Experiment(pycontrol_files_path)
 
 
-# In[10]:
+# In[12]:
 
 
 
@@ -227,7 +227,7 @@ ev_dataset.set_conditions(conditions=condition_list, aliases=cond_aliases)
 # - drowdown to change time units
 # 
 
-# In[11]:
+# In[13]:
 
 
 print(len(ev_dataset.metadata_df['keep']))
@@ -235,20 +235,20 @@ print(len(ev_dataset.metadata_df['keep']))
 print(np.count_nonzero(ev_dataset.metadata_df['keep'] == True))
 
 
-# In[12]:
+# In[14]:
 
 
 ev_dataset.metadata_df.columns
 
 
-# In[13]:
+# In[15]:
 
 
 dates = ev_dataset.metadata_df['datetime'].apply( lambda x: x.date()  )
 set(dates)
 
 
-# In[14]:
+# In[16]:
 
 
 tf = (ev_dataset.get_tfkeep_subjects(47)) & (ev_dataset.get_tfkeep_dates(date(2022,9,26)))
@@ -256,31 +256,31 @@ tf = (ev_dataset.get_tfkeep_subjects(47)) & (ev_dataset.get_tfkeep_dates(date(20
 np.count_nonzero(tf)
 
 
-# In[15]:
+# In[17]:
 
 
 set(ev_dataset.metadata_df.session_nb[tf])
 
 
-# In[16]:
+# In[18]:
 
 
 ev_dataset.set_keep(tf)
 
 
-# In[17]:
+# In[19]:
 
 
 ev_dataset.triggers
 
 
-# In[18]:
+# In[20]:
 
 
 ev_dataset.data.head()
 
 
-# In[19]:
+# In[29]:
 
 
 
@@ -337,55 +337,102 @@ for trig_idx, trigger in enumerate(triggers):
 
 # # Event_Dataset.plot_raster()
 
-# In[22]:
+# In[28]:
 
 
 ev_dataset.plot_raster()
 
 
-# In[25]:
+# ## Overlay
+
+# In[65]:
 
 
 ev_dataset.plot_raster(separate=False)
 
 
-# In[29]:
+# ## specify colors
+# 
+
+# In[64]:
 
 
-# specify colors
 
 ev_dataset.plot_raster(separate=False, colors = ['gold','k','magenta','teal'])
 
 
-# In[ ]:
-
-
-# ev_array = np.array(session.df_events.loc[(trial), event_col])
-event_cols = [event_col for event_col in session.df_events.columns if '_trial_time' in event_col]
-event_names = [event_col.split('_trial_time')[0] for event_col in event_cols]
-
-
-
-
-print(ev_trial_nb.shape, ev_times.shape)
-
-
-# In[ ]:
-
-
-session.df_events[event_cols[0]].apply(lambda x: np.array(x)).values
-
-
-# In[ ]:
-
-
-plot_names =  [trig + ' ' + event for event in session.events_to_process for trig in session.triggers]
-plot_names
-
-
 # # Plotly
 
+# In[60]:
+
+
+
+fig = make_subplots(
+    rows= 1,
+    cols= 1, 
+    )
+
+fig.show()
+
+
+# In[62]:
+
+
+df_subset = ev_dataset.data.loc[(ev_dataset.data['trigger'] == trigger) & (
+    ev_dataset.metadata_df['keep']), :]
+df_subset = df_subset.reset_index(drop=True)
+
+
+
+event_col = 'spout_trial_time'
+
+for r in [50]: # range(0, df_subset.shape[0]):
+    ev_times = df_subset.at[r, event_col]
+
+    X = np.array(ev_times)
+    X.shape = (1, len(X))
+    X = np.tile(X, (2, 1))/1000  # ms
+
+    print(X)
+
+    Y = np.array([r, r+1])
+    Y.shape = (2, 1)
+    Y = np.tile(Y, (1, X.shape[1]))
+
+    print(Y)
+
+    fig.add_trace(
+        go.Scatter(
+            x=X,
+            y=Y,
+            name=event_col,
+            marker_symbol='circle',
+            mode='markers',
+            ), row= 1, col = 1)
+
+fig.show()
+
+
 # In[ ]:
+
+
+ev_dataset.plot_raster(module='plotly')
+
+
+# In[32]:
+
+
+fig = make_subplots(
+    rows= 5, 
+    cols= 2, 
+    shared_xaxes= True,
+    )
+
+print(fig)
+print(fig.__class__)
+
+
+# In[30]:
 
 
 

@@ -1838,7 +1838,8 @@ class Event_Dataset(Trials_Dataset):
         return gr_df, out_list, ax, im1
     
     def plot_raster(self, keys: list = None, triggers : list = None, separate: bool = True, colors : list = 'default',
-        raster_y: str = 'trial', ax: np.array = None):
+        module: str = 'matplotlib',
+        raster_y: str = 'trial', target: np.array = None):
         """
         Raster plot for Event_Dataset
 
@@ -1855,14 +1856,20 @@ class Event_Dataset(Trials_Dataset):
 
         raster_y : char = 'trial' #TODO
             'trial' or 'time'
+            Event_Dataset probably doesn't hold the timestamps of the trigger events.
+            #TODO need to amend the constructor of Event_Dataset
 
-        colors : list = 'default' #TODO
+        colors : list = 'default'
             Specify plot colors for keys as list.
             By default, 'k' is used for separate = True, while 'C1', 'C2', ... is used for separate = False
 
             https://matplotlib.org/stable/tutorials/colors/colors.html
 
-        ax: np.array
+        module : str = 'matplotlib' (default) or 'plotly' #TODO
+            'matplotlib' is suitable for publication/presentation.
+            'plotly' provides scrollabbility.
+
+        target: np.array for matplotlib, an instance of plotly.graph_objects.Figure for plotly
             If separate is True, ax is an m by n np.arary of matplotlib.axes.Axes. 
             m is the number of columns with the name '*_trial_time' in self.data, 
             if keys is None or the length of keys if keys is not None.
@@ -1871,9 +1878,12 @@ class Event_Dataset(Trials_Dataset):
             If separate is False, ax is a matplotlib.axes.Axes object
         """
 
-        plt.rcParams['font.family'] = ['Arial']
-
-        plt.ion
+        if module == 'matplotlib':
+            plt.rcParams['font.family'] = ['Arial']
+            plt.ion
+        elif module == 'plotly':
+            from plotly.validators.scatter.marker import SymbolValidator
+            from plotly.subplots import make_subplots
 
         event_cols = [
             event_col for event_col in self.data.columns if '_trial_time' in event_col]
@@ -1895,38 +1905,60 @@ class Event_Dataset(Trials_Dataset):
 
         if separate:
 
-            if ax is None:
-                cm = 1/2.54  # centimeters in inches
-                fig, ax = plt.subplots(len(event_cols), len(triggers),
-                                    sharex=True, sharey=True, figsize=(21.0*cm, 29.7*cm))
+            if target is None:
+
+                if module == 'matplotlib':
+                    cm = 1/2.54  # centimeters in inches
+                    fig, ax = plt.subplots(len(event_cols), len(triggers),
+                        sharex=True, sharey=True, figsize=(21.0*cm, 29.7*cm))
+                elif module == 'plotly':
+                    fig = make_subplots(
+                        rows= len(event_cols), 
+                        cols= len(triggers), 
+                        shared_xaxes= True,
+                        # subplot_titles= plot_names
+                        )
+
             else:
-                assert isinstance(ax, Axes)
-                assert len(event_cols) == ax.shape[0]
-                assert len(triggers) == ax.shape[1]
+                if module == 'matplotlib':
+                    assert isinstance(ax, Axes)
+                    assert len(event_cols) == ax.shape[0]
+                    assert len(triggers) == ax.shape[1]
+                elif module == 'plotly':
+                    fig = make_subplots(
+                        rows=len(event_cols),
+                        cols=len(triggers),
+                        shared_xaxes=True,
+                        # subplot_titles= plot_names
+                    )
 
         else:
-            if ax is None:
-                cm = 1/2.54  # centimeters in inches
-                fig, ax = plt.subplots(1, len(triggers), figsize=(21.0*cm, 29.7*cm))
+            if target is None:
+                if module == 'matplotlib':
+                    cm = 1/2.54  # centimeters in inches
+                    fig, ax = plt.subplots(1, len(triggers), figsize=(21.0*cm, 29.7*cm))
 
-                for axi in ax:
-                    box = axi.get_position()
-                    axi.set_position([box.x0, box.y0 + box.height * 0.15,
-                        box.width, box.height * 0.85])
+                    for axi in ax:
+                        box = axi.get_position()
+                        axi.set_position([box.x0, box.y0 + box.height * 0.15,
+                            box.width, box.height * 0.85])
                 
             else:
-                assert isinstance(ax, Axes)
-                assert ax.shape[0] == 1
-                assert len(triggers) == ax.shape[1]
+                if module == 'matplotlib':
+                    assert isinstance(ax, Axes)
+                    assert ax.shape[0] == 1
+                    assert len(triggers) == ax.shape[1]
 
-            ax = ax.reshape(1,len(ax))
+            if module == 'matplotlib':
+                ax = ax.reshape(1,len(ax))
 
 
         if colors == 'default':
             if separate:
                 colors = ['k'] * len(event_cols)
             else:
-                colors = [ 'C' + str(i)  for i, _ in enumerate(event_cols)]
+                if module == 'matplotlib':
+                    colors = [ 'C' + str(i)  for i, _ in enumerate(event_cols)]
         else:
             assert isinstance(colors, list)
             assert len(colors) == len(event_cols)
@@ -1947,28 +1979,38 @@ class Event_Dataset(Trials_Dataset):
                 else:
                     ev_idx = 0
 
+                X = [None] * df_subset.shape[0]
+                Y = [None] * df_subset.shape[0]
                 for r in range(0, df_subset.shape[0]):
 
                     ev_times = df_subset.at[r, event_col]
 
-                    X = np.array(ev_times)
-                    X.shape = (1, len(X))
-                    X = np.tile(X, (2, 1))/1000  # ms
+                    X_ = np.array(ev_times)
+                    X_.shape = (1, len(X_))
+                    X[r] = np.tile(X_, (2, 1))/1000  # ms
 
-                    Y = np.array([r, r+1])
-                    Y.shape = (2, 1)
-                    Y = np.tile(Y, (1, X.shape[1]))
-
-                    L_ = ax[ev_idx][trig_idx].plot(
-                        X, Y, '-', color=colors[ev_idx_], linewidth=0.5, label = event_col)
-
-                    if (L[ev_idx_] is None) & (bool(L_)):
-                        L[ev_idx_] = L_[0]
+                    Y_ = np.array([r, r+1])
+                    Y_.shape = (2, 1)
+                    Y[r] = np.tile(Y_, (1, X_.shape[1]))
 
                     plot_names = trigger + ' ' + event_col
 
                     event_name_stem = event_col.split('_trial_time')[0]
 
+                # after for r
+
+                X = np.concatenate(X, axis=1)
+                Y = np.concatenate(Y, axis=1)
+
+
+                if module == 'matplotlib':
+                    L_ = ax[ev_idx][trig_idx].plot(
+                        X, Y, '-', color=colors[ev_idx_], linewidth=0.5, label = event_col)
+
+                    if (L[ev_idx_] is None) & (bool(L_)):
+                        L[ev_idx_] = L_[0]
+                    
+                    ax[ev_idx][trig_idx].set_ylim(0,df_subset.shape[0] )
                     if separate:
                         ax[ev_idx][trig_idx].set_ylabel('Trials: ' + event_name_stem)
                     else:
@@ -1976,15 +2018,30 @@ class Event_Dataset(Trials_Dataset):
 
                     ax[ev_idx][trig_idx].spines['top'].set_visible(False)
                     ax[ev_idx][trig_idx].spines['right'].set_visible(False)
+                elif module == 'plotly':
+                    #TODO https://plotly.com/python/line-charts/#connect-data-gaps
+                    fig.add_trace(
+                        go.Scatter(
+                            x=X,
+                            y=Y,
+                            name=event_col,
+                            mode='lines',
+                        ), row= ev_idx+1, col = trig_idx+1)
 
-            ax[0][trig_idx].set_title(trigger)
 
-            ax[ev_idx][trig_idx].set_xlabel('Time (s)')
 
-            if not separate:
-                ax[ev_idx][trig_idx].legend(handles = [ln for ln in L if ln is not None], 
-                    bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left",
-                    mode='expand', ncol=1)
+                if module == 'matplotlib':
+                    ax[0][trig_idx].set_title(trigger)
+
+                    ax[ev_idx][trig_idx].set_xlabel('Time (s)')
+
+                    if not separate:
+                        ax[ev_idx][trig_idx].legend(handles = [ln for ln in L if ln is not None], 
+                            bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left",
+                            mode='expand', ncol=1)
+                elif module == 'plotly':
+
+                    fig.show()
 
 
 # TODO: store into helper files
