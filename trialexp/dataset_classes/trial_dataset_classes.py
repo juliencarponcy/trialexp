@@ -1865,9 +1865,13 @@ class Event_Dataset(Trials_Dataset):
 
             https://matplotlib.org/stable/tutorials/colors/colors.html
 
-        module : str = 'matplotlib' (default) or 'plotly' #TODO
+        module : str = 'matplotlib' (default) or 'plotly'
             'matplotlib' is suitable for publication/presentation.
-            'plotly' provides scrollabbility.
+            'plotly' provides scrollabbility. Note that the figures created by Plotly is pretty heavy 
+            and not suitable for version control of Jupyter notebook. It is recommened to delete the figure before commiting.
+
+        rastertype: str = 'lines' (default ) or 'markers' #TODO
+            Sometimes 'markers' can be useful for visibility.
 
         target: np.array for matplotlib, an instance of plotly.graph_objects.Figure for plotly
             If separate is True, ax is an m by n np.arary of matplotlib.axes.Axes. 
@@ -1888,6 +1892,8 @@ class Event_Dataset(Trials_Dataset):
         event_cols = [
             event_col for event_col in self.data.columns if '_trial_time' in event_col]
 
+
+
         def intersection(lst1, lst2):
             lst3 = [value for value in lst1 if value in lst2]
             return lst3
@@ -1903,6 +1909,11 @@ class Event_Dataset(Trials_Dataset):
         if triggers is None:
             triggers = self.triggers
 
+        if self.time_unit == 's' or self.time_unit == 'seconds': 
+            trial_window_s = [ float(x) for x in self.trial_window]
+        elif self.time_unit == 'ms' or self.time_unit == 'milliseconds': 
+            trial_window_s = [ float(x)/1000 for x in self.trial_window]
+
         if separate:
 
             if target is None:
@@ -1916,8 +1927,16 @@ class Event_Dataset(Trials_Dataset):
                         rows= len(event_cols), 
                         cols= len(triggers), 
                         shared_xaxes= True,
-                        # subplot_titles= plot_names
+                        horizontal_spacing = 0.05,
+                        vertical_spacing = 0.05,
+                        subplot_titles=tuple(
+                            triggers + [""] * (len(event_cols) - 1) * len(triggers))
                         )
+                    fig.update_layout(
+                        autosize=False,
+                        width = 720,
+                        height = 960
+                    )
 
             else:
                 if module == 'matplotlib':
@@ -1929,7 +1948,15 @@ class Event_Dataset(Trials_Dataset):
                         rows=len(event_cols),
                         cols=len(triggers),
                         shared_xaxes=True,
-                        # subplot_titles= plot_names
+                        horizontal_spacing = 0.05,
+                        vertical_spacing = 0.05,
+                        subplot_titles=tuple(
+                            triggers + [""] * (len(event_cols) - 1) * len(triggers))
+                        )
+                    fig.update_layout(
+                        autosize=False,
+                        width = 720,
+                        height = 960
                     )
 
         else:
@@ -1942,16 +1969,21 @@ class Event_Dataset(Trials_Dataset):
                         box = axi.get_position()
                         axi.set_position([box.x0, box.y0 + box.height * 0.15,
                             box.width, box.height * 0.85])
+                elif module == 'plotly':
+                    ...
+                    #TODO
                 
             else:
                 if module == 'matplotlib':
                     assert isinstance(ax, Axes)
                     assert ax.shape[0] == 1
                     assert len(triggers) == ax.shape[1]
+                elif module == 'plotly':
+                    ...
+                    #TODO              
 
             if module == 'matplotlib':
                 ax = ax.reshape(1,len(ax))
-
 
         if colors == 'default':
             if separate:
@@ -1959,6 +1991,9 @@ class Event_Dataset(Trials_Dataset):
             else:
                 if module == 'matplotlib':
                     colors = [ 'C' + str(i)  for i, _ in enumerate(event_cols)]
+                elif module == 'plotly':
+                    ...
+                    #TODO
         else:
             assert isinstance(colors, list)
             assert len(colors) == len(event_cols)
@@ -1993,7 +2028,7 @@ class Event_Dataset(Trials_Dataset):
                     Y_.shape = (2, 1)
                     Y[r] = np.tile(Y_, (1, X_.shape[1]))
 
-                    plot_names = trigger + ' ' + event_col
+                    # plot_names = trigger + ' ' + event_col
 
                     event_name_stem = event_col.split('_trial_time')[0]
 
@@ -2010,6 +2045,8 @@ class Event_Dataset(Trials_Dataset):
                         L[ev_idx_] = L_[0]
                     
                     ax[ev_idx][trig_idx].set_ylim(0,df_subset.shape[0] )
+                    ax[ev_idx][trig_idx].set_xlim(trial_window_s)
+
                     if separate:
                         ax[ev_idx][trig_idx].set_ylabel('Trials: ' + event_name_stem)
                     else:
@@ -2039,7 +2076,21 @@ class Event_Dataset(Trials_Dataset):
                             connectgaps=False
                         ), row= ev_idx+1, col = trig_idx+1)
 
+                    fig.update_yaxes(
+                        ticks="outside",
+                        ticklen=5,
+                        tickwidth=1,   
+                        tickfont_size=12,
+                        showline=True,
+                        linecolor='black',
+                        showticklabels =False
+                        )
 
+                    fig.update_yaxes(
+                        title_text = 'Trials',
+                        showticklabels = True,
+                        col=1
+                        )                        
 
                 if module == 'matplotlib':
                     ax[0][trig_idx].set_title(trigger)
@@ -2054,7 +2105,24 @@ class Event_Dataset(Trials_Dataset):
                     
                     fig.update_xaxes(type='linear')
                     fig.update_yaxes(type='linear')
+
+                    fig.update_xaxes(
+                        ticks="outside",
+                        ticklen=5,
+                        tickwidth=1,
+                        tickfont_size=12,
+                        # range=[session.trial_window[0]/1000, session.trial_window[1]/1000],
+                        showline=True,
+                        linecolor='black',
+                        range=trial_window_s
+                        )
+
+
         if module == 'plotly':
+            fig.update_xaxes(
+                title_text = 'Time (s)',
+                row=ev_idx+1
+                )
             fig.show()
 
 

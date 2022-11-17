@@ -337,7 +337,7 @@ for trig_idx, trigger in enumerate(triggers):
 
 # # Event_Dataset.plot_raster()
 
-# In[28]:
+# In[109]:
 
 
 ev_dataset.plot_raster()
@@ -345,7 +345,7 @@ ev_dataset.plot_raster()
 
 # ## Overlay
 
-# In[65]:
+# In[108]:
 
 
 ev_dataset.plot_raster(separate=False)
@@ -354,7 +354,7 @@ ev_dataset.plot_raster(separate=False)
 # ## specify colors
 # 
 
-# In[64]:
+# In[107]:
 
 
 
@@ -363,204 +363,8 @@ ev_dataset.plot_raster(separate=False, colors = ['gold','k','magenta','teal'])
 
 # # Plotly
 
-# In[83]:
-
-
-
-fig = make_subplots(
-    rows=1,
-    cols=1,
-)
-
-X = [-1.152, -1.152,    nan,  0.547,  0.547,    nan,  4.532,  4.532,    nan,  4.64,
-  4.64,     nan,  4.935,  4.935,    nan,  5.034,  5.034,    nan]
-
-Y = [0,  1, nan,  0,  1, nan, 0,  1, nan,  0,  1, nan,  0,  1, nan,  1,  2, nan]
-
-fig.add_trace(
-    go.Scatter(
-        x=X,
-        y=Y,
-        name=event_col,
-        marker_symbol='circle',
-        mode='lines',
-        connectgaps=False
-        ), row= 1, col = 1)
-fig.show()
-    
-
-
-# - I don't understand why the axes are split and Y axis is always 0 2 4.
-# - Why nothing is shown?
-# - Why the xaxis.type and yaxis.type can change into category?
-# 
-
 # In[ ]:
 
 
 ev_dataset.plot_raster(module='plotly')
-
-
-# In[67]:
-
-
-
-fig = make_subplots(
-    rows= 1,
-    cols= 1, 
-    )
-
-fig.show()
-df_subset = ev_dataset.data.loc[(ev_dataset.data['trigger'] == trigger) & (
-    ev_dataset.metadata_df['keep']), :]
-df_subset = df_subset.reset_index(drop=True)
-
-
-
-event_col = 'spout_trial_time'
-
-for r in range(0, df_subset.shape[0]):
-    ev_times = df_subset.at[r, event_col]
-
-    X = np.array(ev_times)
-    X.shape = (1, len(X))
-    X = np.tile(X, (2, 1))/1000  # ms
-
-
-    Y = np.array([r, r+1])
-    Y.shape = (2, 1)
-    Y = np.tile(Y, (1, X.shape[1]))
-
-    fig.add_trace(
-        go.Scatter(
-            x=X,
-            y=Y,
-            name=event_col,
-            marker_symbol='circle',
-            mode='markers',
-            connectgaps=False
-            ), row= 1, col = 1)
-
-fig.show()
-
-
-# In[32]:
-
-
-fig = make_subplots(
-    rows= 5, 
-    cols= 2, 
-    shared_xaxes= True,
-    )
-
-print(fig)
-print(fig.__class__)
-
-
-# In[30]:
-
-
-
-from plotly.validators.scatter.marker import SymbolValidator
-from plotly.subplots import make_subplots
-
-def plot_trials(session):
-
-    raw_symbols  = SymbolValidator().values
-    symbols = [raw_symbols[i+2] for i in range(0, len(raw_symbols), 12)]
-
-    event_cols = [event_col for event_col in session.df_events.columns if '_trial_time' in event_col]
-    event_names = [event_col.split('_trial_time')[0] for event_col in event_cols]
-
-    plot_names =  [trig + ' ' + event for event in session.events_to_process for trig in session.triggers]
-
-    fig = make_subplots(
-        rows= len(event_cols), 
-        cols= len(session.triggers), 
-        shared_xaxes= True,
-        subplot_titles= plot_names
-    )
-
-    for trig_idx, trigger in enumerate(session.triggers):
-        
-        # sub-selection of df_events based on trigger, should be condition for event_dataset class
-        df_subset = session.df_events[session.df_events.trigger == trigger]
-
-        for ev_idx, event_col in enumerate(event_cols):
-
-            ev_times = df_subset[event_cols[0]].apply(lambda x: np.array(x)).values
-            ev_trial_nb = [np.ones(len(array)) * df_subset.index[idx] for idx, array in enumerate(ev_times)]
-
-            ev_trial_nb = np.concatenate(ev_trial_nb)
-            ev_times =  np.concatenate(ev_times)
-
-            fig.add_trace(
-                go.Scatter(
-                    x=ev_times/1000,
-                    y=ev_trial_nb,
-                    name=event_names[ev_idx],
-                    mode='markers',
-                    marker_symbol=symbols[ev_idx % 40]
-
-                ), row= ev_idx+1, col = trig_idx+1)
-
-            fig.update_xaxes(
-                ticks="inside",
-                ticklen=6,
-                tickwidth=2,
-                tickfont_size=12,
-                range=[session.trial_window[0]/1000, session.trial_window[1]/1000],
-                showline=True,
-                linecolor='black'
-                )
-            
-            fig.update_yaxes(    
-                ticks="inside",
-                ticklen=6,
-                tickwidth=2,   
-                tickfont_size=12,
-                showline=True,
-                linecolor='black'
-                )
-
-
-    fig.update_layout(
-
-        height=800,
-        width=600,
-    )
-
-    fig.show()
-            
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-session.plot_trials()
-
-
-# In[ ]:
-
-
-exp_cohort.sessions[50].df_events
-
-
-# In[ ]:
-
-
-pyc_dataset = Event_Dataset(exp_cohort.sessions[50].df_events, exp_cohort.sessions[50].df_conditions)
-pyc_dataset.plot_trials()
-
-
-# In[ ]:
-
-
-pyc_dataset.metadata_df
 
