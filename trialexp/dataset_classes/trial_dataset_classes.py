@@ -2030,15 +2030,10 @@ class Event_Dataset(Trials_Dataset):
                         X_[c*3:c*3+2] = np.transpose(X[:,c])
                         Y_[c*3:c*3+2] = np.transpose(Y[:,c])
 
-                    print(X_[0:36])
-                    print(Y_[0:36])
-
-                    fig.show()
-
                     fig.add_trace(
                         go.Scatter(
-                            x=X,
-                            y=Y,
+                            x=X_,
+                            y=Y_,
                             name=event_col,
                             mode='lines',
                             connectgaps=False
@@ -2059,7 +2054,8 @@ class Event_Dataset(Trials_Dataset):
                     
                     fig.update_xaxes(type='linear')
                     fig.update_yaxes(type='linear')
-                    fig.show()
+        if module == 'plotly':
+            fig.show()
 
 
 # TODO: store into helper files
