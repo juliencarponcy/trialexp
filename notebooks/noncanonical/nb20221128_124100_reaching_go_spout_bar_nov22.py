@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# # Simple instrumentral
+# # reaching_go_spout_bar_nov22
 # 
 # ```bash
 # jupyter nbconvert "D:\OneDrive - Nexus365\Private_Dropbox\Projects\trialexp\notebooks\noncanonical\nb20221128_124100_reaching_go_spout_bar_nov22.ipynb" --to="python" --output-dir="D:\OneDrive - Nexus365\Private_Dropbox\Projects\trialexp\notebooks\noncanonical" --output="nb20221128_124100_reaching_go_spout_bar_nov22"
@@ -9,7 +9,9 @@
 
 # Quick analysis of instrumental reaching
 
-# In[2]:
+# 
+
+# In[1]:
 
 
 # allow for automatic reloading of classes and function when updating the code
@@ -23,7 +25,7 @@ from trialexp.process.data_import import *
 
 # ### Variables
 
-# In[3]:
+# In[2]:
 
 
 import pandas as pd
@@ -51,14 +53,14 @@ photometry_dir = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\kms_pyphotometry'
 video_dir = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\videos'
 
 
-# In[4]:
+# In[3]:
 
 
 tasks = pd.read_csv(tasksfile, usecols=[1, 2, 3, 4], index_col=False)
 tasks
 
 
-# In[5]:
+# In[4]:
 
 
 photo_root_dir = 'T:\\Data\\head-fixed\\pyphotometry\\data'
@@ -75,7 +77,7 @@ copy_files_to_horizontal_folders(
 # ### Create an experiment object
 # 
 
-# In[6]:
+# In[5]:
 
 
 # Folder of a full experimental batch, all animals included
@@ -98,7 +100,7 @@ exp_cohort.by_trial = True
 
 # ## Select sessions
 
-# In[7]:
+# In[6]:
 
 
 ss = exp_cohort.sessions
@@ -109,13 +111,13 @@ ss_ = [this_ss for this_ss in ss
 ss_
 
 
-# In[8]:
+# In[7]:
 
 
 exp_cohort.sessions = ss_
 
 
-# In[9]:
+# In[8]:
 
 
 ss_
@@ -123,7 +125,7 @@ ss_
 
 # # SLOW 3m
 
-# In[10]:
+# In[9]:
 
 
 # # Process the whole experimental folder by trials
@@ -151,13 +153,13 @@ ss_
 # # exp_cohort.save()
 
 
-# In[11]:
+# In[10]:
 
 
 exp_cohort.subject_IDs
 
 
-# In[12]:
+# In[11]:
 
 
 # Many combinations possible
@@ -180,24 +182,24 @@ groups = None
 # Window to exctract (in ms)
 
 
-# In[13]:
+# In[12]:
 
 
 exp_cohort.sessions[0].times.keys()
 
 
-# # Session plot reaching_go_spout_bar_nov22
+# # Session plot 
 # 
 # I realised that this plot can never tell if a water drop was triggered by bar_off or spout.
 # 
 
-# In[14]:
+# In[13]:
 
 
 exp_cohort.sessions[0].print_lines[0:30]
 
 
-# In[15]:
+# In[14]:
 
 
 import re
@@ -209,7 +211,7 @@ a = [re.match(expr, L) for L in exp_cohort.sessions[0].print_lines if re.match(e
 int(a[0].group(0))
 
 
-# In[16]:
+# In[15]:
 
 
 keys = [
@@ -224,21 +226,21 @@ exp_cohort.sessions[0].plot_session(keys, state_def,
         print_expr=dict(name='water', expr='.?water success')) 
 
 
-# In[17]:
+# In[16]:
 
 
 exp_cohort.sessions[0].plot_session(keys, state_def,
                                     export_son=True, son_filename='temp.smrx')
 
 
-# In[18]:
+# In[17]:
 
 
 exp_cohort.sessions[0].plot_session(keys, state_def,
                                     export_son = True, son_filename = 'temp')
 
 
-# In[34]:
+# In[18]:
 
 
 for ss in exp_cohort.sessions:
@@ -250,7 +252,7 @@ for ss in exp_cohort.sessions:
 # 
 # #TODO JC314L-2022-11-24-111452_reaching_go_spout_bar_nov22.smrx is broken without error
 
-# In[35]:
+# In[19]:
 
 
 keys = [
@@ -306,7 +308,7 @@ for ss in exp_cohort.sessions:
         ignore_index=True)
 
 
-# In[ ]:
+# In[20]:
 
 
 summary_df['spout_rate'] = np.divide(summary_df['triggered_by_spout'], summary_df['reaching_trials'])
@@ -316,7 +318,7 @@ summary_df.sort_values('file', inplace=True)
 summary_df
 
 
-# In[ ]:
+# In[21]:
 
 
 summary_df_ = summary_df.drop([3,5])
@@ -324,25 +326,30 @@ summary_df_ = summary_df.drop([3,5])
 summary_df_
 
 
-# In[ ]:
+# In[30]:
 
 
 import matplotlib.pyplot as plt
 plt.rcParams['font.family'] = ['Arial']
 fig, ax1 = plt.subplots()
-ax2 = ax1.twinx()
+# ax2 = ax1.twinx()
 
-ax1.plot(summary_df_.file, summary_df_.spout_rate, 'o', u'#1f77b4')
+ax1.plot(summary_df_.file, summary_df_.spout_rate, 'o', markeredgecolor = u'#1f77b4')
 
-ax2.plot(summary_df_.file, summary_df_.triggered_by_spout, 'o', u'#ff7f0e')
+# ax2.plot(summary_df_.file, summary_df_.triggered_by_spout, 'o', markeredgecolor  = u'#ff7f0e', markerfacecolor = None)
 
 ax1.set_xticklabels(summary_df_.file, rotation = 45, ha="right")
 
+ax1.set_ylim([0, 1])
+
+
 ax1.set_ylabel(
     'Ratio of reaching initiated by spout touch \nin all reaching trials', fontdict={'size': 16})
-ax2.set_ylabel(
-    'Number of trials with reaching', fontdict={'size': 16})
+# ax2.set_ylabel(
+#    'Number of trials with reaching', fontdict={'size': 16})
 
 ax1.spines['top'].set_visible(False)
-ax2.spines['top'].set_visible(False)
+ax1.spines['right'].set_visible(False)
+
+# ax2.spines['top'].set_visible(False)
 
