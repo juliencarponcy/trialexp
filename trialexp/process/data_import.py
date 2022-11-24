@@ -1424,7 +1424,7 @@ class Session():
             MyFile.SetTimeBase(dTimeBase)  # Set timebase
 
 
-        def write_event(X_ms, title, y_index, EventRate, time_vec_ms):
+        def write_event(MyFile, X_ms, title, y_index, EventRate, time_vec_ms):
             (hist, ___) = np.histogram(X_ms, bins=time_vec_ms) # time is 1000 too small
 
             eventfalldata = np.where(hist)
@@ -1435,7 +1435,87 @@ class Session():
                 MyFile.WriteEvents(int(y_index), eventfalldata[0]*1000) #dirty fix but works
             # print('Reading the events that we just saved:')
             # print(MyFile.ReadEvents(int(y_index), 10, tFrom, tUpto))
-            # print()          
+            # print()
+
+        def write_marker_for_state(MyFile,X_ms, title, y_index, EventRate, time_vec_ms):
+            #TODO nearly there, but file cannot be open
+
+            # remove NaN
+            X_notnan_ms = [x for x in X_ms if not np.isnan(x)]
+
+            (hist, ___) = np.histogram(X_notnan_ms, bins=time_vec_ms) # time is 1000 too small
+
+            eventfalldata = np.where(hist)
+
+            nEvents = len(eventfalldata[0])
+
+            MarkData = np.empty(nEvents, dtype=sp.DigMark)
+            for i in range(nEvents):
+                if (i+1) % 2 == 0:
+                    MarkData[i] = sp.DigMark(eventfalldata[0][i]*1000, 0) #offset
+                elif (i+1) % 2 == 1:
+                    MarkData[i] = sp.DigMark(eventfalldata[0][i]*1000, 1) #onset
+                else:
+                    raise 'oh no'
+            MyFile.SetMarkerChannel(y_index, EventRate)
+            MyFile.SetChannelTitle(y_index, title)
+            if eventfalldata[0] is not []:
+                MyFile.WriteMarkers(int(y_index), MarkData)
+            print('Reading the markers that we just saved:')
+            print(MyFile.ReadMarkers(int(y_index), nEvents, tFrom, tUpto)) #TODO failed Tick = -1
+            print()    
+
+        def find_states(state_def_dict: dict):
+            """
+            state_def: dict, list, or None = None
+            must be None (default)
+            or dictionary of 
+                'name' : str
+                    Channel name
+                'onset' : str 
+                    key for onset 
+                'offset' : str
+                    key for offset
+            or list of such dictionaries
+
+            eg. dict(name='trial', onset='CS_Go', offset='refrac_period')
+            eg. {'name':'trial', 'onset':'CS_Go', 'offset':'refrac_period'}
+
+            For each onset, find the first offset event before the next onset 
+            """
+            if state_def_dict is None:
+                return None
+
+            all_on_ms = self.times[state_def_dict['onset']]
+            all_off_ms = self.times[state_def_dict['offset']]
+
+            onsets_ms = [np.NaN] * len(all_on_ms)
+            offsets_ms = [np.NaN] * len(all_on_ms)
+
+            for i, this_onset in enumerate(all_on_ms):  # slow
+                good_offset_list_ms = []
+                for j, _ in enumerate(all_off_ms):
+                    if i < len(all_on_ms)-1:
+                        if all_on_ms[i] < all_off_ms[j] and all_off_ms[j] < all_on_ms[i+1]:
+                            good_offset_list_ms.append(all_off_ms[j])
+                    else:
+                        if all_on_ms[i] < all_off_ms[j]:
+                            good_offset_list_ms.append(all_off_ms[j])
+
+                if len(good_offset_list_ms) > 0:
+                    onsets_ms[i] = this_onset
+                    offsets_ms[i] = good_offset_list_ms[0]
+                else:
+                    ...  # keep them as nan
+
+            onsets_ms = [x for x in onsets_ms if not np.isnan(x)]  # remove nan
+            offsets_ms = [x for x in offsets_ms if not np.isnan(x)]
+
+            state_ms = map(list, zip(onsets_ms, offsets_ms,
+                           [np.NaN] * len(onsets_ms)))
+            # [onset1, offset1, NaN, onset2, offset2, NaN, ....]
+            state_ms = [item for sublist in state_ms for item in sublist]
+            return state_ms
 
         y_index = 0
         for kind, k in enumerate(keys):
@@ -1445,10 +1525,9 @@ class Session():
             fig.add_trace(line1)
 
             if export_son:
-                write_event(self.times[k], k, y_index, EventRate, time_vec_ms)
+                write_event(MyFile, self.times[k], k, y_index, EventRate, time_vec_ms)
 
-        if export_son:
-            del MyFile #TODO
+
 
         if print_expr is not None: #TODO
             if isinstance(print_expr, dict):
@@ -1476,72 +1555,34 @@ class Session():
                     name=dct['name'], mode='markers', marker_symbol=symbols[y_index % 40])
                 fig.add_trace(line3)
 
-        def find_states(state_def_dict: dict):
-            """
-            state_def_dict: dict
-                must be None or dictionary of 
-                    'name' : str
-                        Channel name
-                    'onset' : list 
-                        List of timestamps in ms #TODO
-                    'offset' : list
-                        List of timestamps in ms
-            For each onset, find the first offset event before the next onset 
-            """
-            if state_def_dict is None:
-                return None
-            
-            all_on_ms = self.times[state_def_dict['onset']]
-            all_off_ms = self.times[state_def_dict['offset']]
 
-            onsets_ms = [np.NaN] * len(all_on_ms)
-            offsets_ms = [np.NaN] * len(all_on_ms)
-
-            
-            for i, this_onset in enumerate(all_on_ms): # slow
-                good_offset_list_ms = []
-                for j, _ in enumerate(all_off_ms):
-                    if i < len(all_on_ms)-1:
-                        if all_on_ms[i] < all_off_ms[j] and all_off_ms[j] < all_on_ms[i+1]:
-                            good_offset_list_ms.append(all_off_ms[j]) 
-                    else:
-                        if all_on_ms[i] < all_off_ms[j]:
-                            good_offset_list_ms.append(all_off_ms[j])
-
-                if len(good_offset_list_ms) > 0:
-                    onsets_ms[i] = this_onset
-                    offsets_ms[i] = good_offset_list_ms[0]
-                else:
-                    ... # keep them as nan
-
-            onsets_ms = [ x for x in onsets_ms if not np.isnan(x)]  # remove nan     
-            offsets_ms = [ x for x in offsets_ms if not np.isnan(x)]   
-            
-            state_ms = map(list, zip(onsets_ms, offsets_ms, [np.NaN] * len(onsets_ms) ))
-            state_ms = [item for sublist in state_ms for item in sublist] # [onset1, offset1, NaN, onset2, offset2, NaN, ....]
-            return state_ms
 
         if state_def is not None:
             # Draw states as gapped lines
             # Assuming a list of lists of two names
 
             if isinstance(state_def, dict):# single entry
-                state_ms = find_states(state_def)
+                state_def = [state_def]
+                # state_ms = find_states(state_def)
 
-                line1 = go.Scatter(x=[x/1000 for x in state_ms], y=[state_def['name']] * len(state_ms), 
-                    name=state_def['name'], mode='lines', line=dict(width=5))
-                fig.add_trace(line1)
+                # line1 = go.Scatter(x=[x/1000 for x in state_ms], y=[state_def['name']] * len(state_ms), 
+                #     name=state_def['name'], mode='lines', line=dict(width=5))
+                # fig.add_trace(line1)
 
-            elif isinstance(state_def, list):# multiple entry
+            if isinstance(state_def, list):# multiple entry
                 state_ms = None
                 for i in state_def:
                     assert isinstance(i, dict)
-                    #TODO to be tested
+                    
+                    y_index +=1
                     state_ms = find_states(i)
 
                     line1 = go.Scatter(x=[x/1000 for x in state_ms], y=[i['name']] * len(state_ms), 
                         name=i['name'], mode='lines', line=dict(width=5))
-                    fig.add_trace(line1)                 
+                    fig.add_trace(line1)
+
+                    if export_son:
+                    #TODO    write_marker_for_state(MyFile, state_ms, i['name'], y_index, EventRate, time_vec_ms)
             else:
                 state_ms = None
         else:
@@ -1559,6 +1600,10 @@ class Session():
         )
 
         fig.show()
+
+        if export_son:
+            del MyFile
+            print(f'saved {son_filename}')
 
     # Implemented in Event_dataset(), in trial_dataset_classes but left here for convenience as well
     def plot_trials_events(self, events_to_plot:list = 'all',  sort:bool = False):
