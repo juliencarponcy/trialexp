@@ -1327,23 +1327,42 @@ class Session():
                     # flat_list_times = [item for sublist in list_of_list for item in sublist]
         return self
 
-    def plot_session(self, state_def: list = None):
+    def plot_session(self, keys: list = None, state_def: list = None, print_expr: list = None, event_ms: list = None):
         """
-        Visualise a session using Plotly as ascrollable figure
+        Visualise a session using Plotly as a scrollable figure
 
-        #TODO cannot change the time unit from the dropdown
+        keys: list
+            subset of self.times.keys() to be plotted as events
+            Use [] to plot nothing
 
         state_def: dict, list, or None = None
             must be None (default)
             or dictionary of 
                 'name' : str
                     Channel name
-                'onset' : list 
-                    List of timestamps in ms
-                'offset' : list
-                    List of timestamps in ms
+                'onset' : str 
+                    key for onset 
+                'offset' : str
+                    key for offset
             or list of such dictionaries
-        For each onset, find the first offset event before the next onset 
+
+            eg. dict(name='trial', onset='CS_Go', offset='refrac_period')
+            eg. {'name':'trial', 'onset':'CS_Go', 'offset':'refrac_period'}
+
+            For each onset, find the first offset event before the next onset 
+        
+        print_expr: list of dict #TODO need more testing
+            'name':'name of channel'
+            'expr': '^regular expression$'. The expression '^\d+(?= ' + expr + ')' will be used for re.match()
+            list of regular expressions to be searched for self.print_lines
+
+        event_ms: list of dict
+                'name':'name of something'
+                'time_ms': X
+            allow plotting timestamps as an event
+
+        state_ms: list of dict #TODO
+
         """
 
         raw_symbols  = SymbolValidator().values
@@ -1352,14 +1371,44 @@ class Session():
 
         fig = go.Figure()
 
-        keys = self.times.keys()
+        if keys is None:
+            keys = self.times.keys()
+        else:
+            for k in keys: 
+               assert k in self.times.keys(), f"{k} is not found in self.time.keys()"
 
+        y_index = 0
         for kind, k in enumerate(keys):
-
-            line1 = go.Line(x=self.times[k]/1000, y=[k]
-                        * len(self.times[k]), name=k, mode='markers', marker_symbol=symbols[kind % 40])
+            y_index += 1
+            line1 = go.Scatter(x=self.times[k]/1000, y=[k]
+                        * len(self.times[k]), name=k, mode='markers', marker_symbol=symbols[y_index % 40])
             fig.add_trace(line1)
 
+        if print_expr is not None: #TODO
+            if isinstance(print_expr, dict):
+                print_expr = [print_expr]
+
+            for dct in print_expr:
+                y_index += 1
+                expr = '^\d+(?= ' + dct['expr'] + ')'
+                list_of_match = [re.match(expr, L) for L in self.print_lines if re.match(expr, L) is not None]
+                ts = [int(m.group(0)) for m in list_of_match]
+                line2 = go.Scatter(
+                    x=[TS/1000 for TS in ts], y=[dct['name']] * len(ts), 
+                    name=dct['name'], mode='markers', marker_symbol=symbols[y_index % 40])
+                fig.add_trace(line2)
+
+        if event_ms is not None:
+            if isinstance(event_ms, dict):
+                event_ms = [event_ms]
+            
+            for dct in event_ms:
+                y_index += 1
+                line3 = go.Scatter(
+                    x=[t/1000 for t in dct['time_ms']],
+                    y=[dct['name']] * len(dct['time_ms']),
+                    name=dct['name'], mode='markers', marker_symbol=symbols[y_index % 40])
+                fig.add_trace(line3)
 
         def find_states(state_def_dict: dict):
             """
@@ -1368,7 +1417,7 @@ class Session():
                     'name' : str
                         Channel name
                     'onset' : list 
-                        List of timestamps in ms
+                        List of timestamps in ms #TODO
                     'offset' : list
                         List of timestamps in ms
             For each onset, find the first offset event before the next onset 
@@ -1410,21 +1459,21 @@ class Session():
             # Draw states as gapped lines
             # Assuming a list of lists of two names
 
-            if isinstance(state_def, dict):
+            if isinstance(state_def, dict):# single entry
                 state_ms = find_states(state_def)
 
-                line1 = go.Line(x=[x/1000 for x in state_ms], y=[state_def['name']] * len(state_ms), 
+                line1 = go.Scatter(x=[x/1000 for x in state_ms], y=[state_def['name']] * len(state_ms), 
                     name=state_def['name'], mode='lines', line=dict(width=5))
                 fig.add_trace(line1)
 
-            elif isinstance(state_def, list):
+            elif isinstance(state_def, list):# multiple entry
                 state_ms = None
                 for i in state_def:
                     assert isinstance(i, dict)
                     #TODO to be tested
                     state_ms = find_states(i)
 
-                    line1 = go.Line(x=[x/1000 for x in state_ms], y=[i['name']] * len(state_ms), 
+                    line1 = go.Scatter(x=[x/1000 for x in state_ms], y=[i['name']] * len(state_ms), 
                         name=i['name'], mode='lines', line=dict(width=5))
                     fig.add_trace(line1)                 
             else:
@@ -1440,42 +1489,7 @@ class Session():
             
             title =dict(
                 text = f"{self.task_name}, {self.subject_ID} #{self.number}, on {self.datetime_string} via {self.setup_ID}"
-            ),
-            updatemenus=[
-                dict(
-                    buttons=list([
-                        dict(
-                            args=["type", "milliseconds"],
-                            label="milliseconds",
-                            method="restyle"
-                        ),
-                        dict(
-                            args=["type", "seconds"],
-                            label="seconds",
-                            method="restyle"
-                        ),
-                        dict(
-                            args=["type", "minutes"],
-                            label="minutes",
-                            method="restyle"
-                        )
-                    ]),
-                    direction="down",
-                    pad={"r": 10, "t": 10},
-                    showactive=True,
-                    x=0.04,
-                    xanchor="left",
-                    y=1.2,
-                    yanchor="top"
-                ),
-            ]
-        )
-
-        fig.update_layout(
-            annotations=[
-                dict(text="Time unit:", showarrow=False,
-                x=-0, y=1.14, xref="paper", yref="paper", align="left")
-            ]
+            )
         )
 
         fig.show()
