@@ -262,7 +262,7 @@ print(x_bar)
 
 
 
-# In[57]:
+# In[87]:
 
 
 keys = [
@@ -274,5 +274,5 @@ state_def = [{'name':'hold_for_water', 'onset':'hold_for_water', 'offset':'waiti
         {'name':'short_break', 'onset':'short_break', 'offset':'wating_for_bar'}]
 
 exp_cohort.sessions[0].plot_session(keys, state_def, 
-        print_expr=dict(name='water', expr='.+water success')) #TODO
+        print_expr=dict(name='water', expr='.?water success')) 
 

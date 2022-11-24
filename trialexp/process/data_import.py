@@ -1353,8 +1353,13 @@ class Session():
         
         print_expr: list of dict #TODO need more testing
             'name':'name of channel'
-            'expr': '^regular expression$'. The expression '^\d+(?= ' + expr + ')' will be used for re.match()
+            'expr': The expression '^\d+(?= ' + expr + ')' will be used for re.match()
             list of regular expressions to be searched for self.print_lines
+
+            eg. {
+                'name':'water success',
+                'expr':'.?water success' # .? is needed if it is unknown whether there is any character ahead        
+            }
 
         event_ms: list of dict
                 'name':'name of something'
