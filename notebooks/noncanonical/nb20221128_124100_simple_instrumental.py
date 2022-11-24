@@ -276,3 +276,27 @@ state_def = [{'name':'hold_for_water', 'onset':'hold_for_water', 'offset':'waiti
 exp_cohort.sessions[0].plot_session(keys, state_def, 
         print_expr=dict(name='water', expr='.?water success')) 
 
+
+# In[ ]:
+
+
+exp_cohort.sessions[0].plot_session(keys, state_def,
+                                    export_son = True, son_filename = 'temp.smrx')
+
+
+# In[90]:
+
+
+nEvents = 10
+Multiplier = 25                # For spacing
+
+FallData = np.arange(0, 2*nEvents*Multiplier, 2*Multiplier, dtype=np.int64)
+
+print(FallData)
+
+
+# In[91]:
+
+
+exp_cohort.sessions[0].times
+
