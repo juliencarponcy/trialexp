@@ -1417,7 +1417,7 @@ class Session():
             EventRate = 1/(dTimeBase*1e3)  # Hz, period is 1000 greater than the timebase
             SubDvd = 1                     # How many ticks between attached items in WaveMarks
 
-            max_time_ms1 = np.max([ np.max(self.times[k])  for k in keys ])
+            max_time_ms1 = np.max([np.max(self.times[k]) for k in keys if any(self.times[k])]) #TODO when no data 
 
             list_of_match = [re.match('^\d+', L) for L in self.print_lines if re.match('^\d+', L) is not None]
             max_time_ms2 = np.max([int(m.group(0)) for m in list_of_match])
