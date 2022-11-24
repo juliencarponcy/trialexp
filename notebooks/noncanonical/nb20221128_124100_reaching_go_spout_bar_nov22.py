@@ -4,12 +4,12 @@
 # # Simple instrumentral
 # 
 # ```bash
-# jupyter nbconvert "D:\OneDrive - Nexus365\Private_Dropbox\Projects\trialexp\notebooks\noncanonical\nb20221128_124100_simple_instrumental.ipynb" --to="python" --output-dir="D:\OneDrive - Nexus365\Private_Dropbox\Projects\trialexp\notebooks\noncanonical" --output="nb20221128_124100_simple_instrumental"
+# jupyter nbconvert "D:\OneDrive - Nexus365\Private_Dropbox\Projects\trialexp\notebooks\noncanonical\nb20221128_124100_reaching_go_spout_bar_nov22.ipynb" --to="python" --output-dir="D:\OneDrive - Nexus365\Private_Dropbox\Projects\trialexp\notebooks\noncanonical" --output="nb20221128_124100_reaching_go_spout_bar_nov22"
 # ```
 
 # Quick analysis of instrumental reaching
 
-# In[1]:
+# In[2]:
 
 
 # allow for automatic reloading of classes and function when updating the code
@@ -23,7 +23,7 @@ from trialexp.process.data_import import *
 
 # ### Variables
 
-# In[2]:
+# In[3]:
 
 
 import pandas as pd
@@ -51,14 +51,14 @@ photometry_dir = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\kms_pyphotometry'
 video_dir = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\videos'
 
 
-# In[3]:
+# In[4]:
 
 
 tasks = pd.read_csv(tasksfile, usecols=[1, 2, 3, 4], index_col=False)
 tasks
 
 
-# In[4]:
+# In[5]:
 
 
 photo_root_dir = 'T:\\Data\\head-fixed\\pyphotometry\\data'
@@ -75,7 +75,7 @@ copy_files_to_horizontal_folders(
 # ### Create an experiment object
 # 
 
-# In[15]:
+# In[6]:
 
 
 # Folder of a full experimental batch, all animals included
@@ -98,7 +98,7 @@ exp_cohort.by_trial = True
 
 # ## Select sessions
 
-# In[16]:
+# In[7]:
 
 
 ss = exp_cohort.sessions
@@ -109,13 +109,13 @@ ss_ = [this_ss for this_ss in ss
 ss_
 
 
-# In[17]:
+# In[8]:
 
 
 exp_cohort.sessions = ss_
 
 
-# In[18]:
+# In[9]:
 
 
 ss_
@@ -123,7 +123,7 @@ ss_
 
 # # SLOW 3m
 
-# In[19]:
+# In[10]:
 
 
 # # Process the whole experimental folder by trials
@@ -151,13 +151,13 @@ ss_
 # # exp_cohort.save()
 
 
-# In[20]:
+# In[11]:
 
 
 exp_cohort.subject_IDs
 
 
-# In[21]:
+# In[12]:
 
 
 # Many combinations possible
@@ -180,24 +180,24 @@ groups = None
 # Window to exctract (in ms)
 
 
-# In[22]:
+# In[13]:
 
 
 exp_cohort.sessions[0].times.keys()
 
 
-# # Session plot
+# # Session plot reaching_go_spout_bar_nov22
 # 
 # I realised that this plot can never tell if a water drop was triggered by bar_off or spout.
 # 
 
-# In[23]:
+# In[14]:
 
 
 exp_cohort.sessions[0].print_lines[0:30]
 
 
-# In[24]:
+# In[15]:
 
 
 import re
@@ -209,60 +209,7 @@ a = [re.match(expr, L) for L in exp_cohort.sessions[0].print_lines if re.match(e
 int(a[0].group(0))
 
 
-# In[77]:
-
-
-import plotly.graph_objects as go
-from plotly.validators.scatter.marker import SymbolValidator
-
-raw_symbols = SymbolValidator().values
-symbols = [raw_symbols[i+2] for i in range(0, len(raw_symbols), 12)]
-
-keys = [ 'button_press', 'bar', 'bar_off', 'spout', 'US_delay_timer', 'CS_offset_timer']
-state_def = [{'name':'hold_for_water', 'onset':'hold_for_water', 'offset':'waiting_for_spout'},
-             {'name': 'waiting_for_spout', 'onset': 'waiting_for_spout',
-                 'offset': 'waiting_for_spout'},
-        {'name':'busy_win', 'onset':'busy_win', 'offset':'short_break'},
-        {'name':'short_break', 'onset':'short_break', 'offset':'wating_for_bar'}]
-
-bw = exp_cohort.sessions[0].times['busy_win']
-
-x_spout = [this_bw for this_bw in bw for spouts in sp if (
-    spouts < this_bw) and (this_bw - spouts < 100)]
-
-x_bar = [this_bw for this_bw in bw if not any(
-    [(spouts < this_bw) and (this_bw - spouts < 100) for spouts in sp])]
-
-print(f'busy_win {len(bw)}, triggered by spout {len(x_spout)}, by bar_off {len(x_bar)}')
-
-event_ms = [{
-        'name': 'triggedred by spout',
-        'time_ms': x_spout
-    },
-    {
-        'name': 'triggedred by bar_off',
-        'time_ms': x_bar
-    }
-    ]
-
-
-exp_cohort.sessions[0].plot_session(keys, state_def,
-    event_ms = event_ms)
-
-
-# In[73]:
-
-
-sp = exp_cohort.sessions[0].times['spout']
-
-x_bar = [this_bw for this_bw in bw if not any([(spouts < this_bw) and (this_bw - spouts < 100) for spouts in sp])]
-
-print(x_bar)
-
-
-
-
-# In[87]:
+# In[16]:
 
 
 keys = [
@@ -277,26 +224,125 @@ exp_cohort.sessions[0].plot_session(keys, state_def,
         print_expr=dict(name='water', expr='.?water success')) 
 
 
-# In[ ]:
+# In[17]:
 
 
 exp_cohort.sessions[0].plot_session(keys, state_def,
-                                    export_son = True, son_filename = 'temp.smrx')
+                                    export_son=True, son_filename='temp.smrx')
 
 
-# In[90]:
+# In[18]:
 
 
-nEvents = 10
-Multiplier = 25                # For spacing
-
-FallData = np.arange(0, 2*nEvents*Multiplier, 2*Multiplier, dtype=np.int64)
-
-print(FallData)
+exp_cohort.sessions[0].plot_session(keys, state_def,
+                                    export_son = True, son_filename = 'temp')
 
 
-# In[91]:
+# In[34]:
 
 
-exp_cohort.sessions[0].times
+for ss in exp_cohort.sessions:
+    smrxname = re.sub('\.txt', f'_{ss.task_name}.smrx', ss.file_name)
+    print(smrxname)
+
+
+# 
+# 
+# #TODO JC314L-2022-11-24-111452_reaching_go_spout_bar_nov22.smrx is broken without error
+
+# In[35]:
+
+
+keys = [
+        'button_press', 'bar', 'bar_off', 'spout', 'US_delay_timer', 'CS_offset_timer']
+state_def = [{'name': 'hold_for_water', 'onset': 'hold_for_water', 'offset': 'waiting_for_spout'},
+                     {'name': 'waiting_for_spout', 'onset': 'waiting_for_spout',
+                     'offset': 'busy_win'},
+                     {'name': 'busy_win', 'onset': 'busy_win',
+                         'offset': 'short_break'},
+                     {'name': 'short_break', 'onset': 'short_break', 'offset': 'waiting_for_bar'}]
+summary_df = pd.DataFrame()
+
+for ss in exp_cohort.sessions:
+    smrxname = re.sub('\.txt', f'_{ss.task_name}.smrx', ss.file_name)
+    print(smrxname)
+
+
+    bw = ss.times['busy_win']
+    sp = ss.times['spout']
+
+    x_spout = [this_bw for this_bw in bw for spouts in sp if (
+        spouts < this_bw) and (this_bw - spouts < 100)]
+
+    x_bar = [this_bw for this_bw in bw if not any(
+        [(spouts < this_bw) and (this_bw - spouts < 100) for spouts in sp])]
+        
+    event_ms = [{
+        'name': 'triggered by spout',
+        'time_ms': x_spout
+    },
+        {
+            'name': 'triggered by bar_off',
+            'time_ms': x_bar
+    }
+    ]
+
+    if re.search('11\-23',ss.file_name): #adapt to a bug 
+        state_def[-1]['offset'] = 'wating_for_bar'
+    else:
+        state_def[-1]['offset'] = 'waiting_for_bar'
+
+
+    ss.plot_session(
+        keys, state_def, export_son=True, event_ms=event_ms, son_filename= smrxname)
+
+    summary_df = summary_df.append({
+        'file':ss.file_name,
+        'task':ss.task_name,
+        'triggered_by_spout': len(x_spout),
+        'triggered_by_bar_off': len(x_bar),
+        'reaching_trials': len(bw),
+        'trials': len(ss.times['hold_for_water'])},
+        ignore_index=True)
+
+
+# In[ ]:
+
+
+summary_df['spout_rate'] = np.divide(summary_df['triggered_by_spout'], summary_df['reaching_trials'])
+summary_df['spout_rate_all'] = np.divide(summary_df['triggered_by_spout'], summary_df['trials'])
+
+summary_df.sort_values('file', inplace=True)
+summary_df
+
+
+# In[ ]:
+
+
+summary_df_ = summary_df.drop([3,5])
+
+summary_df_
+
+
+# In[ ]:
+
+
+import matplotlib.pyplot as plt
+plt.rcParams['font.family'] = ['Arial']
+fig, ax1 = plt.subplots()
+ax2 = ax1.twinx()
+
+ax1.plot(summary_df_.file, summary_df_.spout_rate, 'o', u'#1f77b4')
+
+ax2.plot(summary_df_.file, summary_df_.triggered_by_spout, 'o', u'#ff7f0e')
+
+ax1.set_xticklabels(summary_df_.file, rotation = 45, ha="right")
+
+ax1.set_ylabel(
+    'Ratio of reaching initiated by spout touch \nin all reaching trials', fontdict={'size': 16})
+ax2.set_ylabel(
+    'Number of trials with reaching', fontdict={'size': 16})
+
+ax1.spines['top'].set_visible(False)
+ax2.spines['top'].set_visible(False)
 
