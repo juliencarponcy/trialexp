@@ -1327,7 +1327,8 @@ class Session():
                     # flat_list_times = [item for sublist in list_of_list for item in sublist]
         return self
 
-    def plot_session(self, keys: list = None, state_def: list = None, print_expr: list = None, event_ms: list = None):
+    def plot_session(self, keys: list = None, state_def: list = None, print_expr: list = None, 
+                     event_ms: list = None, export_son: bool = False, son_filename: str = None):
         """
         Visualise a session using Plotly as a scrollable figure
 
@@ -1368,6 +1369,13 @@ class Session():
 
         state_ms: list of dict #TODO
 
+        export_son: Bool = False
+            pip install sonpy
+            to install the sonpy module.
+
+        son_filename: str = None
+
+
         """
 
         raw_symbols  = SymbolValidator().values
@@ -1375,12 +1383,59 @@ class Session():
         # 40 symbols
 
         fig = go.Figure()
-
         if keys is None:
             keys = self.times.keys()
         else:
             for k in keys: 
                assert k in self.times.keys(), f"{k} is not found in self.time.keys()"
+
+        if export_son:
+            from sonpy import lib as sp
+            #TODO assert .smlx
+            MyFile = sp.SonFile(son_filename)
+            CurChan = 0
+            UsedChans = 0
+            Scale = 65535/20
+            Offset = 0
+            ChanLow = 0
+            ChanHigh = 5
+            tFrom = 0
+            tUpto = sp.MaxTime64()         # The maximum allowed time in a 64-bit SON file
+            dTimeBase = 1e-6               # s = microseconds
+            x86BufSec = 2.
+            EventRate = 1/(dTimeBase*1e3)  # Hz, period is 1000 greater than the timebase
+            SubDvd = 1                     # How many ticks between attached items in WaveMarks
+
+            max_time_ms1 = np.max([ np.max(self.times[k])  for k in keys ])
+
+            list_of_match = [re.match('^\d+', L) for L in self.print_lines if re.match('^\d+', L) is not None]
+            max_time_ms2 = np.max([int(m.group(0)) for m in list_of_match])
+
+            max_time_ms = np.max([max_time_ms1, max_time_ms2])
+            time_vec_ms = np.arange(0, max_time_ms, 1000/EventRate)
+            # time_vec_micros = np.arange(0, max_time_ms*1000, 10**6 * 1/EventRate)
+
+            samples_per_s = EventRate
+            interval = 1/samples_per_s
+
+            samples_per_ms = 1/1000 * EventRate
+            interval = 1/samples_per_s
+
+            MyFile.SetTimeBase(dTimeBase)  # Set timebase
+
+
+        def write_event(X_ms, title, y_index, EventRate, time_vec_ms):
+            (hist, ___) = np.histogram(X_ms, bins=time_vec_ms) # time is 1000 too small
+
+            eventfalldata = np.where(hist)
+
+            MyFile.SetEventChannel(y_index, EventRate)
+            MyFile.SetChannelTitle(y_index, title)
+            if eventfalldata[0] is not []:
+                MyFile.WriteEvents(int(y_index), eventfalldata[0]*1000) #dirty fix but works
+            # print('Reading the events that we just saved:')
+            # print(MyFile.ReadEvents(int(y_index), 10, tFrom, tUpto))
+            # print()          
 
         y_index = 0
         for kind, k in enumerate(keys):
@@ -1388,6 +1443,12 @@ class Session():
             line1 = go.Scatter(x=self.times[k]/1000, y=[k]
                         * len(self.times[k]), name=k, mode='markers', marker_symbol=symbols[y_index % 40])
             fig.add_trace(line1)
+
+            if export_son:
+                write_event(self.times[k], k, y_index, EventRate, time_vec_ms)
+
+        if export_son:
+            del MyFile #TODO
 
         if print_expr is not None: #TODO
             if isinstance(print_expr, dict):
