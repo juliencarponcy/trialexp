@@ -1370,7 +1370,11 @@ class Session():
         state_ms: list of dict #TODO
 
         export_son: Bool = False
-            pip install sonpy
+            Save the plotted channels to a Spike 2 .smrx file.
+            An event channel and a state channel will be represetnted as an event and marker channels.
+            For the latter, onset and offset of a state is coded by 1 and 0 for code0.
+            Use
+                pip install sonpy
             to install the sonpy module.
 
         son_filename: str = None
@@ -1391,7 +1395,14 @@ class Session():
 
         if export_son:
             from sonpy import lib as sp
+            if son_filename is None:
+                raise Exception('son_filename is required')
             #TODO assert .smlx
+
+            mtc = re.search('\.smrx$', son_filename)
+            if mtc is None:
+                raise Exception('son_filename has to end with .smrx')
+
             MyFile = sp.SonFile(son_filename)
             CurChan = 0
             UsedChans = 0
@@ -1456,14 +1467,14 @@ class Session():
                 elif (i+1) % 2 == 1:
                     MarkData[i] = sp.DigMark(eventfalldata[0][i]*1000, 1) #onset
                 else:
-                    raise 'oh no'
+                    raise Exception('oh no')
             MyFile.SetMarkerChannel(y_index, EventRate)
             MyFile.SetChannelTitle(y_index, title)
             if eventfalldata[0] is not []:
                 MyFile.WriteMarkers(int(y_index), MarkData)
-            print('Reading the markers that we just saved:')
-            print(MyFile.ReadMarkers(int(y_index), nEvents, tFrom, tUpto)) #TODO failed Tick = -1
-            print()    
+            # print('Reading the markers that we just saved:')
+            # print(MyFile.ReadMarkers(int(y_index), nEvents, tFrom, tUpto)) #TODO failed Tick = -1
+            # print()    
 
         def find_states(state_def_dict: dict):
             """
@@ -1542,6 +1553,7 @@ class Session():
                     x=[TS/1000 for TS in ts], y=[dct['name']] * len(ts), 
                     name=dct['name'], mode='markers', marker_symbol=symbols[y_index % 40])
                 fig.add_trace(line2)
+                #TODO support Spike2
 
         if event_ms is not None:
             if isinstance(event_ms, dict):
@@ -1555,6 +1567,9 @@ class Session():
                     name=dct['name'], mode='markers', marker_symbol=symbols[y_index % 40])
                 fig.add_trace(line3)
 
+                if export_son:
+                    write_event(
+                        MyFile, dct['time_ms'], dct['name'], y_index, EventRate, time_vec_ms)
 
 
         if state_def is not None:
@@ -1582,7 +1597,7 @@ class Session():
                     fig.add_trace(line1)
 
                     if export_son:
-                    #TODO    write_marker_for_state(MyFile, state_ms, i['name'], y_index, EventRate, time_vec_ms)
+                        write_marker_for_state(MyFile, state_ms, i['name'], y_index, EventRate, time_vec_ms)
             else:
                 state_ms = None
         else:
