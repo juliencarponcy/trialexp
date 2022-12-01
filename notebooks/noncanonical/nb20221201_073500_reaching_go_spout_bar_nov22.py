@@ -11,7 +11,7 @@
 
 # 
 
-# In[2]:
+# In[1]:
 
 
 # allow for automatic reloading of classes and function when updating the code
@@ -25,7 +25,7 @@ from trialexp.process.data_import import *
 
 # ### Variables
 
-# In[3]:
+# In[2]:
 
 
 import pandas as pd
@@ -53,14 +53,14 @@ photometry_dir = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\kms_pyphotometry'
 video_dir = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\videos'
 
 
-# In[4]:
+# In[3]:
 
 
 tasks = pd.read_csv(tasksfile, usecols=[1, 2, 3, 4], index_col=False)
 tasks
 
 
-# In[5]:
+# In[4]:
 
 
 photo_root_dir = 'T:\\Data\\head-fixed\\pyphotometry\\data'
@@ -77,7 +77,7 @@ copy_files_to_horizontal_folders(
 # ### Create an experiment object
 # 
 
-# In[8]:
+# In[5]:
 
 
 # Folder of a full experimental batch, all animals included
@@ -100,7 +100,7 @@ exp_cohort.by_trial = True
 
 # ## Select sessions
 
-# In[21]:
+# In[6]:
 
 
 import datetime
@@ -114,19 +114,19 @@ ss_ = [this_ss for this_ss in ss
 ss_
 
 
-# In[22]:
+# In[7]:
 
 
 exp_cohort.sessions = ss_
 
 
-# In[23]:
+# In[8]:
 
 
 ss_
 
 
-# In[24]:
+# In[9]:
 
 
 ss_[0].datetime.date()
@@ -134,7 +134,7 @@ ss_[0].datetime.date()
 
 # # SLOW 3m
 
-# In[9]:
+# In[10]:
 
 
 # # Process the whole experimental folder by trials
@@ -162,13 +162,13 @@ ss_[0].datetime.date()
 # # exp_cohort.save()
 
 
-# In[25]:
+# In[11]:
 
 
 exp_cohort.subject_IDs
 
 
-# In[27]:
+# In[12]:
 
 
 # Many combinations possible
@@ -191,7 +191,7 @@ groups = None
 # Window to exctract (in ms)
 
 
-# In[28]:
+# In[13]:
 
 
 exp_cohort.sessions[0].times.keys()
@@ -202,13 +202,13 @@ exp_cohort.sessions[0].times.keys()
 # I realised that this plot can never tell if a water drop was triggered by bar_off or spout.
 # 
 
-# In[29]:
+# In[14]:
 
 
 exp_cohort.sessions[0].print_lines[0:30]
 
 
-# In[30]:
+# In[15]:
 
 
 import re
@@ -220,7 +220,7 @@ a = [re.match(expr, L) for L in exp_cohort.sessions[0].print_lines if re.match(e
 int(a[0].group(0))
 
 
-# In[31]:
+# In[16]:
 
 
 for ss in exp_cohort.sessions:
@@ -228,11 +228,16 @@ for ss in exp_cohort.sessions:
     print(smrxname)
 
 
-# 
-# 
-# #TODO JC314L-2022-11-24-111452_reaching_go_spout_bar_nov22.smrx is broken without error
+# In[ ]:
 
-# In[37]:
+
+raise Exception('')
+
+
+# 
+# # export
+
+# In[17]:
 
 
 keys = [
@@ -290,8 +295,13 @@ for ss in exp_cohort.sessions:
 
 
 # ## trouble shooting for 314
+# 
+# error is in event channel
+# 
+# which channel?
+# ReadEvents seems working for the first 10 divides at least
 
-# In[42]:
+# In[19]:
 
 
 keys = [
@@ -305,7 +315,7 @@ state_def = [{'name': 'hold_for_water', 'onset': 'hold_for_water', 'offset': 'wa
                     {'name': 'break_after_no_water',       'onset': 'break_after_no_water', 'offset': 'waiting_for_bar'}]
 summary_df = pd.DataFrame()
 
-for ss in [exp_cohort.sessions[0]]:
+for ss in [exp_cohort.sessions[1]]:
     smrxname = re.sub('\.txt', f'_{ss.task_name}.smrx', ss.file_name)
     print(smrxname)
 
@@ -336,7 +346,7 @@ for ss in [exp_cohort.sessions[0]]:
 
 
     ss.plot_session(
-        keys, state_def, export_son=True, event_ms=event_ms, son_filename= smrxname)
+        keys, state_def, export_son=True, event_ms=event_ms, son_filename= smrxname, verbose=True)
 
     summary_df = summary_df.append({
         'file':ss.file_name,
