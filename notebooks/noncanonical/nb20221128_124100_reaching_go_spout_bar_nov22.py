@@ -308,22 +308,64 @@ for ss in exp_cohort.sessions:
         ignore_index=True)
 
 
-# In[20]:
+# In[56]:
 
+
+import datetime as dt
 
 summary_df['spout_rate'] = np.divide(summary_df['triggered_by_spout'], summary_df['reaching_trials'])
 summary_df['spout_rate_all'] = np.divide(summary_df['triggered_by_spout'], summary_df['trials'])
+summary_df['datetime'] = [dt.datetime.strptime(str, '%Y-%m-%d-%H%M%S') for str in [
+    get_datestr_from_filename(file) for file in summary_df['file']]]
+
+summary_df['subject_ID'] = [m.group(0) for m in [re.search('^\w+\d+\w+', file) for file in summary_df['file']]]
 
 summary_df.sort_values('file', inplace=True)
 summary_df
 
 
-# In[21]:
-
-
 summary_df_ = summary_df.drop([3,5])
 
 summary_df_
+
+
+# In[52]:
+
+
+summary_df_['date_time'][0].__class__
+
+
+# In[74]:
+
+
+import matplotlib.pyplot as plt
+plt.rcParams['font.family'] = ['Arial']
+fig, ax1 = plt.subplots()
+# ax2 = ax1.twinx()
+
+subject_IDs = list(set(summary_df_['subject_ID']))
+
+for s in subject_IDs:
+    a = summary_df_.loc[summary_df_['subject_ID'] == s,['spout_rate','datetime']]
+
+    ax1.plot(a.datetime, a.spout_rate, 'o-', label=s)
+
+ax1.set_xticklabels(ax1.get_xticklabels(), rotation = 45, ha="right")
+
+ax1.set_ylim([0, 1])
+
+ax1.set_ylabel(
+    'Ratio of reaching initiated by spout touch \nin all reaching trials', fontdict={'size': 16})
+# ax2.set_ylabel(
+#    'Number of trials with reaching', fontdict={'size': 16})
+
+ax1.spines['top'].set_visible(False)
+ax1.spines['right'].set_visible(False)
+
+
+ax1.legend(loc='upper right')
+
+ax1.set_xlim(dt.datetime.fromisoformat('2022-11-23T08:00:00'),dt.datetime.fromisoformat('2022-11-24T20:00:00'))
 
 
 # In[30]:
