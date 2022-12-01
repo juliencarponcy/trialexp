@@ -1328,7 +1328,8 @@ class Session():
         return self
 
     def plot_session(self, keys: list = None, state_def: list = None, print_expr: list = None, 
-                     event_ms: list = None, export_son: bool = False, son_filename: str = None):
+                    event_ms: list = None, export_son: bool = False, son_filename: str = None, verbose :bool = False,
+                    print_to_text: bool = True):
         """
         Visualise a session using Plotly as a scrollable figure
 
@@ -1355,7 +1356,7 @@ class Session():
         print_expr: list of dict #TODO need more testing
             'name':'name of channel'
             'expr': The expression '^\d+(?= ' + expr + ')' will be used for re.match()
-            list of regular expressions to be searched for self.print_lines
+            list of regular expressions to be searched for self.print_lines and shown as an event channel
 
             eg. {
                 'name':'water success',
@@ -1377,10 +1378,21 @@ class Session():
                 pip install sonpy
             to install the sonpy module.
 
+            This mwthod seems unstable. Tha same session may fail ot succedd to export Spike2 file.
+            Use verbose option to see what's going on.
+            When failed, the file size tends to be 11KB.
+
         son_filename: str = None
 
+        verbose :bool = False
+
+        print_to_text: bool = True
+            print_lines will be converted to text (and TextMark chaanel in Spike2)
 
         """
+
+        # see  \Users\phar0528\Anaconda3\envs\trialexp\Lib\site-packages\sonpy\MakeFile.py
+        #NOTE cannot put file path in the pydoc block
 
         raw_symbols  = SymbolValidator().values
         symbols = [raw_symbols[i+2] for i in range(0, len(raw_symbols), 12)]
@@ -1444,9 +1456,37 @@ class Session():
             MyFile.SetChannelTitle(y_index, title)
             if eventfalldata[0] is not []:
                 MyFile.WriteEvents(int(y_index), eventfalldata[0]*1000) #dirty fix but works
-            # print('Reading the events that we just saved:')
-            # print(MyFile.ReadEvents(int(y_index), 10, tFrom, tUpto))
-            # print()
+
+            if verbose:
+                print(f'{y_index}, {title}:')
+                nMax = 10
+                # nMax = int(MyFile.ChannelMaxTime(int(y_index))/MyFile.ChannelDivide(int(y_index))) 
+                print(MyFile.ReadEvents(int(y_index), nMax, tFrom, tUpto)) #TODO incompatible function arguments.
+                # [-1] when failed
+
+                # ReadEvents(self: sonpy.amd64.sonpy.SonFile, 
+                #     chan: int, 
+                #     nMax: int, # probably the end of the range to read in the unit of number of channel divide
+                #     tFrom: int, 
+                #     tUpto: int = 8070450532247928832, 
+                #     Filter: sonpy.amd64.sonpy.MarkerFilter = <sonpy.MarkerFilter> in mode 'First', with trace column -1 and items
+                #     Layer 1 [
+                #     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                #     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                #     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                #     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                #     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                #     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                #     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                #     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                #     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                #     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                #     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                #     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                #     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                #     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                #     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                #     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
 
         def write_marker_for_state(MyFile,X_ms, title, y_index, EventRate, time_vec_ms):
             #TODO nearly there, but file cannot be open
@@ -1472,9 +1512,23 @@ class Session():
             MyFile.SetChannelTitle(y_index, title)
             if eventfalldata[0] is not []:
                 MyFile.WriteMarkers(int(y_index), MarkData)
-            # print('Reading the markers that we just saved:')
-            # print(MyFile.ReadMarkers(int(y_index), nEvents, tFrom, tUpto)) #TODO failed Tick = -1
-            # print()    
+
+            if verbose:                
+                print(f'{y_index}, {title}:')
+                print(MyFile.ReadMarkers(int(y_index), nEvents, tFrom, tUpto)) #TODO failed Tick = -1
+
+        def write_textmark():
+            ...
+            #TODO create channle for print output 
+
+            # CurChan += 1
+            # MyFile.SetTextMarkChannel(CurChan, EventRate, max(len(s) for s in Texts)+1)
+            # MyFile.SetChannelTitle(CurChan, TMrkTitle)
+
+            # MyFile.WriteTextMarks(CurChan, TMrkData)
+            # print('Reading the text marks that we just saved:')
+            # print(MyFile.ReadTextMarks(CurChan, nEvents, tFrom, tUpto))
+            # print()
 
         def find_states(state_def_dict: dict):
             """
@@ -1571,6 +1625,9 @@ class Session():
                     write_event(
                         MyFile, dct['time_ms'], dct['name'], y_index, EventRate, time_vec_ms)
 
+        if print_to_text:
+            ...
+            # self.print_lines
 
         if state_def is not None:
             # Draw states as gapped lines
@@ -1618,6 +1675,7 @@ class Session():
 
         if export_son:
             del MyFile
+            #NOTE when failed to close the file, restart the kernel to delete the corrupted file(s)
             print(f'saved {son_filename}')
 
     # Implemented in Event_dataset(), in trial_dataset_classes but left here for convenience as well
