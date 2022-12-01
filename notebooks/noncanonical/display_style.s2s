@@ -1,0 +1,20 @@
+' display_style.s2s |
+var vh% := View();
+FrontView(vh%);
+YAxisMode(8196, 1, 12, 0);
+XAxisMode(4);
+FontSet("Arial",7, 0); 'set view font
+
+var list%[400];
+
+ChanList(list%[], 8+2048);
+
+var i%;
+var chan%;
+for i% := 1 to list%[0] do
+    chan% := list%[0];
+    DrawMode(chan%,15,1, 0,0); 'Set State
+    MarkShow(chan%, 0, 0); 'Set marker to display and mode
+
+next;
+
