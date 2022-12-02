@@ -228,16 +228,10 @@ for ss in exp_cohort.sessions:
     print(smrxname)
 
 
-# In[ ]:
-
-
-raise Exception('')
-
-
 # 
 # # export
 
-# In[25]:
+# In[20]:
 
 
 keys = [
@@ -301,7 +295,7 @@ for ss in exp_cohort.sessions:
 # which channel?
 # ReadEvents seems working for the first 10 divides at least
 
-# In[18]:
+# In[21]:
 
 
 keys = [
@@ -315,7 +309,7 @@ state_def = [{'name': 'hold_for_water', 'onset': 'hold_for_water', 'offset': 'wa
                     {'name': 'break_after_no_water',       'onset': 'break_after_no_water', 'offset': 'waiting_for_bar'}]
 summary_df = pd.DataFrame()
 
-for ss in [exp_cohort.sessions[1]]:
+for ss in [exp_cohort.sessions[0]]:
     smrxname = re.sub('\.txt', f'_{ss.task_name}.smrx', ss.file_name)
     print(smrxname)
 
