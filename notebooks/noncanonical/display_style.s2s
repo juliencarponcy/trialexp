@@ -12,9 +12,18 @@ ChanList(list%[], 8+2048);
 var i%;
 var chan%;
 for i% := 1 to list%[0] do
-    chan% := list%[0];
-    DrawMode(chan%,15,1, 0,0); 'Set State
+    chan% := list%[i%];
+    DrawMode(chan%,15,0, 0,0); 'Set State
     MarkShow(chan%, 0, 0); 'Set marker to display and mode
-
 next;
 
+ChanList(list%[], 32+2048);
+
+for i% := 1 to list%[0] do
+    chan% := list%[i%];
+    DrawMode(10,14, 4, 0,0); 'Set Text
+    MarkShow(10, 0, 0); 'Set marker to display and modenext;
+next;
+
+XAxisStyle(2, 0, 0);
+XAxisAttrib(0);

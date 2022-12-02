@@ -1538,7 +1538,7 @@ class Session():
                     MarkData[i] = sp.DigMark(eventfalldata[0][i]*1000, 1) #onset
                 else:
                     raise Exception('oh no')
-                TMrkData[i] = sp.TextMarker(txt[i], MarkData[i])
+                TMrkData[i] = sp.TextMarker(txt[i], MarkData[i]) #TODO
                 
             MyFile.SetTextMarkChannel(y_index, EventRate, max(len(s) for s in txt)+1)
             MyFile.SetChannelTitle(y_index, title)
@@ -1663,8 +1663,7 @@ class Session():
             fig.add_trace(txtsc)
 
             if export_son:
-                ...
-               # write_textmark( MyFile, ts_ms, 'print lines', y_index, txtsc, EventRate, time_vec_ms)
+                write_textmark( MyFile, ts_ms, 'print lines', y_index, txt, EventRate, time_vec_ms)
 
         if state_def is not None:
             # Draw states as gapped lines
