@@ -1513,22 +1513,41 @@ class Session():
             if eventfalldata[0] is not []:
                 MyFile.WriteMarkers(int(y_index), MarkData)
 
-            if verbose:                
+            if verbose:             
                 print(f'{y_index}, {title}:')
                 print(MyFile.ReadMarkers(int(y_index), nEvents, tFrom, tUpto)) #TODO failed Tick = -1
 
-        def write_textmark():
+        def write_textmark(MyFile, X_ms, title, y_index, txt, EventRate, time_vec_ms):
             ...
             #TODO create channle for print output 
 
-            # CurChan += 1
-            # MyFile.SetTextMarkChannel(CurChan, EventRate, max(len(s) for s in Texts)+1)
-            # MyFile.SetChannelTitle(CurChan, TMrkTitle)
+            (hist, ___) = np.histogram(X_ms, bins=time_vec_ms) # time is 1000 too small
 
-            # MyFile.WriteTextMarks(CurChan, TMrkData)
-            # print('Reading the text marks that we just saved:')
-            # print(MyFile.ReadTextMarks(CurChan, nEvents, tFrom, tUpto))
-            # print()
+            eventfalldata = np.where(hist)
+
+            nEvents = len(eventfalldata[0])
+
+            MarkData = np.empty(nEvents, dtype=sp.DigMark)
+
+            TMrkData = np.empty(nEvents, dtype=sp.TextMarker)
+
+            for i in range(nEvents):
+                if (i+1) % 2 == 0:
+                    MarkData[i] = sp.DigMark(eventfalldata[0][i]*1000, 0) #offset
+                elif (i+1) % 2 == 1:
+                    MarkData[i] = sp.DigMark(eventfalldata[0][i]*1000, 1) #onset
+                else:
+                    raise Exception('oh no')
+                TMrkData[i] = sp.TextMarker(txt[i], MarkData[i])
+                
+            MyFile.SetTextMarkChannel(y_index, EventRate, max(len(s) for s in txt)+1)
+            MyFile.SetChannelTitle(y_index, title)
+            if eventfalldata[0] is not []:
+                MyFile.WriteTextMarks(y_index, TMrkData)
+
+            if verbose:
+                print(f'{y_index}, {title}:')
+                print(MyFile.ReadTextMarks(int(y_index), nEvents, tFrom, tUpto))
 
         def find_states(state_def_dict: dict):
             """
@@ -1602,12 +1621,15 @@ class Session():
                 y_index += 1
                 expr = '^\d+(?= ' + dct['expr'] + ')'
                 list_of_match = [re.match(expr, L) for L in self.print_lines if re.match(expr, L) is not None]
-                ts = [int(m.group(0)) for m in list_of_match]
+                ts_ms = [int(m.group(0)) for m in list_of_match]
                 line2 = go.Scatter(
-                    x=[TS/1000 for TS in ts], y=[dct['name']] * len(ts), 
+                    x=[TS_ms/1000 for TS_ms in ts_ms], y=[dct['name']] * len(ts_ms), 
                     name=dct['name'], mode='markers', marker_symbol=symbols[y_index % 40])
                 fig.add_trace(line2)
-                #TODO support Spike2
+
+                if export_son:
+                    write_event(
+                        MyFile, ts_ms, dct['name'], y_index, EventRate, time_vec_ms)
 
         if event_ms is not None:
             if isinstance(event_ms, dict):
@@ -1626,8 +1648,23 @@ class Session():
                         MyFile, dct['time_ms'], dct['name'], y_index, EventRate, time_vec_ms)
 
         if print_to_text:
-            ...
-            # self.print_lines
+
+            EXPR = '^(\d+)\s(.+)'
+            list_of_match = [re.match(EXPR, L) for L in self.print_lines if re.match(EXPR, L) is not None]
+            ts_ms = [int(m.group(1)) for m in list_of_match]
+            txt = [m.group(2) for m in list_of_match]
+  
+            df_print = pd.DataFrame(list(zip(ts_ms, txt)), columns=['ms', 'text'])
+
+            y_index += 1
+            txtsc = go.Scatter(x=[TS_ms/1000 for TS_ms in ts_ms], y=['print_lines']*len(ts_ms), 
+                text=txt, textposition="top center", 
+                mode="markers", marker_symbol=symbols[y_index % 40])
+            fig.add_trace(txtsc)
+
+            if export_son:
+                ...
+               # write_textmark( MyFile, ts_ms, 'print lines', y_index, txtsc, EventRate, time_vec_ms)
 
         if state_def is not None:
             # Draw states as gapped lines

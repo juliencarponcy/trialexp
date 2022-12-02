@@ -237,7 +237,7 @@ raise Exception('')
 # 
 # # export
 
-# In[17]:
+# In[25]:
 
 
 keys = [
@@ -301,7 +301,7 @@ for ss in exp_cohort.sessions:
 # which channel?
 # ReadEvents seems working for the first 10 divides at least
 
-# In[19]:
+# In[18]:
 
 
 keys = [
