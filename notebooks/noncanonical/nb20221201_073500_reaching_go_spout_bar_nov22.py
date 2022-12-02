@@ -98,6 +98,9 @@ exp_cohort = Experiment(pycontrol_files_path, update = True) #TODO
 exp_cohort.by_trial = True
 
 
+smrx_folder_path = r'T:\Data\head-fixed\kms_pycontrol\smrx'
+
+
 # ## Select sessions
 
 # In[6]:
@@ -231,7 +234,7 @@ for ss in exp_cohort.sessions:
 # 
 # # export
 
-# In[20]:
+# In[23]:
 
 
 keys = [
@@ -246,7 +249,10 @@ state_def = [{'name': 'hold_for_water', 'onset': 'hold_for_water', 'offset': 'wa
 summary_df = pd.DataFrame()
 
 for ss in exp_cohort.sessions:
-    smrxname = re.sub('\.txt', f'_{ss.task_name}.smrx', ss.file_name)
+
+    file_name = os.path.split(ss.file_name)
+    file_name_ = re.sub('\.txt',  f'_{ss.task_name}.smrx', file_name[1])
+    smrxname = os.path.join(smrx_folder_path, file_name_)
     print(smrxname)
 
 
@@ -276,7 +282,7 @@ for ss in exp_cohort.sessions:
 
 
     ss.plot_session(
-        keys, state_def, export_son=True, event_ms=event_ms, son_filename= smrxname)
+        keys, state_def, export_smrx=True, event_ms=event_ms, srmx_filename= smrxname)
 
     summary_df = summary_df.append({
         'file':ss.file_name,
@@ -340,7 +346,7 @@ for ss in [exp_cohort.sessions[0]]:
 
 
     ss.plot_session(
-        keys, state_def, export_son=True, event_ms=event_ms, son_filename= smrxname, verbose=True)
+        keys, state_def, export_smrx=True, event_ms=event_ms, srmx_filename= smrxname, verbose=True)
 
     summary_df = summary_df.append({
         'file':ss.file_name,

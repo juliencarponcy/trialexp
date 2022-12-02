@@ -1328,7 +1328,7 @@ class Session():
         return self
 
     def plot_session(self, keys: list = None, state_def: list = None, print_expr: list = None, 
-                    event_ms: list = None, export_son: bool = False, son_filename: str = None, verbose :bool = False,
+                    event_ms: list = None, export_smrx: bool = False, smrx_filename: str = None, verbose :bool = False,
                     print_to_text: bool = True):
         """
         Visualise a session using Plotly as a scrollable figure
@@ -1370,7 +1370,7 @@ class Session():
 
         state_ms: list of dict #TODO
 
-        export_son: Bool = False
+        export_smrx: Bool = False
             Save the plotted channels to a Spike 2 .smrx file.
             An event channel and a state channel will be represetnted as an event and marker channels.
             For the latter, onset and offset of a state is coded by 1 and 0 for code0.
@@ -1379,13 +1379,14 @@ class Session():
             to install the sonpy module.
 
             This metthod seems unstable. Tha same session data may fail ot succedd to export Spike2 file. Try restating kernel a few times. 
+            Apparently addition of time.sleep(0.05) helped to make this more stable.
             Use verbose option to see what's going on.
             When failed, the file size tends to be 11KB. Verbose will show [-1].
             Restart the kernel to delete the corrupeted .smrx file.
 
             Stylise the Spike2 display using notebooks|noncanonical|display_style.s2s
 
-        son_filename: str = None
+        smrx_filename: str = None
 
         verbose :bool = False
 
@@ -1408,17 +1409,18 @@ class Session():
             for k in keys: 
                assert k in self.times.keys(), f"{k} is not found in self.time.keys()"
 
-        if export_son:
+        if export_smrx:
             from sonpy import lib as sp
-            if son_filename is None:
-                raise Exception('son_filename is required')
+            import time
+            if smrx_filename is None:
+                raise Exception('smrx_filename is required')
             #TODO assert .smlx
 
-            mtc = re.search('\.smrx$', son_filename)
+            mtc = re.search('\.smrx$', smrx_filename)
             if mtc is None:
-                raise Exception('son_filename has to end with .smrx')
+                raise Exception('smrx_filename has to end with .smrx')
 
-            MyFile = sp.SonFile(son_filename)
+            MyFile = sp.SonFile(smrx_filename)
             CurChan = 0
             UsedChans = 0
             Scale = 65535/20
@@ -1459,6 +1461,7 @@ class Session():
             MyFile.SetChannelTitle(y_index, title)
             if eventfalldata[0] is not []:
                 MyFile.WriteEvents(int(y_index), eventfalldata[0]*1000) #dirty fix but works
+                time.sleep(0.05)# might help?
 
             if verbose:
                 print(f'{y_index}, {title}:')
@@ -1515,6 +1518,7 @@ class Session():
             MyFile.SetChannelTitle(y_index, title)
             if eventfalldata[0] is not []:
                 MyFile.WriteMarkers(int(y_index), MarkData)
+                time.sleep(0.05)# might help?
 
             if verbose:             
                 print(f'{y_index}, {title}:')
@@ -1545,6 +1549,7 @@ class Session():
             MyFile.SetChannelTitle(y_index, title)
             if eventfalldata[0] is not []:
                 MyFile.WriteTextMarks(y_index, TMrkData)
+                time.sleep(0.05)# might help?
 
             if verbose:
                 print(f'{y_index}, {title}:')
@@ -1612,7 +1617,7 @@ class Session():
                         * len(self.times[k]), name=k, mode='markers', marker_symbol=symbols[y_index % 40])
             fig.add_trace(line1)
 
-            if export_son:
+            if export_smrx:
                 write_event(MyFile, self.times[k], k, y_index, EventRate, time_vec_ms)
 
 
@@ -1631,7 +1636,7 @@ class Session():
                     name=dct['name'], mode='markers', marker_symbol=symbols[y_index % 40])
                 fig.add_trace(line2)
 
-                if export_son:
+                if export_smrx:
                     write_event(
                         MyFile, ts_ms, dct['name'], y_index, EventRate, time_vec_ms)
 
@@ -1647,7 +1652,7 @@ class Session():
                     name=dct['name'], mode='markers', marker_symbol=symbols[y_index % 40])
                 fig.add_trace(line3)
 
-                if export_son:
+                if export_smrx:
                     write_event(
                         MyFile, dct['time_ms'], dct['name'], y_index, EventRate, time_vec_ms)
 
@@ -1666,7 +1671,7 @@ class Session():
                 mode="markers", marker_symbol=symbols[y_index % 40])
             fig.add_trace(txtsc)
 
-            if export_son:
+            if export_smrx:
                 write_textmark( MyFile, ts_ms, 'print lines', y_index, txt, EventRate, time_vec_ms)
 
         if state_def is not None:
@@ -1693,7 +1698,7 @@ class Session():
                         name=i['name'], mode='lines', line=dict(width=5))
                     fig.add_trace(line1)
 
-                    if export_son:
+                    if export_smrx:
                         write_marker_for_state(MyFile, state_ms, i['name'], y_index, EventRate, time_vec_ms)
             else:
                 state_ms = None
@@ -1713,10 +1718,10 @@ class Session():
 
         fig.show()
 
-        if export_son:
+        if export_smrx:
             del MyFile
             #NOTE when failed to close the file, restart the kernel to delete the corrupted file(s)
-            print(f'saved {son_filename}')
+            print(f'saved {smrx_filename}')
 
     # Implemented in Event_dataset(), in trial_dataset_classes but left here for convenience as well
     def plot_trials_events(self, events_to_plot:list = 'all',  sort:bool = False):
