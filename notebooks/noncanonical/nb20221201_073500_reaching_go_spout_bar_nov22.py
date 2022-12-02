@@ -295,7 +295,7 @@ for ss in exp_cohort.sessions:
 # which channel?
 # ReadEvents seems working for the first 10 divides at least
 
-# In[21]:
+# In[17]:
 
 
 keys = [

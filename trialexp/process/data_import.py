@@ -1378,9 +1378,12 @@ class Session():
                 pip install sonpy
             to install the sonpy module.
 
-            This mwthod seems unstable. Tha same session may fail ot succedd to export Spike2 file.
+            This metthod seems unstable. Tha same session data may fail ot succedd to export Spike2 file. Try restating kernel a few times. 
             Use verbose option to see what's going on.
-            When failed, the file size tends to be 11KB.
+            When failed, the file size tends to be 11KB. Verbose will show [-1].
+            Restart the kernel to delete the corrupeted .smrx file.
+
+            Stylise the Spike2 display using notebooks|noncanonical|display_style.s2s
 
         son_filename: str = None
 
@@ -1518,8 +1521,6 @@ class Session():
                 print(MyFile.ReadMarkers(int(y_index), nEvents, tFrom, tUpto)) #TODO failed Tick = -1
 
         def write_textmark(MyFile, X_ms, title, y_index, txt, EventRate, time_vec_ms):
-            ...
-            #TODO create channle for print output 
 
             (hist, ___) = np.histogram(X_ms, bins=time_vec_ms) # time is 1000 too small
 
@@ -1547,7 +1548,10 @@ class Session():
 
             if verbose:
                 print(f'{y_index}, {title}:')
-                print(MyFile.ReadTextMarks(int(y_index), nEvents, tFrom, tUpto))
+                try:
+                    print(MyFile.ReadTextMarks(int(y_index), nEvents, tFrom, tUpto))
+                except:
+                    print('error in print')
 
         def find_states(state_def_dict: dict):
             """
