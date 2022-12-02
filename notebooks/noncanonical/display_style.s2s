@@ -3,7 +3,7 @@ var vh% := View();
 FrontView(vh%);
 YAxisMode(8196, 1, 12, 0);
 XAxisMode(4);
-FontSet("Arial",7, 0); 'set view font
+FontSet("Arial",9, 0); 'set view font
 
 var list%[400];
 
@@ -27,4 +27,4 @@ next;
 
 XAxisStyle(2, 0, 0);
 XAxisAttrib(0);
-XRange( 0:00,MaxTime());
+XRange(0, MaxTime());
