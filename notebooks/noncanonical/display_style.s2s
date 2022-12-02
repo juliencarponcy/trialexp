@@ -27,3 +27,4 @@ next;
 
 XAxisStyle(2, 0, 0);
 XAxisAttrib(0);
+XRange( 0:00,MaxTime());
