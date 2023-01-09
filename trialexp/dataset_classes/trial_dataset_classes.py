@@ -1922,6 +1922,13 @@ class Event_Dataset(Trials_Dataset):
                     cm = 1/2.54  # centimeters in inches
                     fig, ax = plt.subplots(len(event_cols), len(triggers),
                         sharex=True, sharey=True, figsize=(21.0*cm, 29.7*cm))
+
+                    if len(triggers) == 1:
+                        ax = ax[:, np.newaxis]
+
+                    if len(event_cols) == 1:
+                        ax = ax[np.newaxis, :]
+                        
                 elif module == 'plotly':
                     fig = make_subplots(
                         rows= len(event_cols), 
