@@ -1,3 +1,6 @@
+# sample data
+sample_data/
+
 # trialexp .pkl datasets
 *.pkl
 
