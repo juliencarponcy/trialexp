@@ -185,8 +185,9 @@ class Session():
         self.conditions = np.array2string(tasks_trig_and_events['conditions'][tasks_trig_and_events['task'] ==
             self.task_name].values).strip("'[]").split('; ')
         
+        # REMOVED, now only at Experiment level to avoid inconsistencies
         # define trial_window parameter for extraction around triggers
-        self.trial_window = trial_window
+        # self.trial_window = trial_window
         self.timelim = timelim
         
         return self
@@ -242,7 +243,7 @@ class Session():
     # VERY UGLY AND SLOW:
     # compute trial nb and triggering events types to aggegate and index on them
     # TODO: optimize with itertuples or apply 
-    def compute_trial_nb(self):
+    def compute_trial_nb(self, trial_window):
 
         # just reassigning object attributes to new variables to improve readibility
         # almost certainly at the expense of performance
@@ -289,29 +290,29 @@ class Session():
             if ntrial == len(all_trial_times_sorted)-1:
                 #print('last trial: ', ntrial)
                 df_events['trial_nb'].mask(
-                    (df_events.index >= trigtime + self.trial_window[0])
+                    (df_events.index >= trigtime + trial_window[0])
                 , ntrial+1, inplace=True)
 
                 df_conditions['trial_nb'].mask(
-                    (df_conditions.index >= trigtime + self.trial_window[0])
+                    (df_conditions.index >= trigtime + trial_window[0])
                 , ntrial+1, inplace=True)
 
                 df_events['trial_time'].mask(
-                    (df_events.index >= trigtime + self.trial_window[0])
+                    (df_events.index >= trigtime + trial_window[0])
                 , df_events.index[
-                    (df_events.index >= trigtime + self.trial_window[0])
+                    (df_events.index >= trigtime + trial_window[0])
                 ] - trigtime, inplace=True)
 
                 # determine triggering event
                 df_conditions['trigger'].mask(
-                    (df_conditions.index >= trigtime + self.trial_window[0])
+                    (df_conditions.index >= trigtime + trial_window[0])
                 , all_trial_triggers_sorted[ntrial], inplace=True)
 
                 # compute trial relative time
                 df_conditions['trial_time'].mask(
-                    (df_conditions.index >= trigtime + self.trial_window[0])
+                    (df_conditions.index >= trigtime + trial_window[0])
                 , df_conditions.index[
-                    (df_conditions.index >= trigtime + self.trial_window[0])
+                    (df_conditions.index >= trigtime + trial_window[0])
                 ] - trigtime, inplace=True)
 
             # for every trial except last
@@ -319,36 +320,36 @@ class Session():
                 #print('all but last trial: ', ntrial, 'over', len(all_trial_times_sorted),  all_trial_times_sorted[ntrial+1])
 
                 df_events['trial_nb'].mask(
-                    (df_events.index >= trigtime + self.trial_window[0]) &
-                    (df_events.index <= all_trial_times_sorted[ntrial+1] + self.trial_window[0])
+                    (df_events.index >= trigtime + trial_window[0]) &
+                    (df_events.index <= all_trial_times_sorted[ntrial+1] + trial_window[0])
                 , ntrial+1, inplace=True)
 
                 df_conditions['trial_nb'].mask(
-                    (df_conditions.index >= trigtime + self.trial_window[0]) &
-                    (df_conditions.index <= all_trial_times_sorted[ntrial+1] + self.trial_window[0])
+                    (df_conditions.index >= trigtime + trial_window[0]) &
+                    (df_conditions.index <= all_trial_times_sorted[ntrial+1] + trial_window[0])
                 , ntrial+1, inplace=True)
 
                 df_events['trial_time'].mask(
-                    (df_events.index >= trigtime + self.trial_window[0]) &
-                    (df_events.index <= all_trial_times_sorted[ntrial+1] + self.trial_window[0])
+                    (df_events.index >= trigtime + trial_window[0]) &
+                    (df_events.index <= all_trial_times_sorted[ntrial+1] + trial_window[0])
                 , df_events.index[
-                    (df_events.index >= trigtime + self.trial_window[0]) &
-                    (df_events.index <= all_trial_times_sorted[ntrial+1] + self.trial_window[0])
+                    (df_events.index >= trigtime + trial_window[0]) &
+                    (df_events.index <= all_trial_times_sorted[ntrial+1] + trial_window[0])
                 ] - trigtime, inplace=True)
 
                 # determine triggering event
                 df_conditions['trigger'].mask(
-                    (df_conditions.index >= trigtime + self.trial_window[0]) &
-                    (df_conditions.index <= all_trial_times_sorted[ntrial+1] + self.trial_window[0])
+                    (df_conditions.index >= trigtime + trial_window[0]) &
+                    (df_conditions.index <= all_trial_times_sorted[ntrial+1] + trial_window[0])
                 , all_trial_triggers_sorted[ntrial], inplace=True)
 
                 # compute trial relative time
                 df_conditions['trial_time'].mask(
-                    (df_conditions.index >= trigtime + self.trial_window[0]) &
-                    (df_conditions.index <= all_trial_times_sorted[ntrial+1] + self.trial_window[0])
+                    (df_conditions.index >= trigtime + trial_window[0]) &
+                    (df_conditions.index <= all_trial_times_sorted[ntrial+1] + trial_window[0])
                 , df_conditions.index[
-                    (df_conditions.index >= trigtime + self.trial_window[0]) &
-                    (df_conditions.index <= all_trial_times_sorted[ntrial+1] + self.trial_window[0])
+                    (df_conditions.index >= trigtime + trial_window[0]) &
+                    (df_conditions.index <= all_trial_times_sorted[ntrial+1] + trial_window[0])
                 ] - trigtime, inplace=True)
         
         # drop events without trial_nb attributed (normally first events only)
@@ -389,10 +390,10 @@ class Session():
         new_df['trigger'] = all_trial_triggers_sorted
 
         # validate trials in function of the time difference between trials (must be > at length of trial_window)
-        new_df['valid'] = new_df['timestamp'].diff() > self.trial_window[0]
+        new_df['valid'] = new_df['timestamp'].diff() > trial_window[0]
         
         # validate first trial except if too early in the session
-        if new_df['timestamp'].iloc[0] > abs(self.trial_window[0]):
+        if new_df['timestamp'].iloc[0] > abs(trial_window[0]):
            new_df['valid'] = True
         
         # assing the newly built dataframe into the session object
@@ -493,12 +494,12 @@ class Session():
         # print(self.df_events.shape, self.df_conditions.shape)
         return self
 
-    def create_metadata_dict(self):
+    def create_metadata_dict(self, trial_window):
         metadata_dict = {
             'subject_ID' : self.subject_ID,
             'datetime' : self.datetime,
             'task' : self.task_name,
-            'trial_window' : self.trial_window,
+            'trial_window' : trial_window,
             'success_time_lim' : self.timelim,
             'com_port' : self.setup_ID
         }
@@ -519,7 +520,9 @@ class Session():
         else:
             try:
                 self.analyzed = False
-                self.trial_window = trial_window
+                # self.trial_window removed from Session, only in Experiment
+                # to avoid inconsistencies
+                # self.trial_window = trial_window 
                 # get triggers and events to analyze, set trial_window to be extracted
                 # and timelim for which trials are considered success/fail
                 self = self.get_task_specs(tasksfile,trial_window, timelim)
@@ -528,7 +531,7 @@ class Session():
                     print(f'processing by trial: {self.file_name} task: {self.task_name}')
 
                 self = self.extract_data_from_session()
-                self = self.compute_trial_nb()
+                self = self.compute_trial_nb(trial_window)
                 if blank_spurious_event is not None:
                     self.df_events[blank_spurious_event + '_trial_time'] = \
                         self.df_events[blank_spurious_event + '_trial_time'].apply(lambda x: blank_spurious_detection(x, blank_timelim))
@@ -537,7 +540,7 @@ class Session():
                 self = self.compute_success()
                 self.df_conditions
                 
-                self.metadata_dict = self.create_metadata_dict()
+                self.metadata_dict = self.create_metadata_dict(trial_window)
                 self.analyzed = True
                 return self
                 #pycontrol_utilities method
@@ -844,6 +847,7 @@ class Session():
     def get_photometry_trials(self,
             conditions_list: list = None,
             cond_aliases: list = None,
+            trial_window: list = None,
             trig_on_ev: str = None, 
             high_pass: float = None, 
             low_pass: int = None, 
@@ -952,8 +956,8 @@ class Session():
             # timestamps_photometry = timestamps_photometry.astype(int)
 
             # retain only trials with enough values left and right
-            complete_mask = (photometry_idx + self.trial_window[0]/(1000/photometry_dict['sampling_rate']) >= 0) & (
-                photometry_idx + self.trial_window[1] < len(photometry_dict[export_vars[0]])) 
+            complete_mask = (photometry_idx + trial_window[0]/(1000/photometry_dict['sampling_rate']) >= 0) & (
+                photometry_idx + trial_window[1] < len(photometry_dict[export_vars[0]])) 
 
             # complete_idx = np.where(complete_mask)
             trials_idx = np.array(trials_idx)
@@ -968,8 +972,8 @@ class Session():
             if len(photometry_idx) == 0 :
                 continue
 
-            photometry_idx = [range(idx + int(self.trial_window[0]/(1000/photometry_dict['sampling_rate'])) ,
-                idx + int(self.trial_window[1]/(1000/photometry_dict['sampling_rate']))) for idx in photometry_idx]
+            photometry_idx = [range(idx + int(trial_window[0]/(1000/photometry_dict['sampling_rate'])) ,
+                idx + int(trial_window[1]/(1000/photometry_dict['sampling_rate']))) for idx in photometry_idx]
 
 
             if condition_ID == 0:
@@ -1235,7 +1239,7 @@ class Session():
         
             #print(idx_joint.shape,first_ev_times_nona.shape, first_ev_times.shape)
         if output_first_ev:
-            return idx_joint, trials_times, first_ev_times
+            return idx_joint, trials_times
         else:    
             return idx_joint, trials_times
 
@@ -1893,16 +1897,17 @@ class Experiment():
             folder_path: str, 
             int_subject_IDs: bool = True, 
             update: bool = False, 
-            verbose=False):
+            verbose: bool = False):
         """
         Import all sessions from specified folder to create experiment object.  Only sessions in the 
         specified folder (not in subfolders) will be imported.
         
         Arguments
         ---------
-        folder_path:      Path of data folder.
-        int_subject_IDs:  If True subject IDs are converted to integers, e.g. m012 is converted to 12.
-
+        folder_path:        Path of data folder.
+        int_subject_IDs:    If True subject IDs are converted to integers, e.g. m012 is converted to 12.
+        update:             If True, do not rely only on .pkl file but check for new files
+        verbose:            If True, output verbose on the status of the pycontrol files    
         """
 
         if folder_path[-4:] == '.pkl':
@@ -2124,12 +2129,15 @@ class Experiment():
         create emtpy list to store idx of sessions without trials,
         can be extended to detect all kind of faulty sessions.
         """
+        # Should be the only definition of trial window (Experiment level)
+        self.trial_window = trial_window
+
 
         sessions_idx_to_remove = []
         
         for s_idx, s in enumerate(self.sessions):
 
-            self.sessions[s_idx] = s.get_session_by_trial(trial_window, timelim,
+            self.sessions[s_idx] = s.get_session_by_trial(self.trial_window, timelim,
                 tasksfile, blank_spurious_event, blank_timelim, verbose = verbose)
             
             # for files too short
@@ -2148,7 +2156,6 @@ class Experiment():
                 del self.sessions[r]
 
         # signal that the Experiment has been analyzed by trial
-        self.trial_window = trial_window
         self.by_trial = True
 
     def list_vids_to_run_in_dlc(
@@ -2628,6 +2635,7 @@ class Experiment():
             groups = None,
             conditions_list = None,
             cond_aliases = None,
+            trial_window: list = None,
             when = 'all',
             task_names = 'all',
             trig_on_ev = None, # align to the first event of a kind e.g. None (meaning CS_Go onset), 'spout', 'bar_off'
@@ -2694,7 +2702,8 @@ class Experiment():
                     try:
                         df_meta_photo, col_names_numpy, photometry_array, fs = session.get_photometry_trials(
                             conditions_list = conditions_list, 
-                            cond_aliases = cond_aliases, 
+                            cond_aliases = cond_aliases,
+                            trial_window = self.trial_window,
                             trig_on_ev = trig_on_ev,
                             high_pass = high_pass, 
                             low_pass = low_pass, 
