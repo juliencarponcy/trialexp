@@ -192,6 +192,12 @@ class Session():
         return self
 
     def extract_data_from_session(self):
+        """
+        The two attributes
+            self.df_events
+            self.df_conditions
+        are assigned by looking into a session data
+        """
 
         df_events = pd.DataFrame(self.events, columns=['timestamp', 'event'])
         
@@ -507,7 +513,10 @@ class Session():
     # Perform all the pretreatments to analyze behavioural file by trials
     def get_session_by_trial(self, trial_window: list, timelim: list,
             tasksfile, blank_spurious_event: list, blank_timelim: list, verbose=False):
-        
+        """
+
+        """
+
         # set a minimum nb of events to not process aborted files
         min_ev_to_process = 30
         # Do not process files with less than min_ev_to_process
@@ -2123,6 +2132,9 @@ class Experiment():
 
         create emtpy list to store idx of sessions without trials,
         can be extended to detect all kind of faulty sessions.
+
+        self.sessions[i].df_conditions must not be empty
+
         """
 
         sessions_idx_to_remove = []

@@ -22,4 +22,4 @@
 20,"go_rewarding_aversive","Go_water; Go_air","bar; bar_off; spout","free_reward; Go_water spout success; Go_air spout success; Go_air spout miss; Go_water bar success; Go_air bar success",,,,,,,
 21,"reaching_go_spout_nov22","busy_win","bar, bar_off, spout","water_on; water success",,,,,,,
 22,"reaching_go_spout_nov22_timewin","busy_win","bar, bar_off, spout, button_release, US_end_timer, CS_offset_timer, busy_win_timer","water by bar_off; water success; water_on",,,,,,,
-23,"reaching_go_spout_bar_nov22","hold_for_water ","bar, bar_off, spout, button_release, free_water_timer, busy_win_timer, CS_offset_timer, US_end_timer","water_on; water success",,,,,,,
+23,"reaching_go_spout_bar_nov22","hold_for_water","bar, bar_off, spout, button_release, free_water_timer, busy_win_timer, CS_offset_timer, US_end_timer","water_on; water success",,,,,,,
