@@ -3,6 +3,7 @@
 from cmath import isnan, nan
 
 import os
+from pathlib import Path
 import pickle
 import re
 import datetime
@@ -1873,7 +1874,7 @@ class Experiment():
     folder_name : str
         Folder name
     path : str
-        Path of data folder including folder_name
+        Path of data folder or file including folder_name
     sessions : list
         List of Session objects
     by_trial : bool
@@ -1903,7 +1904,7 @@ class Experiment():
 
     def __init__(
             self, 
-            folder_path: str, 
+            path: str, 
             int_subject_IDs: bool = True, 
             update: bool = False, 
             verbose: bool = False):
@@ -1913,22 +1914,32 @@ class Experiment():
         
         Arguments
         ---------
-        folder_path:        Path of data folder.
+        path:           Path of data folder or file
         int_subject_IDs:    If True subject IDs are converted to integers, e.g. m012 is converted to 12.
         update:             If True, do not rely only on .pkl file but check for new files
         verbose:            If True, output verbose on the status of the pycontrol files    
         """
+        # path = Path(path)
+        if os.path.isfile(path):
+            if path[-4:] == '.pkl':
+                self.folder_name =  Path(path).parent
+                with open(path,'rb') as sessions_file:
+                    self._sessions = pickle.load(sessions_file)
+            # for single session Experiment
+            elif path[-4:] == '.txt':
+                self.folder_name = Path(path).parent
+                self._sessions = [(Session(path, int_subject_IDs))]
 
-        if folder_path[-4:] == '.pkl':
-            base = os.path.split(folder_path)[0]
-            self.folder_name =  os.path.split(base)[1]
-            self.path = base
-            with open(folder_path,'rb') as sessions_file:
-                self._sessions = pickle.load(sessions_file)
+            else:
+                raise(Exception('path argument should be either:\
+                    \n- a folder containing pycontrol .txt files\
+                    \n- a sessions.pkl file\
+                    \n- a single pycontrol .txt file'))
 
-        else:
-            self.folder_name = os.path.split(folder_path)[1]
-            self.path = folder_path
+                    
+        elif os.path.isdir(path):
+            self.folder_name = os.path.split(path)[1]
+            self.path = path
 
             # Import sessions.
 
@@ -1944,26 +1955,31 @@ class Experiment():
             except IOError:
                 self.by_trial = False
                 pass
+        
+
+            if update:
+                old_files = [session.file_name for session in self._sessions]
+                files = os.listdir(self.path)
+                new_files = [f for f in files if f[-4:] == '.txt' and f not in old_files]
+
+                if len(new_files) > 0:
+                    if verbose:
+                        print('Loading new data files..')
+                    self.by_trial = False
+                    for file_name in new_files:
+                        try:
+                            self._sessions.append(Session(os.path.join(self.path, file_name), int_subject_IDs))
+                        except Exception as error_message:
+                            if verbose:
+                                print('Unable to import file: ' + file_name)
+                                print(error_message)
+
+                self.sessions = self._sessions # force to call the setter
+
+        else:
+            raise(NotImplementedError)
 
 
-        if update and folder_path[-4:] != '.pkl':
-            old_files = [session.file_name for session in self._sessions]
-            files = os.listdir(self.path)
-            new_files = [f for f in files if f[-4:] == '.txt' and f not in old_files]
-
-            if len(new_files) > 0:
-                if verbose:
-                    print('Loading new data files..')
-                self.by_trial = False
-                for file_name in new_files:
-                    try:
-                        self._sessions.append(Session(os.path.join(self.path, file_name), int_subject_IDs))
-                    except Exception as error_message:
-                        if verbose:
-                            print('Unable to import file: ' + file_name)
-                            print(error_message)
-
-            self.sessions = self._sessions # force to call the setter
         # Assign session numbers.
 
         self.subject_IDs = list(set([s.subject_ID for s in self.sessions]))
@@ -2028,15 +2044,15 @@ class Experiment():
         ''' 
         if name is not None:
 
-            with open(os.path.join(self.path, name + '.pkl'),'wb') as sessions_file:
+            with open(os.path.join(self.folder_name, name + '.pkl'),'wb') as sessions_file:
                 pickle.dump(self.sessions, sessions_file)
                 print(f"saved {os.path.join(self.path, name + '.pkl')}") # I think it's a good practice that whener you make changes to files/folders print something
 
         else: 
             
-            with open(os.path.join(self.path, 'sessions.pkl'),'wb') as sessions_file:
+            with open(os.path.join(self.folder_name, 'sessions.pkl'),'wb') as sessions_file:
                 pickle.dump(self.sessions, sessions_file)
-                print(f"saved {os.path.join(self.path, 'sessions.pkl')}") # I think it's a good practice that whener you make changes to files/folders print something
+                print(f"saved {os.path.join(self.folder_name, 'sessions.pkl')}") # I think it's a good practice that whener you make changes to files/folders print something
 
 
     # def match_photometry_files(self, photometry_dir):
