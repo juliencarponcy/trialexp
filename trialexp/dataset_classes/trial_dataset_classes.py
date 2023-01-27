@@ -379,7 +379,7 @@ class Trials_Dataset():
 
         self.metadata_df['keep'] = True
 
-    def set_keep(self, tfkeep):
+    def set_keep(self, tfkeep: pd.Series):
         """
         Set the value of 'keep' column (used as a filter) of metadata_df
         self.metadata_df['keep'] = tfkeep
@@ -393,7 +393,7 @@ class Trials_Dataset():
         """
         self.metadata_df['keep'] = tfkeep
 
-    def get_tfkeep_subjects(self, subject_IDs_to_include: list):
+    def get_tfkeep_subjects(self, subject_IDs_to_include: list) -> pd.Series:
         """
         return a bool vector (pd.Series) that have True for one or several subjects of the dataset.
         The vector tfkeep can be used for boolean operations 
@@ -405,7 +405,7 @@ class Trials_Dataset():
         tfkeep = self.metadata_df['subject_ID'].apply(lambda x: x in subject_IDs_to_include)
         return tfkeep
 
-    def get_tfkeep_dates(self, days_to_include: list):
+    def get_tfkeep_dates(self, days_to_include: list) -> pd.Series:
         """
         return a bool vector (pd.Series) that have True for one or several dates of the dataset 
 
@@ -434,7 +434,7 @@ class Trials_Dataset():
             lambda x: x.date() in days_to_include)
         return tfkeep
 
-    def get_tfkeep_conditions(self, condition_IDs: list):
+    def get_tfkeep_conditions(self, condition_IDs: list) -> pd.Series:
         """
         return a bool vector (pd.Series) that have True for one or several conditions of the dataset using integer condition_IDs
         the index (ID) starting from 0
@@ -448,7 +448,7 @@ class Trials_Dataset():
             lambda x: x in condition_IDs)
         return tfkeep
 
-    def get_tfkeep_lastNsessions(self, n : int):
+    def get_tfkeep_lastNsessions(self, n : int) -> pd.Series:
         """
         return a bool vector (pd.Series) that have True for the last n sessions for each animal.
         The five sessions are counted for the sessions with 'keep' == True
@@ -482,7 +482,7 @@ class Trials_Dataset():
 
         return tfkeep
 
-    def get_tfkeep_groups(self, group_IDs_to_exclude: list):
+    def get_tfkeep_groups(self, group_IDs_to_exclude: list) -> pd.Series:
         """
         return a bool vector (pd.Series) that have True for one or several groups of the dataset
 

@@ -1922,14 +1922,13 @@ class Experiment():
         # path = Path(path)
         if os.path.isfile(path):
             if path[-4:] == '.pkl':
-                self.folder_name =  Path(path).parent
+                self.path = Path(path)
                 with open(path,'rb') as sessions_file:
                     self._sessions = pickle.load(sessions_file)
             # for single session Experiment
             elif path[-4:] == '.txt':
-                self.folder_name = Path(path).parent
                 self._sessions = [(Session(path, int_subject_IDs))]
-
+                self.path = Path(path)
             else:
                 raise(Exception('path argument should be either:\
                     \n- a folder containing pycontrol .txt files\
@@ -1938,8 +1937,7 @@ class Experiment():
 
                     
         elif os.path.isdir(path):
-            self.folder_name = os.path.split(path)[1]
-            self.path = path
+            self.path = Path(path)
 
             # Import sessions.
 
@@ -1947,7 +1945,7 @@ class Experiment():
 
             
             try: # Load sessions from saved sessions.pkl file.
-                with open(os.path.join(self.path, 'sessions.pkl'),'rb') as sessions_file:
+                with open(self.path / 'sessions.pkl','rb') as sessions_file:
                     self._sessions = pickle.load(sessions_file)
                 print('Saved sessions loaded from: sessions.pkl')
                 # TODO: precise and refine use of this by_trial attribute
@@ -2042,17 +2040,22 @@ class Experiment():
                 If not None, save the pickle file in its original folder as
                 <name>.pkl
         ''' 
+        if self.path.is_file():
+            folder_path = self.path.parent
+        elif self.path.is_dir():
+            folder_path = self.path
+        
         if name is not None:
 
-            with open(os.path.join(self.folder_name, name + '.pkl'),'wb') as sessions_file:
+            with open(folder_path / (name + '.pkl'),'wb') as sessions_file:
                 pickle.dump(self.sessions, sessions_file)
-                print(f"saved {os.path.join(self.path, name + '.pkl')}") # I think it's a good practice that whener you make changes to files/folders print something
+                print(f"saved {folder_path / (name + '.pkl')}") # I think it's a good practice that whener you make changes to files/folders print something
 
         else: 
             
-            with open(os.path.join(self.folder_name, 'sessions.pkl'),'wb') as sessions_file:
+            with open(folder_path / 'sessions.pkl','wb') as sessions_file:
                 pickle.dump(self.sessions, sessions_file)
-                print(f"saved {os.path.join(self.folder_name, 'sessions.pkl')}") # I think it's a good practice that whener you make changes to files/folders print something
+                print(f"saved {folder_path / 'sessions.pkl'}") # I think it's a good practice that whener you make changes to files/folders print something
 
 
     # def match_photometry_files(self, photometry_dir):
