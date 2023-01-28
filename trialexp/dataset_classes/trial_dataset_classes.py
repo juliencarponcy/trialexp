@@ -1,5 +1,4 @@
 # Python classes for storing, plotting and transform data by trials
-from hmac import trans_36
 import sys
 from datetime import datetime, date
 from typing import Iterable, Union, Optional, Tuple
@@ -904,24 +903,7 @@ class Continuous_Dataset(Trials_Dataset):
         plt.rcParams["figure.dpi"] = dpi
         plt.rcParams['font.family'] = ['Arial']
         
-        if time_unit == None and not hasattr(self, 'time_unit'):
-            time_vec = self.get_time_vector()
-        else:
-            time_vec = self.get_time_vector(unit = time_unit)
-
-        if vars == 'all':
-            vars = self.get_col_names()
-            vars_idx = list(self.colnames_dict.values())
-
-        if isinstance(vars, str):
-            vars = [vars]
-        
-        if any([var not in self.colnames_dict.keys() for var in vars]):
-            wrong_var_idx = [var not in self.colnames_dict.keys() for var in vars]
-            raise ValueError(
-                f'Variable(s) not in the dataset: {np.array(vars)[wrong_var_idx]}')
-        else:
-            vars_idx = [self.colnames_dict[var] for var in vars]
+        vars, time_vec, vars_idx = self.check_vars_and_times_input(vars, time_unit)
 
 
         if ylim != None and isinstance(ylim, list):
@@ -1216,20 +1198,41 @@ class Continuous_Dataset(Trials_Dataset):
 
         return fig, axs, out_df
 
+    def check_vars_and_times_input(self, vars, time_unit):
+        if time_unit == None and not hasattr(self, 'time_unit'):
+            time_vec = self.get_time_vector()
+        else:
+            time_vec = self.get_time_vector(unit = time_unit)
+
+        if vars == 'all':
+            vars = self.get_col_names()
+            vars_idx = list(self.colnames_dict.values())
+
+        if isinstance(vars, str):
+            vars = [vars]
+        
+        if any([var not in self.colnames_dict.keys() for var in vars]):
+            wrong_var_idx = [var not in self.colnames_dict.keys() for var in vars]
+            raise ValueError(
+                f'Variable(s) not in the dataset: {np.array(vars)[wrong_var_idx]}')
+        else:
+            vars_idx = [self.colnames_dict[var] for var in vars]
+        return vars,time_vec,vars_idx
+
     def scatterplot(self, vars: VarsType, groupby: Optional[list] = ['group_ID', 'subject_ID'], \
             timelim: Optional[list] = None):
         ...
 
-    def hetamp(self,
+    def heatmap(self,
             vars: VarsType = 'all',
             time_lim: Optional[list] = None,
             time_unit: str = None,
-            error: str = None, # only for group plot
-            is_x_vs_y: bool = False, # implement here or not?
-            plot_subjects: bool = True,
-            plot_groups: bool = True,
+            plot_by_conditions: bool = True,
+            plot_by_sessions: bool = False,
+            plot_by_subjects: bool = True,
+            plot_by_groups: bool = True,
             ylim: list = None, 
-            colormap: str = 'jet',
+            colormap: str = 'Greys',
             figsize: tuple = (20, 10),
             dpi: int = 100,
             box: bool = False,
@@ -1241,8 +1244,50 @@ class Continuous_Dataset(Trials_Dataset):
         Heatmap representation, rather than line plot, of multiple continuous data, 
         typically representing individual mice or neurons.
         """
-        ...
-        # to be implemented
+        
+        vars, time_vec, vars_idx = self.check_vars_and_times_input(vars, time_unit)
+
+        # Do not take trials/subjects filtered out
+        filtered_df = self.metadata_df[self.metadata_df['keep'] == True]
+        # Perform grouping, this could be customized later
+        gby = filtered_df.groupby(['group_ID','subject_ID','condition_ID'])
+        gby = gby.agg({'trial_ID': list})
+
+        # Get conditions and groups from filtered metadata
+        condition_IDs = gby.index.get_level_values('condition_ID').unique()
+        group_IDs = gby.index.get_level_values('group_ID').unique()
+        # Compute color maps and assign colors to subjects
+        # group_colors = cm.get_cmap(colormap, self.metadata_df['group_ID'].nunique())
+        # subj_colors = cm.get_cmap(colormap, self.metadata_df['subject_ID'].nunique())
+        subj_dict = {subject: subject_idx for (subject_idx, subject) 
+            in enumerate(filtered_df['subject_ID'].unique())}
+       
+        plt.rcParams["figure.dpi"] = dpi
+        plt.rcParams['font.family'] = ['Arial']
+        # basic loop for plot
+        for group_ID in group_IDs:
+            for subject_ID, subject_idx in subj_dict.items():
+                fig_title = f'{subject_ID}'
+                fig, axs = plt.subplots(len(vars), len(condition_IDs), sharex= 'all',
+                    sharey = 'row', squeeze = False , figsize = figsize)
+                fig.suptitle(fig_title)
+                for var_idx, var in enumerate(vars):
+
+                    for condition_ID in condition_IDs:
+                        
+                        subplot_title = f'{var} - {self.cond_aliases[condition_ID]}'
+                        data = self.data[gby.loc[(group_ID, subject_ID, condition_ID), 'trial_ID'], var_idx, :]
+                        
+                        axs[var_idx, condition_ID].set_title(subplot_title)
+
+                        axs[var_idx, condition_ID].pcolormesh(
+                            self.get_time_vector(),
+                            range(data.shape[0]), #gby.loc[(group_ID, subject_ID, condition_ID), 'trial_ID'],
+                            data,
+                            cmap = colormap,)
+                        
+                        if time_lim:
+                            axs[var_idx, condition_ID].set_xlim([time_lim[0], time_lim[1]])
 
 
 class Event_Dataset(Trials_Dataset):
