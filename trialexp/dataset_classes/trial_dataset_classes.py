@@ -1232,7 +1232,7 @@ class Continuous_Dataset(Trials_Dataset):
             plot_by_subjects: bool = True,
             plot_by_groups: bool = True,
             ylim: list = None, 
-            colormap: str = 'Greys',
+            colormap: str = 'jet',
             figsize: tuple = (20, 10),
             dpi: int = 100,
             box: bool = False,
@@ -1504,17 +1504,27 @@ class Event_Dataset(Trials_Dataset):
         filtered_meta_df = self.metadata_df[self.metadata_df['keep'] == True]
         filtered_ev_df = self.data[self.metadata_df['keep'] == True]
         
-        # Merged behavioural data and conditions DataFrames
+        # TODO: Merge instead of concatenate behavioural data and conditions DataFrames
         full_df = pd.concat([filtered_ev_df, filtered_meta_df], axis=1)
-        
+        # Drop double datetime columns
+        full_df.drop(columns='datetime')
+    
         # Extract behavioural times columns names and create new ones for the distribution
         ev_times_cols = [col for col in self.data.columns if search('trial_time', col)]
         dist_col_names = [col.split('_trial_time',1)[0] + '_dist' for col in ev_times_cols]
         
-        # define column and function for named aggregate
-        func_iter = [np.hstack for i in range(len(ev_times_cols))]
-        agg_dict = dict(zip(ev_times_cols, func_iter))
+        # define function for aggregating event times
+        # func_agg_event_times = [np.hstack for i in range(len(ev_times_cols))]
+        # # define
+        
+        # agg_dict = dict(zip(ev_times_cols, func_agg_event_times))
+        agg_dict = dict(zip(ev_times_cols, [np.hstack for i in range(len(ev_times_cols))]))
+        # To compute nb of trials in the groupby
         agg_dict['trial_ID'] = len
+        agg_dict['date'] = lambda x: x.iloc[0]
+        # from functools import reduce
+        # def func_get_first_from_agg(serie: pd.Series = None):
+        #     return reduce(lambda x: x.iloc[0])
 
         if per_session:
             grouped_df = full_df.groupby(

@@ -238,8 +238,8 @@ class Session():
         df_conditions['event'] = df_conditions['event'].astype('category')
 
         # use timestamp as index
-        df_events.set_index('timestamp',inplace=True, drop=False)
-        df_conditions.set_index('timestamp',inplace=True, drop=False)
+        df_events.set_index('timestamp',inplace=True, drop=True)
+        df_conditions.set_index('timestamp',inplace=True, drop=True)
 
         self.df_events = df_events
         self.df_conditions = df_conditions
@@ -377,11 +377,17 @@ class Session():
         # and introduce trigger, valid and success columns
         ev_col_list = [i + '_trial_time' for i in self.events_to_process]
 
-        columns=['timestamp', 'trigger', 'valid', 'success']
+        columns=['timestamp', 'trigger', 'valid', 'success', 'uid']
         columns = columns + ev_col_list
 
         new_df = pd.DataFrame(index= df_events.index.get_level_values('trial_nb').unique(),
             columns=columns)
+
+        # Create unique identifiers for trials
+        new_df['trial_nb'] = new_df.index.values
+        new_df['uid'] = new_df['trial_nb'].apply(
+            lambda x: f'{self.subject_ID}_{self.datetime.date()}_{self.datetime.time()}_{x}')
+        new_df['trial_nb'].drop(columns='trial_nb', inplace=True)
 
         # fill new <event>_trial_time columns
         for ev in self.events_to_process:
@@ -401,7 +407,7 @@ class Session():
         
         # validate first trial except if too early in the session
         if new_df['timestamp'].iloc[0] > abs(trial_window[0]):
-           new_df['valid'] = True
+           new_df.loc[1, 'valid'] = True
         
         # assing the newly built dataframe into the session object
         self.df_events = new_df
@@ -414,6 +420,10 @@ class Session():
 
         #self.df_events = new_df
         self.df_conditions = df_conditions
+
+
+        # check if df_conditions and df_events have same number of rows
+        # assert(self.df_events['uid'] == self.df_conditions['uid'])
 
         return self
 
@@ -451,7 +461,7 @@ class Session():
                 df_conditions[cond] = 0
 
             # group by trigger and trial nb
-            df_conditions_summed = self.df_conditions[self.conditions + ['trial_nb']].groupby(['trial_nb'], as_index=True)
+            df_conditions_summed = self.df_conditions[self.conditions + ['trial_nb']].groupby(['trial_nb'], as_index=False)
             # Aggregate different timestamp ()
             df_conditions_summed = df_conditions_summed.agg(lambda x: sum(x))   
 
@@ -499,6 +509,16 @@ class Session():
             self.df_events.loc[(self.df_conditions.cued == True),['trigger']] = self.triggers[0]
             self.df_events.loc[(self.df_conditions.cued == False),['trigger']] = self.triggers[1]
         # print(self.df_events.shape, self.df_conditions.shape)
+                    # Create unique identifiers for trials
+        
+        self.df_conditions['trial_nb'] = self.df_conditions.index.values
+        self.df_conditions['uid'] = self.df_conditions['trial_nb'].apply(
+                lambda x: f'{self.subject_ID}_{self.datetime.date()}_{self.datetime.time()}_{x}')
+        self.df_conditions.drop(columns = 'trial_nb', inplace=True)
+        # check if df_conditions and df_events have same number of rows
+        assert(self.df_events['uid'].equals(self.df_conditions['uid']))
+
+        
         return self
 
     def create_metadata_dict(self, trial_window):
@@ -2376,8 +2396,8 @@ class Experiment():
 
                         events_aggreg['datetime'] = pd.Series([session.datetime] * events_aggreg.shape[0], 
                             index = events_aggreg.index, dtype='datetime64[ns]')
-                        events_aggreg['datetime_string'] = pd.Series([session.datetime_string] * events_aggreg.shape[0],
-                             index =  events_aggreg.index, dtype='datetime64[ns]')                     
+                        # events_aggreg['datetime_string'] = pd.Series([session.datetime_string] * events_aggreg.shape[0],
+                        #      index =  events_aggreg.index, dtype='datetime64[ns]')                     
 
                         idx_all_cond = np.concatenate([idx_all_cond, idx_joint])
                         trials_times_all_cond = np.concatenate([trials_times_all_cond, trials_times])
