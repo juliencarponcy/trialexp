@@ -477,8 +477,9 @@ class Session():
             self.df_conditions = self.df_events.iloc[:,1:4]
             df_conditions_summed = self.df_conditions
 
-
-        # Compute if trials are cued or uncued for this specific task, to be removed asap
+        ###################################################################################
+        # Compute if trials are cued or uncued for this specific task, to be removed asap #
+        ###################################################################################
         if self.task_name == 'reaching_go_spout_cued_uncued':
             # FORCED: timestamp threshold, assume that blocks are 20min long, adapt otherwise
             block_lim = 20*60*1000
@@ -494,9 +495,9 @@ class Session():
             if starting_block == 'Cued':               
                 self.df_conditions.loc[(self.df_events.timestamp < block_lim),'cued'] = True
                 self.df_conditions.loc[(self.df_events.timestamp > block_lim),'cued'] = False
-            else:
-                self.df_conditions.loc[(self.df_events.timestamp > block_lim),'cued'] = True
-                self.df_conditions.loc[(self.df_events.timestamp < block_lim),'cued'] = False
+            # else:
+                # self.df_conditions.loc[(self.df_events.timestamp > block_lim),'cued'] = True
+                # self.df_conditions.loc[(self.df_events.timestamp < block_lim),'cued'] = False
             self.df_conditions['cued'] = self.df_conditions['cued'].astype('bool') 
             # to avoid FurureWarning
             # FutureWarning: In a future version, object-dtype columns with all-bool values will not be 
@@ -506,12 +507,17 @@ class Session():
             self.triggers = ['cued', 'uncued']
             self.df_conditions.loc[(self.df_conditions.cued == True),['trigger']] = self.triggers[0]
             self.df_conditions.loc[(self.df_conditions.cued == False),['trigger']] = self.triggers[1]
-            self.df_events.loc[(self.df_conditions.cued == True),['trigger']] = self.triggers[0]
-            self.df_events.loc[(self.df_conditions.cued == False),['trigger']] = self.triggers[1]
-        # print(self.df_events.shape, self.df_conditions.shape)
-                    # Create unique identifiers for trials
-        
+        #     self.df_events.loc[(self.df_conditions.cued == True),['trigger']] = self.triggers[0]
+        #     self.df_events.loc[(self.df_conditions.cued == False),['trigger']] = self.triggers[1]
+        # # print(self.df_events.shape, self.df_conditions.shape)
+                    
+        ##############################################
+        # End of block to remove (for specific task) #
+        ##############################################
+
         self.df_conditions['trial_nb'] = self.df_conditions.index.values
+        
+        # Create unique identifiers for trials
         self.df_conditions['uid'] = self.df_conditions['trial_nb'].apply(
                 lambda x: f'{self.subject_ID}_{self.datetime.date()}_{self.datetime.time()}_{x}')
         self.df_conditions.drop(columns = 'trial_nb', inplace=True)
@@ -568,14 +574,29 @@ class Session():
 
                 self = self.compute_conditions_by_trial()
                 self = self.compute_success()
-                self.df_conditions
-                
+
+                def tidy_up_duplicate_columns(df_events: pd.DataFrame, df_conditions: pd.DataFrame):
+                    '''
+                    Temporary helper method to clean duplicated columns (due to previous implementation)
+                    between df_events and df_conditions dataframes.
+                    This should allow cleaner joining/merging for related functions
+                    It keeps 'uid' columns for merging on data that includes more than one subject/session
+                    Also check if df_events and df_conditions are still matching on 'uid'
+                    '''
+                    df_events.drop(columns=['trigger','valid','success','trial_nb'], inplace=True)
+                    
+                    assert(df_events.uid.equals(df_conditions.uid))
+
+                    return df_events
+
+                self.df_events = tidy_up_duplicate_columns(self.df_events, self.df_conditions)    
                 self.metadata_dict = self.create_metadata_dict(trial_window)
                 self.analyzed = True
                 return self
                 #pycontrol_utilities method
 
-                #print(self.print_events,df_events)
+            # TODO: These exceptions are useful to deal with too short files or missing a trial type
+            # but are are obfuscating code bugs when they happen somewhere. Improve exception handling
             except KeyError as ke:
                 if verbose:
                     print(f'No trial {ke} found: {self.file_name} task: {self.task_name}')
@@ -2354,15 +2375,17 @@ class Experiment():
                     # df_events['condition'] = nan
                     df_conditions['condition'] = nan
                     
-                    col_to_modify = [ev + '_trial_time' for ev in session.events_to_process]    
+                    col_to_modify = [ev + '_trial_time' for ev in session.events_to_process] 
+                    # Why +2, investigate this : Probably because reset_index and shifting new resulting column
                     col_idxs = [df_events.columns.to_list().index(col)+2 for col in col_to_modify]
                     
                     # df_events['time_to_ev'] = nan
                     idx_all_cond = []
                     trials_times_all_cond = []
                     first_ev_times_all_cond = []
+                    #
                     events_aggreg = pd.DataFrame()
-                    for cond_idx, conditions_dict in enumerate(conditions_list):
+                    for cond_ID, conditions_dict in enumerate(conditions_list):
                         
                         if trig_on_ev:
                             idx_joint, trials_times, first_ev_times = session.get_trials_times_from_conditions(
@@ -2372,7 +2395,7 @@ class Experiment():
                         
                             df_ev_cond = df_events.loc[idx_joint,:].copy()
                             df_ev_cond = df_ev_cond.reset_index()
-                            # print(type(first_ev_times),df_ev_cond.index.values)
+                            # Loop that turns event times list to np.array and substract trial start
                             for ridx, row in enumerate(df_ev_cond.itertuples()): 
                                 # print(ridx, row.Index)
                                 for c, col_name in enumerate(col_to_modify):
@@ -2394,8 +2417,8 @@ class Experiment():
                             
                             events_aggreg = pd.concat([events_aggreg,df_ev_cond])
 
-                        events_aggreg['datetime'] = pd.Series([session.datetime] * events_aggreg.shape[0], 
-                            index = events_aggreg.index, dtype='datetime64[ns]')
+                        # events_aggreg['datetime'] = pd.Series([session.datetime] * events_aggreg.shape[0], 
+                        #     index = events_aggreg.index, dtype='datetime64[ns]')
                         # events_aggreg['datetime_string'] = pd.Series([session.datetime_string] * events_aggreg.shape[0],
                         #      index =  events_aggreg.index, dtype='datetime64[ns]')                     
 
@@ -2406,14 +2429,14 @@ class Experiment():
                             first_ev_times_all_cond = np.concatenate([first_ev_times_all_cond, first_ev_times])
                         
                         df_conditions.loc[idx_joint, 'group_ID'] = group_ID
-                        df_conditions.loc[idx_joint, 'condition_ID'] = cond_idx
+                        df_conditions.loc[idx_joint, 'condition_ID'] = cond_ID
                         if cond_aliases:
-                            # df_events.loc[idx_joint, 'condition'] = cond_aliases[cond_idx]
-                            df_conditions.loc[idx_joint, 'condition'] = cond_aliases[cond_idx]
+                            # df_events.loc[idx_joint, 'condition'] = cond_aliases[cond_ID]
+                            df_conditions.loc[idx_joint, 'condition'] = cond_aliases[cond_ID]
                         
                         df_conditions['datetime'] = pd.Series([session.datetime] * df_conditions.shape[0], index = df_conditions.index)
                         #df_conditions['datetime_string'] = pd.Series([session.datetime_string] * df_conditions.shape[0], index = df_conditions.index)
-                        df_conditions['date'] = df_conditions['datetime'].dt.date
+                        # df_conditions['date'] = df_conditions['datetime'].dt.date
 
                     idx_all_cond = idx_all_cond.astype(int)
                     # df_events.dropna(subset=['condition_ID'], inplace=True)
@@ -2430,9 +2453,9 @@ class Experiment():
 
                     df_events_exp = pd.concat([df_events_exp, events_aggreg], ignore_index = True)
 
-                    # workaround for FutureWarning
-                    l1 = [all([type(r) is bool for r in df_conditions[c]]) for c in df_conditions.columns]
-                    l2 = [df_conditions[c].dtype is not np.dtype('bool') for c in df_conditions.columns]
+                    # Check and enfore boolean columns to be boolean. Workaround for FutureWarning
+                    l1 = [all([type(row) is bool for row in df_conditions[col]]) for col in df_conditions.columns]
+                    l2 = [df_conditions[col].dtype is not np.dtype('bool') for col in df_conditions.columns]
                     l3 = [a and b for a, b in zip(l1, l2)]
                     for c, d in zip(l3, df_conditions.columns):
                         if c:

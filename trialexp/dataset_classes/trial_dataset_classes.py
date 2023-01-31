@@ -1315,7 +1315,7 @@ class Event_Dataset(Trials_Dataset):
 
     
 
-    def checker_events_request(self, events_to_plot: list = 'all'):
+    def _checker_events_request(self, events_to_plot: list = 'all'):
         """
         Helper function that helps to validate and match events requested as an argument of 
         a particular function to the proper dataframe columns of the dataset
@@ -1357,7 +1357,7 @@ class Event_Dataset(Trials_Dataset):
         raw_symbols  = SymbolValidator().values
         symbols = [raw_symbols[i+2] for i in range(0, len(raw_symbols), 12)]
 
-        event_cols, event_names = self.checker_events_request(events_to_plot)
+        event_cols, event_names = self._checker_events_request(events_to_plot)
 
         # Implement this as abstract method to check requested arguments (events) match the session obj.
 
@@ -1505,9 +1505,7 @@ class Event_Dataset(Trials_Dataset):
         filtered_ev_df = self.data[self.metadata_df['keep'] == True]
         
         # TODO: Merge instead of concatenate behavioural data and conditions DataFrames
-        full_df = pd.concat([filtered_ev_df, filtered_meta_df], axis=1)
-        # Drop double datetime columns
-        full_df.drop(columns='datetime')
+        full_df = filtered_ev_df.join(filtered_meta_df, on='uid')
     
         # Extract behavioural times columns names and create new ones for the distribution
         ev_times_cols = [col for col in self.data.columns if search('trial_time', col)]
@@ -1522,6 +1520,8 @@ class Event_Dataset(Trials_Dataset):
         # To compute nb of trials in the groupby
         agg_dict['trial_ID'] = len
         agg_dict['date'] = lambda x: x.iloc[0]
+        agg_dict['time'] = lambda x: x.iloc[0]
+
         # from functools import reduce
         # def func_get_first_from_agg(serie: pd.Series = None):
         #     return reduce(lambda x: x.iloc[0])
@@ -1897,7 +1897,7 @@ class Event_Dataset(Trials_Dataset):
         raster_y: str = 'trial', target: np.array = None):
         """
         Raster plot for Event_Dataset
-
+        # TODO introduce separation between conditions instead of/alternative to triggers
         keys : list = None
             what to plot
             Must match the names containing '*_trial_time' in the colums of self.data
@@ -2063,7 +2063,7 @@ class Event_Dataset(Trials_Dataset):
 
         for trig_idx, trigger in enumerate(triggers):
 
-            df_subset = self.data.loc[(self.data['trigger'] == trigger) & (
+            df_subset = self.data.loc[(self.metadata_df['trigger'] == trigger) & (
                 self.metadata_df['keep']), :]  # only include keep
 
             df_subset = df_subset.reset_index()
