@@ -157,16 +157,30 @@ def blank_spurious_detection(df_item, blank_timelim):
         tlist = [t for t in df_item if (t < blank_timelim[0] or t > blank_timelim[1])]
         return tlist
 
-def find_last_time_before_list(x):
-    if len(x) >= 1:
-        min_time = min([i for i in x if i>0], default=np.NaN)
-    elif isinstance(x, int) and x > 0:
-        min_time = x
-    elif len(x) == 0:
-        min_time = np.NaN
+def find_last_time_before_list(list_ev, list_lim):
+    '''
+    Utility function to use as apply to DataFrame in order
+    to find the last event occuring before another event,
+    like the last bar_off occrurign before a spout touch
+    list_ev is the list of events to detect (contained in a cell of dataframe)
+    list_lim is the list of events to use as limit
+    '''
+    if len(list_ev) >= 1 and len(list_lim) >= 1:
+        last_time = max([i for i in list_ev if i < find_min_time_list(list_lim)], default=np.NaN)
+    
+    # TODO check implementation for limit cases (when no lim events found)
+    elif isinstance(list_ev, int) and find_min_time_list(list_lim) is not np.NaN:
+        
+        if find_min_time_list(list_lim) > list_ev:
+            last_time = list_ev
+        else:
+            last_time = np.NaN
+
+    elif len(list_ev) == 0 or len(list_lim) == 0:
+        last_time = np.NaN
     else:
-        print(x,type(x))
-    return min_time
+        print(list_ev,type(list_ev))
+    return last_time
 
 
 def find_min_time_list(x):
@@ -178,7 +192,20 @@ def find_min_time_list(x):
         min_time = np.NaN
     else:
         print(x,type(x))
+
     return min_time
+
+def find_max_time_list(x):
+    if len(x) >= 1:
+        max_time = max([i for i in x if i>0], default=np.NaN)
+    elif isinstance(x, int) and x > 0:
+        max_time = x
+    elif len(x) == 0:
+        max_time = np.NaN
+    else:
+        print(x,type(x))
+
+    return max_time
 
 def find_if_event_within_timelim(df_item, timelim):
     if isinstance(df_item, list):

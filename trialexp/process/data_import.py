@@ -474,7 +474,7 @@ class Session():
             self.df_conditions[self.conditions] = self.df_conditions[self.conditions].astype(bool)
 
         else:
-            self.df_conditions = self.df_events.iloc[:,1:4]
+            self.df_conditions = self.df_events.iloc[:,1:4] # TODO: check and/or remove
             df_conditions_summed = self.df_conditions
 
         ###################################################################################
@@ -579,6 +579,10 @@ class Session():
                     '''
                     Temporary helper method to clean duplicated columns (due to previous implementation)
                     between df_events and df_conditions dataframes.
+
+                    Possibly due to the following line:
+                    self.df_conditions = self.df_events.iloc[:,1:4] (in compute_conditions_by_trial)
+
                     This should allow cleaner joining/merging for related functions
                     It keeps 'uid' columns for merging on data that includes more than one subject/session
                     Also check if df_events and df_conditions are still matching on 'uid'
@@ -899,7 +903,8 @@ class Session():
             conditions_list: list = None,
             cond_aliases: list = None,
             trial_window: list = None,
-            trig_on_ev: str = None, 
+            trig_on_ev: str = None,
+            last_before: str = None,
             high_pass: float = None, 
             low_pass: int = None, 
             median_filt: int = None, 
@@ -991,7 +996,7 @@ class Session():
         for condition_ID, conditions_dict in enumerate(conditions_list):
             # TEST the option of triggering on the first event of a trial
 
-            trials_idx, timestamps_pycontrol = self.get_trials_times_from_conditions(conditions_dict, trig_on_ev=trig_on_ev)
+            trials_idx, timestamps_pycontrol = self.get_trials_times_from_conditions(conditions_dict, trig_on_ev=trig_on_ev, last_before=last_before)
 
             timestamps_photometry = self.photometry_rsync.A_to_B(timestamps_pycontrol)
             photometry_idx = (timestamps_photometry / (1000/photometry_dict['sampling_rate'])).round().astype(int)
@@ -1240,7 +1245,10 @@ class Session():
             trig_on_ev: str = None,
             last_before: str = None, 
             output_first_ev: bool = False):
-
+        '''
+        Get the indices and timestamps of the trials matching a set dict of conditions,
+        offsetted (or not) by the first (or last before) occurence of a particular event
+        '''
         if conditions_dict is not None:
             cond_pairs = list(conditions_dict.items())
             idx_rows = []
@@ -1259,44 +1267,54 @@ class Session():
             raise NotPermittedError('get_trials_times_from_conditions',
                 ['trig_on_ev','output_first_ev'], [trig_on_ev,output_first_ev])
 
+        # if no trig_on_ev specified, return the original trigger timestamp
         if trig_on_ev == None:
             trials_times = self.df_events.loc[(idx_joint),'timestamp'].values
         elif trig_on_ev not in self.events_to_process:
             raise Exception('trig_on_ev not in events_to_process')
+        # Otherwise offset trigger timestamp by occurence of first event (TODO: or last before)
         else:    
             trials_times = self.df_events.loc[(idx_joint), 'timestamp'].copy()
             
             df_ev_copy = self.df_events.copy()
             # TODO: continue implementation
-            # if last_before is not None and last_before in set(self.events_to_process):
-            #     ev_before_lim = df_ev_copy.loc[(idx_joint), last_before + '_trial_time'].apply(
-            #         lambda x: find_min_time_list(x))               
+            if last_before is not None and last_before in set(self.events_to_process):
+                
+                ev_col = trig_on_ev + '_trial_time'
+                before_col = last_before + '_trial_time'
 
-            first_ev_times = df_ev_copy.loc[(idx_joint), trig_on_ev + '_trial_time'].apply(
-                lambda x: find_min_time_list(x))
+                ev_times = df_ev_copy.loc[(idx_joint), [ev_col, before_col]].apply(
+                    lambda x: find_last_time_before_list(x[ev_col], x[before_col]), axis=1)               
             
+            # If last_before is not requested
+            else:
+
+                ev_times = df_ev_copy.loc[(idx_joint), trig_on_ev + '_trial_time'].apply(
+                    lambda x: find_min_time_list(x))
+                
 
             #keep ony trial_times with a first event
-            first_ev_times_nona = first_ev_times.dropna(inplace=False)
+            ev_times_nona = ev_times.dropna(inplace=False)
             
             # Add time of the first event to trial onset
-            trials_times = trials_times.loc[first_ev_times_nona.index] + first_ev_times_nona
+            trials_times = trials_times.loc[ev_times_nona.index] + ev_times_nona
             # trials_times.dropna(inplace=True)
             # Keep only the index where events (trig_on_ev) were found
             idx_joint = trials_times.index.values.astype(int)
             # retransmorm trial_times as an array
             trials_times = trials_times.values.astype(int)
-            first_ev_times = first_ev_times_nona.astype(int).values
+            # ev_times = ev_times_nona.astype(int).values
         
             #print(idx_joint.shape,first_ev_times_nona.shape, first_ev_times.shape)
-        if output_first_ev:
-            return idx_joint, trials_times
-        else:    
-            return idx_joint, trials_times
+        # if output_first_ev:
+        #     return idx_joint, trials_times
+        # else:    
+        return idx_joint, trials_times
 
     def compute_behav_metrics(self, conditions_dict, events=None):
         ''' 
         Early function, decide whether to keep or not
+        Most likely to deprecate
 
         if two events are passed, time_delta between the first occurence of events[0]
         "t0(events[0])" and the first occurence of events[1] *after t0(events[0])*
@@ -2710,16 +2728,17 @@ class Experiment():
             conditions_list = None,
             cond_aliases = None,
             trial_window: list = None,
+            trig_on_ev: str = None,  # align to the first event of a kind e.g. None (meaning CS_Go onset), 'spout', 'bar_off'
+            last_before: str = None,
             when = 'all',
             task_names = 'all',
-            trig_on_ev = None, # align to the first event of a kind e.g. None (meaning CS_Go onset), 'spout', 'bar_off'
-            high_pass = None, # analog_1_df_over_f doesn't work with this
-            low_pass = None, 
-            median_filt = None,
-            motion_corr = False, 
-            df_over_f = False, 
-            downsampling_factor = None,
-            export_vars = ['analog_1','analog_2'],
+            high_pass: int = None, # analog_1_df_over_f doesn't work with this
+            low_pass: int = None, 
+            median_filt: int = None,
+            motion_corr: bool = False, 
+            df_over_f: bool = False, 
+            downsampling_factor: int = None,
+            export_vars: list = ['analog_1','analog_2'],
             remove_artifacts: bool = False,
             verbose = False) -> Continuous_Dataset:
         '''
@@ -2779,6 +2798,7 @@ class Experiment():
                             cond_aliases = cond_aliases,
                             trial_window = self.trial_window,
                             trig_on_ev = trig_on_ev,
+                            last_before = last_before,
                             high_pass = high_pass, 
                             low_pass = low_pass, 
                             median_filt = median_filt,

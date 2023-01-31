@@ -1456,7 +1456,7 @@ class Event_Dataset(Trials_Dataset):
 
     def compute_distribution(
             self,
-            trial_window: Iterable = None,
+            trial_window: Iterable = None, 
             bin_size: int = 100, # by default in ms, not adapted yet for seconds
             normalize: bool = True, # normalize the count of events according to bin_size
             per_session: bool = False, # if false, compute distribution per animal for all its sessions
@@ -1505,7 +1505,7 @@ class Event_Dataset(Trials_Dataset):
         filtered_ev_df = self.data[self.metadata_df['keep'] == True]
         
         # TODO: Merge instead of concatenate behavioural data and conditions DataFrames
-        full_df = filtered_ev_df.join(filtered_meta_df, on='uid')
+        full_df = filtered_ev_df.merge(filtered_meta_df, on='uid')
     
         # Extract behavioural times columns names and create new ones for the distribution
         ev_times_cols = [col for col in self.data.columns if search('trial_time', col)]
@@ -1519,8 +1519,7 @@ class Event_Dataset(Trials_Dataset):
         agg_dict = dict(zip(ev_times_cols, [np.hstack for i in range(len(ev_times_cols))]))
         # To compute nb of trials in the groupby
         agg_dict['trial_ID'] = len
-        agg_dict['date'] = lambda x: x.iloc[0]
-        agg_dict['time'] = lambda x: x.iloc[0]
+        agg_dict['datetime'] = lambda x: x.iloc[0]
 
         # from functools import reduce
         # def func_get_first_from_agg(serie: pd.Series = None):
@@ -1539,7 +1538,7 @@ class Event_Dataset(Trials_Dataset):
             
             # Compute histogram without returning bin edges
             grouped_df[dist_col_names[c_idx]] = grouped_df[col].apply(
-                lambda x: histo_only(x, self.trial_window, bin_size))
+                lambda x: histo_only(x, trial_window, bin_size))
 
             # Normalize by trial number and histogram size
             # Will only work now if all data in milliseconds
