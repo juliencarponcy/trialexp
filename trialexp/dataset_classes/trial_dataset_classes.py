@@ -851,6 +851,7 @@ class Continuous_Dataset(Trials_Dataset):
             figsize: tuple = (20, 10),
             dpi: int = 100,
             box: bool = False,
+            linex0: bool = True,
             liney0:bool = True, # draw horizontal gray dashed line at y = 0
             legend: bool = True,
             axs: Axes = None,
@@ -883,6 +884,8 @@ class Continuous_Dataset(Trials_Dataset):
         box: bool = False,
         liney0:bool = True, 
             draw horizontal gray dashed line at y = 0
+        linex0:bool = True, 
+            draw vertical gray dashed line at x = 0
         #TODO linex0 :bool = True, 
         legend: bool = True,
         verbose: bool = False
@@ -1195,7 +1198,25 @@ class Continuous_Dataset(Trials_Dataset):
                         lw=0.5,
                         )
         #plt.show()
-
+        if linex0:
+            for r in range(axs.shape[0]):
+                if len(axs.shape) > 1:
+                    for c in range(axs.shape[1]):
+                        axs[r, c].plot([0, 0],
+                            axs[r, c].get_ylim(), 
+                            color=(0.7, 0.7, 0.7),
+                            linestyle='--',
+                            zorder=0.5, # send to back
+                            )
+                else:
+                    axs[r].plot([0, 0],
+                        axs[r].get_ylim(),
+                        color=(0.8, 0.8, 0.8),
+                        linestyle=':',
+                        zorder=0.5,  # send to back
+                        lw=0.5,
+                        )
+        #plt.show()
         return fig, axs, out_df
 
     def check_vars_and_times_input(self, vars, time_unit):
@@ -1216,8 +1237,11 @@ class Continuous_Dataset(Trials_Dataset):
             raise ValueError(
                 f'Variable(s) not in the dataset: {np.array(vars)[wrong_var_idx]}')
         else:
-            vars_idx = [self.colnames_dict[var] for var in vars]
-        return vars,time_vec,vars_idx
+            vars_dict = dict() # with keys as var names and values as columns indices
+            for var in vars:
+                vars_dict[var] = [col_value for col_key, col_value in self.colnames_dict.items() if col_key == var][0]
+        
+        return vars_dict, time_vec
 
     def scatterplot(self, vars: VarsType, groupby: Optional[list] = ['group_ID', 'subject_ID'], \
             timelim: Optional[list] = None):
@@ -1231,7 +1255,8 @@ class Continuous_Dataset(Trials_Dataset):
             plot_by_sessions: bool = False,
             plot_by_subjects: bool = True,
             plot_by_groups: bool = True,
-            ylim: list = None, 
+            ylim: list = None,
+            clim_pctile: int = None, # pctile of values that will have min/max color    
             colormap: str = 'jet',
             figsize: tuple = (20, 10),
             dpi: int = 100,
@@ -1245,7 +1270,7 @@ class Continuous_Dataset(Trials_Dataset):
         typically representing individual mice or neurons.
         """
         
-        vars, time_vec, vars_idx = self.check_vars_and_times_input(vars, time_unit)
+        vars_dict, time_vec = self.check_vars_and_times_input(vars, time_unit)
 
         # Do not take trials/subjects filtered out
         filtered_df = self.metadata_df[self.metadata_df['keep'] == True]
@@ -1271,23 +1296,31 @@ class Continuous_Dataset(Trials_Dataset):
                 fig, axs = plt.subplots(len(vars), len(condition_IDs), sharex= 'all',
                     sharey = 'row', squeeze = False , figsize = figsize)
                 fig.suptitle(fig_title)
-                for var_idx, var in enumerate(vars):
+                for row_idx, (var_name, col_idx) in enumerate(vars_dict.items()):
 
                     for condition_ID in condition_IDs:
                         
-                        subplot_title = f'{var} - {self.cond_aliases[condition_ID]}'
-                        data = self.data[gby.loc[(group_ID, subject_ID, condition_ID), 'trial_ID'], var_idx, :]
-                        
-                        axs[var_idx, condition_ID].set_title(subplot_title)
+                        subplot_title = f'{var_name} - {self.cond_aliases[condition_ID]}'
+                        data = self.data[gby.loc[(group_ID, subject_ID, condition_ID), 'trial_ID'], col_idx, :]
+                        if clim_pctile:
+                            vmin = np.percentile(data, clim_pctile)
+                            vmax = np.percentile(data, 100-clim_pctile)
+                        else:
+                            vmin = data.min()
+                            vmax = data.max()
 
-                        axs[var_idx, condition_ID].pcolormesh(
+                        axs[row_idx, condition_ID].set_title(subplot_title)
+
+                        axs[row_idx, condition_ID].pcolormesh(
                             self.get_time_vector(),
                             range(data.shape[0]), #gby.loc[(group_ID, subject_ID, condition_ID), 'trial_ID'],
                             data,
-                            cmap = colormap,)
+                            cmap = colormap,
+                            vmin=vmin,
+                            vmax=vmax)
                         
                         if time_lim:
-                            axs[var_idx, condition_ID].set_xlim([time_lim[0], time_lim[1]])
+                            axs[row_idx, condition_ID].set_xlim([time_lim[0], time_lim[1]])
 
 
 class Event_Dataset(Trials_Dataset):
