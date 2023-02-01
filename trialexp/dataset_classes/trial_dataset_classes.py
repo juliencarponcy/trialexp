@@ -514,9 +514,9 @@ class Continuous_Dataset(Trials_Dataset):
     get_time_vector(self, unit: str = None)
     set_fs(self, fs: int):
     lineplot(...)
-        The main plotting method.
+        The main plotting method averaging for sessions/subjects/groups
     heatmap(...)
-        to be implemented
+        Plotting method to see the detail of every trial/session
     get_col_names()
     """
     def __init__(self, data: np.ndarray, metadata_df: pd.DataFrame, colnames_dict: dict):
@@ -906,8 +906,8 @@ class Continuous_Dataset(Trials_Dataset):
         plt.rcParams["figure.dpi"] = dpi
         plt.rcParams['font.family'] = ['Arial']
         
-        vars, time_vec, vars_idx = self.check_vars_and_times_input(vars, time_unit)
-
+        # vars, time_vec, vars_idx = self.check_vars_and_times_input(vars, time_unit)
+        vars_dict, time_vec = self.check_vars_and_times_input(vars, time_unit)
 
         if ylim != None and isinstance(ylim, list):
             if isinstance(ylim[0],list) and \
@@ -986,7 +986,7 @@ class Continuous_Dataset(Trials_Dataset):
       
         group_dfs = [0] * len(condition_IDs)
         cond_n = [0] * len(condition_IDs) # trial counts per condition
-        for c_idx, cond_ID in enumerate(condition_IDs):
+        for cond_idx, cond_ID in enumerate(condition_IDs):
 
             # Set title as condition on the first line
             if len(group_IDs) == 1:
@@ -994,14 +994,14 @@ class Continuous_Dataset(Trials_Dataset):
                     ...
 
                 elif hasattr(self, 'cond_aliases'):
-                    axs[0, c_idx+1].set_title(str(self.cond_aliases[cond_ID]))
+                    axs[0, cond_idx+1].set_title(str(self.cond_aliases[cond_ID]))
                 else:
-                    axs[0, c_idx+1].set_title(str(self.conditions[cond_ID]))
+                    axs[0, cond_idx+1].set_title(str(self.conditions[cond_ID]))
             else:
                 if hasattr(self, 'cond_aliases'):
-                    axs[0, c_idx].set_title(str(self.cond_aliases[cond_ID]))
+                    axs[0, cond_idx].set_title(str(self.cond_aliases[cond_ID]))
                 else:
-                    axs[0, c_idx].set_title(str(self.conditions[cond_ID]))
+                    axs[0, cond_idx].set_title(str(self.conditions[cond_ID]))
 
             # Compute means and sems
             group_n = [0] * len(group_IDs)
@@ -1022,25 +1022,25 @@ class Continuous_Dataset(Trials_Dataset):
                         warnings.simplefilter("ignore", category=RuntimeWarning)
                         mean_subj = np.nanmean(np_val,axis=0)
                     
-                    mean_subj = mean_subj[vars_idx, :]
+                    mean_subj = mean_subj[list(vars_dict.values()), :]
                     # sem_subj = np_val.std(axis=0) / np.sqrt(len(trial_idx)-1)
                     # sem_subj = sem_subj[vars_idx, :]
                     
-                    cond_n[c_idx] = cond_n[c_idx] + len(trial_idx)
+                    cond_n[cond_idx] = cond_n[cond_idx] + len(trial_idx)
                     group_n[g_idx] = group_n[g_idx] + len(trial_idx)
                     subj_n[subj_idx] = len(trial_idx)
 
                     # Plot
                     if plot_subjects:
-                        for ax_idx, var in enumerate(vars_idx):
+                        for ax_idx, (var_name, col_idx) in enumerate(vars_dict.items()):
                             if len(group_IDs) == 1:
-                                axs[ax_idx, c_idx+1].plot(
+                                axs[ax_idx, cond_idx+1].plot(
                                     time_vec, mean_subj[ax_idx, :],
                                     alpha = 0.7,
                                     label = f'{subject} (n = {len(trial_idx)})',
                                     color = subj_colors(subj_dict[subject]))
                             else:
-                                axs[ax_idx, c_idx].plot(
+                                axs[ax_idx, cond_idx].plot(
                                     time_vec, mean_subj[ax_idx, :],
                                     alpha = 0.7,
                                     label = f'{subject} (n = {len(trial_idx)})',
@@ -1072,9 +1072,9 @@ class Continuous_Dataset(Trials_Dataset):
 
                     # Group plotting
                     group_lw = 1    
-                    for ax_idx, var_idx in enumerate(vars_idx):
+                    for ax_idx, (var_name, col_idx) in enumerate(vars_dict.items()):
                         if len(group_IDs) == 1:
-                            if g_idx == 0 and c_idx == 0:
+                            if g_idx == 0 and cond_idx == 0:
                                 axs[ax_idx, 0].set_ylabel(vars[ax_idx])
                             # if a group is more than a single subject
                             if len(mean_group.shape) > 1:
@@ -1098,46 +1098,46 @@ class Continuous_Dataset(Trials_Dataset):
                                 )
 
                         else:
-                            if g_idx == 0 and c_idx == 0:
+                            if g_idx == 0 and cond_idx == 0:
                                 axs[ax_idx, 0].set_ylabel(vars[ax_idx])
                             
                             # if a group is more than a single subject
                             if len(mean_group.shape) > 1:    
                                 # plot mean
-                                axs[ax_idx, c_idx].plot(time_vec, mean_group[ax_idx, :],
+                                axs[ax_idx, cond_idx].plot(time_vec, mean_group[ax_idx, :],
                                     lw=group_lw, color=group_colors(group_ID),
                                     label = group_ID)                    
                                 
                                 if error is not None:
                                     # fill sem
-                                    axs[ax_idx, c_idx].fill_between(time_vec, 
+                                    axs[ax_idx, cond_idx].fill_between(time_vec, 
                                         mean_group[ax_idx, :] - sem_group[ax_idx, :],
                                         mean_group[ax_idx, :] + sem_group[ax_idx, :],
                                         alpha=0.3, color=group_colors(group_ID), lw=0)  
                             # if single subject in the group
                             else:
-                                axs[ax_idx, c_idx].plot(time_vec, mean_group,
+                                axs[ax_idx, cond_idx].plot(time_vec, mean_group,
                                     lw=group_lw, color=group_colors(group_ID),
                                     label = group_ID)    
 
-                        if ax_idx == len(vars_idx)-1:
+                        if ax_idx == len(vars_dict.values())-1:
                             if plot_groups and not plot_subjects:
                                 ...
                             else:
-                                axs[ax_idx, c_idx].set_xlabel(time_unit)
+                                axs[ax_idx, cond_idx].set_xlabel(time_unit)
                             if len(self.groups) == 1:
                                 if plot_groups and not plot_subjects:
                                     [ax[0].set_xlabel(time_unit) for ax in axs]
                                 else:
-                                    axs[ax_idx, c_idx+1].set_xlabel(time_unit)
+                                    axs[ax_idx, cond_idx+1].set_xlabel(time_unit)
 
             subj_dfs = pd.concat(subj_dfs)
 
-            group_dfs[c_idx] = pd.DataFrame(list(zip([cond_ID] * len(group_IDs),  
+            group_dfs[cond_idx] = pd.DataFrame(list(zip([cond_ID] * len(group_IDs),  
                 [str(self.cond_aliases[cond_ID])] * len(group_IDs),  group_IDs, group_n)))
-            group_dfs[c_idx].columns = ['condition_ID', 'condition_alias', 'group_ID', 'group_trial_n']
+            group_dfs[cond_idx].columns = ['condition_ID', 'condition_alias', 'group_ID', 'group_trial_n']
 
-            group_dfs[c_idx] = pd.merge(group_dfs[c_idx], subj_dfs, 'outer') 
+            group_dfs[cond_idx] = pd.merge(group_dfs[cond_idx], subj_dfs, 'outer') 
 
         out_df = pd.DataFrame(list(zip(condition_IDs, cond_n)))
         out_df.columns=['condition_ID', 'condition_trial_n']
@@ -1256,7 +1256,7 @@ class Continuous_Dataset(Trials_Dataset):
             plot_by_subjects: bool = True,
             plot_by_groups: bool = True,
             ylim: list = None,
-            clim_pctile: int = None, # pctile of values that will have min/max color    
+            clim_pctile: float = None, # pctile of values that will have min/max color    
             colormap: str = 'jet',
             figsize: tuple = (20, 10),
             dpi: int = 100,

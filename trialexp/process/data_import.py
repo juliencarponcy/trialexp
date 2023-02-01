@@ -471,7 +471,7 @@ class Session():
             df_conditions = pd.concat([self.df_events[['trigger','valid']], df_conditions], axis='columns', join='outer')
 
             self.df_conditions = df_conditions
-            self.df_conditions[self.conditions] = self.df_conditions[self.conditions].astype(bool)
+            self.df_conditions.loc[:,self.conditions] = self.df_conditions[self.conditions].astype(bool)
 
         else:
             self.df_conditions = self.df_events.iloc[:,1:4] # TODO: check and/or remove
