@@ -2137,7 +2137,7 @@ class Experiment():
             # the index number of previous elements in the sessions list)
             for r in sorted(sessions_idx_to_remove, reverse = True):
                 print('Deleting: ', self.sessions[r].subject_ID, self.sessions[r].datetime, self.sessions[r].task_name)
-                # del self.sessions[r]
+                del self.sessions[r]
 
         # signal that the Experiment has been analyzed by trial
         self.by_trial = True
