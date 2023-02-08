@@ -2301,9 +2301,9 @@ class Experiment():
                     col_idxs = [df_events.columns.to_list().index(col)+2 for col in col_to_modify]
                     
                     # df_events['time_to_ev'] = nan
-                    idx_all_cond = []
-                    trials_times_all_cond = []
-                    first_ev_times_all_cond = []
+                    idx_all_cond = np.empty(0, dtype = int)
+                    trials_times_all_cond = np.empty(0, dtype = int)
+                    first_ev_times_all_cond = np.empty(0, dtype = int)
                     #
                     events_aggreg = pd.DataFrame()
                     for cond_ID, conditions_dict in enumerate(conditions_list):
@@ -2364,7 +2364,6 @@ class Experiment():
                         #df_conditions['datetime_string'] = pd.Series([session.datetime_string] * df_conditions.shape[0], index = df_conditions.index)
                         # df_conditions['date'] = df_conditions['datetime'].dt.date
 
-                    idx_all_cond = idx_all_cond.astype(int)
                     # df_events.dropna(subset=['condition_ID'], inplace=True)
                     # df_conditions.dropna(subset=['condition_ID'], inplace=True)
                     
