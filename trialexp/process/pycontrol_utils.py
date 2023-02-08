@@ -59,7 +59,7 @@ def parse_events(session):
 
 def add_trial_number(df_events, trigger):
     # trigger is a tuple containing the state and event_name e.g. ('waiting_for_spout','state_change')
-    
+    # I really liked that
     df = df_events.copy()
 
 
