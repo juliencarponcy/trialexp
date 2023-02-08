@@ -9,6 +9,7 @@ import re
 import datetime
 import warnings
 import datetime
+import itertools
 
 from collections import namedtuple
 from operator import itemgetter
@@ -32,6 +33,7 @@ from trialexp.utils.rsync import *
 from trialexp.dataset_classes.trial_dataset_classes import *
 
 Event = namedtuple('Event', ['time','name'])
+State = namedtuple('State', ['time','name'])
 
 # Custom type, assess usefulness
 NoneType = type(None)
@@ -134,7 +136,6 @@ class Session():
         self.task_name = os.path.basename(self.task_name)
 
 
-
         if int_subject_IDs: # Convert subject ID string to integer.
             self.subject_ID = int(''.join([i for i in subject_ID_string if i.isdigit()]))
         else:
@@ -158,6 +159,9 @@ class Session():
                       for event_name in ID2name.values()}
 
         self.print_lines = [line[2:] for line in all_lines if line[0]=='P']
+        
+        self.state_IDs = state_IDs
+        self.event_IDs = event_IDs
     
     def get_task_specs(self, tasksfile, trial_window, timelim):
         """
@@ -177,6 +181,7 @@ class Session():
         # match triggers (events/state used for t0)
         self.triggers = np.array2string(tasks_trig_and_events['triggers'][tasks_trig_and_events['task'] == 
             self.task_name].values).strip("'[]").split('; ')
+                
         # events to extract
         self.events_to_process = np.array2string(tasks_trig_and_events['events'][tasks_trig_and_events['task'] ==
             self.task_name].values).strip("'[]").split('; ')
@@ -243,7 +248,7 @@ class Session():
 
         self.df_events = df_events
         self.df_conditions = df_conditions
-
+        
         # return session objet
         return self
 
@@ -291,7 +296,7 @@ class Session():
         #print(all_trial_triggers_sorted)
         
         for ntrial, trigtime in enumerate(list(all_trial_times_sorted)):
-            
+                        
             # attribute trial_nb to event/conditions occuring around trigger (event/state)
             # if the loop is at the last trial
             if ntrial == len(all_trial_times_sorted)-1:
@@ -568,6 +573,8 @@ class Session():
 
                 self = self.extract_data_from_session()
                 self = self.compute_trial_nb(trial_window)
+                
+                
                 if blank_spurious_event is not None:
                     self.df_events[blank_spurious_event + '_trial_time'] = \
                         self.df_events[blank_spurious_event + '_trial_time'].apply(lambda x: blank_spurious_detection(x, blank_timelim))
@@ -2131,7 +2138,7 @@ class Experiment():
             # the index number of previous elements in the sessions list)
             for r in sorted(sessions_idx_to_remove, reverse = True):
                 print('Deleting: ', self.sessions[r].subject_ID, self.sessions[r].datetime, self.sessions[r].task_name)
-                del self.sessions[r]
+                # del self.sessions[r]
 
         # signal that the Experiment has been analyzed by trial
         self.by_trial = True
@@ -2249,6 +2256,14 @@ class Experiment():
 
         if isinstance(conditions_list, dict):
             conditions_list = [conditions_list]
+        # construct a list of dict of "all-inclusive" conditions
+        elif not conditions_list:
+            all_trigs = [session.triggers for session in self.sessions if hasattr(session, 'triggers')]
+            all_trigs = set(itertools.chain.from_iterable(all_trigs))
+            conditions_list=[]
+            for trig_idx, trig in enumerate(all_trigs):
+                conditions_list.append(dict())
+                conditions_list[trig_idx]['trigger'] = trig
 
         df_events_exp = pd.DataFrame()
         df_conditions_exp = pd.DataFrame()
@@ -2292,8 +2307,13 @@ class Experiment():
                     #
                     events_aggreg = pd.DataFrame()
                     for cond_ID, conditions_dict in enumerate(conditions_list):
-                        
-                        if trig_on_ev:
+                        # detect triggers present in the session and skip conditions if
+                        # the trigger is not present in the session
+                        trigs = set(session.df_conditions.trigger.values)
+                        if conditions_dict['trigger'] not in trigs:
+                            continue
+
+                        if trig_on_ev and conditions_dict['trigger'] in session.triggers:
                             idx_joint, trials_times, first_ev_times = session.get_trials_times_from_conditions(
                                 conditions_dict = conditions_dict,
                                 trig_on_ev = trig_on_ev, output_first_ev = True)
@@ -2309,7 +2329,7 @@ class Experiment():
                                     df_ev_cond.at[row.Index, col_name] = np.array(row[col_idxs[c]]) - first_ev_times[row.Index]
 
                             events_aggreg = pd.concat([events_aggreg,df_ev_cond])
-                        else: 
+                        elif conditions_dict['trigger'] in session.triggers: 
                             idx_joint, trials_times = session.get_trials_times_from_conditions(
                                 conditions_dict = conditions_dict,
                                 trig_on_ev = trig_on_ev,  output_first_ev = False)
@@ -2569,13 +2589,20 @@ class Experiment():
 
                     try:
                         df_meta_dlc, col_names_numpy, dlc_array = session.get_deeplabcut_trials(
-                            conditions_list = conditions_list, cond_aliases = cond_aliases,
-                            camera_fps = camera_fps, camera_keyword = camera_keyword,
-                            bodyparts_to_ave = bodyparts_to_ave, names_of_ave_regions = names_of_ave_regions,
-                            normalize_between = normalize_between, bins_nb = bins_nb, p_thresh = p_thresh,
+                            conditions_list = conditions_list, 
+                            cond_aliases = cond_aliases,
+                            camera_fps = camera_fps, 
+                            camera_keyword = camera_keyword,
+                            bodyparts_to_ave = bodyparts_to_ave, 
+                            names_of_ave_regions = names_of_ave_regions,
+                            normalize_between = normalize_between, 
+                            bins_nb = bins_nb, 
+                            p_thresh = p_thresh,
                             bodyparts_to_store = bodyparts_to_store,
-                            trig_on_ev = trig_on_ev, three_dims = three_dims, 
-                            return_full_session = False, verbose = verbose)
+                            trig_on_ev = trig_on_ev, 
+                            three_dims = three_dims, 
+                            return_full_session = False, 
+                            verbose = verbose)
                                         
                     except UnboundLocalError:
                         print(f'No trial in any condition for subject {session.subject_ID} at: {session.datetime_string}')
