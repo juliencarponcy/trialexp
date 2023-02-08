@@ -32,6 +32,7 @@ from trialexp.utils.rsync import *
 from trialexp.dataset_classes.trial_dataset_classes import *
 
 Event = namedtuple('Event', ['time','name'])
+State = namedtuple('State', ['time','name'])
 
 # Custom type, assess usefulness
 NoneType = type(None)
@@ -134,7 +135,6 @@ class Session():
         self.task_name = os.path.basename(self.task_name)
 
 
-
         if int_subject_IDs: # Convert subject ID string to integer.
             self.subject_ID = int(''.join([i for i in subject_ID_string if i.isdigit()]))
         else:
@@ -158,6 +158,9 @@ class Session():
                       for event_name in ID2name.values()}
 
         self.print_lines = [line[2:] for line in all_lines if line[0]=='P']
+        
+        self.state_IDs = state_IDs
+        self.event_IDs = event_IDs
     
     def get_task_specs(self, tasksfile, trial_window, timelim):
         """
@@ -177,6 +180,7 @@ class Session():
         # match triggers (events/state used for t0)
         self.triggers = np.array2string(tasks_trig_and_events['triggers'][tasks_trig_and_events['task'] == 
             self.task_name].values).strip("'[]").split('; ')
+                
         # events to extract
         self.events_to_process = np.array2string(tasks_trig_and_events['events'][tasks_trig_and_events['task'] ==
             self.task_name].values).strip("'[]").split('; ')
@@ -243,7 +247,7 @@ class Session():
 
         self.df_events = df_events
         self.df_conditions = df_conditions
-
+        
         # return session objet
         return self
 
@@ -291,7 +295,7 @@ class Session():
         #print(all_trial_triggers_sorted)
         
         for ntrial, trigtime in enumerate(list(all_trial_times_sorted)):
-            
+                        
             # attribute trial_nb to event/conditions occuring around trigger (event/state)
             # if the loop is at the last trial
             if ntrial == len(all_trial_times_sorted)-1:
@@ -568,6 +572,8 @@ class Session():
 
                 self = self.extract_data_from_session()
                 self = self.compute_trial_nb(trial_window)
+                
+                
                 if blank_spurious_event is not None:
                     self.df_events[blank_spurious_event + '_trial_time'] = \
                         self.df_events[blank_spurious_event + '_trial_time'].apply(lambda x: blank_spurious_detection(x, blank_timelim))
@@ -2131,7 +2137,7 @@ class Experiment():
             # the index number of previous elements in the sessions list)
             for r in sorted(sessions_idx_to_remove, reverse = True):
                 print('Deleting: ', self.sessions[r].subject_ID, self.sessions[r].datetime, self.sessions[r].task_name)
-                del self.sessions[r]
+                # del self.sessions[r]
 
         # signal that the Experiment has been analyzed by trial
         self.by_trial = True
