@@ -1272,6 +1272,12 @@ class Continuous_Dataset(Trials_Dataset):
         
         vars_dict, time_vec = self.check_vars_and_times_input(vars, time_unit)
 
+
+        if not hasattr(self, 'cond_aliases'):
+            present_cond_IDs = list(set(self.metadata_df[self.metadata_df.keep == True].condition_ID.values))
+            self.cond_aliases = present_cond_IDs
+
+
         # Do not take trials/subjects filtered out
         filtered_df = self.metadata_df[self.metadata_df['keep'] == True]
         # Perform grouping, this could be customized later
@@ -1298,9 +1304,9 @@ class Continuous_Dataset(Trials_Dataset):
                 fig.suptitle(fig_title)
                 for row_idx, (var_name, col_idx) in enumerate(vars_dict.items()):
 
-                    for condition_ID in condition_IDs:
+                    for cond_idx, condition_ID in enumerate(condition_IDs):
                         
-                        subplot_title = f'{var_name} - {self.cond_aliases[condition_ID]}'
+                        subplot_title = f'{var_name} - {self.cond_aliases[cond_idx]}'
                         data = self.data[gby.loc[(group_ID, subject_ID, condition_ID), 'trial_ID'], col_idx, :]
                         if clim_pctile:
                             vmin = np.percentile(data, clim_pctile)
@@ -1309,9 +1315,9 @@ class Continuous_Dataset(Trials_Dataset):
                             vmin = data.min()
                             vmax = data.max()
 
-                        axs[row_idx, condition_ID].set_title(subplot_title)
+                        axs[row_idx, cond_idx].set_title(subplot_title)
 
-                        axs[row_idx, condition_ID].pcolormesh(
+                        axs[row_idx, cond_idx].pcolormesh(
                             self.get_time_vector(),
                             range(data.shape[0]), #gby.loc[(group_ID, subject_ID, condition_ID), 'trial_ID'],
                             data,
@@ -1320,7 +1326,7 @@ class Continuous_Dataset(Trials_Dataset):
                             vmax=vmax)
                         
                         if time_lim:
-                            axs[row_idx, condition_ID].set_xlim([time_lim[0], time_lim[1]])
+                            axs[row_idx, cond_idx].set_xlim([time_lim[0], time_lim[1]])
 
 
 class Event_Dataset(Trials_Dataset):
