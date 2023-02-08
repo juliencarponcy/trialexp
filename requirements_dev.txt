@@ -16,6 +16,7 @@ numpy==1.21.6
 scipy<1.9
 
 pandas>=1.4.1
+tables
 
 spikeinterface
 

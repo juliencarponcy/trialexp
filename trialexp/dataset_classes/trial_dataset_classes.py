@@ -852,7 +852,7 @@ class Continuous_Dataset(Trials_Dataset):
             dpi: int = 100,
             box: bool = False,
             linex0: bool = True,
-            liney0:bool = True, # draw horizontal gray dashed line at y = 0
+            liney0: bool = True, # draw horizontal gray dashed line at y = 0
             legend: bool = True,
             axs: Axes = None,
             verbose: bool = False):
@@ -1272,6 +1272,12 @@ class Continuous_Dataset(Trials_Dataset):
         
         vars_dict, time_vec = self.check_vars_and_times_input(vars, time_unit)
 
+
+        if not hasattr(self, 'cond_aliases'):
+            present_cond_IDs = list(set(self.metadata_df[self.metadata_df.keep == True].condition_ID.values))
+            self.cond_aliases = present_cond_IDs
+
+
         # Do not take trials/subjects filtered out
         filtered_df = self.metadata_df[self.metadata_df['keep'] == True]
         # Perform grouping, this could be customized later
@@ -1298,9 +1304,9 @@ class Continuous_Dataset(Trials_Dataset):
                 fig.suptitle(fig_title)
                 for row_idx, (var_name, col_idx) in enumerate(vars_dict.items()):
 
-                    for condition_ID in condition_IDs:
+                    for cond_idx, condition_ID in enumerate(condition_IDs):
                         
-                        subplot_title = f'{var_name} - {self.cond_aliases[condition_ID]}'
+                        subplot_title = f'{var_name} - {self.cond_aliases[cond_idx]}'
                         data = self.data[gby.loc[(group_ID, subject_ID, condition_ID), 'trial_ID'], col_idx, :]
                         if clim_pctile:
                             vmin = np.percentile(data, clim_pctile)
@@ -1309,9 +1315,9 @@ class Continuous_Dataset(Trials_Dataset):
                             vmin = data.min()
                             vmax = data.max()
 
-                        axs[row_idx, condition_ID].set_title(subplot_title)
+                        axs[row_idx, cond_idx].set_title(subplot_title)
 
-                        axs[row_idx, condition_ID].pcolormesh(
+                        axs[row_idx, cond_idx].pcolormesh(
                             self.get_time_vector(),
                             range(data.shape[0]), #gby.loc[(group_ID, subject_ID, condition_ID), 'trial_ID'],
                             data,
@@ -1320,7 +1326,7 @@ class Continuous_Dataset(Trials_Dataset):
                             vmax=vmax)
                         
                         if time_lim:
-                            axs[row_idx, condition_ID].set_xlim([time_lim[0], time_lim[1]])
+                            axs[row_idx, cond_idx].set_xlim([time_lim[0], time_lim[1]])
 
 
 class Event_Dataset(Trials_Dataset):
@@ -1996,6 +2002,19 @@ class Event_Dataset(Trials_Dataset):
         if conditions_IDs is None:
             conditions_IDs = [i for i, _ in enumerate(self.conditions)]
 
+            # detect conditions_IDs present in the dataset and remove the conditions if
+            # the condition_ID is not present in the dataset
+            present_cond_IDs = set(self.metadata_df[self.metadata_df.keep == True].condition_ID.values)
+            new_cond_ID_list = conditions_IDs.copy()
+            for condition_ID in conditions_IDs:
+                if condition_ID not in present_cond_IDs:
+                    new_cond_ID_list.remove(condition_ID)
+            conditions_IDs = new_cond_ID_list
+
+        if self.cond_aliases is None:
+            present_cond_IDs = list(set(self.metadata_df[self.metadata_df.keep == True].condition_ID.values))
+            self.cond_aliases = [set(self.metadata_df[(self.metadata_df.keep == True) & (self.metadata_df.condition_ID == present_cond_IDs[present_cond_idx])].trigger.values) for present_cond_idx, _ in enumerate(present_cond_IDs)]
+        
         if self.time_unit == 's' or self.time_unit == 'seconds': 
             trial_window_s = [ float(x) for x in self.trial_window]
         elif self.time_unit == 'ms' or self.time_unit == 'milliseconds': 
@@ -2093,7 +2112,8 @@ class Event_Dataset(Trials_Dataset):
             assert len(colors) == len(event_cols)
 
 
-        for condition_ID in conditions_IDs:
+        for cond_idx, condition_ID in enumerate(conditions_IDs):
+
 
             df_subset = self.data.loc[(self.metadata_df['condition_ID'] == condition_ID) & (
                 self.metadata_df['keep']), :]  # only include keep
@@ -2132,22 +2152,22 @@ class Event_Dataset(Trials_Dataset):
                 Y = np.concatenate(Y, axis=1)
 
                 if module == 'matplotlib':
-                    L_ = ax[ev_idx][condition_ID].plot(
+                    L_ = ax[ev_idx][cond_idx].plot(
                         X, Y, '-', color=colors[ev_idx_], linewidth=0.5, label = event_col)
 
                     if (L[ev_idx_] is None) & (bool(L_)):
                         L[ev_idx_] = L_[0]
                     
-                    ax[ev_idx][condition_ID].set_ylim(0,df_subset.shape[0] )
-                    ax[ev_idx][condition_ID].set_xlim(trial_window_s)
+                    ax[ev_idx][cond_idx].set_ylim(0,df_subset.shape[0] )
+                    ax[ev_idx][cond_idx].set_xlim(trial_window_s)
 
                     if separate:
-                        ax[ev_idx][condition_ID].set_ylabel('Trials: ' + event_name_stem)
+                        ax[ev_idx][cond_idx].set_ylabel('Trials: ' + event_name_stem)
                     else:
-                        ax[ev_idx][condition_ID].set_ylabel('Trials')
+                        ax[ev_idx][cond_idx].set_ylabel('Trials')
 
-                    ax[ev_idx][condition_ID].spines['top'].set_visible(False)
-                    ax[ev_idx][condition_ID].spines['right'].set_visible(False)
+                    ax[ev_idx][cond_idx].spines['top'].set_visible(False)
+                    ax[ev_idx][cond_idx].spines['right'].set_visible(False)
                 elif module == 'plotly':
                     #see https://plotly.com/python/line-charts/#connect-data-gaps
                     # convert 2 x n array to 1 x 3n vector with NaN as a separater 
@@ -2187,12 +2207,12 @@ class Event_Dataset(Trials_Dataset):
                         )                        
 
                 if module == 'matplotlib':
-                    ax[0][condition_ID].set_title(self.cond_aliases[condition_ID])
+                    ax[0][cond_idx].set_title(self.cond_aliases[cond_idx])
 
-                    ax[ev_idx][condition_ID].set_xlabel('Time (s)')
+                    ax[ev_idx][cond_idx].set_xlabel('Time (s)')
 
                     if not separate:
-                        ax[ev_idx][condition_ID].legend(handles = [ln for ln in L if ln is not None], 
+                        ax[ev_idx][cond_idx].legend(handles = [ln for ln in L if ln is not None], 
                             bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left",
                             mode='expand', ncol=1)
                 elif module == 'plotly':

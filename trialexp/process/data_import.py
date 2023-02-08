@@ -9,6 +9,7 @@ import re
 import datetime
 import warnings
 import datetime
+import itertools
 
 from collections import namedtuple
 from operator import itemgetter
@@ -2255,6 +2256,14 @@ class Experiment():
 
         if isinstance(conditions_list, dict):
             conditions_list = [conditions_list]
+        # construct a list of dict of "all-inclusive" conditions
+        elif not conditions_list:
+            all_trigs = [session.triggers for session in self.sessions if hasattr(session, 'triggers')]
+            all_trigs = set(itertools.chain.from_iterable(all_trigs))
+            conditions_list=[]
+            for trig_idx, trig in enumerate(all_trigs):
+                conditions_list.append(dict())
+                conditions_list[trig_idx]['trigger'] = trig
 
         df_events_exp = pd.DataFrame()
         df_conditions_exp = pd.DataFrame()
@@ -2298,8 +2307,13 @@ class Experiment():
                     #
                     events_aggreg = pd.DataFrame()
                     for cond_ID, conditions_dict in enumerate(conditions_list):
-                        
-                        if trig_on_ev:
+                        # detect triggers present in the session and skip conditions if
+                        # the trigger is not present in the session
+                        trigs = set(session.df_conditions.trigger.values)
+                        if conditions_dict['trigger'] not in trigs:
+                            continue
+
+                        if trig_on_ev and conditions_dict['trigger'] in session.triggers:
                             idx_joint, trials_times, first_ev_times = session.get_trials_times_from_conditions(
                                 conditions_dict = conditions_dict,
                                 trig_on_ev = trig_on_ev, output_first_ev = True)
@@ -2315,7 +2329,7 @@ class Experiment():
                                     df_ev_cond.at[row.Index, col_name] = np.array(row[col_idxs[c]]) - first_ev_times[row.Index]
 
                             events_aggreg = pd.concat([events_aggreg,df_ev_cond])
-                        else: 
+                        elif conditions_dict['trigger'] in session.triggers: 
                             idx_joint, trials_times = session.get_trials_times_from_conditions(
                                 conditions_dict = conditions_dict,
                                 trig_on_ev = trig_on_ev,  output_first_ev = False)
@@ -2575,13 +2589,20 @@ class Experiment():
 
                     try:
                         df_meta_dlc, col_names_numpy, dlc_array = session.get_deeplabcut_trials(
-                            conditions_list = conditions_list, cond_aliases = cond_aliases,
-                            camera_fps = camera_fps, camera_keyword = camera_keyword,
-                            bodyparts_to_ave = bodyparts_to_ave, names_of_ave_regions = names_of_ave_regions,
-                            normalize_between = normalize_between, bins_nb = bins_nb, p_thresh = p_thresh,
+                            conditions_list = conditions_list, 
+                            cond_aliases = cond_aliases,
+                            camera_fps = camera_fps, 
+                            camera_keyword = camera_keyword,
+                            bodyparts_to_ave = bodyparts_to_ave, 
+                            names_of_ave_regions = names_of_ave_regions,
+                            normalize_between = normalize_between, 
+                            bins_nb = bins_nb, 
+                            p_thresh = p_thresh,
                             bodyparts_to_store = bodyparts_to_store,
-                            trig_on_ev = trig_on_ev, three_dims = three_dims, 
-                            return_full_session = False, verbose = verbose)
+                            trig_on_ev = trig_on_ev, 
+                            three_dims = three_dims, 
+                            return_full_session = False, 
+                            verbose = verbose)
                                         
                     except UnboundLocalError:
                         print(f'No trial in any condition for subject {session.subject_ID} at: {session.datetime_string}')
