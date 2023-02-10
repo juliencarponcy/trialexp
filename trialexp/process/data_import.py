@@ -706,11 +706,14 @@ class Session():
         elif self.task_name in ['reaching_go_spout_bar_dual_all_reward_dec22', 
             'reaching_go_spout_bar_dual_dec22', 'reaching_go_spout_bar_nov22', 'reaching_go_spout_nov22']:
 
-            hold_success = self.df_events.loc[
-                (self.df_events[self.df_conditions.trigger == 'hold_for_water'].index),['spout_trial_time','US_end_timer_trial_time']].apply(
+            reach_time_before_reward = self.df_events.loc[:,['spout_trial_time','US_end_timer_trial_time']].apply(
                     lambda x: find_last_time_before_list(x['spout_trial_time'], x['US_end_timer_trial_time']), axis=1)    
-            hold_success_idx = hold_success[hold_success.notnull()].index
-            self.df_conditions.loc[(hold_success_idx), 'success'] = True
+            # select only trials with a spout event before a US_end_timer event
+            reach_bool = reach_time_before_reward.notnull()
+            # select trial where the hold time was present (not aborted)
+            reach_success_bool = reach_bool & self.df_conditions.waiting_for_spout
+            # set these trials as successful
+            self.df_conditions.loc[(reach_success_bool), 'success'] = True
 
 
         # Reorder columns putting trigger, valid and success first for more clarity
@@ -2088,8 +2091,14 @@ class Experiment():
         return valid_sessions
 
 
-    def process_exp_by_trial(self, trial_window: list, timelim: list,
-            tasksfile: str, blank_spurious_event: list = None, blank_timelim: list = [0, 60], verbose = False):
+    def process_exp_by_trial(
+            self,
+            trial_window: list,
+            timelim: list = None, # consider deprecating in new methods, that was mostly for old tasks and way of doing things
+            tasksfile: str = None, # normally the full path of params\tasks_params.csv in this repo, won't work with None
+            blank_spurious_event: list = None, 
+            blank_timelim: list = [0, 60], 
+            verbose = False):
         """
         ARGUMENTS
         ---------
@@ -2104,6 +2113,8 @@ class Experiment():
             full filepath of tasks_params.csv in this repo
         blank_spurious_event: list = None, 
             Name(s) of event as to which spurious events will be discared within blank_timelim
+            this was used as sometimes solenoid activation was triggering 50Hz style detection / false detection
+            on the bar or spout sensor as an electical artifact of some sort
         blank_timelim: list = [0, 60],     reflecting v.spout_detect_timeout
             Set time window to discard spurious events around blank_spurious_event
         verbose = False

@@ -1931,9 +1931,16 @@ class Event_Dataset(Trials_Dataset):
 
         return gr_df, out_list, ax, im1
     
-    def plot_raster(self, keys: list = None, conditions_IDs : list = None, separate: bool = True, colors : list = 'default',
-        module: str = 'matplotlib',
-        raster_y: str = 'trial', target: np.array = None):
+    def plot_raster(
+            self, 
+            keys: list = None, 
+            conditions_IDs : list = None, 
+            separate: bool = True, 
+            colors : list = 'default',
+            module: str = 'matplotlib',
+            raster_y: str = 'trial',
+            x_lim: list = None, 
+            target: np.array = None):
         """
         Raster plot for Event_Dataset
         # TODO introduce separation between conditions instead of/alternative to triggers
@@ -2016,9 +2023,10 @@ class Event_Dataset(Trials_Dataset):
             present_cond_IDs = list(set(self.metadata_df[self.metadata_df.keep == True].condition_ID.values))
             self.cond_aliases = [set(self.metadata_df[(self.metadata_df.keep == True) & (self.metadata_df.condition_ID == present_cond_IDs[present_cond_idx])].trigger.values) for present_cond_idx, _ in enumerate(present_cond_IDs)]
         
+        # This assume that trial_window is in ms when no unit specified at Exp construction (might not be the case)
         if self.time_unit == 's' or self.time_unit == 'seconds': 
             trial_window_s = [ float(x) for x in self.trial_window]
-        elif self.time_unit == 'ms' or self.time_unit == 'milliseconds': 
+        elif not self.time_unit or self.time_unit == 'ms' or self.time_unit == 'milliseconds': 
             trial_window_s = [ float(x)/1000 for x in self.trial_window]
 
         if separate:
@@ -2211,11 +2219,15 @@ class Event_Dataset(Trials_Dataset):
                     ax[0][cond_idx].set_title(self.cond_aliases[cond_idx])
 
                     ax[ev_idx][cond_idx].set_xlabel('Time (s)')
-
+                    
+                    if x_lim:              
+                        ax[ev_idx][cond_idx].set_xlim([x_lim[0], x_lim[1]])
+                    
                     if not separate:
                         ax[ev_idx][cond_idx].legend(handles = [ln for ln in L if ln is not None], 
                             bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left",
                             mode='expand', ncol=1)
+                                    
                 elif module == 'plotly':
                     
                     fig.update_xaxes(type='linear')

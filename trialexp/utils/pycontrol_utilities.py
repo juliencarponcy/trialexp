@@ -86,11 +86,11 @@ def find_matching_files(subject_ID, datetime_to_match, files_df, ext):
     # match_df = match_df.to_frame(name='matching_filename')
     if ~match_df.empty:
       
-        # A value is trying to be set on a copy of a slice from a DataFrame.
-        # Try using .loc[row_indexer, col_indexer] = value instead
+        # Compute time difference between the files
         match_df['timedelta'] = match_df['datetime'].apply(
             lambda x: abs(datetime_to_match-x))
 
+        # Take the file with the minimum time difference
         match_df = match_df[match_df['timedelta'] == match_df['timedelta'].min()]
         #print(match_df['timedelta'])
         match_df['timedelta'] = match_df['timedelta'].apply(lambda x: x.seconds)
