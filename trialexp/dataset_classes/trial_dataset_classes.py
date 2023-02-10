@@ -1300,7 +1300,8 @@ class Continuous_Dataset(Trials_Dataset):
             for subject_ID, subject_idx in subj_dict.items():
                 fig_title = f'{subject_ID}'
                 fig, axs = plt.subplots(len(vars), len(condition_IDs), sharex= 'all',
-                    sharey = 'row', squeeze = False , figsize = figsize)
+                    squeeze = False , figsize = figsize)
+                    # sharey = 'row', squeeze = False , figsize = figsize)
                 fig.suptitle(fig_title)
                 for row_idx, (var_name, col_idx) in enumerate(vars_dict.items()):
 
