@@ -11,7 +11,7 @@
 
 # 
 
-# In[1]:
+# In[ ]:
 
 
 # allow for automatic reloading of classes and function when updating the code
@@ -25,7 +25,7 @@ from trialexp.process.data_import import *
 
 # ### Variables
 
-# In[2]:
+# In[ ]:
 
 
 import pandas as pd
@@ -53,14 +53,14 @@ photometry_dir = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\kms_pyphotometry'
 video_dir = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\videos'
 
 
-# In[3]:
+# In[ ]:
 
 
 tasks = pd.read_csv(tasksfile, usecols=[1, 2, 3, 4], index_col=False)
 tasks
 
 
-# In[4]:
+# In[ ]:
 
 
 photo_root_dir = 'T:\\Data\\head-fixed\\pyphotometry\\data'
@@ -70,7 +70,7 @@ pycontrol_root_dir = 'T:\\Data\\head-fixed\\pycontrol'
 # ### Create an experiment object
 # 
 
-# In[5]:
+# In[ ]:
 
 
 # Folder of a full experimental batch, all animals included
@@ -96,7 +96,7 @@ smrx_folder_path = r'T:\Data\head-fixed\kms_pycontrol\smrx'
 
 # ## Select sessions
 
-# In[6]:
+# In[ ]:
 
 
 import datetime
@@ -110,19 +110,19 @@ ss_ = [this_ss for this_ss in ss
 ss_
 
 
-# In[7]:
+# In[ ]:
 
 
 exp_cohort.sessions = ss_
 
 
-# In[8]:
+# In[ ]:
 
 
 ss_
 
 
-# In[9]:
+# In[ ]:
 
 
 ss_[0].datetime.date()
@@ -130,7 +130,7 @@ ss_[0].datetime.date()
 
 # # SLOW 3m
 
-# In[10]:
+# In[ ]:
 
 
 # # Process the whole experimental folder by trials
@@ -158,13 +158,13 @@ ss_[0].datetime.date()
 # # exp_cohort.save()
 
 
-# In[11]:
+# In[ ]:
 
 
 exp_cohort.subject_IDs
 
 
-# In[12]:
+# In[ ]:
 
 
 # Many combinations possible
@@ -187,7 +187,7 @@ groups = None
 # Window to exctract (in ms)
 
 
-# In[13]:
+# In[ ]:
 
 
 exp_cohort.sessions[0].times.keys()
@@ -198,13 +198,13 @@ exp_cohort.sessions[0].times.keys()
 # I realised that this plot can never tell if a water drop was triggered by bar_off or spout.
 # 
 
-# In[14]:
+# In[ ]:
 
 
 exp_cohort.sessions[0].print_lines[0:30]
 
 
-# In[15]:
+# In[ ]:
 
 
 import re
@@ -222,7 +222,7 @@ int(a[0].group(0))
 
 
 
-# In[16]:
+# In[ ]:
 
 
 for ss in exp_cohort.sessions:
@@ -233,7 +233,7 @@ for ss in exp_cohort.sessions:
 # 
 # # export
 
-# In[22]:
+# In[ ]:
 
 
 keys = [
@@ -289,75 +289,5 @@ for ss in exp_cohort.sessions:
                 ignore_index=True)
     except Exception as err:
         print(f"Unexpected {err=}, {type(err)=}, for {file_name_}")
-
-
-
-# ## trouble shooting for 314
-# 
-# error is in event channel
-# 
-# which channel?
-# ReadEvents seems working for the first 10 divides at least
-
-# In[ ]:
-
-
-keys = [
-        'button_press', 'bar', 'bar_off', 'spout', 'US_delay_timer', 'CS_offset_timer']
-state_def = [{'name': 'hold_for_water', 'onset': 'hold_for_water', 'offset': 'waiting_for_spout'},
-                    {'name': 'waiting_for_spout', 'onset': 'waiting_for_spout',
-                    'offset': 'busy_win'},
-                    {'name': 'busy_win', 'onset': 'busy_win',
-                        'offset': 'break_after_water'},
-                    {'name': 'break_after_water', 'onset': 'break_after_water',    'offset': 'waiting_for_bar'},
-                    {'name': 'break_after_no_water',       'onset': 'break_after_no_water', 'offset': 'waiting_for_bar'}]
-summary_df = pd.DataFrame()
-
-for ss in [exp_cohort.sessions[0]]:
-    smrxname = re.sub('\.txt', f'_{ss.task_name}.smrx', ss.file_name)
-    print(smrxname)
-
-
-    bw = ss.times['busy_win']
-    sp = ss.times['spout']
-
-    x_spout = [this_bw for this_bw in bw for spouts in sp if (
-        spouts < this_bw) and (this_bw - spouts < 100)]
-
-    x_bar = [this_bw for this_bw in bw if not any(
-        [(spouts < this_bw) and (this_bw - spouts < 100) for spouts in sp])]
-        
-    event_ms = [{
-        'name': 'triggered by spout',
-        'time_ms': x_spout
-    },
-        {
-            'name': 'triggered by bar_off',
-            'time_ms': x_bar
-    }
-    ]
-
-    if re.search('11\-23',ss.file_name): #adapt to a bug 
-        state_def[-1]['offset'] = 'wating_for_bar'
-    else:
-        state_def[-1]['offset'] = 'waiting_for_bar'
-
-
-    ss.plot_session(
-        keys, state_def, export_smrx=True, event_ms=event_ms, srmx_filename= smrxname, verbose=True)
-
-    summary_df = summary_df.append({
-        'file':ss.file_name,
-        'task':ss.task_name,
-        'triggered_by_spout': len(x_spout),
-        'triggered_by_bar_off': len(x_bar),
-        'reaching_trials': len(bw),
-        'trials': len(ss.times['hold_for_water'])},
-        ignore_index=True)
-
-
-# In[ ]:
-
-
 
 
