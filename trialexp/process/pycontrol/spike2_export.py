@@ -6,6 +6,7 @@ from sonpy import lib as sp
 import time
 import re
 import numpy as np
+import os
 
 class Spike2Exporter:
     
@@ -164,4 +165,8 @@ class Spike2Exporter:
                 
     def __del__(self):
         del self.MyFile
-        print(f'saved {self.smrx_filename}')
+        # check if the file save is successful
+        if os.path.isfile(self.smrx_filename):
+            print(f'saved {self.smrx_filename}')
+        else:
+            print('save failed. Please make sure the folder path exists')
