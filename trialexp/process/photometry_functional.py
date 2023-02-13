@@ -7,7 +7,7 @@ from trialexp.utils.rsync import *
 
 
 
-def get_photometry_trials(self,
+def get_photometry_trials(
             conditions_list: list = None,
             cond_aliases: list = None,
             trial_window: list = None,
@@ -222,8 +222,7 @@ def get_trials_times_from_conditions(
         self,
         conditions_dict: dict = None, 
         trig_on_ev: str = None,
-        last_before: str = None, 
-        output_first_ev: bool = False):
+        last_before: str = None):
     '''
     Get the indices and timestamps of the trials matching a set dict of conditions,
     offsetted (or not) by the first (or last before) occurence of a particular event

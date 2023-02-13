@@ -702,9 +702,20 @@ class Session():
             # self.df_events.loc[np.hstack((cued_success_idx.values, uncued_success_idx.values)),'success'] = True
             print(self.task_name, self.subject_ID, self.datetime_string, len(cued_success_idx), len(uncued_success_idx))
 
+
+        elif self.task_name in ['reaching_go_spout_nov22']:
+            reach_time_before_reward = self.df_events.loc[:,['spout_trial_time','US_end_timer_trial_time']].apply(
+                lambda x: find_last_time_before_list(x['spout_trial_time'], x['US_end_timer_trial_time']), axis=1)    
+            # select only trials with a spout event before a US_end_timer event
+            reach_bool = reach_time_before_reward.notnull()
+            # select trial where the hold time was present (not aborted)
+            reach_success_bool = reach_bool & self.df_conditions.busy_win
+            # set these trials as successful
+            self.df_conditions.loc[(reach_success_bool), 'success'] = True
+
         # To perform for delayed tasks (check whether a US_end_timer was preceded by a spout)
         elif self.task_name in ['reaching_go_spout_bar_dual_all_reward_dec22', 
-            'reaching_go_spout_bar_dual_dec22', 'reaching_go_spout_bar_nov22', 'reaching_go_spout_nov22']:
+            'reaching_go_spout_bar_dual_dec22', 'reaching_go_spout_bar_nov22']:
 
             reach_time_before_reward = self.df_events.loc[:,['spout_trial_time','US_end_timer_trial_time']].apply(
                     lambda x: find_last_time_before_list(x['spout_trial_time'], x['US_end_timer_trial_time']), axis=1)    

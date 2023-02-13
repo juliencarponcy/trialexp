@@ -2,21 +2,20 @@
 
 import shutil
 
-from os.path import join, isfile
+from os.path import join, isfile, isdir
 from os import walk
 from datetime import datetime
 from re import search
 
+import numpy as np
+import pandas as pd
+
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-
-import numpy as np
-from pandas import Timestamp
-
 #----------------------------------------------------------------------------------
 # Plotting
 #----------------------------------------------------------------------------------
-
+# should move in a plotting module
 def plot_longitudinal(results, plot_individuals=True):
     fontsize = 12
     condition_IDs = results['condition_ID'].unique()
@@ -50,6 +49,46 @@ def plot_longitudinal(results, plot_individuals=True):
 #----------------------------------------------------------------------------------
 # Helpers
 #----------------------------------------------------------------------------------
+
+def match_sessions_to_files(experiment: Exp, files_dir, ext='mp4', verbose=False) -> str:
+    '''
+    Take an experiment instance and look for files within a directory
+    taken the same day as the session and containing the subject_ID,
+    store the filename(s) with the shortest timedelta compared to the
+    start of the session in exp.sessions[x].files["ext"] as a list
+    
+            Parameters:
+                    file_name (str): name of the file to look for
+                    files_dir (str): path of the directory to look into to find a match
+                    ext (str): extension used to filter files within a folder
+                        do not include the dot. e.g.: "mp4"
+
+            Returns:
+                    str (store list in sessions[x].file["ext"])
+    ''' 
+
+    # subject_IDs = [session.subject_ID for session in self.sessions]
+    # datetimes = [session.datetime for session in self.sessions]
+    files_list = [f for f in os.listdir(files_dir) if os.path.isfile(
+        os.path.join(files_dir, f)) and ext in f]
+
+    if len(files_list) == 0:
+        raise Exception(f'No files with the .{ext} extension where found in the following folder: {files_dir}')
+
+    files_df = pd.DataFrame(columns=['filename','datetime'])
+
+    files_df['filename'] = pd.DataFrame(files_list)
+    files_df['datetime'] = files_df['filename'].apply(lambda x: get_datetime_from_datestr(get_datestr_from_filename(x)))
+    # print(files_df['datetime'])
+    for s_idx, session in enumerate(self.sessions):
+        match_df = find_matching_files(session.subject_ID, session.datetime, files_df, ext)
+        if verbose:
+            print(session.subject_ID, session.datetime, match_df['filename'].values)
+        
+        if not hasattr(self.sessions[s_idx], 'files'):
+            self.sessions[s_idx].files = dict()
+        
+        self.sessions[s_idx].files[ext] = [os.path.join(files_dir, filepath) for filepath in match_df['filename'].to_list()]
 
 def find_matching_files(subject_ID, datetime_to_match, files_df, ext):
     """
@@ -123,6 +162,8 @@ def get_datestr_from_filename(filename: str):
         datestring will be later processed as a datetime
         
         Add more patterns as needed
+
+        Should be recoded with strftime possibly
     '''
 
     re_patterns = [

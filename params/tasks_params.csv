@@ -20,7 +20,7 @@
 18,pavlovian_nobar_nodelay,CS_Go,bar; bar_off; spout,,,,,,,,
 19,cued_uncued_oct22,Cued; UnCued,bar; bar_off; spout; reward_delay_timer,delayed reward spout cued; delayed reward spout uncued; error_trial; reward free_uncued; reward free; reward bar_off; reward bar uncued; button_press,,,,,,,
 20,go_rewarding_aversive,Go_water; Go_air,bar; bar_off; spout,free_reward; Go_water spout success; Go_air spout success; Go_air spout miss; Go_water bar success; Go_air bar success; spout,,,,,,,
-21,reaching_go_spout_nov22,hold_timer,bar; bar_off; spout; US_end_timer,US_end_timer; water_on; water success; busy_win_timer; spout; button_press; hold_timer,,,,,,,
+21,reaching_go_spout_nov22,busy_win,bar; bar_off; spout; US_end_timer,US_end_timer; water_on; Success:True; Success:False; busy_win; spout; button_press; hold_timer,,,,,,,
 22,reaching_go_spout_nov22_timewin,hold_for_water,bar; bar_off; spout; button_release; US_end_timer,US_end_timer; water by bar_off; water by spout; water for free; water success; water_on; busy_win_timer; spout; button_press; waiting_for_spout,,,,,,,
 23,reaching_go_spout_bar_nov22,hold_for_water,bar; bar_off; spout; US_end_timer,US_end_timer; water_on; water by bar_off; water by spout; water for free; water success; busy_win_timer; spout; button_press; waiting_for_spout,,,,,,,
 24,reaching_go_spout_bar_dual_dec22,hold_for_water,bar; bar_off; spout; US_end_timer,US_end_timer; break_after_abort; water_on; water by bar_off; water by spout; water for free; water success; button_press; busy_win_timer; spout; waiting_for_spout,,,,,,,
