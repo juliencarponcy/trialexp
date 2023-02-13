@@ -29,5 +29,7 @@ dependencies:
   - scikit-learn
   - seaborn
   - papermill
+  - plotly
+  - sonpy
   - pip:
     - "-e setup.py"
