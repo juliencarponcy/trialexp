@@ -27,5 +27,7 @@ dependencies:
   - pandas
   - statsmodels
   - scikit-learn
+  - seaborn
+  - papermill
   - pip:
     - "-e setup.py"
