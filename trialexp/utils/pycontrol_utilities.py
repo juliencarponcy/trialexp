@@ -53,6 +53,11 @@ def plot_longitudinal(results, plot_individuals=True):
 
 def match_sessions_to_files(experiment, files_dir, ext='mp4', verbose=False) -> str:
     '''
+    Refactoring note: need to be implemented as a standalone method for single
+    py control files but would probably be much slower as it will have to 
+    constantly browse folders of other data modalities to list all the files. 
+    Can be useful as is for data reorganization purposes.
+    
     Take an experiment instance and look for files within a directory
     taken the same day as the session and containing the subject_ID,
     store the filename(s) with the shortest timedelta compared to the
@@ -91,12 +96,15 @@ def match_sessions_to_files(experiment, files_dir, ext='mp4', verbose=False) -> 
         
         experiment.sessions[s_idx].files[ext] = [join(files_dir, filepath) for filepath in match_df['filename'].to_list()]
 
+    return experiment
+
 def find_matching_files(subject_ID, datetime_to_match, files_df, ext):
     """
     Helper function for match_sessions_to_files, find files with
     the same subject_ID in the filename, and taken the same day
     as the pycontrol session, return the file(s) with the shortest
     timedelta compared to the start of the session.
+    
     
             Parameters:
                     subject_ID (int): from session.subject_ID (need to be converted
@@ -158,13 +166,17 @@ def get_datetime_from_datestr(datestr: str):
 
 def get_datestr_from_filename(filename: str):
     '''   
+        PyControl and other files like videos and DLC data may
+        have different date formats in their filenames.
+        The purpose of this function is to reconcile these differences
+        
         list all the possible decimal format for date strings
         here the order of year month and date doesn't matter
         datestring will be later processed as a datetime
         
         Add more patterns as needed
 
-        Should be recoded with strftime possibly
+        Should be refactored with strftime possibly
     '''
 
     re_patterns = [
@@ -174,9 +186,9 @@ def get_datestr_from_filename(filename: str):
         ]
     
     # loop over all the date patterns to find a match
-    for idx, redate in enumerate(re_patterns):
+    for re_date in re_patterns:
         # print(idx)
-        match_str = search(redate, filename)
+        match_str = search(re_date, filename)
         if match_str:
             break
     
@@ -249,6 +261,8 @@ def find_max_time_list(x):
 
     return max_time
 
+# Make use of timelim former param for success definition (if event found within specified limits), 
+# expected to possibly be legacy/deprecated method. But could be useful for some cases?
 def find_if_event_within_timelim(df_item, timelim):
     if isinstance(df_item, list):
         within_lim = any(ele >= timelim[0] and ele <= timelim[1] for ele in df_item)

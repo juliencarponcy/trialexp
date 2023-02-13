@@ -21,6 +21,37 @@ from trialexp.utils.rsync import *
 
 
 #----------------------------------------------------------------------------------
+# Get photometry data by trials
+#----------------------------------------------------------------------------------
+
+#----------------------------------------------------------------------------------
+# Filtering / Motion correction / resampling 
+#----------------------------------------------------------------------------------
+
+
+def motion_correction():
+    ...
+
+#----------------------------------------------------------------------------------
+# Filtering / Motion correction / resampling 
+#----------------------------------------------------------------------------------
+
+def median_filtering(data, medfilt_size: int = 3) -> np.ndarray:
+    if medfilt_size % 2 == 0:
+        raise Exception('medfilt_size must be an odd number') 
+    data = medfilt(data,medfilt_size)
+    return data
+
+def get_filt_coefs(low_pass: int = None, high_pass: int = None, sampling_rate = 1000):
+    if low_pass and high_pass:
+        b, a = butter(2, np.array([high_pass, low_pass])/(0.5*sampling_rate), 'bandpass')
+    elif low_pass:
+        b, a = butter(2, low_pass/(0.5*sampling_rate), 'low')
+    elif high_pass:
+        b, a = butter(2, high_pass/(0.5*sampling_rate), 'high')
+    return b,a
+
+#----------------------------------------------------------------------------------
 # Helpers
 #----------------------------------------------------------------------------------
 
@@ -42,44 +73,101 @@ def fit_exp_func(data, fs: int = 100, medfilt_size: int = 3) -> np.ndarray:
     fitted_data = exp_func(time, * fit_params)
 
     return fitted_data
+
+
 #----------------------------------------------------------------------------------
-# Processing helper
+# Load analog data
 #----------------------------------------------------------------------------------
 
-def compute_PCA(
-        data: np.ndarray
-    ):
-    
-    scaler = StandardScaler()
-    pca = PCA(0.7, random_state=33)
-    pca.fit(scaler.fit_transform(X.iloc[past_id]))
-    
-    Xt = pca.inverse_transform(
-        pca.transform(
-            scaler.transform(X.iloc[future_id])
-        ))
+def import_ppd(file_path, low_pass=20, high_pass=0.01, medfilt_size=None):
+    '''Function to import pyPhotometry binary data files into Python. The high_pass 
+    and low_pass arguments determine the frequency in Hz of highpass and lowpass 
+    filtering applied to the filtered analog signals. To disable highpass or lowpass
+    filtering set the respective argument to None.  Returns a dictionary with the 
+    following items:
+        'subject_ID'    - Subject ID
+        'date_time'     - Recording start date and time (ISO 8601 format string)
+        'mode'          - Acquisition mode
+        'sampling_rate' - Sampling rate (Hz)
+        'LED_current'   - Current for LEDs 1 and 2 (mA)
+        'version'       - Version number of pyPhotometry
+        'analog_1'      - Raw analog signal 1 (volts)
+        'analog_2'      - Raw analog signal 2 (volts)
+        'analog_1_filt' - Filtered analog signal 1 (volts)
+        'analog_2_filt' - Filtered analog signal 2 (volts)
+        'digital_1'     - Digital signal 1
+        'digital_2'     - Digital signal 2
+        'pulse_inds_1'  - Locations of rising edges on digital input 1 (samples).
+        'pulse_inds_2'  - Locations of rising edges on digital input 2 (samples).
+        'pulse_times_1' - Times of rising edges on digital input 1 (ms).
+        'pulse_times_2' - Times of rising edges on digital input 2 (ms).
+        'time'          - Time of each sample relative to start of recording (ms)
+    '''
+    with open(file_path, 'rb') as f:
+        header_size = int.from_bytes(f.read(2), 'little')
+        data_header = f.read(header_size)
+        data = np.frombuffer(f.read(), dtype=np.dtype('<u2'))
+    # Extract header information
+    header_dict = json.loads(data_header)
+    volts_per_division = header_dict['volts_per_division']
+    sampling_rate = header_dict['sampling_rate']
+    # Extract signals.
+    analog  = data >> 1                     # Analog signal is most significant 15 bits.
+    digital = ((data & 1) == 1).astype(int) # Digital signal is least significant bit.
+    # Alternating samples are signals 1 and 2.
+    analog_1 = analog[ ::2] * volts_per_division[0]
+    analog_2 = analog[1::2] * volts_per_division[1]
+    digital_1 = digital[ ::2]
+    digital_2 = digital[1::2]
+    time = np.arange(analog_1.shape[0])*1000/sampling_rate # Time relative to start of recording (ms).
 
-
-def dbscan_anomaly_detection(data):
-
-    ### DBSCAN ANOMALY DETECTION ###
-
-    network_ano = {}
-    dbscan = DBSCAN(eps=0.6, min_samples=1, metric="precomputed")
-
-    for trial_idx in range(data.shape[0]+1):
-    
-        trial = data[trial_idx, :,:].squeeze()
-        preds = dbscan.fit_predict(
-            pairwise_distances(trial, metric='correlation')
-        )
-        if (preds > 0).any():
-            ano_features = list(X.columns[np.where(preds > 0)[0]])
-            network_ano[past_id[-1]] = ano_features
-        else:
-            network_ano[past_id[-1]] = None
-
+    if low_pass or high_pass:
+        # Filter signals with specified high and low pass frequencies (Hz).
+        b, a = get_filt_coefs(low_pass, high_pass, sampling_rate)
         
+        if medfilt_size:
+            analog_1_medfilt = median_filtering(analog_1, medfilt_size = medfilt_size)
+            analog_2_medfilt = median_filtering(analog_2, medfilt_size = medfilt_size)
+            analog_1_filt = filtfilt(b, a, analog_1_medfilt)
+            analog_2_filt = filtfilt(b, a, analog_2_medfilt)
+            # analog_1_filt = sosfiltfilt(sos, analog_1_filt)
+            # analog_2_filt = sosfiltfilt(sos, analog_2_filt)   
+            # analog_1_filt = filtfilt(b, a, analog_1_medfilt, padlen = len(analog_1)-1)
+            # analog_2_filt = filtfilt(b, a, analog_2_medfilt, padlen = len(analog_2)-1)
+        else:
+            analog_1_filt = filtfilt(b, a, analog_1)
+            analog_2_filt = filtfilt(b, a, analog_2)
+    else:
+        if medfilt_size:
+            analog_1_filt = median_filtering(analog_1, medfilt_size = medfilt_size)
+            analog_2_filt = median_filtering(analog_2, medfilt_size = medfilt_size)  
+        else:
+            analog_1_filt = analog_2_filt = None
+    # Extract rising edges for digital inputs.
+    pulse_inds_1 = 1+np.where(np.diff(digital_1) == 1)[0]
+    pulse_inds_2 = 1+np.where(np.diff(digital_2) == 1)[0]
+    pulse_times_1 = pulse_inds_1*1000/sampling_rate
+    pulse_times_2 = pulse_inds_2*1000/sampling_rate
+    # Return signals + header information as a dictionary.
+    data_dict = {'analog_1'      : analog_1,
+                 'analog_2'      : analog_2,
+                 'analog_1_filt' : analog_1_filt,
+                 'analog_2_filt' : analog_2_filt,
+                 'digital_1'     : digital_1,
+                 'digital_2'     : digital_2,
+                 'pulse_inds_1'  : pulse_inds_1,
+                 'pulse_inds_2'  : pulse_inds_2,
+                 'pulse_times_1' : pulse_times_1,
+                 'pulse_times_2' : pulse_times_2,
+                 'time'          : time}
+    data_dict.update(header_dict)
+    return data_dict
+
+
+#----------------------------------------------------------------------------------
+# From here, legacy methods which will be probably deprecated in the future
+#----------------------------------------------------------------------------------
+
 
 def find_n_gaussians(
         data: np.ndarray,
@@ -196,103 +284,42 @@ def find_n_gaussians(
         plt.show()
 
     return n_best+1
+
 #----------------------------------------------------------------------------------
-# Load analog data
+# Processing helper
 #----------------------------------------------------------------------------------
 
-def import_ppd(file_path, low_pass=20, high_pass=0.01, median_filt=None):
-    '''Function to import pyPhotometry binary data files into Python. The high_pass 
-    and low_pass arguments determine the frequency in Hz of highpass and lowpass 
-    filtering applied to the filtered analog signals. To disable highpass or lowpass
-    filtering set the respective argument to None.  Returns a dictionary with the 
-    following items:
-        'subject_ID'    - Subject ID
-        'date_time'     - Recording start date and time (ISO 8601 format string)
-        'mode'          - Acquisition mode
-        'sampling_rate' - Sampling rate (Hz)
-        'LED_current'   - Current for LEDs 1 and 2 (mA)
-        'version'       - Version number of pyPhotometry
-        'analog_1'      - Raw analog signal 1 (volts)
-        'analog_2'      - Raw analog signal 2 (volts)
-        'analog_1_filt' - Filtered analog signal 1 (volts)
-        'analog_2_filt' - Filtered analog signal 2 (volts)
-        'digital_1'     - Digital signal 1
-        'digital_2'     - Digital signal 2
-        'pulse_inds_1'  - Locations of rising edges on digital input 1 (samples).
-        'pulse_inds_2'  - Locations of rising edges on digital input 2 (samples).
-        'pulse_times_1' - Times of rising edges on digital input 1 (ms).
-        'pulse_times_2' - Times of rising edges on digital input 2 (ms).
-        'time'          - Time of each sample relative to start of recording (ms)
-    '''
-    with open(file_path, 'rb') as f:
-        header_size = int.from_bytes(f.read(2), 'little')
-        data_header = f.read(header_size)
-        data = np.frombuffer(f.read(), dtype=np.dtype('<u2'))
-    # Extract header information
-    header_dict = json.loads(data_header)
-    volts_per_division = header_dict['volts_per_division']
-    sampling_rate = header_dict['sampling_rate']
-    # Extract signals.
-    analog  = data >> 1                     # Analog signal is most significant 15 bits.
-    digital = ((data & 1) == 1).astype(int) # Digital signal is least significant bit.
-    # Alternating samples are signals 1 and 2.
-    analog_1 = analog[ ::2] * volts_per_division[0]
-    analog_2 = analog[1::2] * volts_per_division[1]
-    digital_1 = digital[ ::2]
-    digital_2 = digital[1::2]
-    time = np.arange(analog_1.shape[0])*1000/sampling_rate # Time relative to start of recording (ms).
-    # Filter signals with specified high and low pass frequencies (Hz).
-    if low_pass and high_pass:
-        b, a = butter(2, np.array([high_pass, low_pass])/(0.5*sampling_rate), 'bandpass')
-    elif low_pass:
-        b, a = butter(2, low_pass/(0.5*sampling_rate), 'low')
-    elif high_pass:
-        b, a = butter(2, high_pass/(0.5*sampling_rate), 'high')
-
-    # sosfilt
-    # if low_pass and high_pass:
-    #     sos = butter(2, np.array([high_pass, low_pass])/(0.5*sampling_rate), 'bandpass', output='sos')
-    # elif low_pass:
-    #     sos = butter(2, low_pass/(0.5*sampling_rate), 'low', output='sos')
-    # elif high_pass:
-    #     sos = butter(2, high_pass/(0.5*sampling_rate), 'high', output='sos')
+def compute_PCA(
+        data: np.ndarray
+    ):
+    
+    scaler = StandardScaler()
+    pca = PCA(0.7, random_state=33)
+    pca.fit(scaler.fit_transform(X.iloc[past_id]))
+    
+    Xt = pca.inverse_transform(
+        pca.transform(
+            scaler.transform(X.iloc[future_id])
+        ))
 
 
-    if low_pass or high_pass:
-        if median_filt:
-            analog_1_medfilt = medfilt(analog_1, kernel_size=median_filt)
-            analog_2_medfilt = medfilt(analog_2, kernel_size=median_filt)
-            analog_1_filt = filtfilt(b, a, analog_1_medfilt)
-            analog_2_filt = filtfilt(b, a, analog_2_medfilt)
-            # analog_1_filt = sosfiltfilt(sos, analog_1_filt)
-            # analog_2_filt = sosfiltfilt(sos, analog_2_filt)   
-            # analog_1_filt = filtfilt(b, a, analog_1_medfilt, padlen = len(analog_1)-1)
-            # analog_2_filt = filtfilt(b, a, analog_2_medfilt, padlen = len(analog_2)-1)
+def dbscan_anomaly_detection(data):
+
+    ### DBSCAN ANOMALY DETECTION ###
+
+    network_ano = {}
+    dbscan = DBSCAN(eps=0.6, min_samples=1, metric="precomputed")
+
+    for trial_idx in range(data.shape[0]+1):
+    
+        trial = data[trial_idx, :,:].squeeze()
+        preds = dbscan.fit_predict(
+            pairwise_distances(trial, metric='correlation')
+        )
+        if (preds > 0).any():
+            ano_features = list(X.columns[np.where(preds > 0)[0]])
+            network_ano[past_id[-1]] = ano_features
         else:
-            analog_1_filt = filtfilt(b, a, analog_1)
-            analog_2_filt = filtfilt(b, a, analog_2)
-    else:
-        if median_filt:
-            analog_1_filt = medfilt(analog_1, kernel_size=median_filt)
-            analog_2_filt = medfilt(analog_2, kernel_size=median_filt)   
-        else:
-            analog_1_filt = analog_2_filt = None
-    # Extract rising edges for digital inputs.
-    pulse_inds_1 = 1+np.where(np.diff(digital_1) == 1)[0]
-    pulse_inds_2 = 1+np.where(np.diff(digital_2) == 1)[0]
-    pulse_times_1 = pulse_inds_1*1000/sampling_rate
-    pulse_times_2 = pulse_inds_2*1000/sampling_rate
-    # Return signals + header information as a dictionary.
-    data_dict = {'analog_1'      : analog_1,
-                 'analog_2'      : analog_2,
-                 'analog_1_filt' : analog_1_filt,
-                 'analog_2_filt' : analog_2_filt,
-                 'digital_1'     : digital_1,
-                 'digital_2'     : digital_2,
-                 'pulse_inds_1'  : pulse_inds_1,
-                 'pulse_inds_2'  : pulse_inds_2,
-                 'pulse_times_1' : pulse_times_1,
-                 'pulse_times_2' : pulse_times_2,
-                 'time'          : time}
-    data_dict.update(header_dict)
-    return data_dict
+            network_ano[past_id[-1]] = None
+
+        

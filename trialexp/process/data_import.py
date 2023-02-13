@@ -26,7 +26,8 @@ from plotly.validators.scatter.marker import SymbolValidator
 from plotly.subplots import make_subplots
 
 from trialexp.utils.pycontrol_utilities import *
-from trialexp.utils.pyphotometry_utilities import *
+# from trialexp.utils.pyphotometry_utilities import *
+from trialexp.process.pyphotometry.utils import *
 from trialexp.utils.DLC_utilities import *
 from trialexp.utils.rsync import *
 
@@ -970,7 +971,7 @@ class Session():
     
         # import of raw and filtered data from full photometry session
 
-        photometry_dict = import_ppd(self.files['ppd'][0], high_pass=high_pass, low_pass=low_pass, median_filt=median_filt)
+        photometry_dict = import_ppd(self.files['ppd'][0], high_pass=high_pass, low_pass=low_pass, medfilt_size=median_filt)
 
         #----------------------------------------------------------------------------------
         # Filtering / Motion correction / resampling block below
