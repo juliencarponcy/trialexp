@@ -16,6 +16,7 @@ from plotly.subplots import make_subplots
 from plotly.validators.scatter.marker import SymbolValidator
 
 from trialexp.process.data_import import Event, State
+from trialexp.process.pycontrol.spike2_export import Spike2Exporter
 
 ######## Analyzing event data
 
@@ -135,6 +136,13 @@ def plot_session(df:pd.DataFrame, keys: list = None, state_def: list = None, pri
         else:
             for k in keys: 
                assert k in df.event_name.unique(), f"{k} is not found in self.time.keys()"
+        
+        
+        if export_smrx:
+            if smrx_filename is None:
+                raise ValueError('You must specify the smrx_filename filename if you want to export file')
+            else:
+                spike2exporter = Spike2Exporter(smrx_filename, df.time.max()*1000, verbose)
 
         def find_states(state_def_dict: dict):
             """
@@ -157,37 +165,38 @@ def plot_session(df:pd.DataFrame, keys: list = None, state_def: list = None, pri
             if state_def_dict is None:
                 return None
 
-            all_on_ms = df[(df.state == state_def_dict['onset']) & (df.event_name == 'state_change')].time.values
-            all_off_ms = df[(df.state == state_def_dict['offset']) & (df.event_name == 'state_change')].time.values
+            all_on_sec = df[(df.state == state_def_dict['onset']) & (df.event_name == 'state_change')].time.values
+            all_off_sec = df[(df.state == state_def_dict['offset']) & (df.event_name == 'state_change')].time.values
+            # print(all_on_sec)
 
-            onsets_ms = [np.NaN] * len(all_on_ms)
-            offsets_ms = [np.NaN] * len(all_on_ms)
+            onsets_sec = [np.NaN] * len(all_on_sec)
+            offsets_sec = [np.NaN] * len(all_on_sec)
 
-            for i, this_onset in enumerate(all_on_ms):  # slow
+            for i, this_onset in enumerate(all_on_sec):  # slow
                 good_offset_list_ms = []
-                for j, _ in enumerate(all_off_ms):
-                    if i < len(all_on_ms)-1:
-                        if all_on_ms[i] < all_off_ms[j] and all_off_ms[j] < all_on_ms[i+1]:
-                            good_offset_list_ms.append(all_off_ms[j])
+                for j, _ in enumerate(all_off_sec):
+                    if i < len(all_on_sec)-1:
+                        if all_on_sec[i] < all_off_sec[j] and all_off_sec[j] < all_on_sec[i+1]:
+                            good_offset_list_ms.append(all_off_sec[j])
                     else:
-                        if all_on_ms[i] < all_off_ms[j]:
-                            good_offset_list_ms.append(all_off_ms[j])
+                        if all_on_sec[i] < all_off_sec[j]:
+                            good_offset_list_ms.append(all_off_sec[j])
 
                 if len(good_offset_list_ms) > 0:
-                    onsets_ms[i] = this_onset
-                    offsets_ms[i] = good_offset_list_ms[0]
+                    onsets_sec[i] = this_onset
+                    offsets_sec[i] = good_offset_list_ms[0]
                 else:
                     ...  # keep them as nan
 
-            onsets_ms = [x for x in onsets_ms if not np.isnan(x)]  # remove nan
-            offsets_ms = [x for x in offsets_ms if not np.isnan(x)]
+            onsets_sec = [x for x in onsets_sec if not np.isnan(x)]  # remove nan
+            offsets_sec = [x for x in offsets_sec if not np.isnan(x)]
 
-            state_ms = map(list, zip(onsets_ms, offsets_ms,
-                           [np.NaN] * len(onsets_ms)))
+            state_sec = map(list, zip(onsets_sec, offsets_sec,
+                           [np.NaN] * len(onsets_sec)))
             # [onset1, offset1, NaN, onset2, offset2, NaN, ....]
-            state_ms = [item for sublist in state_ms for item in sublist]
+            state_sec = [item for sublist in state_sec for item in sublist]
             
-            return state_ms
+            return state_sec
 
         y_index = 0
         
@@ -197,6 +206,11 @@ def plot_session(df:pd.DataFrame, keys: list = None, state_def: list = None, pri
             line1 = go.Scatter(x=df_evt2plot.time, y=[k]
                         * len(df_evt2plot), name=k, mode='markers', marker_symbol=symbols[y_index % 40])
             fig.add_trace(line1)
+            
+            if export_smrx:
+                spike2exporter.write_event(df_evt2plot.time.values, k, y_index)
+                
+                
 
 
         if event_ms is not None:
@@ -217,22 +231,24 @@ def plot_session(df:pd.DataFrame, keys: list = None, state_def: list = None, pri
             # Assuming a list of lists of two names
 
             if isinstance(state_def, list):# multiple entry
-                state_ms = None
+                state_sec = None
                 for state in state_def:
                     assert isinstance(state, dict)
                     
                     y_index +=1
-                    state_ms = find_states(state)
-                    # print([state['name']] * len(state_ms))
+                    state_sec = find_states(state)
                     
-                    line1 = go.Scatter(x=[x for x in state_ms], y=[state['name']] * len(state_ms), 
+                    line1 = go.Scatter(x=[x for x in state_sec], y=[state['name']] * len(state_sec), 
                         name=state['name'], mode='lines', line=dict(width=5))
                     fig.add_trace(line1)
+                    
+                    if export_smrx:
+                        spike2exporter.write_marker_for_state(state_sec, state['name'], y_index)
 
             else:
-                state_ms = None
+                state_sec = None
         else:
-            state_ms = None
+            state_sec = None
              
 
         fig.update_xaxes(title='Time (s)')
@@ -249,11 +265,6 @@ def plot_session(df:pd.DataFrame, keys: list = None, state_def: list = None, pri
             margin=dict(l=20, r=20, t=20, b=20) )
 
         fig.show()
-
-        if export_smrx:
-            del MyFile
-            #NOTE when failed to close the file, restart the kernel to delete the corrupted file(s)
-            print(f'saved {smrx_filename}')
 
 
 #----------------------------------------------------------------------------------
