@@ -16,6 +16,7 @@ from plotly.subplots import make_subplots
 from plotly.validators.scatter.marker import SymbolValidator
 
 from trialexp.process.data_import import Event, State
+from trialexp.process.pycontrol.spike2_export import Spike2Exporter
 
 ######## Analyzing event data
 
@@ -135,6 +136,13 @@ def plot_session(df:pd.DataFrame, keys: list = None, state_def: list = None, pri
         else:
             for k in keys: 
                assert k in df.event_name.unique(), f"{k} is not found in self.time.keys()"
+        
+        
+        if export_smrx:
+            if smrx_filename is None:
+                raise ValueError('You must specify the smrx_filename filename if you want to export file')
+            else:
+                spike2exporter = Spike2Exporter(smrx_filename, df.time.max())
 
         def find_states(state_def_dict: dict):
             """
@@ -197,6 +205,11 @@ def plot_session(df:pd.DataFrame, keys: list = None, state_def: list = None, pri
             line1 = go.Scatter(x=df_evt2plot.time, y=[k]
                         * len(df_evt2plot), name=k, mode='markers', marker_symbol=symbols[y_index % 40])
             fig.add_trace(line1)
+            
+            if export_smrx:
+                spike2exporter.write_event(df_evt2plot.time, k, y_index)
+                
+                
 
 
         if event_ms is not None:
@@ -228,6 +241,9 @@ def plot_session(df:pd.DataFrame, keys: list = None, state_def: list = None, pri
                     line1 = go.Scatter(x=[x for x in state_ms], y=[state['name']] * len(state_ms), 
                         name=state['name'], mode='lines', line=dict(width=5))
                     fig.add_trace(line1)
+                    
+                    if export_smrx:
+                        spike2exporter.write_marker_for_state(state_ms, state['name'], y_index)
 
             else:
                 state_ms = None
@@ -249,11 +265,6 @@ def plot_session(df:pd.DataFrame, keys: list = None, state_def: list = None, pri
             margin=dict(l=20, r=20, t=20, b=20) )
 
         fig.show()
-
-        if export_smrx:
-            del MyFile
-            #NOTE when failed to close the file, restart the kernel to delete the corrupted file(s)
-            print(f'saved {smrx_filename}')
 
 
 #----------------------------------------------------------------------------------
