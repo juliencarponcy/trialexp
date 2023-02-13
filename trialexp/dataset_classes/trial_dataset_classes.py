@@ -60,7 +60,6 @@ class Trials_Dataset():
     Unlike trialexp.process.data_import.Session, which holds data of an entire session
     with a linear time vector, Trials_Dataset holds triggered trial data that extends to trial_window.
     In other words, each trial is provided the equal time vector whose 0 is at the trigger event.
-
     Attributes
     ----------
     data : 
@@ -90,8 +89,6 @@ class Trials_Dataset():
         The window size relative to trigger for trial-based data fragmentation.  
     time_unit : str
         'ms' | 'milliseconds' | 's' | 'seconds'
-
-
     Methods
     -------
     export()
@@ -111,7 +108,6 @@ class Trials_Dataset():
     set_conditions()
     set_groups()
     set_trial_window()
-
     """
 
     def __init__(self, data, metadata_df: pd.DataFrame):
@@ -291,7 +287,6 @@ class Trials_Dataset():
         conditions! 
         If you want to exclude animals which have less than x trials in
         a condition from the full dataset, use sequentially:
-
         <trial_dataset>.filter_min(min_trials = x)
         <trial_dataset>.filterout_if_not_in_all_cond()
         """
@@ -308,7 +303,6 @@ class Trials_Dataset():
         """
         Only keep the last n sessions for each animal.
         The five sessions are counted for the sessions with 'keep' == True
-
         """
         subject_IDs = list(set(self.metadata_df['subject_ID']))
         subject_IDs.sort()
@@ -382,7 +376,6 @@ class Trials_Dataset():
         """
         Set the value of 'keep' column (used as a filter) of metadata_df
         self.metadata_df['keep'] = tfkeep
-
         See also:
         get_tfkeep_subjects()
         get_tfkeep_dates()
@@ -407,17 +400,13 @@ class Trials_Dataset():
     def get_tfkeep_dates(self, days_to_include: list) -> pd.Series:
         """
         return a bool vector (pd.Series) that have True for one or several dates of the dataset 
-
         days_to_include
             list of datetime.datetime or list of datetime.date
-
         The vector tfkeep can be used for boolean operations 
         eg. tfkeep3 = (tfkeep1) & (tfkeep2) 
         and then used to set the value of obj.set_keep(tfkeep3)
-
         https://docs.python.org/3/library/datetime.html#datetime.datetime
         https://docs.python.org/3/library/datetime.html#datetime.date
-
         """
         if not isinstance(days_to_include, list):
             days_to_include = [days_to_include]
@@ -484,7 +473,6 @@ class Trials_Dataset():
     def get_tfkeep_groups(self, group_IDs_to_exclude: list) -> pd.Series:
         """
         return a bool vector (pd.Series) that have True for one or several groups of the dataset
-
         The vector tfkeep can be used for boolean operations 
         eg. tfkeep3 = (tfkeep1) & (tfkeep2) 
         and then used to set the value of obj.set_keep(tfkeep3)
@@ -498,12 +486,9 @@ class Trials_Dataset():
 class Continuous_Dataset(Trials_Dataset):
     """
     Subclass of Trials_Dataset.
-
     Attributes
     ----------
     colnames_dict : dict
-
-
     Methods
     -------
     scatterplot()
@@ -522,7 +507,6 @@ class Continuous_Dataset(Trials_Dataset):
     def __init__(self, data: np.ndarray, metadata_df: pd.DataFrame, colnames_dict: dict):
         super().__init__(data, metadata_df)
         """
-
         Arguments
         ---------
         self
@@ -620,7 +604,6 @@ class Continuous_Dataset(Trials_Dataset):
         differnt clusters, to identify noise (cluster: -1) and/or other
         abnormal trials.
         Beside optional plotting, the results are stored in the 
-
         Arguments
         ---------
         vars_to_cluster_on: str = 'analog_2',  # only work with one var for now.
@@ -642,13 +625,11 @@ class Continuous_Dataset(Trials_Dataset):
             plot_lim_pctile will scale in x and y to display all but 
             plot_lim_pctile portion of your data, e.g. if 0.1, the scaling
             of the plot will include 100 - 0.1% (99.8% of the trials) in x/y
-
         Returns
         -------
         None
             just store the nb of the cluster in the <cont_dataset>.metadata_df
             in the cluster column. 
-
         """
         # TODO, transform feature extraction to not have to transform the data
         # make available to cluster on more than one variable
@@ -682,7 +663,6 @@ class Continuous_Dataset(Trials_Dataset):
         """
         Plot all trials (and average) by cluster as defined by the cluster_trials()
         method.
-
         Arguments:
         ----------
             vars_to_plot: list = ['analog_2','analog_1_df_over_f'],
@@ -695,7 +675,6 @@ class Continuous_Dataset(Trials_Dataset):
             figsize: tuple = (15,10)
                 figure size, so far to manually adapt
             ):
-
         """
         if 'cluster' in self.metadata_df.columns:
             labels = self.metadata_df['cluster'].values
@@ -759,7 +738,6 @@ class Continuous_Dataset(Trials_Dataset):
         This is the standard format for multivariate timeseries in sktime.org
         sktime is used to perform classification and regression time on uni or
         multi-variate timeseries (unlike scikit-learn, more suited for tabular data)
-
         if a name is specified (and optionally a folder), the tranformed DataFrame
         will be stored as a pickle file.
         '''
@@ -857,7 +835,6 @@ class Continuous_Dataset(Trials_Dataset):
             axs: Axes = None,
             verbose: bool = False):
         """
-
         Arguments
         ---------
         self
@@ -889,7 +866,6 @@ class Continuous_Dataset(Trials_Dataset):
         #TODO linex0 :bool = True, 
         legend: bool = True,
         verbose: bool = False
-
         Returns
         _______
         fig, 
@@ -900,7 +876,6 @@ class Continuous_Dataset(Trials_Dataset):
             #TODO Is this format useful? I am not sure! You need to dig a lot.
             Instead of nesting, we can have dataframes and list of dataframes etc to be joined when necessary
             Or to have already joined, flat big table???      
-
         """
         plt.ion()
         plt.rcParams["figure.dpi"] = dpi
@@ -938,7 +913,7 @@ class Continuous_Dataset(Trials_Dataset):
         if axs is None:
             # Set title as condition on the first line
             if len(group_IDs) == 1:
-                group_colors = cm.get_cmap(colormap, len(self.conditions))
+                group_colors = cm.get_cmap(colormap, self.metadata_df['condition_ID'].nunique())
                 if plot_groups and not plot_subjects:
                     
                     fig, axs = plt.subplots(len(vars), 1, sharex= 'all',
@@ -986,23 +961,23 @@ class Continuous_Dataset(Trials_Dataset):
       
         group_dfs = [0] * len(condition_IDs)
         cond_n = [0] * len(condition_IDs) # trial counts per condition
+        
+        # Replace cond_aliases with condition_IDs if not provided
+        if not hasattr(self, 'cond_aliases'):
+            self.cond_aliases = [cond for cond in condition_IDs]
+        
         for cond_idx, cond_ID in enumerate(condition_IDs):
 
             # Set title as condition on the first line
             if len(group_IDs) == 1:
                 if plot_groups and not plot_subjects:
                     ...
-
-                elif hasattr(self, 'cond_aliases'):
+                else:
                     axs[0, cond_idx+1].set_title(str(self.cond_aliases[cond_ID]))
-                else:
-                    axs[0, cond_idx+1].set_title(str(self.conditions[cond_ID]))
             else:
-                if hasattr(self, 'cond_aliases'):
                     axs[0, cond_idx].set_title(str(self.cond_aliases[cond_ID]))
-                else:
-                    axs[0, cond_idx].set_title(str(self.conditions[cond_ID]))
 
+                    
             # Compute means and sems
             group_n = [0] * len(group_IDs)
             subj_dfs = [None] * len(group_IDs)
@@ -1079,10 +1054,8 @@ class Continuous_Dataset(Trials_Dataset):
                             # if a group is more than a single subject
                             if len(mean_group.shape) > 1:
                                 axs[ax_idx, 0].plot(time_vec, mean_group[ax_idx, :], lw=group_lw,
-                                    color = group_colors(cond_ID),
-                                    label=self.cond_aliases[cond_ID] #+ f' (n = {cond_n[cond_ID]})'
-                                    )
-                                
+                                    color = group_colors(cond_ID), label=self.cond_aliases[cond_ID])
+                
                                 if error is not None:
                                     # fill sem
                                     axs[ax_idx, 0].fill_between(time_vec, 
@@ -1093,9 +1066,7 @@ class Continuous_Dataset(Trials_Dataset):
                             # if single subject in the group
                             else:
                                 axs[ax_idx, 0].plot(time_vec, mean_group, lw=group_lw,
-                                color = group_colors(cond_ID),
-                                label=self.cond_aliases[cond_ID] #+ f' (n = {cond_n[cond_ID]})'
-                                )
+                                color = group_colors(cond_ID), label=self.cond_aliases[cond_ID])
 
                         else:
                             if g_idx == 0 and cond_idx == 0:
@@ -1135,6 +1106,7 @@ class Continuous_Dataset(Trials_Dataset):
 
             group_dfs[cond_idx] = pd.DataFrame(list(zip([cond_ID] * len(group_IDs),  
                 [str(self.cond_aliases[cond_ID])] * len(group_IDs),  group_IDs, group_n)))
+
             group_dfs[cond_idx].columns = ['condition_ID', 'condition_alias', 'group_ID', 'group_trial_n']
 
             group_dfs[cond_idx] = pd.merge(group_dfs[cond_idx], subj_dfs, 'outer') 
@@ -1333,7 +1305,6 @@ class Continuous_Dataset(Trials_Dataset):
 class Event_Dataset(Trials_Dataset):
     """
     Subclass of Trials_Dataset.
-
     Methods
     -------
     raster()
@@ -1342,7 +1313,6 @@ class Event_Dataset(Trials_Dataset):
         to be implemented, can be integrated with raster
     compute_distribution(...)
         Compute distribution of events for each session.
-
     """
     def __init__(self, data: pd.DataFrame, metadata_df: pd.DataFrame):
             super().__init__(data, metadata_df)
@@ -1505,7 +1475,6 @@ class Event_Dataset(Trials_Dataset):
         """
         Compute distribution of events for each session.
         Output a continuous_dataset instance if out_as_continuous = True
-
         Arguments
         ---------
         self
@@ -1519,8 +1488,6 @@ class Event_Dataset(Trials_Dataset):
         out_as_continuous: bool = False, 
             if True, output a Continuous_Dataset object
         verbose: bool = False
-
-
         Returns
         -------
         grouped_df : DataFrame
@@ -1528,8 +1495,6 @@ class Event_Dataset(Trials_Dataset):
             only if not out_as_continuous
         dist_as_continuous : Continuous_Dataset
             only if out_as_continuous
-
-
         """
 
         if trial_window == None and hasattr(self, 'trial_window'):
@@ -1627,7 +1592,6 @@ class Event_Dataset(Trials_Dataset):
             but you still need to specify conditions from conditions_list
         - failure, on the other hand, is less clear
         - Sessions with 0 trial (success or failure) are ignored.
-
         conditions_succcess : list
             list of integers
                 eg. [0]
@@ -1651,11 +1615,8 @@ class Event_Dataset(Trials_Dataset):
             'sessions' will renumber sessions so there will be no gaps shown.
             'days' will recount days so there will be no gaps shown.
             'session_with_gaps' 'days_with_gaps', and 'dates'will include gaps.
-
         ax: matplotlib.axes.Axes = None
-
         #TODO to support the removal of human interventions
-
         """
      
         assert bywhat in ['sessions', 'sessions_with_gaps', 'days', 'days_with_gaps', 'dates'], "bywhat is invalid"
@@ -1931,55 +1892,40 @@ class Event_Dataset(Trials_Dataset):
 
         return gr_df, out_list, ax, im1
     
-    def plot_raster(
-            self, 
-            keys: list = None, 
-            conditions_IDs : list = None, 
-            separate: bool = True, 
-            colors : list = 'default',
-            module: str = 'matplotlib',
-            raster_y: str = 'trial',
-            x_lim: list = None, 
-            target: np.array = None):
+    def plot_raster(self, keys: list = None, conditions_IDs : list = None, separate: bool = True, colors : list = 'default',
+        module: str = 'matplotlib',
+        raster_y: str = 'trial', target: np.array = None):
         """
         Raster plot for Event_Dataset
         # TODO introduce separation between conditions instead of/alternative to triggers
         keys : list = None
             what to plot
             Must match the names containing '*_trial_time' in the colums of self.data
-
         cond_ID : list = None
             what to use as cond_ID
             Must be subset of the self.cond_ID
         
         separate : bool = True
             If false, overlaid with different colors
-
         raster_y : char = 'trial' #TODO
             'trial' or 'time'
             Event_Dataset probably doesn't hold the timestamps of the trigger events.
             #Julien: Yes it does in ev_dataset.data['timestamp']
-
         colors : list = 'default'
             Specify plot colors for keys as list.
             By default, 'k' is used for separate = True, while 'C1', 'C2', ... is used for separate = False
-
             https://matplotlib.org/stable/tutorials/colors/colors.html
-
         module : str = 'matplotlib' (default) or 'plotly'
             'matplotlib' is suitable for publication/presentation.
             'plotly' provides scrollabbility. Note that the figures created by Plotly is pretty heavy 
             and not suitable for version control of Jupyter notebook. It is recommened to delete the figure before commiting.
-
         rastertype: str = 'lines' (default ) or 'markers' #TODO
             Sometimes 'markers' can be useful for visibility.
-
         target: np.array for matplotlib, an instance of plotly.graph_objects.Figure for plotly
             If separate is True, ax is an m by n np.arary of matplotlib.axes.Axes. 
             m is the number of columns with the name '*_trial_time' in self.data, 
             if keys is None or the length of keys if keys is not None.
             n is the number of cond_ID.
-
             If separate is False, ax is a matplotlib.axes.Axes object
         """
 
@@ -2023,10 +1969,9 @@ class Event_Dataset(Trials_Dataset):
             present_cond_IDs = list(set(self.metadata_df[self.metadata_df.keep == True].condition_ID.values))
             self.cond_aliases = [set(self.metadata_df[(self.metadata_df.keep == True) & (self.metadata_df.condition_ID == present_cond_IDs[present_cond_idx])].trigger.values) for present_cond_idx, _ in enumerate(present_cond_IDs)]
         
-        # This assume that trial_window is in ms when no unit specified at Exp construction (might not be the case)
         if self.time_unit == 's' or self.time_unit == 'seconds': 
             trial_window_s = [ float(x) for x in self.trial_window]
-        elif not self.time_unit or self.time_unit == 'ms' or self.time_unit == 'milliseconds': 
+        elif self.time_unit == 'ms' or self.time_unit == 'milliseconds': 
             trial_window_s = [ float(x)/1000 for x in self.trial_window]
 
         if separate:
@@ -2219,15 +2164,11 @@ class Event_Dataset(Trials_Dataset):
                     ax[0][cond_idx].set_title(self.cond_aliases[cond_idx])
 
                     ax[ev_idx][cond_idx].set_xlabel('Time (s)')
-                    
-                    if x_lim:              
-                        ax[ev_idx][cond_idx].set_xlim([x_lim[0], x_lim[1]])
-                    
+
                     if not separate:
                         ax[ev_idx][cond_idx].legend(handles = [ln for ln in L if ln is not None], 
                             bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left",
                             mode='expand', ncol=1)
-                                    
                 elif module == 'plotly':
                     
                     fig.update_xaxes(type='linear')
@@ -2262,18 +2203,16 @@ def histo_only(x: np.array, trial_window: list, bin_size: int):
 def load_sktime_dataset(fullpath: str = None):
     """
     Load dataset previously prepared for timeseries ML with sktime
-
     Returns
     _______
-
     X : DataFrame
         panel format of timeseries for sktime dependant variables
     y: np.array 
         array of strings corresponding to the condition aliases
-
     """
 
     with open(fullpath, 'rb') as file:
         X_y = pickle.load(file)     
 
     return X_y[0], X_y[1]
+
