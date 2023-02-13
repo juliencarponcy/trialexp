@@ -3,7 +3,7 @@
 import shutil
 
 from os.path import join, isfile, isdir
-from os import walk
+from os import walk, listdir
 from datetime import datetime
 from re import search
 
@@ -12,6 +12,7 @@ import pandas as pd
 
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+
 #----------------------------------------------------------------------------------
 # Plotting
 #----------------------------------------------------------------------------------
@@ -50,7 +51,7 @@ def plot_longitudinal(results, plot_individuals=True):
 # Helpers
 #----------------------------------------------------------------------------------
 
-def match_sessions_to_files(experiment: Exp, files_dir, ext='mp4', verbose=False) -> str:
+def match_sessions_to_files(experiment, files_dir, ext='mp4', verbose=False) -> str:
     '''
     Take an experiment instance and look for files within a directory
     taken the same day as the session and containing the subject_ID,
@@ -69,8 +70,8 @@ def match_sessions_to_files(experiment: Exp, files_dir, ext='mp4', verbose=False
 
     # subject_IDs = [session.subject_ID for session in self.sessions]
     # datetimes = [session.datetime for session in self.sessions]
-    files_list = [f for f in os.listdir(files_dir) if os.path.isfile(
-        os.path.join(files_dir, f)) and ext in f]
+    files_list = [f for f in listdir(files_dir) if isfile(
+        join(files_dir, f)) and ext in f]
 
     if len(files_list) == 0:
         raise Exception(f'No files with the .{ext} extension where found in the following folder: {files_dir}')
@@ -80,15 +81,15 @@ def match_sessions_to_files(experiment: Exp, files_dir, ext='mp4', verbose=False
     files_df['filename'] = pd.DataFrame(files_list)
     files_df['datetime'] = files_df['filename'].apply(lambda x: get_datetime_from_datestr(get_datestr_from_filename(x)))
     # print(files_df['datetime'])
-    for s_idx, session in enumerate(self.sessions):
+    for s_idx, session in enumerate(experiment.sessions):
         match_df = find_matching_files(session.subject_ID, session.datetime, files_df, ext)
         if verbose:
             print(session.subject_ID, session.datetime, match_df['filename'].values)
         
-        if not hasattr(self.sessions[s_idx], 'files'):
-            self.sessions[s_idx].files = dict()
+        if not hasattr(experiment.sessions[s_idx], 'files'):
+            experiment.sessions[s_idx].files = dict()
         
-        self.sessions[s_idx].files[ext] = [os.path.join(files_dir, filepath) for filepath in match_df['filename'].to_list()]
+        experiment.sessions[s_idx].files[ext] = [join(files_dir, filepath) for filepath in match_df['filename'].to_list()]
 
 def find_matching_files(subject_ID, datetime_to_match, files_df, ext):
     """
@@ -113,13 +114,13 @@ def find_matching_files(subject_ID, datetime_to_match, files_df, ext):
     if ext not in ['nwb','h5']:
         # for videos, avoid integrating DeepLabCut labelled videos "['filename'].str.contains('DLC')"
         #TODO match_df is not a view or copy
-        match_df = files_df.loc[(files_df['datetime'].apply(lambda x: Timestamp.date(x)) == datetime_to_match.date()) &
+        match_df = files_df.loc[(files_df['datetime'].apply(lambda x: pd.Timestamp.date(x)) == datetime_to_match.date()) &
             (files_df['filename'].str.contains(str(subject_ID))) &
             ~(files_df['filename'].str.contains('DLC'))].copy() 
 
         # will not avoid DLC-containing filenames in case of searching DLC .nwb data files
     else:
-        match_df = files_df.loc[(files_df['datetime'].apply(lambda x: Timestamp.date(x)) == datetime_to_match.date()) &
+        match_df = files_df.loc[(files_df['datetime'].apply(lambda x: pd.Timestamp.date(x)) == datetime_to_match.date()) &
                                 (files_df['filename'].str.contains(str(subject_ID)))].copy() #TODO match_df is not a view or copy
 
     # match_df = match_df.to_frame(name='matching_filename')
