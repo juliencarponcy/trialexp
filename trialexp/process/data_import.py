@@ -26,6 +26,7 @@ from plotly.validators.scatter.marker import SymbolValidator
 from plotly.subplots import make_subplots
 
 from trialexp.utils.pycontrol_utilities import *
+from trialexp.utils.data_organisation import *
 # from trialexp.utils.pyphotometry_utilities import *
 from trialexp.process.pyphotometry.utils import *
 from trialexp.utils.DLC_utilities import *
@@ -942,15 +943,87 @@ class Session():
             low_pass: int = None, 
             median_filt: int = None, 
             motion_corr: bool = False, 
-            df_over_f: bool = False, 
+            df_over_f: bool = False,
+            zscore: bool = False, # To be implemented
             downsampling_factor: int = None,
             return_full_session: bool = False, 
             export_vars: list = ['analog_1','analog_2'],
-            # remove_artifacts: bool = False,
             verbose: bool = False):
             
-        # TODO write docstrings
+        """
+        Returns a dictionary containing photometry data for each trial that satisfies the specified conditions.
+
         
+        Parameters
+        ----------
+        conditions_list : list, optional
+            A list of conditions (dictionaries) used to filter the trials. A trial must satisfy all conditions to be selected. 
+            Default is None.
+        cond_aliases : list, optional
+            A list of strings to rename the conditions of the experiment.
+            Default is None.
+        trial_window : list, optional
+            A list of two floats specifying the time window to select relative to the trial onset.
+            Default is None.
+        trig_on_ev : str, optional
+            The name of the event to use for trial alignment. 
+            Default is None, which aligns trials to the trial onset.
+        last_before : str, optional
+            If specified, the last event with the given name before `trig_on_ev` is used for trial alignment.
+            Default is None.
+        high_pass : float, optional
+            The high-pass filter cutoff frequency to use for the motion correction. 
+            Default is None.
+        low_pass : int, optional
+            The low-pass filter cutoff frequency to use for the motion correction. 
+            Default is None.
+        median_filt : int, optional
+            The size of the median filter to use for the motion correction. 
+            Default is None.
+        motion_corr : bool, optional
+            If True, motion correction is performed using the high-pass, low-pass, and median filters.
+            Default is False.
+        df_over_f : bool, optional
+            If True, computes the dF/F and exports the analog_1_df_over_f variable.
+            Default is False.
+        zscore : bool, optional (not implemented yet)
+            If True, z-scores the data.
+            Default is False.
+        downsampling_factor : int, optional
+            The factor by which to downsample the data.
+            Default is None.
+        return_full_session : bool, optional
+            If True, returns the full session.
+            Default is False.
+        export_vars : list, optional
+            A list of variables to export in photo_array
+            Default is ['analog_1', 'analog_2'].
+        verbose : bool, optional
+            If True, prints the number of trials selected for each condition.
+            Default is False.
+
+        Returns
+        -------
+        df_meta_photo : pandas.DataFrame
+            metadata dataframe containing info about each trial
+        col_names_numpy : list
+            list of strings containing the names of the variables in the numpy array
+        photo_array : numpy.ndarray
+            numpy array containing the photometry data for each trial 
+        photometry_dict : dict, optional (if return_full_session == True)
+            dictionary containing all the photometry data for the entire session
+
+        Raises
+        ------
+        Exception
+            If the session has not been matched with a .ppd file, or if the session has no matching .ppd file, or if no alignment 
+            could be performed between rsync pulses.
+        Exception
+            If motion_corr is True and high_pass, low_pass, or median_filt is None.
+        Exception
+            If df_over_f is True and motion_corr is False.
+        """
+
         if not isinstance(conditions_list, list):
             conditions_list= [conditions_list] 
         
@@ -981,32 +1054,20 @@ class Session():
         # https://github.com/ThomasAkam/photometry_preprocessing/blob/master/Photometry%20data%20preprocessing.ipynb
         
         if motion_corr == True:
+            photometry_dict = motion_correction(photometry_dict)
 
-            slope, intercept, r_value, p_value, std_err = linregress(x=photometry_dict['analog_2_filt'], y=photometry_dict['analog_1_filt'])
-            photometry_dict['analog_1_est_motion'] = intercept + slope * photometry_dict['analog_2_filt']
-            photometry_dict['analog_1_corrected'] = photometry_dict['analog_1_filt'] - photometry_dict['analog_1_est_motion']
-            
             if df_over_f == False:
                 export_vars.append('analog_1_corrected')
-                # signal = photometry_dict['analog_1_corrected']
+
             elif df_over_f == True:
-
-                b,a = butter(2, 0.001, btype='low', fs=photometry_dict['sampling_rate'])
-                photometry_dict['analog_1_baseline_fluo'] = filtfilt(b,a, photometry_dict['analog_1_filt'], padtype='even')
-
-                # Now calculate the dF/F by dividing the motion corrected signal by the time varying baseline fluorescence.
-                photometry_dict['analog_1_df_over_f'] = photometry_dict['analog_1_corrected'] / photometry_dict['analog_1_baseline_fluo'] 
+                photometry_dict = compute_df_over_f(photometry_dict, low_pass_cutoff=0.001)
                 export_vars.append('analog_1_df_over_f')
-                # signal = photometry_dict['analog_1_df_over_f']
+
 
         elif high_pass or low_pass:
-            # signal = photometry_dict['analog_1_filt']
             export_vars.append('analog_1_filt')
-
-            # control = photometry_dict['analog_2_filt']
         else:
             export_vars.append('analog_1')
-        # signal = photometry_dict['analog_1']
 
         # only keep unique items (keys for the photometry_dict)
         export_vars = list(set(export_vars))
@@ -1033,20 +1094,9 @@ class Session():
             
             if len(trials_idx) == 0 :
                 continue
-
+            # assumes that sync between pycontrol and photometry has been performed in previous step
             timestamps_photometry = self.photometry_rsync.A_to_B(timestamps_pycontrol)
             photometry_idx = (timestamps_photometry / (1000/photometry_dict['sampling_rate'])).round().astype(int)
-            
-
-            # print(f'photometry {photometry_idx[0:10]} \r\n pycontrol {timestamps_pycontrol[0:10]}')
-            
-            # Compute mean time difference between A and B and replace NaN values at extremity of files
-            # (rsync_aligner timestamps are only computed BETWEEN rsync pulses)
-            # NOTE: Can be uncommented but likely to reintroduce timestamps outside of photometry timestamps span
-            # nan_idx = isnan(timestamps_photometry)
-            # mean_diff = nanmean(timestamps_photometry - timestamps_pycontrol.astype(float))
-            # timestamps_photometry[nan_idx] = timestamps_pycontrol[nan_idx] + mean_diff
-            # timestamps_photometry = timestamps_photometry.astype(int)
 
             # retain only trials with enough values left and right
             complete_mask = (photometry_idx + trial_window[0]/(1000/photometry_dict['sampling_rate']) >= 0) & (
@@ -2090,7 +2140,7 @@ class Experiment():
                     when_func = lambda session: session.datetime.date() in dates
         
         # can select session based on task_name string or list of task_name
-        if task_names == 'all':
+        if task_names == 'all' or task_names is None:
             task_names = self.task_names
         if not isinstance(task_names, list):
             task_names = [task_names]
