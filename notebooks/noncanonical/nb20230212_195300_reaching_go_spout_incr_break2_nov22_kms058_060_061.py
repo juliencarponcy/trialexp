@@ -11,7 +11,7 @@
 
 # 
 
-# In[1]:
+# In[ ]:
 
 
 # allow for automatic reloading of classes and function when updating the code
@@ -25,7 +25,7 @@ from trialexp.process.data_import import *
 
 # ### Variables
 
-# In[2]:
+# In[ ]:
 
 
 import pandas as pd
@@ -53,7 +53,7 @@ photometry_dir = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\kms_pyphotometry'
 video_dir = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\videos'
 
 
-# In[3]:
+# In[ ]:
 
 
 tasks = pd.read_csv(tasksfile, usecols=[1, 2, 3, 4], index_col=False)
@@ -63,7 +63,7 @@ tasks
 # ### Create an experiment object
 # 
 
-# In[18]:
+# In[ ]:
 
 
 # Folder of a full experimental batch, all animals included
@@ -73,7 +73,7 @@ tasks
 
 # or this if you want to use data from the sample_data folder within the package
 #pycontrol_files_path = os.path.join(basefolder, 'sample_data/pycontrol')
-pycontrol_files_path = r'T:\Data\head-fixed\pycontrol\reaching_go_spout_incr_break2_nov22'
+pycontrol_files_path = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\pycontrol\reaching_go_spout_incr_break2_nov22'
 
 # Load all raw text sessions in the indicated folder or a sessions.pkl file
 # if already existing in folder_path
@@ -89,7 +89,7 @@ smrx_folder_path = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\pycontrol\reachin
 
 # ## Select sessions
 
-# In[19]:
+# In[ ]:
 
 
 import datetime
@@ -102,19 +102,19 @@ ss_ = [this_ss for this_ss in ss
 ss_
 
 
-# In[20]:
+# In[ ]:
 
 
 exp_cohort.sessions = ss_
 
 
-# In[21]:
+# In[ ]:
 
 
 ss_
 
 
-# In[22]:
+# In[ ]:
 
 
 ss_[0].datetime.date()
@@ -122,7 +122,7 @@ ss_[0].datetime.date()
 
 # # SLOW 3m
 
-# In[23]:
+# In[ ]:
 
 
 # # Process the whole experimental folder by trials
@@ -150,13 +150,13 @@ ss_[0].datetime.date()
 # # exp_cohort.save()
 
 
-# In[24]:
+# In[ ]:
 
 
 exp_cohort.subject_IDs
 
 
-# In[25]:
+# In[ ]:
 
 
 # Many combinations possible
@@ -179,7 +179,7 @@ groups = None
 # Window to exctract (in ms)
 
 
-# In[26]:
+# In[ ]:
 
 
 exp_cohort.sessions[0].times.keys()
@@ -190,13 +190,13 @@ exp_cohort.sessions[0].times.keys()
 # I realised that this plot can never tell if a water drop was triggered by bar_off or spout.
 # 
 
-# In[27]:
+# In[ ]:
 
 
 exp_cohort.sessions[0].print_lines[0:30]
 
 
-# In[28]:
+# In[ ]:
 
 
 import re
@@ -214,7 +214,7 @@ import re
 
 
 
-# In[29]:
+# In[ ]:
 
 
 for ss in exp_cohort.sessions:
@@ -225,7 +225,7 @@ for ss in exp_cohort.sessions:
 # 
 # # export
 
-# In[30]:
+# In[ ]:
 
 
 keys = [
