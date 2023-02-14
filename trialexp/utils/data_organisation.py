@@ -18,14 +18,14 @@ from trialexp.utils.pycontrol_utilities import get_datetime_from_datestr, get_da
 def reorg_to_sessions_folder(
         exp_cohort, # Experiment object 
         sessions_folder: str, 
-        multi_input_keywords: dict = None):
+        multi_stream_keywords: dict = None):
     """
     Reorganizes the experiment data files into a standardized folder structure for each session.
 
     Args:
         exp_cohort (Experiment): An Experiment object containing information about the experiment sessions.
         sessions_folder (str): The path to the directory where the session folders will be created.
-        multi_input_keywords (dict, optional): A dictionary mapping file extensions to lists of keywords
+        multi_stream_keywords (dict, optional): A dictionary mapping file extensions to lists of keywords
             that identify different input streams for the corresponding data modality. Defaults to None.
 
     Raises:
@@ -39,7 +39,7 @@ def reorg_to_sessions_folder(
     and be matched to its full path before running this function. The subfolders for each data modality are named
     according to the extension of the data files, using a dictionary that maps extensions to folder names.
 
-    If `multi_input_keywords` is not None, the function assumes that there are multiple input streams for
+    If `multi_stream_keywords` is not None, the function assumes that there are multiple input streams for
     some of the data modalities, and creates subfolders for each input stream within the corresponding data modality
     folder.
 
@@ -55,7 +55,7 @@ def reorg_to_sessions_folder(
         >>> exp_cohort = match_sessions_to_files(exp_cohort, pycontrol_dir, ext="h5") # Match DLC files
 
         Optional:
-        >>> multi_input_keywords = {
+        >>> multi_stream_keywords = {
                 'video': ('Side','Down'),
                 'dlc': ('Side','Down'),
                 'lfp': ('probeA','probeB'), # Not yet implemented
@@ -63,12 +63,12 @@ def reorg_to_sessions_folder(
                   Not yet implemented
                 }
 
-        >>> reorg_to_sessions_folder(exp_cohort, sessions_folder, multi_input_keywords = multi_input_keywords)
+        >>> reorg_to_sessions_folder(exp_cohort, sessions_folder, multi_stream_keywords = multi_stream_keywords)
 
     """
     # dictionary to map file extensions to subfolders names
     # in the future could be passed as an argument but expected to be static
-    folder_name_ext = {
+    data_modality_ext = {
         'ppd': 'photometry',
         'txt': 'pycontrol',
         'avi': 'video', # Unused by us
@@ -94,24 +94,24 @@ def reorg_to_sessions_folder(
         base_folder.mkdir(parents=True, exist_ok=True)
         
         for (ext, filelist) in s.files.items():
-            if ext not in folder_name_ext.keys():
+            if ext not in data_modality_ext.keys():
                 raise KeyError(f'Extension {ext} not recognized')
             
-            data_mod_folder = base_folder / folder_name_ext[ext]
+            data_mod_folder = base_folder / data_modality_ext[ext]
             # create subfolder for the data modality
             data_mod_folder.mkdir(parents=True, exist_ok=True)
             
             # if multiple streams for the data modality (e.g. 2 cameras / 2 probes etc.)
-            if multi_input_keywords and ext in multi_input_keywords.keys():
+            if multi_stream_keywords and data_modality_ext[ext] in multi_stream_keywords.keys():
                 # create subfolders for each input
-                for input_stream in multi_input_keywords[ext]:
-                    input_folder = data_mod_folder / 'data_' + input_stream
+                for stream in multi_stream_keywords[data_modality_ext[ext]]:
+                    input_folder = data_mod_folder / ('data_' + stream)
                     input_folder.mkdir(parents=True, exist_ok=True)
                     
                     # copy files to input folder
                     for f in filelist:
                         file_name = Path(f).name
-                        if input_stream in f:
+                        if stream in f:
                             try:
                                 shutil.copy(f, input_folder / file_name)
                             except shutil.SameFileError:
