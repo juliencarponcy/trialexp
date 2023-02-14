@@ -1,7 +1,7 @@
 # Utility functions for pycontrol and pyphotometry files processing
 
 import json
-import pandas as pd
+
 from matplotlib import pyplot as plt
 import numpy as np
 from sklearn.mixture import GaussianMixture
@@ -13,7 +13,20 @@ from sklearn.preprocessing import StandardScaler
 
 from scipy.optimize import curve_fit
 from scipy.signal import butter, filtfilt, medfilt
+from scipy.stats import linregress, zscore
+
 from trialexp.utils.rsync import *
+
+'''
+Most of the photometry data processing functions are based on the intial design
+of the pyPhotometry package. They are stored in a dictionary containing both
+metadata and the data. The dictionary is returned by the import_ppd function.
+
+Assumptions:
+    - Analog 1 is the isosbestic control
+    - Analog 2 is the signal of interest
+'''
+
 
 #----------------------------------------------------------------------------------
 # Plotting
@@ -25,21 +38,48 @@ from trialexp.utils.rsync import *
 #----------------------------------------------------------------------------------
 
 #----------------------------------------------------------------------------------
-# Filtering / Motion correction / resampling 
+# Motion correction / Normalization 
 #----------------------------------------------------------------------------------
 
+# Note that there is a dependency in the workflow between these filtering 
+# and normalization functions. The normalization functions assume that the
+# data has already been filtered.
 
-def motion_correction():
-    ...
+def motion_correction(photometry_dict: dict) -> dict:
+    
+    if any(['analog_1_filt' not in photometry_dict, 'analog_2_filt' not in photometry_dict]):
+        raise Exception('Analog 1 and Analog 2 must be filtered before motion correction')
+    
+    slope, intercept, r_value, p_value, std_err = linregress(x=photometry_dict['analog_2_filt'], y=photometry_dict['analog_1_filt'])
+    photometry_dict['analog_1_est_motion'] = intercept + slope * photometry_dict['analog_2_filt']
+    photometry_dict['analog_1_corrected'] = photometry_dict['analog_1_filt'] - photometry_dict['analog_1_est_motion']
+    
+    return photometry_dict
+
+def compute_df_over_f(photometry_dict: dict, low_pass_cutoff: float = 0.001) -> dict:
+    
+    if 'analog_1_corrected' not in photometry_dict:
+        raise Exception('Analog 1 must be motion corrected before computing dF/F')
+    
+    b,a = butter(2, low_pass_cutoff, btype='low', fs=photometry_dict['sampling_rate'])
+    photometry_dict['analog_1_baseline_fluo'] = filtfilt(b,a, photometry_dict['analog_1_filt'], padtype='even')
+
+    # Now calculate the dF/F by dividing the motion corrected signal by the time varying baseline fluorescence.
+    photometry_dict['analog_1_df_over_f'] = photometry_dict['analog_1_corrected'] / photometry_dict['analog_1_baseline_fluo'] 
+    
+    return photometry_dict
 
 #----------------------------------------------------------------------------------
-# Filtering / Motion correction / resampling 
+# Filtering 
 #----------------------------------------------------------------------------------
 
 def median_filtering(data, medfilt_size: int = 3) -> np.ndarray:
+    
     if medfilt_size % 2 == 0:
         raise Exception('medfilt_size must be an odd number') 
+    
     data = medfilt(data,medfilt_size)
+    
     return data
 
 def get_filt_coefs(low_pass: int = None, high_pass: int = None, sampling_rate = 1000):
@@ -49,18 +89,24 @@ def get_filt_coefs(low_pass: int = None, high_pass: int = None, sampling_rate = 
         b, a = butter(2, low_pass/(0.5*sampling_rate), 'low')
     elif high_pass:
         b, a = butter(2, high_pass/(0.5*sampling_rate), 'high')
+    
     return b,a
 
 #----------------------------------------------------------------------------------
-# Helpers
+# Exponential fitting currently not in use in our pipelines
 #----------------------------------------------------------------------------------
 
 # The exponential curve we are going to fit.
 def exp_func(x, a, b, c):
    return a*np.exp(-b*x) + c
 
-# compute the exponential fitted to data
+
 def fit_exp_func(data, fs: int = 100, medfilt_size: int = 3) -> np.ndarray:
+    '''
+    compute the exponential fitted to data. This unused in current filtering because
+    unsuitable when behavioural box openings / closing provoked transitory changes
+    in baseline fluorescence.
+    '''
     if medfilt_size % 2 == 0:
         raise Exception('medfilt_size must be an odd number') 
     
@@ -160,7 +206,10 @@ def import_ppd(file_path, low_pass=20, high_pass=0.01, medfilt_size=None):
                  'pulse_times_1' : pulse_times_1,
                  'pulse_times_2' : pulse_times_2,
                  'time'          : time}
+    
+    # Add metadata to dictionary.
     data_dict.update(header_dict)
+    
     return data_dict
 
 
