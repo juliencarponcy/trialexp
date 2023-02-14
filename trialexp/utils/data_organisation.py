@@ -1,13 +1,134 @@
 import shutil
+
+from pathlib import Path
+
+# functions using os.path should be replaced by pathlib.Path
+# in order to be OS agnostic
 from os.path import join, isfile 
 from os import listdir, walk
 
 import pandas as pd
 
 from trialexp.utils.pycontrol_utilities import get_datetime_from_datestr, get_datestr_from_filename
+
 #----------------------------------------------------------------------------------
 # Data reorganization
 #----------------------------------------------------------------------------------
+
+def reorg_to_sessions_folder(
+        exp_cohort, # Experiment object 
+        sessions_folder: str, 
+        multi_input_keywords: dict = None):
+    """
+    Reorganizes the experiment data files into a standardized folder structure for each session.
+
+    Args:
+        exp_cohort (Experiment): An Experiment object containing information about the experiment sessions.
+        sessions_folder (str): The path to the directory where the session folders will be created.
+        multi_input_keywords (dict, optional): A dictionary mapping file extensions to lists of keywords
+            that identify different input streams for the corresponding data modality. Defaults to None.
+
+    Raises:
+        KeyError: If a pycontrol file is not found for a session, or if an extension is not recognized.
+
+    Returns:
+        None
+
+    The function creates a folder structure for each session that separates the different types of data files
+    into subfolders. Each session folder is named after the base name of the pycontrol file, which must exist
+    and be matched to its full path before running this function. The subfolders for each data modality are named
+    according to the extension of the data files, using a dictionary that maps extensions to folder names.
+
+    If `multi_input_keywords` is not None, the function assumes that there are multiple input streams for
+    some of the data modalities, and creates subfolders for each input stream within the corresponding data modality
+    folder.
+
+    For each file in each session, the function copies it to the appropriate folder and subfolder,
+    based on its extension and input stream (if applicable). If a file already exists in the target folder,
+    it is skipped.
+
+    Example:
+
+        >>> exp_cohort = match_sessions_to_files(exp_cohort, pycontrol_dir, ext="txt") # Match pycontrol files
+        >>> exp_cohort = match_sessions_to_files(exp_cohort, pycontrol_dir, ext="ppd") # Match photometry files
+        >>> exp_cohort = match_sessions_to_files(exp_cohort, pycontrol_dir, ext="mp4") # Match video files
+        >>> exp_cohort = match_sessions_to_files(exp_cohort, pycontrol_dir, ext="h5") # Match DLC files
+
+        Optional:
+        >>> multi_input_keywords = {
+                'video': ('Side','Down'),
+                'dlc': ('Side','Down'),
+                'lfp': ('probeA','probeB'), # Not yet implemented
+                'spikes': ('probeA','probeB') #
+                  Not yet implemented
+                }
+
+        >>> reorg_to_sessions_folder(exp_cohort, sessions_folder, multi_input_keywords = multi_input_keywords)
+
+    """
+    # dictionary to map file extensions to subfolders names
+    # in the future could be passed as an argument but expected to be static
+    folder_name_ext = {
+        'ppd': 'photometry',
+        'txt': 'pycontrol',
+        'avi': 'video', # Unused by us
+        'mp4': 'video',
+        'seq': 'video', # Unused except very early Go / NoGo tasks
+        'h5': 'dlc',
+        'csv': 'dlc'  # Unused but DLC data can be exported as csv
+        }
+    
+    # should be OS agnostic
+    sessions_folder = Path(sessions_folder)
+    
+    for s in exp_cohort.sessions:
+       
+        if 'txt' not in s.files.keys():
+            # raise an error if no pycontrol file found (must be matched to its .txt full path first)
+            raise KeyError(f'No pycontrol file found for session\n\
+                use: exp_cohort = match_sessions_to_files(exp_cohort, pycontrol_dir, ext="txt")')
+        
+        base_name = Path(s.files['txt'][0]).stem
+        base_folder = sessions_folder / base_name
+        # create base folder for the session
+        base_folder.mkdir(parents=True, exist_ok=True)
+        
+        for (ext, filelist) in s.files.items():
+            if ext not in folder_name_ext.keys():
+                raise KeyError(f'Extension {ext} not recognized')
+            
+            data_mod_folder = base_folder / folder_name_ext[ext]
+            # create subfolder for the data modality
+            data_mod_folder.mkdir(parents=True, exist_ok=True)
+            
+            # if multiple streams for the data modality (e.g. 2 cameras / 2 probes etc.)
+            if multi_input_keywords and ext in multi_input_keywords.keys():
+                # create subfolders for each input
+                for input_stream in multi_input_keywords[ext]:
+                    input_folder = data_mod_folder / 'data_' + input_stream
+                    input_folder.mkdir(parents=True, exist_ok=True)
+                    
+                    # copy files to input folder
+                    for f in filelist:
+                        file_name = Path(f).name
+                        if input_stream in f:
+                            try:
+                                shutil.copy(f, input_folder / file_name)
+                            except shutil.SameFileError:
+                                pass
+            # if single stream for the data modality (e.g. pycontrol / single-site photometry)
+            else:
+                # copy files to data modality folder, in default subfolder
+                # the for loop should not be necessary here but filelist is still a list... so
+                # data_stream is the default name for single input data modalities (could be anything else)
+                input_folder = data_mod_folder / 'data_stream'
+                input_folder.mkdir(parents=True, exist_ok=True)
+                for f in filelist:
+                    file_name = Path(f).name
+                    try:
+                        shutil.copy(f, input_folder / file_name)  
+                    except shutil.SameFileError:
+                        pass
 
 def copy_files_to_horizontal_folders(root_folders, horizontal_folder_pycontrol, horizontal_folder_photometry):
     '''
