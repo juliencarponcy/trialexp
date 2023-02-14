@@ -74,7 +74,7 @@ def get_datetime_from_datestr(datestr: str):
 def get_datestr_from_filename(filename: str):
     ''' 
         Should probably be refactored with strftime
-        
+
         PyControl and other files like videos and DLC data may
         have different date formats in their filenames.
         The purpose of this function is to reconcile these differences
@@ -268,7 +268,12 @@ def get_attributes_and_properties(obj):
 #----------------------------------------------------------------------------------
 
 def load_analog_data(file_path):
-    '''Load a pyControl analog data file and return the contents as a numpy array
-    whose first column is timestamps (ms) and second data values.'''
+    '''
+    Load a pyControl analog data file and return the contents as a numpy array
+    whose first column is timestamps (ms) and second data values.
+    
+    This is to be used for example to import treadmill or piezzo sensor data 
+    acquired by pyControl.
+    '''
     with open(file_path, 'rb') as f:
         return np.fromfile(f, dtype='<i').reshape(-1,2)

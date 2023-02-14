@@ -1,7 +1,7 @@
 # Utility functions for pycontrol and pyphotometry files processing
 
 import json
-import pandas as pd
+
 from matplotlib import pyplot as plt
 import numpy as np
 from sklearn.mixture import GaussianMixture
@@ -206,7 +206,10 @@ def import_ppd(file_path, low_pass=20, high_pass=0.01, medfilt_size=None):
                  'pulse_times_1' : pulse_times_1,
                  'pulse_times_2' : pulse_times_2,
                  'time'          : time}
+    
+    # Add metadata to dictionary.
     data_dict.update(header_dict)
+    
     return data_dict
 
 
