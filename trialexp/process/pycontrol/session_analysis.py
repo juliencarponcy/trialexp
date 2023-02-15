@@ -19,6 +19,7 @@ from math import ceil
 from scipy.signal import butter, filtfilt, decimate
 from scipy.stats import linregress, zscore
 from trialexp.process.data_import import Event
+from trialexp.process.pycontrol.utils import find_if_event_within_timelim, find_last_time_before_list
 
     
 def add_time_rel_trigger(df_events, trigger_time, trigger_name, col_name, trial_window):
@@ -143,6 +144,121 @@ def compute_conditions_by_trial(df_events_trials, conditions):
         # Find the corresponding trial time
         df_conditions[con] = df_events_trials[con+'_trial_time'].notna()
         
+    return df_conditions
+
+def compute_success(df_events_trials, df_cond, task_name, triggers=None, timelim=None):
+    """computes success trial numbers
+
+    This methods includes task_name-specific definitions of successful trials.
+    The results are stored in the 'success' columns of self.df_events and self.df_conditions as bool (True or False).
+    """
+    df_conditions = df_cond.copy()
+    df_conditions['success'] = False
+    # self.df_events['success'] = False
+    #print(self.task_name)a
+    df_events = df_events_trials.copy()
+    
+    # To perform for all Go-NoGo variants of the task (list below)
+    if task_name in ['reaching_go_nogo', 'reaching_go_nogo_jc', 'reaching_go_nogo_opto_continuous',
+        'reaching_go_nogo_opto_sinusoid' , 'reaching_go_nogo_opto_sinusoid_spout', 
+        'reaching_go_nogo_reversal', 'reaching_go_nogo_reversal_incentive',
+        'reaching_go_nogo_touch_spout']:
+        # self.triggers[0] refers to CS_Go triggering event most of the time whereas self.triggers[1] refers to CS_NoGo
+        # find if spout event within timelim for go trials
+        go_success = df_events.loc[
+            (df_events[df_events.trigger == triggers[0]].index),'spout_trial_time'].apply(
+                lambda x: find_if_event_within_timelim(x, timelim))
+        go_success_idx = go_success[go_success == True].index
+        #print(go_success_idx)
+        # categorize successful go trials which have a spout event within timelim
+        df_conditions.loc[(go_success_idx),'success'] = True
+        # df_events.loc[(go_success_idx),'success'] = True
+        # find if no bar_off event within timelim for nogo trials
+        nogo_success = ~df_events.loc[
+            (df_events[df_events.trigger == triggers[1]].index),'bar_off_trial_time'].apply(
+                lambda x: find_if_event_within_timelim(x, timelim))
+        nogo_success_idx = nogo_success[nogo_success == True].index
+        #print(go_success_idx, nogo_success_idx)
+        # categorize as successful trials which contains no bar_off but are not Go trials
+        # nogo_success_idx = nogo_success_idx.get_level_values('trial_nb').difference(
+        #     df_conditions[df_conditions['trigger'] == self.triggers[0]].index.get_level_values('trial_nb'))
+        df_conditions.loc[(nogo_success_idx),'success'] = True
+        # df_events.loc[(nogo_success_idx),'success'] = True
+
+    # To perform for simple pavlovian Go task, 
+    elif task_name in ['train_Go_CS-US_pavlovian','reaching_yp', 'reaching_test','reaching_test_CS',
+        'train_CSgo_US_coterminated','train_Go_CS-US_pavlovian', 'train_Go_CS-US_pavlovian_with_bar', 
+        'pavlovian_nobar_nodelay']:
+
+        # self.triggers[0] refers to CS_Go triggering event most of the time whereas self.triggers[1] refers to CS_NoGo
+        # find if spout event within timelim for go trials
+        go_success = df_events.loc[
+            (df_events[df_events.trigger == triggers[0]].index),'spout_trial_time'].apply(
+            lambda x: find_if_event_within_timelim(x, timelim))
+        go_success_idx = go_success[go_success == True].index
+        # categorize successful go trials which have a spout event within timelim
+        df_conditions.loc[(go_success_idx),'success'] = True
+        # df_events.loc[(go_success_idx),'success'] = True
+
+    # To perform for cued-uncued version of the go task
+    elif task_name in ['reaching_go_spout_cued_uncued', 'cued_uncued_oct22']:
+        # reformatting trigger name for that one task, with lower case
+        if task_name in ['cued_uncued_oct22']:
+            df_conditions.trigger = df_conditions.trigger.str.lower()
+            df_events.trigger = df_events.trigger.str.lower()
+
+        # for cued trials, find if spout event within timelim           
+        cued_success = df_events.loc[
+            (df_events[df_conditions.trigger == 'cued'].index),'spout_trial_time'].apply(
+            lambda x: find_if_event_within_timelim(x, timelim))
+        cued_success_idx = cued_success[cued_success == True].index
+
+        # for uncued trials, just check if there is a spout event after trial start
+        uncued_success = df_events.loc[
+            (df_events[df_conditions.trigger == 'uncued'].index),'spout_trial_time'].apply(
+            lambda x: x[-1] > 0 if len(x) > 0 else False)
+        uncued_success_idx = uncued_success[uncued_success == True].index
+        
+        # categorize successful go trials
+        df_conditions.loc[np.hstack((cued_success_idx.values, uncued_success_idx.values)), 'success'] = True
+        # df_events.loc[np.hstack((cued_success_idx.values, uncued_success_idx.values)),'success'] = True
+        # print(task_name, self.subject_ID, self.datetime_string, len(cued_success_idx), len(uncued_success_idx))
+
+
+    elif task_name in ['reaching_go_spout_nov22']:
+        reach_time_before_reward = df_events.loc[:,['spout_trial_time','US_end_timer_trial_time']].apply(
+            lambda x: find_last_time_before_list(x['spout_trial_time'], x['US_end_timer_trial_time']), axis=1)    
+        # select only trials with a spout event before a US_end_timer event
+        reach_bool = reach_time_before_reward.notnull()
+        # select trial where the hold time was present (not aborted)
+        reach_success_bool = reach_bool & df_conditions.busy_win
+        # set these trials as successful
+        df_conditions.loc[(reach_success_bool), 'success'] = True
+
+    # To perform for delayed tasks (check whether a US_end_timer was preceded by a spout)
+    elif task_name in ['reaching_go_spout_bar_dual_all_reward_dec22', 
+        'reaching_go_spout_bar_dual_dec22', 'reaching_go_spout_bar_nov22']:
+
+        reach_time_before_reward = df_events.loc[:,['spout_trial_time','US_end_timer_trial_time']].apply(
+                lambda x: find_last_time_before_list(x['spout_trial_time'], x['US_end_timer_trial_time']), axis=1)    
+        # select only trials with a spout event before a US_end_timer event
+        reach_bool = reach_time_before_reward.notnull()
+        # select trial where the hold time was present (not aborted)
+        reach_success_bool = reach_bool & df_conditions.waiting_for_spout
+        # set these trials as successful
+        df_conditions.loc[(reach_success_bool), 'success'] = True
+
+
+    # Reorder columns putting trigger, valid and success first for more clarity
+    # col_list = list(df_conditions.columns.values)
+    # col_to_put_first = ['trigger', 'success','valid']
+    # for c in col_to_put_first:
+    #     col_list.remove(c)
+    # col_list = ['trigger', 'success','valid'] + col_list
+    # df_conditions = df_conditions[col_list]
+
+    
+
     return df_conditions
 
 class Session():
@@ -287,432 +403,17 @@ class Session():
         # self.trial_window = trial_window        
         return conditions, triggers, events_to_process
 
-    # @staticmethod
-    # def extract_data_from_session(df_events):
-    #     """
-    #     The two attributes
-    #         self.df_events
-    #         self.df_conditions
-    #     are assigned by looking into a session data
-    #     """
 
-    #     df_events = pd.DataFrame(self.events, columns=['timestamp', 'event'])
-        
-    #     df_events['timestamp'] = df_events['timestamp'].astype('int')
-
-    #     # parsing timestamps and events from print lines
-    #     print_events = [line.split() for line in self.print_lines]
-    #     print_ts = [int(line[0]) for line in print_events]
-    #     print_text = [' '.join(line[1:]) for line in print_events]
-        
-    #     # put timestamp and text of print lines in a dataframe, and make the timestamp as index
-    #     df_print_events = pd.DataFrame({'timestamp':print_ts,'event':print_text})
-        
-    #     # keep print_lines that are relevant to task analysis
-    #     df_print_events = df_print_events.loc[df_print_events['event'].isin(
-    #         self.triggers + self.events_to_process + self.conditions
-    #     )]
- 
-    #     # keep events in df if any event is relevant for behaviour        
-    #     df_events = df_events.loc[df_events['event'].isin(
-    #         self.triggers + self.events_to_process + self.conditions
-    #     )]
-
-    #     # Merge print and events which are relevant to conditions of trials (time insensitive)
-    #     df_conditions = pd.concat([df_print_events.loc[df_print_events['event'].isin(self.conditions)],
-    #         df_events.loc[df_events['event'].isin(self.conditions)]]
-    #     , ignore_index=False)
-
-    #     # Merge print and events which are relevant to events of trials (time sensitive)
-    #     df_events = pd.concat([df_print_events.loc[df_print_events['event'].isin(self.triggers + self.events_to_process)],
-    #         df_events.loc[df_events['event'].isin(self.triggers + self.events_to_process)]]
-    #     , ignore_index=True)
-
-    #     # Turn into events/conditions string into categorical variables      
-    #     df_events['event'] = df_events['event'].astype('category')
-    #     df_conditions['event'] = df_conditions['event'].astype('category')
-
-    #     # use timestamp as index
-    #     df_events.set_index('timestamp',inplace=True, drop=True)
-    #     df_conditions.set_index('timestamp',inplace=True, drop=True)
-
-    #     self.df_events = df_events
-    #     self.df_conditions = df_conditions
-        
-    #     # return session objet
-    #     return self
-
-    # VERY UGLY AND SLOW:
-    # compute trial nb and triggering events types to aggegate and index on them
-    # TODO: optimize with itertuples or apply 
-    @staticmethod
-    def compute_trial_nb(trial_window, df_conditions):
-
-        # just reassigning object attributes to new variables to improve readibility
-        # almost certainly at the expense of performance
-        
-        df_events = self.df_events
-        df_conditions = self.df_conditions
-
-        # initializing trial_nb and trial_time column and casting as float,
-        # float allows use of NaN values and discarding events outside trials
-        # at the expense of memory (probably very mild burden)
-
-        df_events['trial_nb'] = nan
-        df_events['trial_nb'] = df_events['trial_nb'].astype(float)
-
-        df_events['trigger'] = ''
-        df_events['trial_time'] = nan
-        df_events['trial_time'] = df_events['trial_time'].astype(float)
-
-        df_conditions['trial_nb'] = nan
-        df_conditions['trial_nb'] = df_conditions['trial_nb'].astype(float)
-
-        df_conditions['trigger'] = ''
-        df_conditions['trial_time'] = nan
-        df_conditions['trial_time'] = df_conditions['trial_time'].astype(float)
-
-        # basically 
-        # for each trigger type extract and concatenate trial times and trigger type
-        # if there are more than 1 triggers, they are considered as additional trials at the end
-        for tidx, trig in enumerate(self.triggers):
-            if tidx == 0:
-                all_trial_times = [t for t in self.times[trig]]
-                all_trial_triggers = [trig for i in range(len(self.times[trig]))]
-            else:
-                all_trial_times = all_trial_times + [t for t in self.times[trig]]
-                all_trial_triggers = all_trial_triggers + [trig for i in range(len(self.times[trig]))]
-        # sort trial times and triggers in chronological order
-        indices, all_trial_times_sorted = zip(*sorted(enumerate(all_trial_times), key=itemgetter(1)))
-        #print(indices, all_trial_times_sorted)
-        all_trial_triggers_sorted = [all_trial_triggers[i] for i in indices]
-        #print(all_trial_triggers_sorted)
-        
-        for ntrial, trigtime in enumerate(list(all_trial_times_sorted)):
-            # trial time may come from two different triggers
-                        
-            # attribute trial_nb to event/conditions occuring around trigger (event/state)
-            # if the loop is at the last trial
-            if ntrial == len(all_trial_times_sorted)-1:
-                #print('last trial: ', ntrial)
-                df_events['trial_nb'].mask(
-                    (df_events.index >= trigtime + trial_window[0])
-                , ntrial+1, inplace=True)
-
-                df_conditions['trial_nb'].mask(
-                    (df_conditions.index >= trigtime + trial_window[0])
-                , ntrial+1, inplace=True)
-
-                df_events['trial_time'].mask(
-                    (df_events.index >= trigtime + trial_window[0])
-                , df_events.index[
-                    (df_events.index >= trigtime + trial_window[0])
-                ] - trigtime, inplace=True)
-
-                # determine triggering event
-                df_conditions['trigger'].mask(
-                    (df_conditions.index >= trigtime + trial_window[0])
-                , all_trial_triggers_sorted[ntrial], inplace=True)
-
-                # compute trial relative time
-                df_conditions['trial_time'].mask(
-                    (df_conditions.index >= trigtime + trial_window[0])
-                , df_conditions.index[
-                    (df_conditions.index >= trigtime + trial_window[0])
-                ] - trigtime, inplace=True)
-
-            # for every trial except last
-            else: 
-                #print('all but last trial: ', ntrial, 'over', len(all_trial_times_sorted),  all_trial_times_sorted[ntrial+1])
-
-                df_events['trial_nb'].mask(
-                    (df_events.index >= trigtime + trial_window[0]) &
-                    (df_events.index <= all_trial_times_sorted[ntrial+1] + trial_window[0])
-                , ntrial+1, inplace=True)
-
-                df_conditions['trial_nb'].mask(
-                    (df_conditions.index >= trigtime + trial_window[0]) &
-                    (df_conditions.index <= all_trial_times_sorted[ntrial+1] + trial_window[0])
-                , ntrial+1, inplace=True)
-
-                df_events['trial_time'].mask(
-                    (df_events.index >= trigtime + trial_window[0]) &
-                    (df_events.index <= all_trial_times_sorted[ntrial+1] + trial_window[0])
-                , df_events.index[
-                    (df_events.index >= trigtime + trial_window[0]) &
-                    (df_events.index <= all_trial_times_sorted[ntrial+1] + trial_window[0])
-                ] - trigtime, inplace=True)
-
-                # determine triggering event
-                df_conditions['trigger'].mask(
-                    (df_conditions.index >= trigtime + trial_window[0]) &
-                    (df_conditions.index <= all_trial_times_sorted[ntrial+1] + trial_window[0])
-                , all_trial_triggers_sorted[ntrial], inplace=True)
-
-                # compute trial relative time
-                df_conditions['trial_time'].mask(
-                    (df_conditions.index >= trigtime + trial_window[0]) &
-                    (df_conditions.index <= all_trial_times_sorted[ntrial+1] + trial_window[0])
-                , df_conditions.index[
-                    (df_conditions.index >= trigtime + trial_window[0]) &
-                    (df_conditions.index <= all_trial_times_sorted[ntrial+1] + trial_window[0])
-                ] - trigtime, inplace=True)
-        
-        # drop events without trial_nb attributed (normally first events only)
-        df_events.dropna(axis=0, subset=['trial_nb'], inplace=True)
-        df_conditions.dropna(axis=0, subset=['trial_nb'], inplace=True)
-
-        # reconvert trial_nb and trial_time to int since now there is no more need for nan values
-        df_events['trial_nb'] = df_events['trial_nb'].astype(int)
-        df_conditions['trial_nb'] = df_conditions['trial_nb'].astype(int)
-
-        df_events['trial_time'] = df_events['trial_time'].astype(int)
-        df_conditions['trial_time'] = df_conditions['trial_time'].astype(int)
-
-        # aggregate events trial_time by trial_nb and event
-        df_events = df_events.groupby(['trial_nb','event']).agg(list)
-
-        # construct a new dataframe to flattened multi-indexed based events
-        # and introduce trigger, valid and success columns
-        ev_col_list = [i + '_trial_time' for i in self.events_to_process]
-
-        columns=['timestamp', 'trigger', 'valid', 'success', 'uid']
-        columns = columns + ev_col_list
-
-        new_df = pd.DataFrame(index= df_events.index.get_level_values('trial_nb').unique(),
-            columns=columns)
-
-        # Create unique identifiers for trials
-        new_df['trial_nb'] = new_df.index.values
-        new_df['uid'] = new_df['trial_nb'].apply(
-            lambda x: f'{self.subject_ID}_{self.datetime.date()}_{self.datetime.time()}_{x}')
-        new_df['trial_nb'].drop(columns='trial_nb', inplace=True)
-
-        # fill new <event>_trial_time columns
-        for ev in self.events_to_process:
-            try:
-                new_df[str(ev + '_trial_time')] = df_events.loc[
-                    (df_events.index.get_level_values('trial_nb'), ev), 'trial_time'].values
-            except KeyError as ke:
-                print('No event ', ke, ' found: ',
-                    self.subject_ID, self.datetime_string, self.task_name)
-
-        # fill the new_df with timestamps of trigger and trigger types
-        new_df['timestamp'] = all_trial_times_sorted
-        new_df['trigger'] = all_trial_triggers_sorted
-
-        # validate trials in function of the time difference between trials (must be > at length of trial_window)
-        new_df['valid'] = new_df['timestamp'].diff() > trial_window[0]
-        
-        # validate first trial except if too early in the session
-        if new_df['timestamp'].iloc[0] > abs(trial_window[0]):
-           new_df.loc[1, 'valid'] = True
-        
-        # assing the newly built dataframe into the session object
-        self.df_events = new_df
-
-        # replace NaN by an empty lists for trial without events
-        for ev_times_col in ev_col_list:
-            self.df_events.loc[(self.df_events[ev_times_col].isnull()), ev_times_col] = \
-                self.df_events.loc[(self.df_events[ev_times_col].isnull()), ev_times_col].apply(lambda x: [])
-            
-
-        #self.df_events = new_df
-        self.df_conditions = df_conditions
-
-
-        # check if df_conditions and df_events have same number of rows
-        # assert(self.df_events['uid'] == self.df_conditions['uid'])
-
-        return self
-
-    def compute_conditions_by_trial(self):
-
-        vars = self.df_conditions[['trigger','trial_nb']]
-        
-        # One-hot encoding of conditions to detect :
-        # turn a column of string into as much columns as conditions to detect
-        # and fill values with 0 and 1
-        dummies = pd.get_dummies(self.df_conditions['event'])
-
-        # join numeric variables (timestamp, trial_nb, trial_time) with dummies (one-hot encoded) variables
-        self.df_conditions = vars.join(dummies, on='timestamp')
-
-
-        # do this only if conditions have been defined, e.g. opto protocols, free reward occurences...
-        # df_conditions will be used to separate trials with the same trigger into different sub-categories depending
-        # on what occured during this trial, or the specific variation of that trial, the idea is to use
-        # conditions as a categorization for trial sub-types, with time insensitive information.
-
-        # df_events on the other hands, serves to store time sensitive information, and multiple similar
-        # events could occur during the same trial. Timestamps of each trial (relative or absolute)
-        # will be then aggregated and used to compute nb of occurences or mean interval between events
-        if 'nan' not in self.conditions:
-            #print(self.df_conditions)
-            # new variable for readability
-            df_conditions = self.df_conditions
-
-            # check for condition(s) not present in file
-            absent_conditions = set(self.conditions).difference(df_conditions.columns)
-            # add the corresponding columns and fill with 0 to facilitate further analyses
-            # especially in cases where a condition is present in some sessions and not in others
-            for cond in absent_conditions:
-                df_conditions[cond] = 0
-
-            # group by trigger and trial nb
-            df_conditions_summed = self.df_conditions[self.conditions + ['trial_nb']].groupby(['trial_nb'], as_index=False)
-            # Aggregate different timestamp ()
-            df_conditions_summed = df_conditions_summed.agg(lambda x: sum(x))   
-
-            # reindexing to have conditions for all trials even if no condition has been detected for some trials
-            df_conditions = df_conditions_summed.reindex(index=self.df_events.index, fill_value=0)   
-
-            df_conditions = pd.concat([self.df_events[['trigger','valid']], df_conditions], axis='columns', join='outer')
-
-            self.df_conditions = df_conditions
-            self.df_conditions.loc[:,self.conditions] = self.df_conditions[self.conditions].astype(bool)
-
-        else:
-            self.df_conditions = self.df_events.iloc[:,1:4] # TODO: check and/or remove
-            df_conditions_summed = self.df_conditions
-
-        ###################################################################################
-        # Compute if trials are cued or uncued for this specific task, to be removed asap #
-        ###################################################################################
-        if self.task_name == 'reaching_go_spout_cued_uncued':
-            # FORCED: timestamp threshold, assume that blocks are 20min long, adapt otherwise
-            block_lim = 20*60*1000
-
-            # extract starting_block
-            try:
-                starting_block = [p for p in self.print_lines if 'Starting block' in p][0].split(': ')[1]
-            # if starting block if not defined, the first block is Cued
-            except:
-                starting_block = 'Cued'
-            
-            # assign trial conditions to cued or uncued depending on timestamps
-            if starting_block == 'Cued':               
-                self.df_conditions.loc[(self.df_events.timestamp < block_lim),'cued'] = True
-                self.df_conditions.loc[(self.df_events.timestamp > block_lim),'cued'] = False
-            # else:
-                # self.df_conditions.loc[(self.df_events.timestamp > block_lim),'cued'] = True
-                # self.df_conditions.loc[(self.df_events.timestamp < block_lim),'cued'] = False
-            self.df_conditions['cued'] = self.df_conditions['cued'].astype('bool') 
-            # to avoid FurureWarning
-            # FutureWarning: In a future version, object-dtype columns with all-bool values will not be 
-            # included in reductions with bool_only=True. Explicitly cast to bool dtype instead.
-
-            # change triggers name for this task to cued and uncued
-            self.triggers = ['cued', 'uncued']
-            self.df_conditions.loc[(self.df_conditions.cued == True),['trigger']] = self.triggers[0]
-            self.df_conditions.loc[(self.df_conditions.cued == False),['trigger']] = self.triggers[1]
-        #     self.df_events.loc[(self.df_conditions.cued == True),['trigger']] = self.triggers[0]
-        #     self.df_events.loc[(self.df_conditions.cued == False),['trigger']] = self.triggers[1]
-        # # print(self.df_events.shape, self.df_conditions.shape)
-                    
-        ##############################################
-        # End of block to remove (for specific task) #
-        ##############################################
-
-        self.df_conditions['trial_nb'] = self.df_conditions.index.values
-        
-        # Create unique identifiers for trials
-        self.df_conditions['uid'] = self.df_conditions['trial_nb'].apply(
-                lambda x: f'{self.subject_ID}_{self.datetime.date()}_{self.datetime.time()}_{x}')
-        self.df_conditions.drop(columns = 'trial_nb', inplace=True)
-        # check if df_conditions and df_events have same number of rows
-        assert(self.df_events['uid'].equals(self.df_conditions['uid']))
-
-        
-        return self
-
-    def create_metadata_dict(self, trial_window):
+    def create_metadata_dict(self, trial_window, timelim):
         metadata_dict = {
             'subject_ID' : self.subject_ID,
             'datetime' : self.datetime,
+            'timelim': timelim,
             'task' : self.task_name,
             'trial_window' : trial_window,
-            'success_time_lim' : self.timelim,
             'com_port' : self.setup_ID
         }
         return metadata_dict
-
-    # Perform all the pretreatments to analyze behavioural file by trials
-    def get_session_by_trial(self, trial_window: list, timelim: list,
-            tasksfile, blank_spurious_event: list, blank_timelim: list, verbose=False):
-        """
-
-        """
-
-        # set a minimum nb of events to not process aborted files
-        min_ev_to_process = 30
-        # Do not process files with less than min_ev_to_process
-        if len(self.events) < min_ev_to_process:
-            print(f'file too short to process (likely aborted session): \
-                {self.subject_ID} {self.datetime_string} {self.task_name}') 
-            self.analyzed = False          
-            return self
-        else:
-            try:
-                self.analyzed = False
-                # self.trial_window removed from Session, only in Experiment
-                # to avoid inconsistencies
-                # self.trial_window = trial_window 
-                # get triggers and events to analyze, set trial_window to be extracted
-                # and timelim for which trials are considered success/fail
-                self = self.get_task_specs(tasksfile,trial_window, timelim)
-                # get triggers and events to analyze
-                if verbose:
-                    print(f'processing by trial: {self.file_name} task: {self.task_name}')
-
-                self = self.extract_data_from_session()
-                self = self.compute_trial_nb(trial_window)
-                
-                
-                if blank_spurious_event is not None:
-                    self.df_events[blank_spurious_event + '_trial_time'] = \
-                        self.df_events[blank_spurious_event + '_trial_time'].apply(lambda x: blank_spurious_detection(x, blank_timelim))
-
-                self = self.compute_conditions_by_trial()
-                self = self.compute_success()
-
-                def tidy_up_duplicate_columns(df_events: pd.DataFrame, df_conditions: pd.DataFrame):
-                    '''
-                    Temporary helper method to clean duplicated columns (due to previous implementation)
-                    between df_events and df_conditions dataframes.
-
-                    Possibly due to the following line:
-                    self.df_conditions = self.df_events.iloc[:,1:4] (in compute_conditions_by_trial)
-
-                    This should allow cleaner joining/merging for related functions
-                    It keeps 'uid' columns for merging on data that includes more than one subject/session
-                    Also check if df_events and df_conditions are still matching on 'uid'
-                    '''
-                    df_events.drop(columns=['trigger','valid','success','trial_nb'], inplace=True)
-                    
-                    assert(df_events.uid.equals(df_conditions.uid))
-
-                    return df_events
-
-                self.df_events = tidy_up_duplicate_columns(self.df_events, self.df_conditions)    
-                self.metadata_dict = self.create_metadata_dict(trial_window)
-                self.analyzed = True
-                return self
-                #pycontrol_utilities method
-
-            # TODO: These exceptions are useful to deal with too short files or missing a trial type
-            # but are are obfuscating code bugs when they happen somewhere. Improve exception handling
-            except KeyError as ke:
-                if verbose:
-                    print(f'No trial {ke} found: {self.file_name} task: {self.task_name}')
-
-                self.analyzed = False
-                return self
-            except ValueError as ve:
-                if verbose:
-                    print(f'No trial {ve} found: {self.file_name} task: {self.task_name}')
-                self.analyzed = False
-                return self
 
     #----------------------------------------------------------------------------------
     # The following function will be highly customized for each task as it needs to take
@@ -722,116 +423,116 @@ class Session():
     # TODO: consider putting list of tasks elsewhere,
     # or separate entirely in a more versatile function
     # TODO: identify the most common/likely patterns
-    def compute_success(self):
-        """computes success trial numbers
+    # def compute_success(self):
+    #     """computes success trial numbers
 
-        This methods includes task_name-specific definitions of successful trials.
-        The results are stored in the 'success' columns of self.df_events and self.df_conditions as bool (True or False).
-        """
-        self.df_conditions['success'] = False
-        # self.df_events['success'] = False
-        #print(self.task_name)
-        # To perform for all Go-NoGo variants of the task (list below)
-        if self.task_name in ['reaching_go_nogo', 'reaching_go_nogo_jc', 'reaching_go_nogo_opto_continuous',
-            'reaching_go_nogo_opto_sinusoid' , 'reaching_go_nogo_opto_sinusoid_spout', 
-            'reaching_go_nogo_reversal', 'reaching_go_nogo_reversal_incentive',
-            'reaching_go_nogo_touch_spout']:
-            # self.triggers[0] refers to CS_Go triggering event most of the time whereas self.triggers[1] refers to CS_NoGo
-            # find if spout event within timelim for go trials
-            go_success = self.df_events.loc[
-                (self.df_events[self.df_events.trigger == self.triggers[0]].index),'spout_trial_time'].apply(
-                    lambda x: find_if_event_within_timelim(x, self.timelim))
-            go_success_idx = go_success[go_success == True].index
-            #print(go_success_idx)
-            # categorize successful go trials which have a spout event within timelim
-            self.df_conditions.loc[(go_success_idx),'success'] = True
-            # self.df_events.loc[(go_success_idx),'success'] = True
-            # find if no bar_off event within timelim for nogo trials
-            nogo_success = ~self.df_events.loc[
-                (self.df_events[self.df_events.trigger == self.triggers[1]].index),'bar_off_trial_time'].apply(
-                    lambda x: find_if_event_within_timelim(x, self.timelim))
-            nogo_success_idx = nogo_success[nogo_success == True].index
-            #print(go_success_idx, nogo_success_idx)
-            # categorize as successful trials which contains no bar_off but are not Go trials
-            # nogo_success_idx = nogo_success_idx.get_level_values('trial_nb').difference(
-            #     self.df_conditions[self.df_conditions['trigger'] == self.triggers[0]].index.get_level_values('trial_nb'))
-            self.df_conditions.loc[(nogo_success_idx),'success'] = True
-            # self.df_events.loc[(nogo_success_idx),'success'] = True
+    #     This methods includes task_name-specific definitions of successful trials.
+    #     The results are stored in the 'success' columns of self.df_events and self.df_conditions as bool (True or False).
+    #     """
+    #     self.df_conditions['success'] = False
+    #     # self.df_events['success'] = False
+    #     #print(self.task_name)
+    #     # To perform for all Go-NoGo variants of the task (list below)
+    #     if task_name in ['reaching_go_nogo', 'reaching_go_nogo_jc', 'reaching_go_nogo_opto_continuous',
+    #         'reaching_go_nogo_opto_sinusoid' , 'reaching_go_nogo_opto_sinusoid_spout', 
+    #         'reaching_go_nogo_reversal', 'reaching_go_nogo_reversal_incentive',
+    #         'reaching_go_nogo_touch_spout']:
+    #         # self.triggers[0] refers to CS_Go triggering event most of the time whereas self.triggers[1] refers to CS_NoGo
+    #         # find if spout event within timelim for go trials
+    #         go_success = self.df_events.loc[
+    #             (self.df_events[self.df_events.trigger == self.triggers[0]].index),'spout_trial_time'].apply(
+    #                 lambda x: find_if_event_within_timelim(x, self.timelim))
+    #         go_success_idx = go_success[go_success == True].index
+    #         #print(go_success_idx)
+    #         # categorize successful go trials which have a spout event within timelim
+    #         self.df_conditions.loc[(go_success_idx),'success'] = True
+    #         # self.df_events.loc[(go_success_idx),'success'] = True
+    #         # find if no bar_off event within timelim for nogo trials
+    #         nogo_success = ~self.df_events.loc[
+    #             (self.df_events[self.df_events.trigger == self.triggers[1]].index),'bar_off_trial_time'].apply(
+    #                 lambda x: find_if_event_within_timelim(x, self.timelim))
+    #         nogo_success_idx = nogo_success[nogo_success == True].index
+    #         #print(go_success_idx, nogo_success_idx)
+    #         # categorize as successful trials which contains no bar_off but are not Go trials
+    #         # nogo_success_idx = nogo_success_idx.get_level_values('trial_nb').difference(
+    #         #     self.df_conditions[self.df_conditions['trigger'] == self.triggers[0]].index.get_level_values('trial_nb'))
+    #         self.df_conditions.loc[(nogo_success_idx),'success'] = True
+    #         # self.df_events.loc[(nogo_success_idx),'success'] = True
 
-        # To perform for simple pavlovian Go task, 
-        elif self.task_name in ['train_Go_CS-US_pavlovian','reaching_yp', 'reaching_test','reaching_test_CS',
-            'train_CSgo_US_coterminated','train_Go_CS-US_pavlovian', 'train_Go_CS-US_pavlovian_with_bar', 'pavlovian_nobar_nodelay']:
+    #     # To perform for simple pavlovian Go task, 
+    #     elif self.task_name in ['train_Go_CS-US_pavlovian','reaching_yp', 'reaching_test','reaching_test_CS',
+    #         'train_CSgo_US_coterminated','train_Go_CS-US_pavlovian', 'train_Go_CS-US_pavlovian_with_bar', 'pavlovian_nobar_nodelay']:
 
-            # self.triggers[0] refers to CS_Go triggering event most of the time whereas self.triggers[1] refers to CS_NoGo
-            # find if spout event within timelim for go trials
-            go_success = self.df_events.loc[
-                (self.df_events[self.df_events.trigger == self.triggers[0]].index),'spout_trial_time'].apply(
-                lambda x: find_if_event_within_timelim(x, self.timelim))
-            go_success_idx = go_success[go_success == True].index
-            # categorize successful go trials which have a spout event within timelim
-            self.df_conditions.loc[(go_success_idx),'success'] = True
-            # self.df_events.loc[(go_success_idx),'success'] = True
+    #         # self.triggers[0] refers to CS_Go triggering event most of the time whereas self.triggers[1] refers to CS_NoGo
+    #         # find if spout event within timelim for go trials
+    #         go_success = self.df_events.loc[
+    #             (self.df_events[self.df_events.trigger == self.triggers[0]].index),'spout_trial_time'].apply(
+    #             lambda x: find_if_event_within_timelim(x, self.timelim))
+    #         go_success_idx = go_success[go_success == True].index
+    #         # categorize successful go trials which have a spout event within timelim
+    #         self.df_conditions.loc[(go_success_idx),'success'] = True
+    #         # self.df_events.loc[(go_success_idx),'success'] = True
 
-        # To perform for cued-uncued version of the go task
-        elif self.task_name in ['reaching_go_spout_cued_uncued', 'cued_uncued_oct22']:
-            # reformatting trigger name for that one task, with lower case
-            if self.task_name in ['cued_uncued_oct22']:
-                self.df_conditions.trigger = self.df_conditions.trigger.str.lower()
-                self.df_events.trigger = self.df_events.trigger.str.lower()
+    #     # To perform for cued-uncued version of the go task
+    #     elif self.task_name in ['reaching_go_spout_cued_uncued', 'cued_uncued_oct22']:
+    #         # reformatting trigger name for that one task, with lower case
+    #         if self.task_name in ['cued_uncued_oct22']:
+    #             self.df_conditions.trigger = self.df_conditions.trigger.str.lower()
+    #             self.df_events.trigger = self.df_events.trigger.str.lower()
 
-            # for cued trials, find if spout event within timelim           
-            cued_success = self.df_events.loc[
-                (self.df_events[self.df_conditions.trigger == 'cued'].index),'spout_trial_time'].apply(
-                lambda x: find_if_event_within_timelim(x, self.timelim))
-            cued_success_idx = cued_success[cued_success == True].index
+    #         # for cued trials, find if spout event within timelim           
+    #         cued_success = self.df_events.loc[
+    #             (self.df_events[self.df_conditions.trigger == 'cued'].index),'spout_trial_time'].apply(
+    #             lambda x: find_if_event_within_timelim(x, self.timelim))
+    #         cued_success_idx = cued_success[cued_success == True].index
 
-            # for uncued trials, just check if there is a spout event after trial start
-            uncued_success = self.df_events.loc[
-                (self.df_events[self.df_conditions.trigger == 'uncued'].index),'spout_trial_time'].apply(
-                lambda x: x[-1] > 0 if len(x) > 0 else False)
-            uncued_success_idx = uncued_success[uncued_success == True].index
+    #         # for uncued trials, just check if there is a spout event after trial start
+    #         uncued_success = self.df_events.loc[
+    #             (self.df_events[self.df_conditions.trigger == 'uncued'].index),'spout_trial_time'].apply(
+    #             lambda x: x[-1] > 0 if len(x) > 0 else False)
+    #         uncued_success_idx = uncued_success[uncued_success == True].index
             
-            # categorize successful go trials
-            self.df_conditions.loc[np.hstack((cued_success_idx.values, uncued_success_idx.values)), 'success'] = True
-            # self.df_events.loc[np.hstack((cued_success_idx.values, uncued_success_idx.values)),'success'] = True
-            print(self.task_name, self.subject_ID, self.datetime_string, len(cued_success_idx), len(uncued_success_idx))
+    #         # categorize successful go trials
+    #         self.df_conditions.loc[np.hstack((cued_success_idx.values, uncued_success_idx.values)), 'success'] = True
+    #         # self.df_events.loc[np.hstack((cued_success_idx.values, uncued_success_idx.values)),'success'] = True
+    #         print(self.task_name, self.subject_ID, self.datetime_string, len(cued_success_idx), len(uncued_success_idx))
 
 
-        elif self.task_name in ['reaching_go_spout_nov22']:
-            reach_time_before_reward = self.df_events.loc[:,['spout_trial_time','US_end_timer_trial_time']].apply(
-                lambda x: find_last_time_before_list(x['spout_trial_time'], x['US_end_timer_trial_time']), axis=1)    
-            # select only trials with a spout event before a US_end_timer event
-            reach_bool = reach_time_before_reward.notnull()
-            # select trial where the hold time was present (not aborted)
-            reach_success_bool = reach_bool & self.df_conditions.busy_win
-            # set these trials as successful
-            self.df_conditions.loc[(reach_success_bool), 'success'] = True
+    #     elif self.task_name in ['reaching_go_spout_nov22']:
+    #         reach_time_before_reward = self.df_events.loc[:,['spout_trial_time','US_end_timer_trial_time']].apply(
+    #             lambda x: find_last_time_before_list(x['spout_trial_time'], x['US_end_timer_trial_time']), axis=1)    
+    #         # select only trials with a spout event before a US_end_timer event
+    #         reach_bool = reach_time_before_reward.notnull()
+    #         # select trial where the hold time was present (not aborted)
+    #         reach_success_bool = reach_bool & self.df_conditions.busy_win
+    #         # set these trials as successful
+    #         self.df_conditions.loc[(reach_success_bool), 'success'] = True
 
-        # To perform for delayed tasks (check whether a US_end_timer was preceded by a spout)
-        elif self.task_name in ['reaching_go_spout_bar_dual_all_reward_dec22', 
-            'reaching_go_spout_bar_dual_dec22', 'reaching_go_spout_bar_nov22']:
+    #     # To perform for delayed tasks (check whether a US_end_timer was preceded by a spout)
+    #     elif self.task_name in ['reaching_go_spout_bar_dual_all_reward_dec22', 
+    #         'reaching_go_spout_bar_dual_dec22', 'reaching_go_spout_bar_nov22']:
 
-            reach_time_before_reward = self.df_events.loc[:,['spout_trial_time','US_end_timer_trial_time']].apply(
-                    lambda x: find_last_time_before_list(x['spout_trial_time'], x['US_end_timer_trial_time']), axis=1)    
-            # select only trials with a spout event before a US_end_timer event
-            reach_bool = reach_time_before_reward.notnull()
-            # select trial where the hold time was present (not aborted)
-            reach_success_bool = reach_bool & self.df_conditions.waiting_for_spout
-            # set these trials as successful
-            self.df_conditions.loc[(reach_success_bool), 'success'] = True
+    #         reach_time_before_reward = self.df_events.loc[:,['spout_trial_time','US_end_timer_trial_time']].apply(
+    #                 lambda x: find_last_time_before_list(x['spout_trial_time'], x['US_end_timer_trial_time']), axis=1)    
+    #         # select only trials with a spout event before a US_end_timer event
+    #         reach_bool = reach_time_before_reward.notnull()
+    #         # select trial where the hold time was present (not aborted)
+    #         reach_success_bool = reach_bool & self.df_conditions.waiting_for_spout
+    #         # set these trials as successful
+    #         self.df_conditions.loc[(reach_success_bool), 'success'] = True
 
 
-        # Reorder columns putting trigger, valid and success first for more clarity
-        col_list = list(self.df_conditions.columns.values)
-        col_to_put_first = ['trigger', 'success','valid']
-        for c in col_to_put_first:
-            col_list.remove(c)
-        col_list = ['trigger', 'success','valid'] + col_list
-        self.df_conditions = self.df_conditions[col_list]
+    #     # Reorder columns putting trigger, valid and success first for more clarity
+    #     col_list = list(self.df_conditions.columns.values)
+    #     col_to_put_first = ['trigger', 'success','valid']
+    #     for c in col_to_put_first:
+    #         col_list.remove(c)
+    #     col_list = ['trigger', 'success','valid'] + col_list
+    #     self.df_conditions = self.df_conditions[col_list]
 
         
 
-        return self
+    #     return self
 
     def get_photometry_trials(self,
             conditions_list: list = None,
