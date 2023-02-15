@@ -142,7 +142,11 @@ def compute_conditions_by_trial(df_events_trials, conditions):
     df_conditions = df_events_trials[['uid','trigger','valid']].copy()
     for con in conditions:
         # Find the corresponding trial time
-        df_conditions[con] = df_events_trials[con+'_trial_time'].notna()
+        colname = con+'_trial_time'
+        if colname in df_events_trials.columns:
+            df_conditions[con] = df_events_trials[colname].notna()
+        else:
+            df_conditions[con] = False
         
     return df_conditions
 
