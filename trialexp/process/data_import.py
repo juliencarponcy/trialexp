@@ -161,6 +161,7 @@ class Session():
                       for event_name in ID2name.values()}
 
         self.print_lines = [line[2:] for line in all_lines if line[0]=='P']
+        self.v_lines = [line[2:] for line in all_lines if line[0]=='V']
         
         self.state_IDs = state_IDs
         self.event_IDs = event_IDs
@@ -1362,7 +1363,7 @@ class Session():
 
     def plot_session(self, keys: list = None, state_def: list = None, print_expr: list = None, 
                     event_ms: list = None, export_smrx: bool = False, smrx_filename: str = None, verbose :bool = False,
-                    print_to_text: bool = True):
+                    print_to_text: bool = True, vchange_to_text: bool = True):
         """
         Visualise a session using Plotly as a scrollable figure
 
@@ -1375,16 +1376,19 @@ class Session():
             or dictionary of 
                 'name' : str
                     Channel name
-                'onset' : str 
+                'onset' : str | list of str 
                     key for onset 
-                'offset' : str
+                'offset' : str | list of str 
                     key for offset
             or list of such dictionaries
 
             eg. dict(name='trial', onset='CS_Go', offset='refrac_period')
             eg. {'name':'trial', 'onset':'CS_Go', 'offset':'refrac_period'}
+            eg. {'name':'trial', 'onset':'CS_Go', 'offset': ['refrac_period', 'break_after_abortion']}
 
-            For each onset, find the first offset event before the next onset 
+
+            For each onset, finds the first offset event before the next onset
+            You can use multiple definitions with OR operation, eg. 'offset' determined by 'abort' or 'success', whichever comes first
         
         print_expr: list of dict #TODO need more testing
             'name':'name of channel'
@@ -1423,8 +1427,11 @@ class Session():
 
         verbose :bool = False
 
-        print_to_text: bool = True
-            print_lines will be converted to text (and TextMark chaanel in Spike2)
+        print_to_text: Bool = True
+            print_lines will be converted to text (and TextMark channel in Spike2)
+
+        vchange_to_text: Bool = True
+            Variable changes during the session, eg. "V 12560 windor_dur_ms 3000", will be converted to text (and TextMark channel in Spike2)
 
         """
 
@@ -1596,24 +1603,48 @@ class Session():
             state_def: dict, list, or None = None
             must be None (default)
             or dictionary of 
-                'name' : str
+                'name' : str 
                     Channel name
-                'onset' : str 
+                'onset' : str | list of str 
                     key for onset 
-                'offset' : str
+                'offset' : str | list of str 
                     key for offset
             or list of such dictionaries
 
             eg. dict(name='trial', onset='CS_Go', offset='refrac_period')
             eg. {'name':'trial', 'onset':'CS_Go', 'offset':'refrac_period'}
+            eg. {'name':'trial', 'onset':'CS_Go', 'offset': ['refrac_period', 'break_after_abortion']}
 
             For each onset, find the first offset event before the next onset 
+            You can use multiple definitions with OR operation, eg. 'offset' determined by 'abort' or 'success', whichever comes first            
             """
             if state_def_dict is None:
                 return None
 
-            all_on_ms = self.times[state_def_dict['onset']]
-            all_off_ms = self.times[state_def_dict['offset']]
+            if isinstance(state_def_dict['onset'], str):
+                all_on_ms = self.times[state_def_dict['onset']]
+            elif isinstance(state_def_dict['onset'], list):
+                # OR operation
+                all_on_ms = []
+                for li in state_def_dict['onset']:
+                    assert isinstance(li, str), 'onset must be str or list of str'
+                    all_on_ms.extend(self.times[li])
+                all_on_ms = sorted(all_on_ms)
+                
+            else:
+                raise Exception("onset is in a wrong type") 
+
+            if isinstance(state_def_dict['offset'], str):
+                all_off_ms = self.times[state_def_dict['offset']]
+            elif isinstance(state_def_dict['offset'], list):
+                # OR operation
+                all_off_ms = []
+                for li in state_def_dict['offset']:
+                    assert isinstance(li, str), 'offset must be str or list of str'                    
+                    all_off_ms.extend(self.times[li])
+                all_off_ms = sorted(all_off_ms)
+            else:
+                raise Exception("offset is in a wrong type") 
 
             onsets_ms = [np.NaN] * len(all_on_ms)
             offsets_ms = [np.NaN] * len(all_on_ms)
@@ -1696,7 +1727,7 @@ class Session():
             ts_ms = [int(m.group(1)) for m in list_of_match]
             txt = [m.group(2) for m in list_of_match]
   
-            df_print = pd.DataFrame(list(zip(ts_ms, txt)), columns=['ms', 'text'])
+            # df_print = pd.DataFrame(list(zip(ts_ms, txt)), columns=['ms', 'text'])
 
             y_index += 1
             txtsc = go.Scatter(x=[TS_ms/1000 for TS_ms in ts_ms], y=['print_lines']*len(ts_ms), 
@@ -1706,6 +1737,24 @@ class Session():
 
             if export_smrx:
                 write_textmark( MyFile, ts_ms, 'print lines', y_index, txt, EventRate, time_vec_ms)
+
+        if vchange_to_text:
+            EXPR = '^(\d+)\s(.+)'
+            list_of_match = [re.match(EXPR, L) for L in self.v_lines if re.match(EXPR, L) is not None]
+            ts_ms = [int(m.group(1)) for m in list_of_match]
+            txt = [m.group(2) for m in list_of_match]
+  
+            # df_print = pd.DataFrame(list(zip(ts_ms, txt)), columns=['ms', 'text'])
+
+            y_index += 1
+            txtsc = go.Scatter(x=[TS_ms/1000 for TS_ms in ts_ms], y=['V changes']*len(ts_ms), 
+                text=txt, textposition="top center", 
+                mode="markers", marker_symbol=symbols[y_index % 40])
+            fig.add_trace(txtsc)
+
+            if export_smrx:
+                write_textmark( MyFile, ts_ms, 'V changes', y_index, txt, EventRate, time_vec_ms)
+        
 
         if state_def is not None:
             # Draw states as gapped lines
