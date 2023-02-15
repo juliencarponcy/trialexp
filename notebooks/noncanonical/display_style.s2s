@@ -21,8 +21,8 @@ ChanList(list%[], 32+2048);
 
 for i% := 1 to list%[0] do
     chan% := list%[i%];
-    DrawMode(10,14, 4, 0,0); 'Set Text
-    MarkShow(10, 0, 0); 'Set marker to display and modenext;
+    DrawMode(chan%, 14, 4, 0,0); 'Set Text
+    MarkShow(chan%, 0, 0); 'Set marker to display and modenext;
 next;
 
 XAxisStyle(2, 0, 0);
