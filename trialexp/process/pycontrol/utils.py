@@ -68,7 +68,6 @@ def parse_events(session):
 
     # remove rsync
     df_events = df_events[df_events.event_name!='rsync'].copy()
-        
     return df_events
 
 

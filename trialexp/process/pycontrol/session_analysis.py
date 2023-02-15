@@ -5,9 +5,8 @@ import os
 from pathlib import Path
 import pickle
 import re
-import datetime
+from datetime import datetime
 import warnings
-import datetime
 import itertools
 
 from collections import namedtuple
@@ -19,11 +18,7 @@ import pandas as pd
 from math import ceil
 from scipy.signal import butter, filtfilt, decimate
 from scipy.stats import linregress, zscore
-
-#----------------------------------------------------------------------------------
-# Session class
-#----------------------------------------------------------------------------------
-
+from trialexp.process.data_import import Event
 
     
 def add_time_rel_trigger(df_events, trigger_time, col_name, trial_window):
@@ -44,6 +39,21 @@ def add_time_rel_trigger(df_events, trigger_time, col_name, trial_window):
 
     return df
 
+def assign_val_rel_trigger(df_events, trigger_time, col_name, value, trial_window):
+    # Assign a value to the col around a trigger in the trial_window
+    df = df_events.copy()
+    df[col_name] = np.nan
+
+    #TODO: can this be overalpping?
+
+    trial_nb = 1
+    for t in trigger_time:
+        td = df.time - t
+        idx = (trial_window[0]<td) & (td<trial_window[1])
+        df.loc[idx, col_name] =  value
+        trial_nb += 1
+
+    return df
 
 def add_trial_nb(df_events, trigger_time, trial_window):
     # add trial number into the event dataframe
@@ -80,6 +90,105 @@ def get_task_specs(tasks_trig_and_events, task_name):
         conditions = np.array2string(tasks_trig_and_events['conditions'][tasks_trig_and_events['task'] == task_name].values).strip("'[]").split('; ')
 
         return conditions, triggers
+    
+    
+def extract_trial_by_trigger(df_events, trigger, event2analysis, trial_window, subject_ID, datetime_obj):
+    
+    # add trial number and calculate the time from trigger
+    trigger_time = df_events[(df_events.state==trigger) & (df_events.event_name == 'state_change')].time
+    df_events = add_trial_nb(df_events, trigger_time,trial_window) #add trial number according to the trigger
+    df_events = add_time_rel_trigger(df_events, trigger_time, 'trial_time', trial_window) #calculate time relative to trigger
+    df_events.dropna(inplace=True)
+    
+    
+    
+    # Filter out events we don't want
+    df_events = df_events[df_events.event_name.isin(event2analysis) | 
+                          ((df_events.state==trigger) & (df_events.event_name=='state_change'))]
+    
+    # group events according to trial number and event name
+    df_events_trials = df_events.groupby(['trial_nb', 'event_name']).agg(list)
+    df_events_trials = df_events_trials.loc[:, ['trial_time']]
+    df_events_trials = df_events_trials.unstack('event_name') #convert the event names to columns
+    df_events_trials.columns = df_events_trials.columns.droplevel() # dropping the multiindex of the columns
+
+    if 'state_change' in df_events_trials.columns: 
+        df_events_trials = df_events_trials.drop(columns=['state_change'])
+
+    # rename the column for compatibility
+    df_events_trials.columns = [col+'_trial_time' for col in df_events_trials.columns]
+
+    # add uuid
+    df_events_trials['trial_nb'] = df_events_trials.index.values
+    df_events_trials['uid'] = df_events_trials['trial_nb'].apply(lambda x: f'{subject_ID}_{datetime_obj.date()}_{datetime_obj.time()}_{x}')
+
+    # fill the new_df with timestamps of trigger and trigger types
+    df_events_trials['timestamp'] = trigger_time.values
+    df_events_trials['trigger'] = triggers[0]
+
+    # validate trials in function of the time difference between trials (must be > at length of trial_window)
+    df_events_trials['valid'] = df_events_trials['timestamp'].diff() > trial_window[0]
+
+    # validate first trial except if too early in the session
+    if df_events_trials['timestamp'].iloc[0] > abs(trial_window[0]):
+       df_events_trials.loc[1, 'valid'] = True
+    
+    return df_events_trials
+
+def compute_conditions_by_trial(df_conditions, conditions, uuid):
+
+    vars = df_conditions[['trigger','trial_nb']]
+    
+    # One-hot encoding of conditions to detect :
+    # turn a column of string into as much columns as conditions to detect
+    # and fill values with 0 and 1
+    dummies = pd.get_dummies(df_conditions['event_name'])
+
+    # join numeric variables (timestamp, trial_nb, trial_time) with dummies (one-hot encoded) variables
+    df_conditions = vars.merge(dummies,left_index=True, right_index=True) # merge by index
+    
+    # display(df_conditions)
+
+
+    # do this only if conditions have been defined, e.g. opto protocols, free reward occurences...
+    # df_conditions will be used to separate trials with the same trigger into different sub-categories depending
+    # on what occured during this trial, or the specific variation of that trial, the idea is to use
+    # conditions as a categorization for trial sub-types, with time insensitive information.
+
+    # df_events on the other hands, serves to store time sensitive information, and multiple similar
+    # events could occur during the same trial. Timestamps of each trial (relative or absolute)
+    # will be then aggregated and used to compute nb of occurences or mean interval between events
+    if 'nan' not in conditions:
+        #print(self.df_conditions)
+        # new variable for readability
+        # df_conditions = df_conditions
+
+        # check for condition(s) not present in file
+        absent_conditions = set(conditions).difference(df_conditions.columns)
+        # add the corresponding columns and fill with 0 to facilitate further analyses
+        # especially in cases where a condition is present in some sessions and not in others
+        for cond in absent_conditions:
+            df_conditions[cond] = 0
+
+        # group by trigger and trial nb
+        df_conditions_summed = df_conditions[conditions + ['trial_nb']].groupby(['trial_nb'], as_index=False)
+        # Aggregate different timestamp ()
+        df_conditions_summed = df_conditions_summed.agg(lambda x: sum(x))   
+
+        # # reindexing to have conditions for all trials even if no condition has been detected for some trials
+        df_conditions_summed = df_conditions_summed.reindex(index=np.arange(df_conditions.trial_nb.max()), fill_value=0)   
+        display(df_conditions_summed)
+        display(df_conditions)
+        df_conditions = df_conditions.merge(df_conditions_summed, left_index=True, right_index=True)
+
+
+    df_conditions['trial_nb'] = df_conditions.index.values
+    
+
+    df_conditions.drop(columns = 'trial_nb', inplace=True)
+    df_conditions['uuid'] = uuid
+
+    return df_conditions
 
 class Session():
     """
@@ -221,7 +330,7 @@ class Session():
         # REMOVED, now only at Experiment level to avoid inconsistencies
         # define trial_window parameter for extraction around triggers
         # self.trial_window = trial_window        
-        return conditions, triggers
+        return conditions, triggers, events_to_process
 
     # @staticmethod
     # def extract_data_from_session(df_events):
@@ -310,6 +419,7 @@ class Session():
 
         # basically 
         # for each trigger type extract and concatenate trial times and trigger type
+        # if there are more than 1 triggers, they are considered as additional trials at the end
         for tidx, trig in enumerate(self.triggers):
             if tidx == 0:
                 all_trial_times = [t for t in self.times[trig]]
@@ -324,6 +434,7 @@ class Session():
         #print(all_trial_triggers_sorted)
         
         for ntrial, trigtime in enumerate(list(all_trial_times_sorted)):
+            # trial time may come from two different triggers
                         
             # attribute trial_nb to event/conditions occuring around trigger (event/state)
             # if the loop is at the last trial
