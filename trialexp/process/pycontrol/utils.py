@@ -35,8 +35,12 @@ def parse_events(session):
     print_evts = []
     for ln in session.print_lines:
         s = ln.split()
-        print_evts.append(
-            Event(int(s[0]), 'Print@'+' '.join(s[1:])))
+        # s[0] is the time, s[1] is the print statement
+        time = s[0]
+        for ps in s[1:]:
+            # treat print as another event
+            print_evts.append(
+                Event(int(s[0]), ps)) 
 
     # merge the print list and event list and sort them by timestamp
     all_events = events+print_evts
