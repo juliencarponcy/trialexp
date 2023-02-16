@@ -11,7 +11,7 @@
 
 # 
 
-# In[1]:
+# In[ ]:
 
 
 # allow for automatic reloading of classes and function when updating the code
@@ -25,7 +25,7 @@ from trialexp.process.data_import import *
 
 # ### Variables
 
-# In[2]:
+# In[ ]:
 
 
 import pandas as pd
@@ -53,7 +53,7 @@ photometry_dir = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\kms_pyphotometry'
 video_dir = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\videos'
 
 
-# In[3]:
+# In[ ]:
 
 
 tasks = pd.read_csv(tasksfile, usecols=[1, 2, 3, 4], index_col=False)
@@ -63,7 +63,7 @@ tasks
 # ### Create an experiment object
 # 
 
-# In[4]:
+# In[ ]:
 
 
 # Folder of a full experimental batch, all animals included
@@ -89,7 +89,7 @@ smrx_folder_path = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\pycontrol\reachin
 
 # ## Select sessions
 
-# In[5]:
+# In[ ]:
 
 
 import datetime
@@ -101,13 +101,13 @@ ss_ = [this_ss for this_ss in ss
 ss_
 
 
-# In[6]:
+# In[ ]:
 
 
 exp_cohort.sessions = ss_
 
 
-# In[7]:
+# In[ ]:
 
 
 ss_[0].datetime.date()
@@ -115,41 +115,13 @@ ss_[0].datetime.date()
 
 # # SLOW 3m
 
-# In[8]:
-
-
-# # Process the whole experimental folder by trials
-
-# exp_cohort.process_exp_by_trial(
-#     trial_window, timelim, tasksfile, blank_spurious_event='spout', blank_timelim=[0, 65])
-#     # not working
-
-# # Find if there is a matching photometry file and if it can be used:
-# # rsync synchronization pulses matching between behaviour and photometry
-
-# # Find if there is a matching photometry file:
-# exp_cohort.match_sessions_to_files(photometry_dir, ext='ppd')
-
-# # rsync synchronization pulses matching between behaviour and photometry
-# exp_cohort.sync_photometry_files(2)
-
-# # Find matching videos
-# exp_cohort.match_sessions_to_files(video_dir, ext='mp4')
-
-# # FInd matching DeepLabCut outputs files
-# exp_cohort.match_sessions_to_files(video_dir, ext='h5', verbose=True)
-
-
-# # exp_cohort.save()
-
-
-# In[9]:
+# In[ ]:
 
 
 exp_cohort.subject_IDs
 
 
-# In[10]:
+# In[ ]:
 
 
 # Many combinations possible
@@ -172,7 +144,7 @@ groups = None
 # Window to exctract (in ms)
 
 
-# In[11]:
+# In[ ]:
 
 
 exp_cohort.sessions[0].times.keys()
@@ -183,13 +155,13 @@ exp_cohort.sessions[0].times.keys()
 # I realised that this plot can never tell if a water drop was triggered by bar_off or spout.
 # 
 
-# In[12]:
+# In[ ]:
 
 
 exp_cohort.sessions[0].print_lines[0:30]
 
 
-# In[13]:
+# In[ ]:
 
 
 import re
@@ -207,7 +179,7 @@ import re
 
 
 
-# In[14]:
+# In[ ]:
 
 
 for ss in exp_cohort.sessions:
@@ -218,15 +190,16 @@ for ss in exp_cohort.sessions:
 # 
 # # export
 
-# In[15]:
+# In[ ]:
 
 
 keys = [
         'button_press', 'bar', 'bar_off', 'spout', 'US_delay_timer', 'CS_offset_timer']
 
 state_def = [
-    {'name': 'busy_win',    'onset': 'busy_win',    'offset': 'short_break'},
-    {'name': 'short_break', 'onset': 'short_break', 'offset': 'busy_win'}]
+    {'name': 'busy_win',    'onset': 'busy_win',    'offset': ['short_break','waiting_for_spout']},
+    {'name': 'short_break', 'onset': 'short_break', 'offset': 'busy_win'},
+    {'name': 'waiting_for_spout', 'onset': 'waiting_for_spout', 'offset': 'busy_win'}]
 
 summary_df = pd.DataFrame()
 
