@@ -20,6 +20,16 @@ from trialexp.process.pycontrol.spike2_export import Spike2Exporter
 
 ######## Analyzing event data
 
+def parse_session_dataframe(df_session):
+    # parse and format the session dataframe imported from pycontrol
+    df_events = df_session[(df_session.type!='info') & (df_session.name!='rsync')]
+    info = df_session[df_session.type=='info']
+    info = dict(zip(info.name, info.value))
+    df_events = df_events.drop(columns='duration')
+    df_events.attrs.update(info)
+    
+    return df_events
+
 def parse_events(session):
     #parse the event and state information and return it as a dataframe
 
@@ -55,7 +65,7 @@ def parse_events(session):
             last_state = evt.name
             event = {
                'state':last_state,
-                'event_name':'state_change',
+                'event_name': last_state,
                 'time':evt.time,
             }
         else:
