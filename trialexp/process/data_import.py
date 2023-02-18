@@ -160,7 +160,22 @@ class Session():
         self.times = {event_name: np.array([ev.time for ev in self.events if ev.name == event_name])  
                       for event_name in ID2name.values()}
 
-        self.print_lines = [line[2:] for line in all_lines if line[0]=='P']
+        # self.print_lines = [line[2:] for line in all_lines if line[0]=='P']
+
+        # capture multiple line print messages as self.print_lines
+        count = 0
+        self.print_lines = []
+        while count < len(all_lines):
+            if bool(re.match('P\s\d+\s',all_lines[count])):  # all_lines[count][0] == 'P'
+                self.print_lines.append(all_lines[count][2:])
+                count += 1
+                while (count < len(all_lines)) and not(bool(re.match('[PD]\s\d+\s', all_lines[count]))):
+                    self.print_lines[-1] = self.print_lines[-1] + \
+                        "\n" + all_lines[count]
+                    count += 1
+            else:
+                count += 1
+
         self.v_lines = [line[2:] for line in all_lines if line[0]=='V']
         
         self.state_IDs = state_IDs

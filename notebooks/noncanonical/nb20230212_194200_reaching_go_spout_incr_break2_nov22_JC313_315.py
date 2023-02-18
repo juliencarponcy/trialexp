@@ -133,34 +133,6 @@ ss_[0].datetime.date()
 # In[ ]:
 
 
-# # Process the whole experimental folder by trials
-
-# exp_cohort.process_exp_by_trial(
-#     trial_window, timelim, tasksfile, blank_spurious_event='spout', blank_timelim=[0, 65])
-#     # not working
-
-# # Find if there is a matching photometry file and if it can be used:
-# # rsync synchronization pulses matching between behaviour and photometry
-
-# # Find if there is a matching photometry file:
-# exp_cohort.match_sessions_to_files(photometry_dir, ext='ppd')
-
-# # rsync synchronization pulses matching between behaviour and photometry
-# exp_cohort.sync_photometry_files(2)
-
-# # Find matching videos
-# exp_cohort.match_sessions_to_files(video_dir, ext='mp4')
-
-# # FInd matching DeepLabCut outputs files
-# exp_cohort.match_sessions_to_files(video_dir, ext='h5', verbose=True)
-
-
-# # exp_cohort.save()
-
-
-# In[ ]:
-
-
 exp_cohort.subject_IDs
 
 
@@ -214,12 +186,6 @@ re.match('abc ','abc de')
 expr = '^\d+(?= ' + '.?Timestamp' + ')'
 a = [re.match(expr, L) for L in exp_cohort.sessions[0].print_lines if re.match(expr , L) is not None]
 int(a[0].group(0))
-
-
-# In[ ]:
-
-
-
 
 
 # In[ ]:
