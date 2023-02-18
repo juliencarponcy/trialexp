@@ -1598,6 +1598,7 @@ class Session():
                     MarkData[i] = sp.DigMark(eventfalldata[0][i]*1000, 1) #onset
                 else:
                     raise Exception('oh no')
+                #NOTE Spike2 truncates text longer than 79 characters
                 TMrkData[i] = sp.TextMarker(txt[i], MarkData[i]) #TODO
                 
             MyFile.SetTextMarkChannel(y_index, EventRate, max(len(s) for s in txt)+1)
