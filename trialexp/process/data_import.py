@@ -1599,9 +1599,7 @@ class Session():
                     raise Exception('oh no')
                 
                 #NOTE Spike2 truncates text longer than 79 characters???
-                single_line = re.sub('\n', '', txt[i])
-                print(single_line)
-                TMrkData[i] = sp.TextMarker(single_line, MarkData[i])
+                TMrkData[i] = sp.TextMarker(re.sub('\n', '', txt[i]), MarkData[i])
                 
             MyFile.SetTextMarkChannel(y_index, EventRate, max(len(s) for s in txt)+1)
             MyFile.SetChannelTitle(y_index, title)
