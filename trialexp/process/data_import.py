@@ -169,7 +169,7 @@ class Session():
             if bool(re.match('P\s\d+\s',all_lines[count])):  # all_lines[count][0] == 'P'
                 self.print_lines.append(all_lines[count][2:])
                 count += 1
-                while (count < len(all_lines)) and not(bool(re.match('[PD]\s\d+\s', all_lines[count]))):
+                while (count < len(all_lines)) and not(bool(re.match('[PVD]\s\d+\s', all_lines[count]))):
                     self.print_lines[-1] = self.print_lines[-1] + \
                         "\n" + all_lines[count]
                     count += 1
@@ -1550,7 +1550,6 @@ class Session():
                 #     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
 
         def write_marker_for_state(MyFile,X_ms, title, y_index, EventRate, time_vec_ms):
-            #TODO nearly there, but file cannot be open
 
             # remove NaN
             X_notnan_ms = [x for x in X_ms if not np.isnan(x)]
@@ -1598,8 +1597,11 @@ class Session():
                     MarkData[i] = sp.DigMark(eventfalldata[0][i]*1000, 1) #onset
                 else:
                     raise Exception('oh no')
-                #NOTE Spike2 truncates text longer than 79 characters
-                TMrkData[i] = sp.TextMarker(txt[i], MarkData[i]) #TODO
+                
+                #NOTE Spike2 truncates text longer than 79 characters???
+                single_line = re.sub('\n', '', txt[i])
+                print(single_line)
+                TMrkData[i] = sp.TextMarker(single_line, MarkData[i])
                 
             MyFile.SetTextMarkChannel(y_index, EventRate, max(len(s) for s in txt)+1)
             MyFile.SetChannelTitle(y_index, title)
@@ -1738,8 +1740,8 @@ class Session():
 
         if print_to_text:
 
-            EXPR = '^(\d+)\s(.+)'
-            list_of_match = [re.match(EXPR, L) for L in self.print_lines if re.match(EXPR, L) is not None]
+            EXPR = '^(\d+)\s(.+)' #NOTE . doesn't capture \n and re.DOTALL is required below
+            list_of_match = [re.match(EXPR, L, re.DOTALL) for L in self.print_lines if re.match(EXPR, L) is not None]
             ts_ms = [int(m.group(1)) for m in list_of_match]
             txt = [m.group(2) for m in list_of_match]
   
