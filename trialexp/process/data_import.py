@@ -1755,7 +1755,7 @@ class Session():
                 write_textmark( MyFile, ts_ms, 'print lines', y_index, txt, EventRate, time_vec_ms)
 
         if vchange_to_text:
-            EXPR = '^(\d+)\s(.+)'
+            EXPR = '^([1-9]\d*)\s(.+)' #NOTE Need to ignore the defaults (V 0 ****)
             list_of_match = [re.match(EXPR, L) for L in self.v_lines if re.match(EXPR, L) is not None]
             ts_ms = [int(m.group(1)) for m in list_of_match]
             txt = [m.group(2) for m in list_of_match]
