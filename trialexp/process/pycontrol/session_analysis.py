@@ -73,73 +73,75 @@ def add_trial_nb(df_events, trigger_time, trial_window):
     return df
 
 def get_task_specs(tasks_trig_and_events, task_name):
-        """
-        All the df columns named in this function, events and opto_categories must 
-        follow columns of the indicated tasksfile
-        
-        This function sets the values of 
-            self.triggers
-            self.events_to_process
-            self.conditions
-            self.trial_window
-            self.timelim
+    """
+    All the df columns named in this function, events and opto_categories must 
+    follow columns of the indicated tasksfile
+    
+    This function sets the values of 
+        self.triggers
+        self.events_to_process
+        self.conditions
+        self.trial_window
+        self.timelim
 
-        """
+    """
 
-        # match triggers (events/state used for t0)
-        triggers = np.array2string(tasks_trig_and_events['triggers'][tasks_trig_and_events['task'] == task_name].values).strip("'[]").split('; ')
-
-        conditions = np.array2string(tasks_trig_and_events['conditions'][tasks_trig_and_events['task'] == task_name].values).strip("'[]").split('; ')
-
-        return conditions, triggers
+    # match triggers (events/state used for t0)
+    triggers = np.array2string(tasks_trig_and_events['triggers'][tasks_trig_and_events['task'] == task_name].values).strip("'[]").split('; ')
+            
+    # events to extract
+    events_to_process = np.array2string(tasks_trig_and_events['events'][tasks_trig_and_events['task'] == task_name].values).strip("'[]").split('; ')
+    # printed line in task file indicating
+    # the type of optogenetic stimulation
+    # used to group_by trials with same stim/sham
+    conditions = np.array2string(tasks_trig_and_events['conditions'][tasks_trig_and_events['task'] == task_name].values).strip("'[]").split('; ')
+    
+    # REMOVED, now only at Experiment level to avoid inconsistencies
+    # define trial_window parameter for extraction around triggers
+    # self.trial_window = trial_window        
+    return conditions, triggers, events_to_process
     
     
 def extract_trial_by_trigger(df_events, trigger, event2analysis, trial_window, subject_ID, datetime_obj):
     
     # add trial number and calculate the time from trigger
-    trigger_time = df_events[(df_events.name==trigger) & (df_events.type == 'state')].time
+    trigger_time = df_events[(df_events.name==trigger)].time
     df_events = add_trial_nb(df_events, trigger_time,trial_window) #add trial number according to the trigger
     df_events = add_time_rel_trigger(df_events, trigger_time, trigger, 'trial_time', trial_window) #calculate time relative to trigger
-    df_events.dropna(inplace=True)
-    
-    
-    # sometimes state variable is also included in the event2analysis, try to account for them
-    # state2check = set(df_events.state).intersection(event2analysis)
-    # if len(state2check)>0:
-    #     state2check = state2check+trigger
+    df_events.dropna(subset=['trial_time'],inplace=True)
     
     # Filter out events we don't want
-    # df_events = df_events[df_events.name.isin(event2analysis)]
+    df_events = df_events[df_events.name.isin(event2analysis)]
 
     # # group events according to trial number and event name
-    # df_events_trials = df_events.groupby(['trial_nb', 'name']).agg(list)
-    # df_events_trials = df_events_trials.loc[:, ['trial_time']]
-    # df_events_trials = df_events_trials.unstack('event_name') #convert the event names to columns
-    # df_events_trials.columns = df_events_trials.columns.droplevel() # dropping the multiindex of the columns
+    df_events_trials = df_events.groupby(['trial_nb', 'name']).agg(list)
+    df_events_trials = df_events_trials.loc[:, ['trial_time']]
+    df_events_trials = df_events_trials.unstack('name') #convert the event names to columns
+    df_events_trials.columns = df_events_trials.columns.droplevel() # dropping the multiindex of the columns
 
-    # if 'state_change' in df_events_trials.columns: 
-    #     df_events_trials = df_events_trials.drop(columns=['state_change'])
+    # rename the column for compatibility
+    df_events_trials.columns = [col+'_trial_time' for col in df_events_trials.columns]
 
-    # # rename the column for compatibility
-    # df_events_trials.columns = [col+'_trial_time' for col in df_events_trials.columns]
+    # add uuid
+    df_events_trials['trial_nb'] = df_events_trials.index.values
+    df_events_trials['uid'] = df_events_trials['trial_nb'].apply(lambda x: f'{subject_ID}_{datetime_obj.date()}_{datetime_obj.time()}_{x}')
 
-    # # add uuid
-    # df_events_trials['trial_nb'] = df_events_trials.index.values
-    # df_events_trials['uid'] = df_events_trials['trial_nb'].apply(lambda x: f'{subject_ID}_{datetime_obj.date()}_{datetime_obj.time()}_{x}')
+    # fill the new_df with timestamps of trigger and trigger types
+    df_events_trials['timestamp'] = trigger_time.values
+    df_events_trials['trigger'] = trigger
 
-    # # fill the new_df with timestamps of trigger and trigger types
-    # df_events_trials['timestamp'] = trigger_time.values
-    # df_events_trials['trigger'] = trigger
+    # validate trials in function of the time difference between trials (must be > at length of trial_window)
+    df_events_trials['valid'] = df_events_trials['timestamp'].diff() > trial_window[0]
 
-    # # validate trials in function of the time difference between trials (must be > at length of trial_window)
-    # df_events_trials['valid'] = df_events_trials['timestamp'].diff() > trial_window[0]
-
-    # # validate first trial except if too early in the session
-    # if df_events_trials['timestamp'].iloc[0] > abs(trial_window[0]):
-    #    df_events_trials.loc[1, 'valid'] = True
+    # validate first trial except if too early in the session
+    if df_events_trials['timestamp'].iloc[0] > abs(trial_window[0]):
+       df_events_trials.loc[1, 'valid'] = True
+       
+    #Add in metadata
+    df_events.attrs['trial_window'] = trial_window
     
     # return df_events_trials, df_events
-    return df_events
+    return df_events_trials,df_events
 
 def compute_conditions_by_trial(df_events_trials, conditions):
 
@@ -381,48 +383,35 @@ class Session():
         self.state_IDs = state_IDs
         self.event_IDs = event_IDs
     
-    @staticmethod
-    def get_task_specs(tasks_trig_and_events, task_name):
-        """
-        All the df columns named in this function, events and opto_categories must 
-        follow columns of the indicated tasksfile
+    # @staticmethod
+    # def get_task_specs(tasks_trig_and_events, task_name):
+    #     """
+    #     All the df columns named in this function, events and opto_categories must 
+    #     follow columns of the indicated tasksfile
         
-        This function sets the values of 
-            self.triggers
-            self.events_to_process
-            self.conditions
-            self.trial_window
-            self.timelim
+    #     This function sets the values of 
+    #         self.triggers
+    #         self.events_to_process
+    #         self.conditions
+    #         self.trial_window
+    #         self.timelim
 
-        """
+    #     """
 
-        # match triggers (events/state used for t0)
-        triggers = np.array2string(tasks_trig_and_events['triggers'][tasks_trig_and_events['task'] == task_name].values).strip("'[]").split('; ')
+    #     # match triggers (events/state used for t0)
+    #     triggers = np.array2string(tasks_trig_and_events['triggers'][tasks_trig_and_events['task'] == task_name].values).strip("'[]").split('; ')
                 
-        # events to extract
-        events_to_process = np.array2string(tasks_trig_and_events['events'][tasks_trig_and_events['task'] == task_name].values).strip("'[]").split('; ')
-        # printed line in task file indicating
-        # the type of optogenetic stimulation
-        # used to group_by trials with same stim/sham
-        conditions = np.array2string(tasks_trig_and_events['conditions'][tasks_trig_and_events['task'] == task_name].values).strip("'[]").split('; ')
+    #     # events to extract
+    #     events_to_process = np.array2string(tasks_trig_and_events['events'][tasks_trig_and_events['task'] == task_name].values).strip("'[]").split('; ')
+    #     # printed line in task file indicating
+    #     # the type of optogenetic stimulation
+    #     # used to group_by trials with same stim/sham
+    #     conditions = np.array2string(tasks_trig_and_events['conditions'][tasks_trig_and_events['task'] == task_name].values).strip("'[]").split('; ')
         
-        # REMOVED, now only at Experiment level to avoid inconsistencies
-        # define trial_window parameter for extraction around triggers
-        # self.trial_window = trial_window        
-        return conditions, triggers, events_to_process
-
-
-    def create_metadata_dict(self, trial_window, timelim):
-        metadata_dict = {
-            'subject_ID' : self.subject_ID,
-            'datetime' : self.datetime,
-            'timelim': timelim,
-            'task' : self.task_name,
-            'trial_window' : trial_window,
-            'com_port' : self.setup_ID
-        }
-        return metadata_dict
-
+    #     # REMOVED, now only at Experiment level to avoid inconsistencies
+    #     # define trial_window parameter for extraction around triggers
+    #     # self.trial_window = trial_window        
+    #     return conditions, triggers, events_to_process
 
     def get_photometry_trials(self,
             conditions_list: list = None,
