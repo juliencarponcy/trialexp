@@ -435,17 +435,17 @@ def find_last_time_before_list(list_ev, list_lim):
     list_ev is the list of events to detect (contained in a cell of dataframe)
     list_lim is the list of events to use as limit
     '''
-    if len(list_ev) >= 1 and len(list_lim) >= 1:
-        last_time = max([i for i in list_ev if i < find_min_time_list(list_lim)], default=np.NaN)
+
     
     # TODO check implementation for limit cases (when no lim events found)
-    elif isinstance(list_ev, int) and find_min_time_list(list_lim) is not np.NaN:
+    if not isinstance(list_ev,list) and find_min_time_list(list_lim) is not np.NaN:
         
         if find_min_time_list(list_lim) > list_ev:
             last_time = list_ev
         else:
             last_time = np.NaN
-
+    elif len(list_ev) >= 1 and len(list_lim) >= 1:
+        last_time = max([i for i in list_ev if i < find_min_time_list(list_lim)], default=np.NaN)
     elif len(list_ev) == 0 or len(list_lim) == 0:
         last_time = np.NaN
     else:
