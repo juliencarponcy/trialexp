@@ -1600,8 +1600,11 @@ class Session():
                 
                 #NOTE Spike2 truncates text longer than 79 characters???
                 TMrkData[i] = sp.TextMarker(re.sub('\n', '', txt[i]), MarkData[i])
-                
-            MyFile.SetTextMarkChannel(y_index, EventRate, max(len(s) for s in txt)+1)
+
+            if len(txt) == 0:
+                MyFile.SetTextMarkChannel(y_index, EventRate, 32)
+            else:
+                MyFile.SetTextMarkChannel(y_index, EventRate, max(len(s) for s in txt)+1)
             MyFile.SetChannelTitle(y_index, title)
             if eventfalldata[0] is not []:
                 MyFile.WriteTextMarks(y_index, TMrkData)
