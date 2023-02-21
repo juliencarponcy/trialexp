@@ -97,7 +97,7 @@ ss = exp_cohort.sessions
 
 ss_ = [this_ss for this_ss in ss
        if (this_ss.subject_ID in [58, 60, 61, 62, 63, 64])
-       and (this_ss.experiment_name == 'reaching_go_spout_nov22')]
+       and (this_ss.task_name == 'reaching_go_spout_nov22')]
 ss_
 
 

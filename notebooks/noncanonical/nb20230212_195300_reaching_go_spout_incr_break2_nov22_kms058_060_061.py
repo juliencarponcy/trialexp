@@ -9,8 +9,6 @@
 
 # Quick analysis of instrumental reaching
 
-# 
-
 # In[ ]:
 
 
@@ -97,7 +95,7 @@ ss = exp_cohort.sessions
 
 ss_ = [this_ss for this_ss in ss
        if (this_ss.subject_ID in [58, 60, 61, 62, 63, 64])
-       and (this_ss.experiment_name == 'reaching_go_spout_incr_break2_nov22')
+       and (this_ss.task_name == 'reaching_go_spout_incr_break2_nov22')
        and (this_ss.datetime.date() >= datetime.date(2023, 1, 26))]
 ss_
 

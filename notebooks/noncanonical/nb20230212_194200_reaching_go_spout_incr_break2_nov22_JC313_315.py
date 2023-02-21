@@ -105,7 +105,7 @@ ss = exp_cohort.sessions
 ss_ = [this_ss for this_ss in ss
        # [313, 314, 315, 316, 317, 318]
        if (this_ss.subject_ID in [313, 314, 315])
-       and (this_ss.experiment_name == 'reaching_go_spout_incr_break2_nov22')
+       and (this_ss.task_name == 'reaching_go_spout_incr_break2_nov22')
        and (this_ss.datetime.date() >= datetime.date(2022, 12, 3))]
 ss_
 

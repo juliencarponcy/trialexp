@@ -95,10 +95,38 @@ smrx_folder_path = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\pycontrol\reachin
 import datetime
 ss = exp_cohort.sessions
 
+
+
+# In[ ]:
+
+
+for i, _ in enumerate(ss):
+    print(ss[i].file_name)
+
+
+# In[ ]:
+
+
+print(ss[-2].file_name)
+print(ss[-2].subject_ID)
+print(ss[-2].experiment_name)
+
+
+
+# In[ ]:
+
+
 ss_ = [this_ss for this_ss in ss
        if (this_ss.subject_ID in [58, 60, 61, 62, 63, 64])
-       and (this_ss.experiment_name == 'reaching_go_spout_bar_nov22')]
+       and (this_ss.task_name == 'reaching_go_spout_bar_nov22')]
 ss_
+
+
+# In[ ]:
+
+
+for i, _ in enumerate(ss_):
+    print(ss_[i].file_name)
 
 
 # In[ ]:
