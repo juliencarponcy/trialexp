@@ -212,6 +212,81 @@ def import_ppd(file_path, low_pass=20, high_pass=0.01, medfilt_size=None):
     
     return data_dict
 
+#----------------------------------------------------------------------------------
+# Rsync functions
+#----------------------------------------------------------------------------------
+
+
+def sync_photometry_file(
+        session, #: Session,  
+        rsync_chan: int = 2,
+        delete_unsynced: bool = True, 
+        verbose: bool = False):
+    """
+    This function create a rsync aligment object into the corresponding
+    session if the rsync pulses match betwwen pycontrol and pyphotometry files.
+
+        Parameters:
+            session (Session): An Session object instance
+            rsync_chan (int): Channel on which pulses have been
+                recorded on the py_photometry device.
+            delete_unsynced (bool): Delete the photometry file path in
+                session.files['ppd'] if rsync does not match
+            verbose (bool): display match/no match messages for each file
+
+        Returns:
+                None
+
+        The warning:
+            KMeans is known to have a memory leak on Windows with MKL, when there are less chunks than available threads...
+        
+        is due to rsync function.
+
+        https://stackoverflow.com/questions/69596239/how-to-avoid-memory-leak-when-dealing-with-kmeans-for-example-in-this-code-i-am
+        Follow the answer and set the einvironment variable OMP_NUM_THREADS to supress the warning.
+                
+    """
+        
+
+    if session.files['ppd'] != []:
+        # try to align times with rsync
+        try:
+            # Gives KeyError exception if no rsync pulses on pycontrol file
+            pycontrol_rsync_times = session.times['rsync']
+        
+            photometry_dict = import_ppd(session.files['ppd'][0])
+            
+            photometry_rsync_times = photometry_dict['pulse_times_' + str(rsync_chan)]
+
+            pyphoto_aligner = Rsync_aligner(pulse_times_A= pycontrol_rsync_times, 
+                pulse_times_B= photometry_rsync_times, plot=False)
+            
+            if verbose:
+                print('pycontrol: ', session.subject_ID, session.datetime,
+                '/ pyphotometry: ', session.files['ppd'][0], ' : rsync does match')
+            
+            self.sessions[id_f].photometry_rsync = pyphoto_aligner
+
+        # if rsync aligner fails    
+        except (RsyncError, ValueError, KeyError):
+            self.sessions[id_f].photometry_rsync = None
+
+            if verbose:
+                print('pycontrol: ', session.subject_ID, session.datetime,
+                '/ pyphotometry: ', session.files['ppd'][0], ' : rsync does not match')
+
+            if delete_unsynced:
+                self.sessions[id_f].files['ppd'] = []
+
+    # if there is no subject + date match in .ppd files
+    else: 
+        sessions[id_f].photometry_rsync = None
+
+        if verbose:
+            print('pycontrol: ', session.subject_ID, session.datetime,
+            '/ pyphotometry: no file matching both subject and date')
+
+
 
 #----------------------------------------------------------------------------------
 # From here, legacy methods which will be probably deprecated in the future

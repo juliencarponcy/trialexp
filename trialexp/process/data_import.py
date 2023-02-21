@@ -1925,7 +1925,8 @@ class Experiment():
             self, 
             path: str, 
             int_subject_IDs: bool = True, 
-            update: bool = False, 
+            update: bool = False,
+            folder_by_session: bool = False, 
             verbose: bool = False):
         """
         Import all sessions from specified folder to create experiment object.  Only sessions in the 
@@ -1954,9 +1955,13 @@ class Experiment():
                     \n- a sessions.pkl file\
                     \n- a single pycontrol .txt file'))
 
-                    
+        # if path is a folder            
         elif os.path.isdir(path):
-            self.path = Path(path)
+
+            if folder_by_session:
+                ...
+            else:
+                self.path = Path(path)
 
             # Import sessions.
 
