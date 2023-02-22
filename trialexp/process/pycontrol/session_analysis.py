@@ -102,8 +102,9 @@ def get_task_specs(tasks_trig_and_events, task_name):
     return conditions, triggers, events_to_process
     
     
-def extract_trial_by_trigger(df_events, trigger, event2analysis, trial_window, subject_ID, datetime_obj):
+def extract_trial_by_trigger(df_pycontrol, trigger, event2analysis, trial_window, subject_ID, datetime_obj):
     
+    df_events = df_pycontrol.copy()
     # add trial number and calculate the time from trigger
     trigger_time = df_events[(df_events.name==trigger)].time
     df_events = add_trial_nb(df_events, trigger_time,trial_window) #add trial number according to the trigger
