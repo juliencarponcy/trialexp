@@ -1,7 +1,10 @@
 from glob import glob
+from pathlib import Path
+
+session_root_dir = Path('Z:\Teris\ASAP\expt_sessions\')
 
 rule all:
-    input: expand('{sessions}/processed/task.done', sessions =glob(r'Z:\Teris\ASAP\expt_sessions\*'))
+    input: expand('{sessions}/processed/task.done', sessions = session_root_dir.glob('*.txt'))
 
 rule process_pycontrol:
     input:
