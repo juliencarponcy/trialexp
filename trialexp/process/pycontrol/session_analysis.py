@@ -32,12 +32,10 @@ def add_time_rel_trigger(df_events, trigger_time, trigger_name, col_name, trial_
 
     #TODO: can this be overalpping?
 
-    trial_nb = 1
     for t in trigger_time:
         td = df.time - t
         idx = (trial_window[0]<td) & (td<trial_window[1])
         df.loc[idx, col_name] =  df[idx].time - t
-        trial_nb += 1
 
     return df
 
@@ -48,12 +46,10 @@ def assign_val_rel_trigger(df_events, trigger_time, col_name, value, trial_windo
 
     #TODO: can this be overalpping?
 
-    trial_nb = 1
     for t in trigger_time:
         td = df.time - t
         idx = (trial_window[0]<td) & (td<trial_window[1])
         df.loc[idx, col_name] =  value
-        trial_nb += 1
 
     return df
 
@@ -62,15 +58,27 @@ def add_trial_nb(df_events, trigger_time, trial_window):
     df = df_events.copy()
     df['trial_nb'] = np.nan
     #TODO: can time window be overalpping?
+    # overlapping trial will cause some trial number to be overwritten
+    # also will make later analysis more confusing, 
+    # try avoid overlapping trials
 
     trial_nb = 1
+    last_idx = [False]*len(df_events)
+    valid_trigger_time = []
+    
     for t in trigger_time:
         td = df.time - t
         idx = (trial_window[0]<td) & (td<trial_window[1])
-        df.loc[idx, ['trial_nb']] = trial_nb
-        trial_nb += 1
 
-    return df
+        #check for overlapping
+        if not any(last_idx&idx):
+            idx = (trial_window[0]<td) & (td<trial_window[1])
+            df.loc[idx, ['trial_nb']] = trial_nb
+            trial_nb += 1
+            last_idx = idx # avod overlapping samples
+            valid_trigger_time.append(t)
+
+    return df, np.array(valid_trigger_time)
 
 def get_task_specs(tasks_trig_and_events, task_name):
     """
@@ -106,8 +114,8 @@ def extract_trial_by_trigger(df_pycontrol, trigger, event2analysis, trial_window
     
     df_events = df_pycontrol.copy()
     # add trial number and calculate the time from trigger
-    trigger_time = df_events[(df_events.name==trigger)].time
-    df_events = add_trial_nb(df_events, trigger_time,trial_window) #add trial number according to the trigger
+    trigger_time = df_events[(df_events.name==trigger)].time.values
+    df_events, trigger_time = add_trial_nb(df_events, trigger_time,trial_window) #add trial number according to the trigger
     df_events = add_time_rel_trigger(df_events, trigger_time, trigger, 'trial_time', trial_window) #calculate time relative to trigger
     df_events.dropna(subset=['trial_time'],inplace=True)
     
@@ -127,15 +135,16 @@ def extract_trial_by_trigger(df_pycontrol, trigger, event2analysis, trial_window
     df_events_trials['trial_nb'] = df_events_trials.index.values
     df_events_trials['uid'] = df_events_trials['trial_nb'].apply(lambda x: f'{subject_ID}_{datetime_obj.date()}_{datetime_obj.time()}_{x}')
 
+    # print(trigger_time)
+    # display(df_events_trials)
     # fill the new_df with timestamps of trigger and trigger types
-    df_events_trials['timestamp'] = trigger_time.values
+    df_events_trials['timestamp'] = trigger_time
     df_events_trials['trigger'] = trigger
 
     # validate trials in function of the time difference between trials (must be > at length of trial_window)
     df_events_trials['valid'] = df_events_trials['timestamp'].diff() > trial_window[0]
-
     # validate first trial except if too early in the session
-    if df_events_trials['timestamp'].iloc[0] > abs(trial_window[0]):
+    if len(df_events_trials)>0 and (df_events_trials['timestamp'].iloc[0] > abs(trial_window[0])):
        df_events_trials.loc[1, 'valid'] = True
        
     #Add in metadata
@@ -250,14 +259,19 @@ def compute_success(df_events_trials, df_cond, task_name, triggers=None, timelim
     elif task_name in ['reaching_go_spout_bar_dual_all_reward_dec22', 
         'reaching_go_spout_bar_dual_dec22', 'reaching_go_spout_bar_nov22']:
 
-        reach_time_before_reward = df_events.loc[:,['spout_trial_time','US_end_timer_trial_time']].apply(
-                lambda x: find_last_time_before_list(x['spout_trial_time'], x['US_end_timer_trial_time']), axis=1)    
-        # select only trials with a spout event before a US_end_timer event
-        reach_bool = reach_time_before_reward.notnull()
-        # select trial where the hold time was present (not aborted)
-        reach_success_bool = reach_bool & df_conditions.waiting_for_spout
-        # set these trials as successful
-        df_conditions.loc[(reach_success_bool), 'success'] = True
+        if 'spout_trial_time' in df_events.columns and 'US_end_timer_trial_time' in df_events.columns:
+
+            reach_time_before_reward = df_events.loc[:,['spout_trial_time','US_end_timer_trial_time']].apply(
+                    lambda x: find_last_time_before_list(x['spout_trial_time'], x['US_end_timer_trial_time']), axis=1)    
+            # select only trials with a spout event before a US_end_timer event
+            reach_bool = reach_time_before_reward.notnull()
+            # select trial where the hold time was present (not aborted)
+            reach_success_bool = reach_bool & df_conditions.waiting_for_spout
+            # set these trials as successful
+            df_conditions.loc[(reach_success_bool), 'success'] = True
+        else:
+            df_conditions['success'] = False
+    
 
 
     # Reorder columns putting trigger, valid and success first for more clarity
