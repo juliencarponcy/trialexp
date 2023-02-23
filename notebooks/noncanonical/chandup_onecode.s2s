@@ -1,0 +1,32 @@
+var vh% :=View();
+if ViewKind(vh%) <> 0 then
+    halt;
+endif
+
+var chanmk%;
+var chand%;
+var code% := 1;
+var mask%[256];
+var i%;
+
+DlgCreate("Choose a Marker Channel");
+DlgChan(1, "Trigger channels", 8+16+32);
+DlgInteger(2, "Marker Filter Code for trigger",0, 255, 0, 0, 1);
+
+DlgText("This will create a duplicate channel with the only selected marker code visible as lines",0,0);
+var ok% := DlgShow(chanmk%, code%);
+
+if ok% = 0 then
+    Message("Canceled");
+    halt;
+endif
+
+chand% := ChanDuplicate(chanmk%);
+mask%[code%] := 1;
+MarkMask(chand%, -1, 1, -1); 'Set filter to all pass
+MarkMask(chand%, 0, -1, -1); 'Invert all code 
+MarkMask(chand%, 0, 1, code%);
+DrawMode(chand%,2,1, 0,0); 'Set Lines
+MarkShow(chand%, 0, 0); 'Set marker to display and mode
+ChanShow(chand%);
+    

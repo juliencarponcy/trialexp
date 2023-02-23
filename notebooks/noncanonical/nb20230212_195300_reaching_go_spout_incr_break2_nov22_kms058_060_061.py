@@ -91,6 +91,9 @@ smrx_folder_path = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\pycontrol\reachin
 
 
 import datetime
+
+update_all_smrx = False
+
 ss = exp_cohort.sessions
 
 ss_ = [this_ss for this_ss in ss
@@ -238,22 +241,24 @@ for ss in exp_cohort.sessions:
     }
     ]
 
-    try:
-        ss.plot_session(
-            keys, state_def, export_smrx=True, event_ms=event_ms, smrx_filename= smrxname)
+    if update_all_smrx or not os.path.isfile(smrxname):
 
-        summary_df = pd.concat([summary_df, 
-            pd.DataFrame({
-                'file':ss.file_name,
-                'task':ss.task_name,
-                'triggered_by_spout': len(x_spout),
-                'triggered_by_bar_off': len(x_bar),
-                'reaching_trials': len(bw),
-                'trials': len(ss.times['busy_win'])},
-                index=[0])
-                ],
-                ignore_index=True)
-    except Exception as err:
-        print(f"Unexpected {err=}, {type(err)=}, for {file_name_}")
+        try:
+            ss.plot_session(
+                keys, state_def, export_smrx=True, event_ms=event_ms, smrx_filename= smrxname)
+
+            summary_df = pd.concat([summary_df, 
+                pd.DataFrame({
+                    'file':ss.file_name,
+                    'task':ss.task_name,
+                    'triggered_by_spout': len(x_spout),
+                    'triggered_by_bar_off': len(x_bar),
+                    'reaching_trials': len(bw),
+                    'trials': len(ss.times['busy_win'])},
+                    index=[0])
+                    ],
+                    ignore_index=True)
+        except Exception as err:
+            print(f"Unexpected {err=}, {type(err)=}, for {file_name_}")
 
 
