@@ -21,7 +21,7 @@ except ModuleNotFoundError:
 #%% Load inputs
 
 (sinput, soutput) = getSnake(locals(), 'workflows/spout_bar_nov22.smk',
-  ['Z:/Teris/ASAP/expt_sessions/JC313L-2022-11-24-113233/processed/df_events_cond.pkl'],
+  ['Z:/Teris/ASAP/expt_sessions/JC318L-2022-11-30-175356/processed/df_events_cond.pkl'],
   'process_pycontrol')
 
 #%% Read task definition
@@ -57,9 +57,11 @@ df_conditions = compute_conditions_by_trial(df_events_trials, conditions)
 df_conditions = compute_success(df_events_trials, df_conditions, task_name)
 
 #%%  Merge condition back with event dataframe
+
 df_events_cond = df_events.merge(df_conditions, on='trial_nb')
 
 #%% Add in all the meta information
+
 df_events_cond.attrs.update(df_events.attrs)
 df_events_cond.attrs.update(
     {'conditions': conditions,
@@ -68,6 +70,7 @@ df_events_cond.attrs.update(
 )
 
 # %% save
+
 df_events_cond.to_pickle(soutput.event_dataframe)
 df_conditions.to_pickle(soutput.condition_dataframe)
 

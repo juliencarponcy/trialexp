@@ -66,7 +66,7 @@ def add_trial_nb(df_events, trigger_time, trial_window):
     last_idx = [False]*len(df_events)
     valid_trigger_time = []
     
-    for t in trigger_time:
+    for t in trigger_time[:-1]: #skip the last trial because it can be incomplete
         td = df.time - t
         idx = (trial_window[0]<td) & (td<trial_window[1])
 
@@ -74,9 +74,10 @@ def add_trial_nb(df_events, trigger_time, trial_window):
         if not any(last_idx&idx):
             idx = (trial_window[0]<td) & (td<trial_window[1])
             df.loc[idx, ['trial_nb']] = trial_nb
-            trial_nb += 1
-            last_idx = idx # avod overlapping samples
             valid_trigger_time.append(t)
+            last_idx = idx # avod overlapping samples
+            trial_nb += 1
+
 
     return df, np.array(valid_trigger_time)
 
