@@ -5,20 +5,18 @@ rule all:
 
 rule process_pycontrol:
     input:
-        session_path = '{session_path}'
+        session_path = '{session_path}/{session_id}'
     output:
-        event_dataframe = '{session_path}/processed/df_events_cond.pkl',
-        condition_dataframe = '{session_path}/processed/df_conditions.pkl'
-    log:
-        '{session_path}/processed/log/process_pycontrol.log',
+        event_dataframe = '{session_path}/{session_id}/processed/df_events_cond.pkl',
+        condition_dataframe = '{session_path}/{session_id}/processed/df_conditions.pkl'
     script:
         'scripts/01_process_pycontrol.py'
 
 rule pycontrol_figures:
     input:
-        event_dataframe = '{session_path}/processed/df_events_cond.pkl'
+        event_dataframe = '{session_path}/{session_id}//processed/df_events_cond.pkl'
     output:
-        event_histogram = '{session_path}/processed/figures/event_histogram.png',
-        done = touch('{session_path}/processed/task.done')
+        event_histogram = '{session_path}/{session_id}//processed/figures/event_histogram_{session_id}.png',
+        done = touch('{session_path}/{session_id}/processed/task.done')
     script:
         'scripts/02_plot_pycontrol_data.py'
