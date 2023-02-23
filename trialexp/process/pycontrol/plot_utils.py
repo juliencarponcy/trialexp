@@ -20,7 +20,7 @@ def plot_event_distribution(df2plot, x, y, xbinwidth = 100, ybinwidth=100, xlim=
     ax.set(xlim=xlim)
 
     sns.histplot(x=x, binwidth=xbinwidth, ax=g.ax_marg_x, data=df2plot)
-    if ybinwidth>0:
+    if ybinwidth>0 and len(df2plot[y].unique())>1:
         sns.histplot(y=y, binwidth=ybinwidth, ax=g.ax_marg_y, data=df2plot)
     return g
 
