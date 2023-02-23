@@ -9,7 +9,7 @@ import shutil
 from tqdm.auto import tqdm
 #%% 
 export_base_path = Path('Z:\Teris\ASAP\expt_sessions')
-pycontrol_folder = Path('Z:\\Teris\\ASAP\\pycontrol\\reaching_go_spout_bar_nov22_test')
+pycontrol_folder = Path('Z:\\Teris\\ASAP\\pycontrol\\reaching_go_spout_bar_nov22')
 pycontrol_files = pycontrol_folder.glob('*.txt')
 
 # %%
