@@ -35,6 +35,7 @@ def add_time_rel_trigger(df_events, trigger_time, trigger_name, col_name, trial_
     for t in trigger_time:
         td = df.time - t
         idx = (trial_window[0]<td) & (td<trial_window[1])
+        assert sum(idx)>0, 'Error: no event detected around trigger'
         df.loc[idx, col_name] =  df[idx].time - t
 
     return df
@@ -70,15 +71,14 @@ def add_trial_nb(df_events, trigger_time, trial_window):
         td = df.time - t
         idx = (trial_window[0]<td) & (td<trial_window[1])
 
-        #check for overlapping
-        if not any(last_idx&idx):
+        if not any(last_idx&idx):         #check for overlapping
             idx = (trial_window[0]<td) & (td<trial_window[1])
             df.loc[idx, ['trial_nb']] = trial_nb
             valid_trigger_time.append(t)
-            last_idx = idx # avod overlapping samples
+            last_idx = idx 
             trial_nb += 1
 
-
+    assert len(df.trial_nb.unique()) == len(valid_trigger_time)+1, f'Error: trigger number mismatch {df.trial_nb.unique()} {len(trigger_time)}'
     return df, np.array(valid_trigger_time)
 
 def get_task_specs(tasks_trig_and_events, task_name):
@@ -120,14 +120,17 @@ def extract_trial_by_trigger(df_pycontrol, trigger, event2analysis, trial_window
     df_events = add_time_rel_trigger(df_events, trigger_time, trigger, 'trial_time', trial_window) #calculate time relative to trigger
     df_events.dropna(subset=['trial_time'],inplace=True)
     
+    
     # Filter out events we don't want
     df_events = df_events[df_events.name.isin(event2analysis)]
-
+    
     # # group events according to trial number and event name
     df_events_trials = df_events.groupby(['trial_nb', 'name']).agg(list)
     df_events_trials = df_events_trials.loc[:, ['trial_time']]
     df_events_trials = df_events_trials.unstack('name') #convert the event names to columns
     df_events_trials.columns = df_events_trials.columns.droplevel() # dropping the multiindex of the columns
+    df_events_trials = df_events_trials.reindex(np.arange(len(trigger_time))) # make sure we include every trial
+    assert len(df_events_trials) == len(trigger_time), f'Error: trigger time does not match {df_events_trials.index} {len(trigger_time)}'
 
     # rename the column for compatibility
     df_events_trials.columns = [col+'_trial_time' for col in df_events_trials.columns]
@@ -136,8 +139,6 @@ def extract_trial_by_trigger(df_pycontrol, trigger, event2analysis, trial_window
     df_events_trials['trial_nb'] = df_events_trials.index.values
     df_events_trials['uid'] = df_events_trials['trial_nb'].apply(lambda x: f'{subject_ID}_{datetime_obj.date()}_{datetime_obj.time()}_{x}')
 
-    # print(trigger_time)
-    # display(df_events_trials)
     # fill the new_df with timestamps of trigger and trigger types
     df_events_trials['timestamp'] = trigger_time
     df_events_trials['trigger'] = trigger
