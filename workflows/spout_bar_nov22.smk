@@ -1,7 +1,7 @@
 from glob import glob
 from pathlib import Path
 
-configfile : 'workflows/config/env.yaml'
+configfile : 'workflows/config/config.yaml'
 
 rule all:
     input: expand('{sessions}/processed/task.done', sessions = Path(config['session_root_dir']).glob('*'))
