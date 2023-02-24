@@ -268,9 +268,10 @@ def compute_success(df_events_trials, df_cond, task_name, triggers=None, timelim
             # select only trials with a spout event before a US_end_timer event
             reach_bool = reach_time_before_reward.notnull()
             # select trial where the hold time was present (not aborted)
-            reach_success_bool = reach_bool & df_conditions.waiting_for_spout
-            # set these trials as successful
-            df_conditions.loc[(reach_success_bool), 'success'] = True
+            if 'waiting_for_spout' in df_conditions.columns:
+                reach_success_bool = reach_bool & df_conditions.waiting_for_spout
+                # set these trials as successful
+                df_conditions.loc[(reach_success_bool), 'success'] = True
         else:
             df_conditions['success'] = False
     
