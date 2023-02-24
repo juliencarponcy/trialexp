@@ -5,6 +5,8 @@ The workflows are developed using [snakemake](https://snakemake.github.io/). Sna
 1. Only executing a pipeline when necessary by comparing the modification date of the input and output files. 
 2. Automatically running multiple tasks in parallel by analyzing the depedency grapch of the workflow
 3. Portability by integration with conda and container virtualization.
+4. Ability to automatically generate unit test for workflow
+5. Ability to generate detailed reports for each recoding sessions
 
 
 ## Configuration
