@@ -16,10 +16,11 @@ trial_window = df_events_cond.attrs['trial_window']
 triggers = df_events_cond.attrs['triggers']
 
 #%% Plot the event plots
-df2plot = df_events_cond[df_events_cond.name=='spout']
-g = plot_event_distribution(df2plot, 'trial_time', 'trial_nb', ybinwidth=5, xlim=[trial_window[0], trial_window[1]])
+df2plot = df_events_cond[df_events_cond.name=='spout'].copy()
+df2plot['trial_time'] = df2plot['trial_time']/1000
+g = plot_event_distribution(df2plot, 'trial_time', 'trial_nb', xbinwidth=0.1, ybinwidth=0, xlim=[trial_window[0]/1000, trial_window[1]/1000])
 trigger_text = triggers[0].replace('_', ' ')
-style_event_distribution(g, 'Time (ms)', 'Trial number', trigger_text)
+style_event_distribution(g, 'Time (s)', 'Trial number', trigger_text)
 
 # %% save
 g.savefig(soutput.event_histogram, dpi=300)
