@@ -32,7 +32,7 @@ if len(filename)>1:
     raise ValueError('There are more than one pycontrol file there', filename)
 
 df_session = di.session_dataframe(filename[0])
-df_pycontrol = parse_session_dataframe(df_session, conditions)
+df_pycontrol = parse_session_dataframe(df_session)
 
 session_time = datetime.strptime(df_pycontrol.attrs['Start date'], '%Y/%m/%d %H:%M:%S')
 subjectID = df_pycontrol.attrs['Subject ID']
@@ -46,8 +46,10 @@ timelim = [1000, 4000] # in ms
 
 conditions, triggers, events_to_process = get_task_specs(tasks,  task_name)
 
-
 #%% Extract trial-related information from events
+
+df_pycontrol  = print2event(df_pycontrol, conditions)
+
 df_events_trials, df_events = extract_trial_by_trigger(df_pycontrol, triggers[0], conditions+events_to_process, 
                                             trial_window, subjectID, session_time)
 
