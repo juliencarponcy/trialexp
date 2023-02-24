@@ -30,6 +30,6 @@ dependencies:
   - seaborn
   - papermill
   - plotly
-  - sonpy
   - pip:
-    - "-e setup.py"
+    - git+https://github.com/teristam/snakehelper.git
+    - snopy
