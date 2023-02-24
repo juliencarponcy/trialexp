@@ -292,6 +292,149 @@ def plot_session(df:pd.DataFrame, keys: list = None, state_def: list = None, pri
         fig.show()
 
 
+def export_session(df:pd.DataFrame, keys: list = None, state_def: list = None, print_expr: list = None, 
+                    event_ms: list = None, smrx_filename: str = None, verbose :bool = False,
+                    print_to_text: bool = True):
+        """
+        Visualise a session using Plotly as a scrollable figure
+
+        keys: list
+            subset of self.times.keys() to be plotted as events
+            Use [] to plot nothing
+
+        state_def: dict, list, or None = None
+            must be None (default)
+            or dictionary of 
+                'name' : str
+                    Channel name
+                'onset' : str 
+                    key for onset 
+                'offset' : str
+                    key for offset
+            or list of such dictionaries
+
+            eg. dict(name='trial', onset='CS_Go', offset='refrac_period')
+            eg. {'name':'trial', 'onset':'CS_Go', 'offset':'refrac_period'}
+
+            For each onset, find the first offset event before the next onset 
+
+        event_ms: list of dict
+                'name':'name of something'
+                'time_ms': X
+            allow plotting timestamps as an event
+
+        state_ms: list of dict #TODO
+
+        verbose :bool = False
+
+
+        """
+
+        # see  \Users\phar0528\Anaconda3\envs\trialexp\Lib\site-packages\sonpy\MakeFile.py
+        #NOTE cannot put file path in the pydoc block
+
+        raw_symbols  = SymbolValidator().values
+        symbols = [raw_symbols[i+2] for i in range(0, len(raw_symbols), 12)]
+        # 40 symbols
+
+        if keys is None:
+            keys = df.name.unique()
+        else:
+            for k in keys: 
+               assert k in df.name.unique(), f"{k} is not found in self.time.keys()"
+        
+        
+        if smrx_filename is None:
+            raise ValueError('You must specify the smrx_filename filename if you want to export file')
+        else:
+            spike2exporter = Spike2Exporter(smrx_filename, df.time.max(), verbose)
+
+        def find_states(state_def_dict: dict):
+            """
+            state_def: dict, list, or None = None
+            must be None (default)
+            or dictionary of 
+                'name' : str
+                    Channel name
+                'onset' : str 
+                    key for onset 
+                'offset' : str
+                    key for offset
+            or list of such dictionaries
+
+            eg. dict(name='trial', onset='CS_Go', offset='refrac_period')
+            eg. {'name':'trial', 'onset':'CS_Go', 'offset':'refrac_period'}
+
+            For each onset, find the first offset event before the next onset 
+            """
+            if state_def_dict is None:
+                return None
+
+            all_on_sec = df[(df.name == state_def_dict['onset'])].time.values
+            all_off_sec = df[(df.name == state_def_dict['offset'])].time.values
+            # print(all_on_sec)
+
+            onsets_sec = [np.NaN] * len(all_on_sec)
+            offsets_sec = [np.NaN] * len(all_on_sec)
+
+            for i, this_onset in enumerate(all_on_sec):  # slow
+                good_offset_list_ms = []
+                for j, _ in enumerate(all_off_sec):
+                    if i < len(all_on_sec)-1:
+                        if all_on_sec[i] < all_off_sec[j] and all_off_sec[j] < all_on_sec[i+1]:
+                            good_offset_list_ms.append(all_off_sec[j])
+                    else:
+                        if all_on_sec[i] < all_off_sec[j]:
+                            good_offset_list_ms.append(all_off_sec[j])
+
+                if len(good_offset_list_ms) > 0:
+                    onsets_sec[i] = this_onset
+                    offsets_sec[i] = good_offset_list_ms[0]
+                else:
+                    ...  # keep them as nan
+
+            onsets_sec = [x for x in onsets_sec if not np.isnan(x)]  # remove nan
+            offsets_sec = [x for x in offsets_sec if not np.isnan(x)]
+            # print(onsets_sec)
+
+            state_sec = map(list, zip(onsets_sec, offsets_sec,
+                           [np.NaN] * len(onsets_sec)))
+            # [onset1, offset1, NaN, onset2, offset2, NaN, ....]
+            state_sec = [item for sublist in state_sec for item in sublist]
+            # print(state_sec)
+
+            return state_sec
+
+        y_index = 0
+        
+        for kind, k in enumerate(keys):
+            y_index += 1
+            df_evt2plot = df[df.name==k]
+            spike2exporter.write_event(df_evt2plot.time.values, k, y_index)
+
+        if event_ms is not None:
+            if isinstance(event_ms, dict):
+                event_ms = [event_ms]
+            
+        if state_def is not None:
+            # Draw states as gapped lines
+            # Assuming a list of lists of two names
+
+            if isinstance(state_def, list):# multiple entry
+                state_sec = None
+                for state in state_def:
+                    assert isinstance(state, dict)
+                    
+                    y_index +=1
+                    state_sec = find_states(state)
+                    spike2exporter.write_marker_for_state(state_sec, state['name'], y_index)
+
+            else:
+                state_sec = None
+        else:
+            state_sec = None
+
+
 #----------------------------------------------------------------------------------
 # Plotting
 #----------------------------------------------------------------------------------

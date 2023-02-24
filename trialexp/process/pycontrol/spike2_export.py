@@ -52,8 +52,7 @@ class Spike2Exporter:
         self.MyFile.SetTimeBase(self.dTimeBase)  # Set timebase
 
 
-    def write_event(self, X_sec, title, y_index):
-        X_ms = X_sec*1000
+    def write_event(self, X_ms, title, y_index):
         
         (hist, ___) = np.histogram(X_ms, bins=self.time_vec_ms) # time is 1000 too small
 
@@ -96,10 +95,8 @@ class Spike2Exporter:
             #     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
             #     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
 
-    def write_marker_for_state(self, X_sec, title, y_index, verbose=False):
+    def write_marker_for_state(self, X_ms, title, y_index, verbose=False):
         
-        X_ms = X_sec*1000 #convert second to ms
-
         # remove NaN
         X_notnan_ms = [x for x in X_ms if not np.isnan(x)]
 
@@ -112,9 +109,9 @@ class Spike2Exporter:
         MarkData = np.empty(nEvents, dtype=sp.DigMark)
         for i in range(nEvents):
             if (i+1) % 2 == 0:
-                MarkData[i] = sp.DigMark(eventfalldata[0][i]*1000*1000, 0) #offset, unit the same as timebase
+                MarkData[i] = sp.DigMark(eventfalldata[0][i]*1000, 0) #offset, unit the same as timebase
             elif (i+1) % 2 == 1:
-                MarkData[i] = sp.DigMark(eventfalldata[0][i]*1000*1000, 1) #onset
+                MarkData[i] = sp.DigMark(eventfalldata[0][i]*1000, 1) #onset
             else:
                 raise Exception('oh no')
         self.MyFile.SetMarkerChannel(y_index, self.EventRate)
@@ -127,10 +124,8 @@ class Spike2Exporter:
             print(f'{y_index}, {title}:')
             print(self.MyFile.ReadMarkers(int(y_index), nEvents, self.tFrom, self.tUpto)) #TODO failed Tick = -1
 
-    def write_textmark(self, X, title, y_index, txt, EventRate, time_vec_ms, verbose=False):
+    def write_textmark(self, X_ms, title, y_index, txt, EventRate, time_vec_ms, verbose=False):
         
-        X_ms = X*1000
-
         (hist, ___) = np.histogram(X_ms, bins=time_vec_ms) # time is 1000 too small
 
         eventfalldata = np.where(hist)
