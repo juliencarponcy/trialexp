@@ -24,16 +24,6 @@ except ModuleNotFoundError:
   ['Z:/Teris/ASAP/expt_sessions/JC318L-2022-11-30-175356/processed/df_events_cond.pkl'],
   'process_pycontrol')
 
-#%% Read task definition
-basefolder = r'C:\code\trialexp'
-tasks = pd.read_csv(basefolder+'\\params\\tasks_params.csv', usecols=[1, 2, 3, 4], index_col=False)
-task_name = 'reaching_go_spout_bar_nov22'
-
-trial_window = [-2000, 4000]
-timelim = [1000, 4000] # in ms
-
-conditions, triggers, events_to_process = get_task_specs(tasks,  task_name)
-
 
 #%% Read pycontrol file
 
@@ -46,6 +36,15 @@ df_pycontrol = parse_session_dataframe(df_session, conditions)
 
 session_time = datetime.strptime(df_pycontrol.attrs['Start date'], '%Y/%m/%d %H:%M:%S')
 subjectID = df_pycontrol.attrs['Subject ID']
+task_name = df_pycontrol.attrs['Task name']
+
+#%% Read task definition
+tasks = pd.read_csv('params/tasks_params.csv', usecols=[1, 2, 3, 4], index_col=False)
+
+trial_window = [-2000, 4000]
+timelim = [1000, 4000] # in ms
+
+conditions, triggers, events_to_process = get_task_specs(tasks,  task_name)
 
 
 #%% Extract trial-related information from events
