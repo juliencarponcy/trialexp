@@ -30,3 +30,10 @@ rule pycontrol_figures:
     script:
         'scripts/02_plot_pycontrol_data.py'
 
+rule export_spike2:
+    input:
+        event_dataframe = '{session_path}/{session_id}/processed/df_events_cond.pkl',
+    output:
+        spike2_file = '{session_path}/{session_id}/processed/spike2.smrx'
+    script:
+        'scripts/03_export_spike2.py'
