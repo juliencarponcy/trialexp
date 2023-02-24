@@ -9,9 +9,7 @@
 
 # Quick analysis of instrumental reaching
 
-# 
-
-# In[1]:
+# In[ ]:
 
 
 # allow for automatic reloading of classes and function when updating the code
@@ -25,7 +23,7 @@ from trialexp.process.data_import import *
 
 # ### Variables
 
-# In[2]:
+# In[ ]:
 
 
 import pandas as pd
@@ -53,7 +51,7 @@ photometry_dir = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\kms_pyphotometry'
 video_dir = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\videos'
 
 
-# In[3]:
+# In[ ]:
 
 
 tasks = pd.read_csv(tasksfile, usecols=[1, 2, 3, 4], index_col=False)
@@ -63,7 +61,7 @@ tasks
 # ### Create an experiment object
 # 
 
-# In[18]:
+# In[ ]:
 
 
 # Folder of a full experimental batch, all animals included
@@ -73,7 +71,7 @@ tasks
 
 # or this if you want to use data from the sample_data folder within the package
 #pycontrol_files_path = os.path.join(basefolder, 'sample_data/pycontrol')
-pycontrol_files_path = r'T:\Data\head-fixed\pycontrol\reaching_go_spout_incr_break2_nov22'
+pycontrol_files_path = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\pycontrol\reaching_go_spout_incr_break2_nov22'
 
 # Load all raw text sessions in the indicated folder or a sessions.pkl file
 # if already existing in folder_path
@@ -89,32 +87,35 @@ smrx_folder_path = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\pycontrol\reachin
 
 # ## Select sessions
 
-# In[19]:
+# In[ ]:
 
 
 import datetime
+
+update_all_smrx = False
+
 ss = exp_cohort.sessions
 
 ss_ = [this_ss for this_ss in ss
        if (this_ss.subject_ID in [58, 60, 61, 62, 63, 64])
-       and (this_ss.experiment_name == 'reaching_go_spout_incr_break2_nov22')
+       and (this_ss.task_name == 'reaching_go_spout_incr_break2_nov22')
        and (this_ss.datetime.date() >= datetime.date(2023, 1, 26))]
 ss_
 
 
-# In[20]:
+# In[ ]:
 
 
 exp_cohort.sessions = ss_
 
 
-# In[21]:
+# In[ ]:
 
 
 ss_
 
 
-# In[22]:
+# In[ ]:
 
 
 ss_[0].datetime.date()
@@ -122,41 +123,13 @@ ss_[0].datetime.date()
 
 # # SLOW 3m
 
-# In[23]:
-
-
-# # Process the whole experimental folder by trials
-
-# exp_cohort.process_exp_by_trial(
-#     trial_window, timelim, tasksfile, blank_spurious_event='spout', blank_timelim=[0, 65])
-#     # not working
-
-# # Find if there is a matching photometry file and if it can be used:
-# # rsync synchronization pulses matching between behaviour and photometry
-
-# # Find if there is a matching photometry file:
-# exp_cohort.match_sessions_to_files(photometry_dir, ext='ppd')
-
-# # rsync synchronization pulses matching between behaviour and photometry
-# exp_cohort.sync_photometry_files(2)
-
-# # Find matching videos
-# exp_cohort.match_sessions_to_files(video_dir, ext='mp4')
-
-# # FInd matching DeepLabCut outputs files
-# exp_cohort.match_sessions_to_files(video_dir, ext='h5', verbose=True)
-
-
-# # exp_cohort.save()
-
-
-# In[24]:
+# In[ ]:
 
 
 exp_cohort.subject_IDs
 
 
-# In[25]:
+# In[ ]:
 
 
 # Many combinations possible
@@ -179,7 +152,7 @@ groups = None
 # Window to exctract (in ms)
 
 
-# In[26]:
+# In[ ]:
 
 
 exp_cohort.sessions[0].times.keys()
@@ -190,13 +163,13 @@ exp_cohort.sessions[0].times.keys()
 # I realised that this plot can never tell if a water drop was triggered by bar_off or spout.
 # 
 
-# In[27]:
+# In[ ]:
 
 
 exp_cohort.sessions[0].print_lines[0:30]
 
 
-# In[28]:
+# In[ ]:
 
 
 import re
@@ -211,21 +184,25 @@ import re
 # In[ ]:
 
 
-
-
-
-# In[29]:
-
-
 for ss in exp_cohort.sessions:
     smrxname = re.sub('\.txt', f'_{ss.task_name}.smrx', ss.file_name)
     print(smrxname)
 
 
+# In[ ]:
+
+
+exp_cohort.sessions[0].print_lines[0]
+
+a = re.sub('\n','',exp_cohort.sessions[0].print_lines[0])
+
+print(a)
+
+
 # 
 # # export
 
-# In[30]:
+# In[ ]:
 
 
 keys = [
@@ -264,22 +241,24 @@ for ss in exp_cohort.sessions:
     }
     ]
 
-    try:
-        ss.plot_session(
-            keys, state_def, export_smrx=True, event_ms=event_ms, smrx_filename= smrxname)
+    if update_all_smrx or not os.path.isfile(smrxname):
 
-        summary_df = pd.concat([summary_df, 
-            pd.DataFrame({
-                'file':ss.file_name,
-                'task':ss.task_name,
-                'triggered_by_spout': len(x_spout),
-                'triggered_by_bar_off': len(x_bar),
-                'reaching_trials': len(bw),
-                'trials': len(ss.times['busy_win'])},
-                index=[0])
-                ],
-                ignore_index=True)
-    except Exception as err:
-        print(f"Unexpected {err=}, {type(err)=}, for {file_name_}")
+        try:
+            ss.plot_session(
+                keys, state_def, export_smrx=True, event_ms=event_ms, smrx_filename= smrxname)
+
+            summary_df = pd.concat([summary_df, 
+                pd.DataFrame({
+                    'file':ss.file_name,
+                    'task':ss.task_name,
+                    'triggered_by_spout': len(x_spout),
+                    'triggered_by_bar_off': len(x_bar),
+                    'reaching_trials': len(bw),
+                    'trials': len(ss.times['busy_win'])},
+                    index=[0])
+                    ],
+                    ignore_index=True)
+        except Exception as err:
+            print(f"Unexpected {err=}, {type(err)=}, for {file_name_}")
 
 

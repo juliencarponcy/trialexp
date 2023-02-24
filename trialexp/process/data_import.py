@@ -26,6 +26,7 @@ from plotly.validators.scatter.marker import SymbolValidator
 from plotly.subplots import make_subplots
 
 from trialexp.utils.pycontrol_utilities import *
+from trialexp.utils.data_organisation import *
 # from trialexp.utils.pyphotometry_utilities import *
 from trialexp.process.pyphotometry.utils import *
 from trialexp.utils.DLC_utilities import *
@@ -159,7 +160,23 @@ class Session():
         self.times = {event_name: np.array([ev.time for ev in self.events if ev.name == event_name])  
                       for event_name in ID2name.values()}
 
-        self.print_lines = [line[2:] for line in all_lines if line[0]=='P']
+        # self.print_lines = [line[2:] for line in all_lines if line[0]=='P']
+
+        # capture multiple line print messages as self.print_lines
+        count = 0
+        self.print_lines = []
+        while count < len(all_lines):
+            if bool(re.match('P\s\d+\s',all_lines[count])):  # all_lines[count][0] == 'P'
+                self.print_lines.append(all_lines[count][2:])
+                count += 1
+                while (count < len(all_lines)) and not(bool(re.match('[PVD]\s\d+\s', all_lines[count]))):
+                    self.print_lines[-1] = self.print_lines[-1] + \
+                        "\n" + all_lines[count]
+                    count += 1
+            else:
+                count += 1
+
+        self.v_lines = [line[2:] for line in all_lines if line[0]=='V']
         
         self.state_IDs = state_IDs
         self.event_IDs = event_IDs
@@ -942,15 +959,87 @@ class Session():
             low_pass: int = None, 
             median_filt: int = None, 
             motion_corr: bool = False, 
-            df_over_f: bool = False, 
+            df_over_f: bool = False,
+            zscore: bool = False, # To be implemented
             downsampling_factor: int = None,
             return_full_session: bool = False, 
             export_vars: list = ['analog_1','analog_2'],
-            # remove_artifacts: bool = False,
             verbose: bool = False):
             
-        # TODO write docstrings
+        """
+        Returns a dictionary containing photometry data for each trial that satisfies the specified conditions.
+
         
+        Parameters
+        ----------
+        conditions_list : list, optional
+            A list of conditions (dictionaries) used to filter the trials. A trial must satisfy all conditions to be selected. 
+            Default is None.
+        cond_aliases : list, optional
+            A list of strings to rename the conditions of the experiment.
+            Default is None.
+        trial_window : list, optional
+            A list of two floats specifying the time window to select relative to the trial onset.
+            Default is None.
+        trig_on_ev : str, optional
+            The name of the event to use for trial alignment. 
+            Default is None, which aligns trials to the trial onset.
+        last_before : str, optional
+            If specified, the last event with the given name before `trig_on_ev` is used for trial alignment.
+            Default is None.
+        high_pass : float, optional
+            The high-pass filter cutoff frequency to use for the motion correction. 
+            Default is None.
+        low_pass : int, optional
+            The low-pass filter cutoff frequency to use for the motion correction. 
+            Default is None.
+        median_filt : int, optional
+            The size of the median filter to use for the motion correction. 
+            Default is None.
+        motion_corr : bool, optional
+            If True, motion correction is performed using the high-pass, low-pass, and median filters.
+            Default is False.
+        df_over_f : bool, optional
+            If True, computes the dF/F and exports the analog_1_df_over_f variable.
+            Default is False.
+        zscore : bool, optional (not implemented yet)
+            If True, z-scores the data.
+            Default is False.
+        downsampling_factor : int, optional
+            The factor by which to downsample the data.
+            Default is None.
+        return_full_session : bool, optional
+            If True, returns the full session.
+            Default is False.
+        export_vars : list, optional
+            A list of variables to export in photo_array
+            Default is ['analog_1', 'analog_2'].
+        verbose : bool, optional
+            If True, prints the number of trials selected for each condition.
+            Default is False.
+
+        Returns
+        -------
+        df_meta_photo : pandas.DataFrame
+            metadata dataframe containing info about each trial
+        col_names_numpy : list
+            list of strings containing the names of the variables in the numpy array
+        photo_array : numpy.ndarray
+            numpy array containing the photometry data for each trial 
+        photometry_dict : dict, optional (if return_full_session == True)
+            dictionary containing all the photometry data for the entire session
+
+        Raises
+        ------
+        Exception
+            If the session has not been matched with a .ppd file, or if the session has no matching .ppd file, or if no alignment 
+            could be performed between rsync pulses.
+        Exception
+            If motion_corr is True and high_pass, low_pass, or median_filt is None.
+        Exception
+            If df_over_f is True and motion_corr is False.
+        """
+
         if not isinstance(conditions_list, list):
             conditions_list= [conditions_list] 
         
@@ -981,32 +1070,20 @@ class Session():
         # https://github.com/ThomasAkam/photometry_preprocessing/blob/master/Photometry%20data%20preprocessing.ipynb
         
         if motion_corr == True:
+            photometry_dict = motion_correction(photometry_dict)
 
-            slope, intercept, r_value, p_value, std_err = linregress(x=photometry_dict['analog_2_filt'], y=photometry_dict['analog_1_filt'])
-            photometry_dict['analog_1_est_motion'] = intercept + slope * photometry_dict['analog_2_filt']
-            photometry_dict['analog_1_corrected'] = photometry_dict['analog_1_filt'] - photometry_dict['analog_1_est_motion']
-            
             if df_over_f == False:
                 export_vars.append('analog_1_corrected')
-                # signal = photometry_dict['analog_1_corrected']
+
             elif df_over_f == True:
-
-                b,a = butter(2, 0.001, btype='low', fs=photometry_dict['sampling_rate'])
-                photometry_dict['analog_1_baseline_fluo'] = filtfilt(b,a, photometry_dict['analog_1_filt'], padtype='even')
-
-                # Now calculate the dF/F by dividing the motion corrected signal by the time varying baseline fluorescence.
-                photometry_dict['analog_1_df_over_f'] = photometry_dict['analog_1_corrected'] / photometry_dict['analog_1_baseline_fluo'] 
+                photometry_dict = compute_df_over_f(photometry_dict, low_pass_cutoff=0.001)
                 export_vars.append('analog_1_df_over_f')
-                # signal = photometry_dict['analog_1_df_over_f']
+
 
         elif high_pass or low_pass:
-            # signal = photometry_dict['analog_1_filt']
             export_vars.append('analog_1_filt')
-
-            # control = photometry_dict['analog_2_filt']
         else:
             export_vars.append('analog_1')
-        # signal = photometry_dict['analog_1']
 
         # only keep unique items (keys for the photometry_dict)
         export_vars = list(set(export_vars))
@@ -1033,20 +1110,9 @@ class Session():
             
             if len(trials_idx) == 0 :
                 continue
-
+            # assumes that sync between pycontrol and photometry has been performed in previous step
             timestamps_photometry = self.photometry_rsync.A_to_B(timestamps_pycontrol)
             photometry_idx = (timestamps_photometry / (1000/photometry_dict['sampling_rate'])).round().astype(int)
-            
-
-            # print(f'photometry {photometry_idx[0:10]} \r\n pycontrol {timestamps_pycontrol[0:10]}')
-            
-            # Compute mean time difference between A and B and replace NaN values at extremity of files
-            # (rsync_aligner timestamps are only computed BETWEEN rsync pulses)
-            # NOTE: Can be uncommented but likely to reintroduce timestamps outside of photometry timestamps span
-            # nan_idx = isnan(timestamps_photometry)
-            # mean_diff = nanmean(timestamps_photometry - timestamps_pycontrol.astype(float))
-            # timestamps_photometry[nan_idx] = timestamps_pycontrol[nan_idx] + mean_diff
-            # timestamps_photometry = timestamps_photometry.astype(int)
 
             # retain only trials with enough values left and right
             complete_mask = (photometry_idx + trial_window[0]/(1000/photometry_dict['sampling_rate']) >= 0) & (
@@ -1312,7 +1378,7 @@ class Session():
 
     def plot_session(self, keys: list = None, state_def: list = None, print_expr: list = None, 
                     event_ms: list = None, export_smrx: bool = False, smrx_filename: str = None, verbose :bool = False,
-                    print_to_text: bool = True):
+                    print_to_text: bool = True, vchange_to_text: bool = True):
         """
         Visualise a session using Plotly as a scrollable figure
 
@@ -1325,16 +1391,19 @@ class Session():
             or dictionary of 
                 'name' : str
                     Channel name
-                'onset' : str 
+                'onset' : str | list of str 
                     key for onset 
-                'offset' : str
+                'offset' : str | list of str 
                     key for offset
             or list of such dictionaries
 
             eg. dict(name='trial', onset='CS_Go', offset='refrac_period')
             eg. {'name':'trial', 'onset':'CS_Go', 'offset':'refrac_period'}
+            eg. {'name':'trial', 'onset':'CS_Go', 'offset': ['refrac_period', 'break_after_abortion']}
 
-            For each onset, find the first offset event before the next onset 
+
+            For each onset, finds the first offset event before the next onset
+            You can use multiple definitions with OR operation, eg. 'offset' determined by 'abort' or 'success', whichever comes first
         
         print_expr: list of dict #TODO need more testing
             'name':'name of channel'
@@ -1373,8 +1442,11 @@ class Session():
 
         verbose :bool = False
 
-        print_to_text: bool = True
-            print_lines will be converted to text (and TextMark chaanel in Spike2)
+        print_to_text: Bool = True
+            print_lines will be converted to text (and TextMark channel in Spike2)
+
+        vchange_to_text: Bool = True
+            Variable changes during the session, eg. "V 12560 windor_dur_ms 3000", will be converted to text (and TextMark channel in Spike2)
 
         """
 
@@ -1478,7 +1550,6 @@ class Session():
                 #     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
 
         def write_marker_for_state(MyFile,X_ms, title, y_index, EventRate, time_vec_ms):
-            #TODO nearly there, but file cannot be open
 
             # remove NaN
             X_notnan_ms = [x for x in X_ms if not np.isnan(x)]
@@ -1526,9 +1597,14 @@ class Session():
                     MarkData[i] = sp.DigMark(eventfalldata[0][i]*1000, 1) #onset
                 else:
                     raise Exception('oh no')
-                TMrkData[i] = sp.TextMarker(txt[i], MarkData[i]) #TODO
                 
-            MyFile.SetTextMarkChannel(y_index, EventRate, max(len(s) for s in txt)+1)
+                #NOTE Spike2 truncates text longer than 79 characters???
+                TMrkData[i] = sp.TextMarker(re.sub('\n', '', txt[i]), MarkData[i])
+
+            if len(txt) == 0:
+                MyFile.SetTextMarkChannel(y_index, EventRate, 32)
+            else:
+                MyFile.SetTextMarkChannel(y_index, EventRate, max(len(s) for s in txt)+1)
             MyFile.SetChannelTitle(y_index, title)
             if eventfalldata[0] is not []:
                 MyFile.WriteTextMarks(y_index, TMrkData)
@@ -1546,24 +1622,48 @@ class Session():
             state_def: dict, list, or None = None
             must be None (default)
             or dictionary of 
-                'name' : str
+                'name' : str 
                     Channel name
-                'onset' : str 
+                'onset' : str | list of str 
                     key for onset 
-                'offset' : str
+                'offset' : str | list of str 
                     key for offset
             or list of such dictionaries
 
             eg. dict(name='trial', onset='CS_Go', offset='refrac_period')
             eg. {'name':'trial', 'onset':'CS_Go', 'offset':'refrac_period'}
+            eg. {'name':'trial', 'onset':'CS_Go', 'offset': ['refrac_period', 'break_after_abortion']}
 
             For each onset, find the first offset event before the next onset 
+            You can use multiple definitions with OR operation, eg. 'offset' determined by 'abort' or 'success', whichever comes first            
             """
             if state_def_dict is None:
                 return None
 
-            all_on_ms = self.times[state_def_dict['onset']]
-            all_off_ms = self.times[state_def_dict['offset']]
+            if isinstance(state_def_dict['onset'], str):
+                all_on_ms = self.times[state_def_dict['onset']]
+            elif isinstance(state_def_dict['onset'], list):
+                # OR operation
+                all_on_ms = []
+                for li in state_def_dict['onset']:
+                    assert isinstance(li, str), 'onset must be str or list of str'
+                    all_on_ms.extend(self.times[li])
+                all_on_ms = sorted(all_on_ms)
+                
+            else:
+                raise Exception("onset is in a wrong type") 
+
+            if isinstance(state_def_dict['offset'], str):
+                all_off_ms = self.times[state_def_dict['offset']]
+            elif isinstance(state_def_dict['offset'], list):
+                # OR operation
+                all_off_ms = []
+                for li in state_def_dict['offset']:
+                    assert isinstance(li, str), 'offset must be str or list of str'                    
+                    all_off_ms.extend(self.times[li])
+                all_off_ms = sorted(all_off_ms)
+            else:
+                raise Exception("offset is in a wrong type") 
 
             onsets_ms = [np.NaN] * len(all_on_ms)
             offsets_ms = [np.NaN] * len(all_on_ms)
@@ -1641,12 +1741,12 @@ class Session():
 
         if print_to_text:
 
-            EXPR = '^(\d+)\s(.+)'
-            list_of_match = [re.match(EXPR, L) for L in self.print_lines if re.match(EXPR, L) is not None]
+            EXPR = '^(\d+)\s(.+)' #NOTE . doesn't capture \n and re.DOTALL is required below
+            list_of_match = [re.match(EXPR, L, re.DOTALL) for L in self.print_lines if re.match(EXPR, L) is not None]
             ts_ms = [int(m.group(1)) for m in list_of_match]
             txt = [m.group(2) for m in list_of_match]
   
-            df_print = pd.DataFrame(list(zip(ts_ms, txt)), columns=['ms', 'text'])
+            # df_print = pd.DataFrame(list(zip(ts_ms, txt)), columns=['ms', 'text'])
 
             y_index += 1
             txtsc = go.Scatter(x=[TS_ms/1000 for TS_ms in ts_ms], y=['print_lines']*len(ts_ms), 
@@ -1656,6 +1756,24 @@ class Session():
 
             if export_smrx:
                 write_textmark( MyFile, ts_ms, 'print lines', y_index, txt, EventRate, time_vec_ms)
+
+        if vchange_to_text:
+            EXPR = '^([1-9]\d*)\s(.+)' #NOTE Need to ignore the defaults (V 0 ****)
+            list_of_match = [re.match(EXPR, L) for L in self.v_lines if re.match(EXPR, L) is not None]
+            ts_ms = [int(m.group(1)) for m in list_of_match]
+            txt = [m.group(2) for m in list_of_match]
+  
+            # df_print = pd.DataFrame(list(zip(ts_ms, txt)), columns=['ms', 'text'])
+
+            y_index += 1
+            txtsc = go.Scatter(x=[TS_ms/1000 for TS_ms in ts_ms], y=['V changes']*len(ts_ms), 
+                text=txt, textposition="top center", 
+                mode="markers", marker_symbol=symbols[y_index % 40])
+            fig.add_trace(txtsc)
+
+            if export_smrx:
+                write_textmark( MyFile, ts_ms, 'V changes', y_index, txt, EventRate, time_vec_ms)
+        
 
         if state_def is not None:
             # Draw states as gapped lines
@@ -2090,7 +2208,7 @@ class Experiment():
                     when_func = lambda session: session.datetime.date() in dates
         
         # can select session based on task_name string or list of task_name
-        if task_names == 'all':
+        if task_names == 'all' or task_names is None:
             task_names = self.task_names
         if not isinstance(task_names, list):
             task_names = [task_names]

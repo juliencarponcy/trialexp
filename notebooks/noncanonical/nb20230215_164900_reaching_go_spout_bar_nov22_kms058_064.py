@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# # nb20230212_194200_reaching_go_spout_incr_break2_nov22_JC313_315
+# # nb20230215_164900_reaching_go_spout_bar_nov22_kms058_064.ipynb
 # 
 # ```bash
-# jupyter nbconvert "D:\OneDrive - Nexus365\Private_Dropbox\Projects\trialexp\notebooks\noncanonical\nb20230212_194200_reaching_go_spout_incr_break2_nov22_JC313_315.ipynb" --to="python" --output-dir="D:\OneDrive - Nexus365\Private_Dropbox\Projects\trialexp\notebooks\noncanonical" --output="nb20230212_194200_reaching_go_spout_incr_break2_nov22_JC313_315"
+# jupyter nbconvert "D:\OneDrive - Nexus365\Private_Dropbox\Projects\trialexp\notebooks\noncanonical\nb20230215_164900_reaching_go_spout_bar_nov22_kms058_064.ipynb" --to="python" --output-dir="D:\OneDrive - Nexus365\Private_Dropbox\Projects\trialexp\notebooks\noncanonical" --output="nb20230215_164900_reaching_go_spout_bar_nov22_kms058_064"
 # ```
 
 # Quick analysis of instrumental reaching
@@ -60,13 +60,6 @@ tasks = pd.read_csv(tasksfile, usecols=[1, 2, 3, 4], index_col=False)
 tasks
 
 
-# In[ ]:
-
-
-photo_root_dir = 'T:\\Data\\head-fixed\\pyphotometry\\data'
-pycontrol_root_dir = 'T:\\Data\\head-fixed\\pycontrol'
-
-
 # ### Create an experiment object
 # 
 
@@ -80,7 +73,7 @@ pycontrol_root_dir = 'T:\\Data\\head-fixed\\pycontrol'
 
 # or this if you want to use data from the sample_data folder within the package
 #pycontrol_files_path = os.path.join(basefolder, 'sample_data/pycontrol')
-pycontrol_files_path = r'T:\Data\head-fixed\pycontrol\reaching_go_spout_incr_break2_nov22'
+pycontrol_files_path = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\pycontrol\reaching_go_spout_bar_nov22'
 
 # Load all raw text sessions in the indicated folder or a sessions.pkl file
 # if already existing in folder_path
@@ -91,7 +84,7 @@ exp_cohort = Experiment(pycontrol_files_path, update = True) #TODO
 exp_cohort.by_trial = True
 
 
-smrx_folder_path = r'T:\Data\head-fixed\kms_pycontrol\smrx'
+smrx_folder_path = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\pycontrol\reaching_go_spout_bar_nov22\processed'
 
 
 # ## Select sessions
@@ -102,24 +95,46 @@ smrx_folder_path = r'T:\Data\head-fixed\kms_pycontrol\smrx'
 import datetime
 ss = exp_cohort.sessions
 
+
+
+# In[ ]:
+
+
+for i, _ in enumerate(ss):
+    print(ss[i].file_name)
+
+
+# In[ ]:
+
+
+print(ss[-2].file_name)
+print(ss[-2].subject_ID)
+print(ss[-2].experiment_name)
+
+
+
+# In[ ]:
+
+
+update_all_smrx = False
+
 ss_ = [this_ss for this_ss in ss
-       # [313, 314, 315, 316, 317, 318]
-       if (this_ss.subject_ID in [313, 314, 315])
-       and (this_ss.task_name == 'reaching_go_spout_incr_break2_nov22')
-       and (this_ss.datetime.date() >= datetime.date(2022, 12, 3))]
+       if (this_ss.subject_ID in [58, 60, 61, 62, 63, 64])
+       and (this_ss.task_name == 'reaching_go_spout_bar_nov22')]
 ss_
+
+
+# In[ ]:
+
+
+for i, _ in enumerate(ss_):
+    print(ss_[i].file_name)
 
 
 # In[ ]:
 
 
 exp_cohort.sessions = ss_
-
-
-# In[ ]:
-
-
-ss_
 
 
 # In[ ]:
@@ -134,6 +149,12 @@ ss_[0].datetime.date()
 
 
 exp_cohort.subject_IDs
+
+
+# In[ ]:
+
+
+exp_cohort.sessions[0].times.keys()
 
 
 # In[ ]:
@@ -159,12 +180,6 @@ groups = None
 # Window to exctract (in ms)
 
 
-# In[ ]:
-
-
-exp_cohort.sessions[0].times.keys()
-
-
 # # Session plot 
 # 
 # I realised that this plot can never tell if a water drop was triggered by bar_off or spout.
@@ -181,11 +196,11 @@ exp_cohort.sessions[0].print_lines[0:30]
 
 import re
 
-re.match('abc ','abc de')
+# re.match('abc ','abc de')
 
-expr = '^\d+(?= ' + '.?Timestamp' + ')'
-a = [re.match(expr, L) for L in exp_cohort.sessions[0].print_lines if re.match(expr , L) is not None]
-int(a[0].group(0))
+# expr = '^\d+(?= ' + '.?Timestamp' + ')'
+# a = [re.match(expr, L) for L in exp_cohort.sessions[0].print_lines if re.match(expr , L) is not None]
+# int(a[0].group(0))
 
 
 # In[ ]:
@@ -194,6 +209,12 @@ int(a[0].group(0))
 for ss in exp_cohort.sessions:
     smrxname = re.sub('\.txt', f'_{ss.task_name}.smrx', ss.file_name)
     print(smrxname)
+
+
+# In[ ]:
+
+
+dir(exp_cohort.sessions[0])
 
 
 # 
@@ -206,8 +227,12 @@ keys = [
         'button_press', 'bar', 'bar_off', 'spout', 'US_delay_timer', 'CS_offset_timer']
 
 state_def = [
-    {'name': 'busy_win',    'onset': 'busy_win',    'offset': 'short_break'},
-    {'name': 'short_break', 'onset': 'short_break', 'offset': 'busy_win'}]
+    {'name': 'waiting_for_bar',    'onset': 'waiting_for_bar',    'offset': 'hold_for_water'},
+    {'name': 'hold_for_water',    'onset': 'hold_for_water',    'offset': ['waiting_for_spout', 'break_after_abort']},
+    {'name': 'waiting_for_spout',    'onset': 'waiting_for_spout',    'offset': ['busy_win', 'break_after_trial']},
+    {'name': 'busy_win',    'onset': 'busy_win',    'offset': 'break_after_trial'},
+    {'name': 'break_after_trial', 'onset': 'break_after_trial', 'offset': 'waiting_for_bar'},
+    {'name': 'break_after_abort', 'onset': 'break_after_abort', 'offset': 'waiting_for_bar'}]
 
 summary_df = pd.DataFrame()
 
@@ -238,22 +263,25 @@ for ss in exp_cohort.sessions:
     }
     ]
 
-    try:
-        ss.plot_session(
-            keys, state_def, export_smrx=True, event_ms=event_ms, smrx_filename= smrxname)
 
-        summary_df = pd.concat([summary_df, 
-            pd.DataFrame({
-                'file':ss.file_name,
-                'task':ss.task_name,
-                'triggered_by_spout': len(x_spout),
-                'triggered_by_bar_off': len(x_bar),
-                'reaching_trials': len(bw),
-                'trials': len(ss.times['busy_win'])},
-                index=[0])
-                ],
-                ignore_index=True)
-    except Exception as err:
-        print(f"Unexpected {err=}, {type(err)=}, for {file_name_}")
+    if update_all_smrx or not os.path.isfile(smrxname):
+
+        try:
+            ss.plot_session(
+                keys, state_def, export_smrx=True, event_ms=event_ms, smrx_filename= smrxname)
+
+            summary_df = pd.concat([summary_df, 
+                pd.DataFrame({
+                    'file':ss.file_name,
+                    'task':ss.task_name,
+                    'triggered_by_spout': len(x_spout),
+                    'triggered_by_bar_off': len(x_bar),
+                    'reaching_trials': len(bw),
+                    'trials': len(ss.times['busy_win'])},
+                    index=[0])
+                    ],
+                    ignore_index=True)
+        except Exception as err:
+            print(f"Unexpected {err=}, {type(err)=}, for {file_name_}")
 
 

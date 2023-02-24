@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# # nb20230212_194200_reaching_go_spout_incr_break2_nov22_JC313_315
+# # nb20230214_105500_reaching_go_spout_nov22_kms058_060_061
 # 
 # ```bash
-# jupyter nbconvert "D:\OneDrive - Nexus365\Private_Dropbox\Projects\trialexp\notebooks\noncanonical\nb20230212_194200_reaching_go_spout_incr_break2_nov22_JC313_315.ipynb" --to="python" --output-dir="D:\OneDrive - Nexus365\Private_Dropbox\Projects\trialexp\notebooks\noncanonical" --output="nb20230212_194200_reaching_go_spout_incr_break2_nov22_JC313_315"
+# jupyter nbconvert "D:\OneDrive - Nexus365\Private_Dropbox\Projects\trialexp\notebooks\noncanonical\nb20230214_105500_reaching_go_spout_nov22_kms058_060_061.ipynb" --to="python" --output-dir="D:\OneDrive - Nexus365\Private_Dropbox\Projects\trialexp\notebooks\noncanonical" --output="nb20230214_105500_reaching_go_spout_nov22_kms058_060_061"
 # ```
 
 # Quick analysis of instrumental reaching
@@ -60,13 +60,6 @@ tasks = pd.read_csv(tasksfile, usecols=[1, 2, 3, 4], index_col=False)
 tasks
 
 
-# In[ ]:
-
-
-photo_root_dir = 'T:\\Data\\head-fixed\\pyphotometry\\data'
-pycontrol_root_dir = 'T:\\Data\\head-fixed\\pycontrol'
-
-
 # ### Create an experiment object
 # 
 
@@ -80,7 +73,7 @@ pycontrol_root_dir = 'T:\\Data\\head-fixed\\pycontrol'
 
 # or this if you want to use data from the sample_data folder within the package
 #pycontrol_files_path = os.path.join(basefolder, 'sample_data/pycontrol')
-pycontrol_files_path = r'T:\Data\head-fixed\pycontrol\reaching_go_spout_incr_break2_nov22'
+pycontrol_files_path = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\pycontrol\reaching_go_spout_nov22'
 
 # Load all raw text sessions in the indicated folder or a sessions.pkl file
 # if already existing in folder_path
@@ -91,7 +84,7 @@ exp_cohort = Experiment(pycontrol_files_path, update = True) #TODO
 exp_cohort.by_trial = True
 
 
-smrx_folder_path = r'T:\Data\head-fixed\kms_pycontrol\smrx'
+smrx_folder_path = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\pycontrol\reaching_go_spout_nov22\processed'
 
 
 # ## Select sessions
@@ -103,10 +96,8 @@ import datetime
 ss = exp_cohort.sessions
 
 ss_ = [this_ss for this_ss in ss
-       # [313, 314, 315, 316, 317, 318]
-       if (this_ss.subject_ID in [313, 314, 315])
-       and (this_ss.task_name == 'reaching_go_spout_incr_break2_nov22')
-       and (this_ss.datetime.date() >= datetime.date(2022, 12, 3))]
+       if (this_ss.subject_ID in [58, 60, 61, 62, 63, 64])
+       and (this_ss.task_name == 'reaching_go_spout_nov22')]
 ss_
 
 
@@ -114,12 +105,6 @@ ss_
 
 
 exp_cohort.sessions = ss_
-
-
-# In[ ]:
-
-
-ss_
 
 
 # In[ ]:
@@ -181,11 +166,17 @@ exp_cohort.sessions[0].print_lines[0:30]
 
 import re
 
-re.match('abc ','abc de')
+# re.match('abc ','abc de')
 
-expr = '^\d+(?= ' + '.?Timestamp' + ')'
-a = [re.match(expr, L) for L in exp_cohort.sessions[0].print_lines if re.match(expr , L) is not None]
-int(a[0].group(0))
+# expr = '^\d+(?= ' + '.?Timestamp' + ')'
+# a = [re.match(expr, L) for L in exp_cohort.sessions[0].print_lines if re.match(expr , L) is not None]
+# int(a[0].group(0))
+
+
+# In[ ]:
+
+
+
 
 
 # In[ ]:
@@ -206,8 +197,9 @@ keys = [
         'button_press', 'bar', 'bar_off', 'spout', 'US_delay_timer', 'CS_offset_timer']
 
 state_def = [
-    {'name': 'busy_win',    'onset': 'busy_win',    'offset': 'short_break'},
-    {'name': 'short_break', 'onset': 'short_break', 'offset': 'busy_win'}]
+    {'name': 'busy_win',    'onset': 'busy_win',    'offset': ['short_break','waiting_for_spout']},
+    {'name': 'short_break', 'onset': 'short_break', 'offset': 'busy_win'},
+    {'name': 'waiting_for_spout', 'onset': 'waiting_for_spout', 'offset': 'busy_win'}]
 
 summary_df = pd.DataFrame()
 

@@ -1,30 +1,48 @@
 ' display_style.s2s |
 var vh% := View();
 FrontView(vh%);
-YAxisMode(8196, 1, 12, 0);
-XAxisMode(4);
-FontSet("Arial",9, 0); 'set view font
 
-var list%[400];
+if ViewKind(vh%) = 0 then
+    
+    YAxisMode(8196, 1, 12, 0);
+    XAxisMode(4);
+    FontSet("Arial",9, 0); 'set view font
 
-ChanList(list%[], 8+2048);
+    var list%[400];
 
-var i%;
-var chan%;
-for i% := 1 to list%[0] do
-    chan% := list%[i%];
-    DrawMode(chan%,15,0, 0,0); 'Set State
-    MarkShow(chan%, 0, 0); 'Set marker to display and mode
-next;
+    ChanList(list%[], 8+2048);
 
-ChanList(list%[], 32+2048);
+    var i%;
+    var chan%;
+    for i% := 1 to list%[0] do
+        chan% := list%[i%];
+        DrawMode(chan%,15,0, 0,0); 'Set State
+        MarkShow(chan%, 0, 0); 'Set marker to display and mode
+    next;
 
-for i% := 1 to list%[0] do
-    chan% := list%[i%];
-    DrawMode(10,14, 4, 0,0); 'Set Text
-    MarkShow(10, 0, 0); 'Set marker to display and modenext;
-next;
+    ChanList(list%[], 32+2048);
 
-XAxisStyle(2, 0, 0);
-XAxisAttrib(0);
-XRange(0, MaxTime());
+    for i% := 1 to list%[0] do
+        chan% := list%[i%];
+        DrawMode(chan%, 14, 4, 0,0); 'Set Text
+        MarkShow(chan%, 0, 0); 'Set marker to display and modenext;
+    next;
+
+    XAxisStyle(2, 0, 0);
+    XAxisAttrib(0);
+    XRange(0, MaxTime());
+
+    
+else
+    if ViewKind(vh%) = 4 then
+        
+        FontSet("Arial",9, 0); 'set view font
+
+        YAxisMode(4);
+        XAxisMode(4);
+        XAxisStyle(1, 0, 0.5);
+        XAxisAttrib(0);        
+        
+     endif
+endif
+
