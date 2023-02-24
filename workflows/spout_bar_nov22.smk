@@ -1,10 +1,10 @@
 from glob import glob
 from pathlib import Path
 
-session_root_dir = Path('Z:/Teris/ASAP/expt_sessions/')
+configfile : 'workflows/config/env.yaml'
 
 rule all:
-    input: expand('{sessions}/processed/task.done', sessions = session_root_dir.glob('*'))
+    input: expand('{sessions}/processed/task.done', sessions = Path(config['session_root_dir']).glob('*'))
 
 rule process_pycontrol:
     input:
