@@ -14,7 +14,7 @@ rule process_pycontrol:
         event_dataframe = '{session_path}/{session_id}/processed/df_events_cond.pkl',
         condition_dataframe = '{session_path}/{session_id}/processed/df_conditions.pkl'
     log:
-        '{session_path}/{session_id}/processed/process_pycontrol.log'
+        '{session_path}/{session_id}/processed/log/process_pycontrol.log'
     script:
         'scripts/01_process_pycontrol.py'
 
@@ -22,7 +22,7 @@ rule pycontrol_figures:
     input:
         event_dataframe = '{session_path}/{session_id}//processed/df_events_cond.pkl'
     log:
-        '{session_path}/{session_id}/processed/pycontrol_figures.log'
+        '{session_path}/{session_id}/processed/log/pycontrol_figures.log'
     output:
         event_histogram = report('{session_path}/{session_id}//processed/figures/event_histogram_{session_id}.png', 
                                     caption='report/event_histogram.rst', category='Plots' ),
