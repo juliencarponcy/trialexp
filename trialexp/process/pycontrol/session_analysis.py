@@ -248,14 +248,17 @@ def compute_success(df_events_trials, df_cond, task_name, triggers=None, timelim
 
 
     elif task_name in ['reaching_go_spout_nov22']:
-        reach_time_before_reward = df_events.loc[:,['spout_trial_time','US_end_timer_trial_time']].apply(
-            lambda x: find_last_time_before_list(x['spout_trial_time'], x['US_end_timer_trial_time']), axis=1)  
-        # select only trials with a spout event before a US_end_timer event
-        reach_bool = reach_time_before_reward.notnull()
-        # select trial where the hold time was present (not aborted)
-        reach_success_bool = reach_bool & (df_conditions.trigger =='busy_win')
-        # set these trials as successful
-        df_conditions.loc[(reach_success_bool), 'success'] = True
+        if 'spout_trial_time' in df_events.columns and 'US_end_timer_trial_time' in df_events.columns:
+            reach_time_before_reward = df_events.loc[:,['spout_trial_time','US_end_timer_trial_time']].apply(
+                lambda x: find_last_time_before_list(x['spout_trial_time'], x['US_end_timer_trial_time']), axis=1)  
+            # select only trials with a spout event before a US_end_timer event
+            reach_bool = reach_time_before_reward.notnull()
+            # select trial where the hold time was present (not aborted)
+            reach_success_bool = reach_bool & (df_conditions.trigger =='busy_win')
+            # set these trials as successful
+            df_conditions.loc[(reach_success_bool), 'success'] = True
+        else:
+            df_conditions['success'] = False
 
     # To perform for delayed tasks (check whether a US_end_timer was preceded by a spout)
     elif task_name in ['reaching_go_spout_bar_dual_all_reward_dec22', 
