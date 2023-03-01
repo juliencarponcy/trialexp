@@ -15,32 +15,16 @@ from snakehelper.SnakeIOHelper import getSnake
   'export_spike2')
 
 #%% Load data
-df_events = pd.read_pickle(sinput.event_dataframe)
+df_pycontrol = pd.read_pickle(sinput.pycontrol_dataframe)
+
 
 #%%
-# state_def = [{'name': 'hold_for_water', 
-#                   'onset': 'hold_for_water', 'offset': 'waiting_for_spout'},
-#             {'name': 'waiting_for_spout', 
-#                  'onset': 'waiting_for_spout', 'offset': 'busy_win'},
-#             {'name': 'busy_win', 
-#                  'onset': 'busy_win', 'offset': 'break_after_water'},
-#             {'name': 'break_after_water', 
-#                  'onset': 'break_after_water',    'offset': 'waiting_for_bar'},
-#             {'name': 'break_after_no_water', 
-#                  'onset': 'break_after_no_water', 'offset': 'waiting_for_bar'}]
-
-#TODO automatically plot all states
-state_def = [
-            {'name': 'hold_for_water', 
-                 'onset': 'hold_for_water', 'offset': 'waiting_for_spout'},
-            {'name': 'waiting_for_spout', 
-                 'onset': 'waiting_for_spout', 'offset': 'break_after_trial'}]
-
 
 #remove all state change event
-df2plot = df_events[df_events.type != 'state']
+df_pycontrol = df_pycontrol.dropna(subset='name')
+df2plot = df_pycontrol[df_pycontrol.type != 'state']
 keys = df2plot.name.unique()
 
-export_session(df_events, keys, state_def,
-             smrx_filename='test.smrx',verbose=False)
+export_session(df_pycontrol, keys,
+             smrx_filename=soutput.spike2_file)
 # %%
