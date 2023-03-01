@@ -94,8 +94,11 @@ class Spike2Exporter:
             #     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
             #     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
             #     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
-
+            
     def write_marker_for_state(self, X_ms, title, y_index, verbose=False):
+        '''
+        The x_ms format is expected to be [event1_onset, event1_offset, event2_onset, event2_offset] etc.
+        '''
         
         # remove NaN
         X_notnan_ms = [x for x in X_ms if not np.isnan(x)]

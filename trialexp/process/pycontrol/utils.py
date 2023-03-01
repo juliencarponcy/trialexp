@@ -1,5 +1,6 @@
 # Utility functions for pycontrol and pyphotometry files processing
 
+from collections import defaultdict
 import shutil
 from datetime import datetime
 from os import walk
@@ -292,7 +293,7 @@ def plot_session(df:pd.DataFrame, keys: list = None, state_def: list = None, pri
         fig.show()
 
 
-def export_session(df:pd.DataFrame, keys: list = None, state_def: list = None, print_expr: list = None, 
+def export_session(df:pd.DataFrame, keys: list = None, export_state=True, print_expr: list = None, 
                     event_ms: list = None, smrx_filename: str = None, verbose :bool = False,
                     print_to_text: bool = True):
         """
@@ -348,62 +349,26 @@ def export_session(df:pd.DataFrame, keys: list = None, state_def: list = None, p
             raise ValueError('You must specify the smrx_filename filename if you want to export file')
         else:
             spike2exporter = Spike2Exporter(smrx_filename, df.time.max(), verbose)
+            
+        
+        def extract_states(df_pycontrol):
+            # extract the onset and offset of state automatically
+            df_states = df_pycontrol[df_pycontrol.type=='state']
 
-        def find_states(state_def_dict: dict):
-            """
-            state_def: dict, list, or None = None
-            must be None (default)
-            or dictionary of 
-                'name' : str
-                    Channel name
-                'onset' : str 
-                    key for onset 
-                'offset' : str
-                    key for offset
-            or list of such dictionaries
+            states_dict = defaultdict(list)
 
-            eg. dict(name='trial', onset='CS_Go', offset='refrac_period')
-            eg. {'name':'trial', 'onset':'CS_Go', 'offset':'refrac_period'}
-
-            For each onset, find the first offset event before the next onset 
-            """
-            if state_def_dict is None:
-                return None
-
-            all_on_sec = df[(df.name == state_def_dict['onset'])].time.values
-            all_off_sec = df[(df.name == state_def_dict['offset'])].time.values
-            # print(all_on_sec)
-
-            onsets_sec = [np.NaN] * len(all_on_sec)
-            offsets_sec = [np.NaN] * len(all_on_sec)
-
-            for i, this_onset in enumerate(all_on_sec):  # slow
-                good_offset_list_ms = []
-                for j, _ in enumerate(all_off_sec):
-                    if i < len(all_on_sec)-1:
-                        if all_on_sec[i] < all_off_sec[j] and all_off_sec[j] < all_on_sec[i+1]:
-                            good_offset_list_ms.append(all_off_sec[j])
-                    else:
-                        if all_on_sec[i] < all_off_sec[j]:
-                            good_offset_list_ms.append(all_off_sec[j])
-
-                if len(good_offset_list_ms) > 0:
-                    onsets_sec[i] = this_onset
-                    offsets_sec[i] = good_offset_list_ms[0]
-                else:
-                    ...  # keep them as nan
-
-            onsets_sec = [x for x in onsets_sec if not np.isnan(x)]  # remove nan
-            offsets_sec = [x for x in offsets_sec if not np.isnan(x)]
-            # print(onsets_sec)
-
-            state_sec = map(list, zip(onsets_sec, offsets_sec,
-                           [np.NaN] * len(onsets_sec)))
-            # [onset1, offset1, NaN, onset2, offset2, NaN, ....]
-            state_sec = [item for sublist in state_sec for item in sublist]
-            # print(state_sec)
-
-            return state_sec
+            #extract the starting and end point of stats
+            if len(df_states)>2:
+                curState  = df_states.iloc[0]['name']
+                start_time = df_states.iloc[0]['time']
+                
+                for _, row in df_states.iloc[1:].iterrows():
+                    if not row.name == curState:
+                        states_dict[curState].extend([start_time, row.time])
+                        start_time = row['time']
+                        curState = row['name']
+                        
+            return states_dict  
 
         y_index = 0
         
@@ -416,23 +381,15 @@ def export_session(df:pd.DataFrame, keys: list = None, state_def: list = None, p
             if isinstance(event_ms, dict):
                 event_ms = [event_ms]
             
-        if state_def is not None:
+        if export_state:
             # Draw states as gapped lines
-            # Assuming a list of lists of two names
+            state_dict = extract_states(df)
+            
+            for state, time_ms in state_dict.items():
+                y_index += 1
+                spike2exporter.write_marker_for_state(time_ms, state, y_index)
 
-            if isinstance(state_def, list):# multiple entry
-                state_sec = None
-                for state in state_def:
-                    assert isinstance(state, dict)
-                    
-                    y_index +=1
-                    state_sec = find_states(state)
-                    spike2exporter.write_marker_for_state(state_sec, state['name'], y_index)
 
-            else:
-                state_sec = None
-        else:
-            state_sec = None
 
 
 #----------------------------------------------------------------------------------
