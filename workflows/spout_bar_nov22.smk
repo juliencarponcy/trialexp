@@ -12,7 +12,8 @@ rule process_pycontrol:
         session_path = '{session_path}/{session_id}'
     output:
         event_dataframe = '{session_path}/{session_id}/processed/df_events_cond.pkl',
-        condition_dataframe = '{session_path}/{session_id}/processed/df_conditions.pkl'
+        condition_dataframe = '{session_path}/{session_id}/processed/df_conditions.pkl',
+        pycontrol_dataframe = '{session_path}/{session_id}/processed/df_pycontrol.pkl'
     log:
         '{session_path}/{session_id}/processed/log/process_pycontrol.log'
     script:
@@ -26,14 +27,14 @@ rule pycontrol_figures:
     output:
         event_histogram = report('{session_path}/{session_id}//processed/figures/event_histogram_{session_id}.png', 
                                     caption='report/event_histogram.rst', category='Plots' ),
-        done = touch('{session_path}/{session_id}/processed/task.done')
     script:
         'scripts/02_plot_pycontrol_data.py'
 
 rule export_spike2:
     input:
-        event_dataframe = '{session_path}/{session_id}/processed/df_events_cond.pkl',
+        pycontrol_dataframe = '{session_path}/{session_id}/processed/df_pycontrol.pkl'
     output:
-        spike2_file = '{session_path}/{session_id}/processed/spike2.smrx'
+        spike2_file = '{session_path}/{session_id}/processed/spike2.smrx',
+        done = touch('{session_path}/{session_id}/processed/task.done')
     script:
         'scripts/03_export_spike2.py'
