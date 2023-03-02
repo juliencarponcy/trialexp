@@ -34,7 +34,7 @@ def add_time_rel_trigger(df_events, trigger_time, trigger_name, col_name, trial_
 
     for t in trigger_time:
         td = df.time - t
-        idx = (trial_window[0]<td) & (td<trial_window[1])
+        idx = (trial_window[0]<=td) & (td<trial_window[1])
         assert sum(idx)>0, 'Error: no event detected around trigger'
         df.loc[idx, col_name] =  df[idx].time - t
 
@@ -49,12 +49,33 @@ def assign_val_rel_trigger(df_events, trigger_time, col_name, value, trial_windo
 
     for t in trigger_time:
         td = df.time - t
-        idx = (trial_window[0]<td) & (td<trial_window[1])
+        idx = (trial_window[0]<=td) & (td<trial_window[1])
         df.loc[idx, col_name] =  value
 
     return df
 
 def add_trial_nb(df_events, trigger_time, trial_window):
+    """Add trial number to the event dataframe based on trigger times and trial window.
+
+    This function creates a copy of the input events dataframe and adds a new column 'trial_nb' that specifies the trial number for each event based on the trigger times and trial window. 
+
+    Args:
+        df_events (pandas.DataFrame): The input events dataframe.
+        trigger_time (array-like): An array-like object containing the times when the trial is triggered.
+        trial_window (tuple): A tuple containing the start and end times of the trial window in seconds.
+
+    Returns:
+        pandas.DataFrame: The events dataframe with trial numbers added.
+        numpy.ndarray: An array of valid trigger times used to generate trial numbers.
+
+    Raises:
+        AssertionError: If the number of unique trial numbers does not match the number of trigger times.
+
+    Notes:
+        Overlapping trials are not allowed as they can overwrite trial numbers and cause confusion in later analysis.
+    """
+        
+
     # add trial number into the event dataframe
     df = df_events.copy()
     df['trial_nb'] = np.nan
@@ -67,16 +88,19 @@ def add_trial_nb(df_events, trigger_time, trial_window):
     last_idx = [False]*len(df_events)
     valid_trigger_time = []
     
-    for t in trigger_time[:-1]: #skip the last trial because it can be incomplete
+    for t in trigger_time: #skip the last trial because it can be incomplete
         td = df.time - t
-        idx = (trial_window[0]<td) & (td<trial_window[1])
+        start = (trial_window[0]<=td)
+        end = (td<trial_window[1])
+        if any(end):
+            # only continue when trial is complete
+            idx = start & end
 
-        if not any(last_idx&idx):         #check for overlapping
-            idx = (trial_window[0]<td) & (td<trial_window[1])
-            df.loc[idx, ['trial_nb']] = trial_nb
-            valid_trigger_time.append(t)
-            last_idx = idx 
-            trial_nb += 1
+            if not any(last_idx&idx):         #check for overlapping
+                df.loc[idx, ['trial_nb']] = trial_nb
+                valid_trigger_time.append(t)
+                last_idx = idx 
+                trial_nb += 1
 
     assert len(df.trial_nb.unique()) == len(valid_trigger_time)+1, f'Error: trigger number mismatch {df.trial_nb.unique()} {len(trigger_time)}'
     return df, np.array(valid_trigger_time)
