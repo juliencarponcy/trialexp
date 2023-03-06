@@ -61,7 +61,7 @@ def compute_df_over_f(photometry_dict: dict, low_pass_cutoff: float = 0.001) -> 
     if 'analog_1_corrected' not in photometry_dict:
         raise Exception('Analog 1 must be motion corrected before computing dF/F')
     
-    b,a = butter(2, low_pass_cutoff, btype='low', fs=photometry_dict['sampling_rate'])
+    b,a = butter(2, 0.01, btype='low', fs=photometry_dict['sampling_rate'])
     photometry_dict['analog_1_baseline_fluo'] = filtfilt(b,a, photometry_dict['analog_1_filt'], padtype='even')
 
     # Now calculate the dF/F by dividing the motion corrected signal by the time varying baseline fluorescence.
