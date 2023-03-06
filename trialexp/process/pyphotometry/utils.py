@@ -16,6 +16,7 @@ from scipy.signal import butter, filtfilt, medfilt
 from scipy.stats import linregress, zscore
 
 from trialexp.utils.rsync import *
+import xarray as xr
 
 '''
 Most of the photometry data processing functions are based on the intial design
@@ -165,7 +166,8 @@ def import_ppd(file_path, low_pass=20, high_pass=0.01, medfilt_size=None):
     analog_2 = analog[1::2] * volts_per_division[1]
     digital_1 = digital[ ::2]
     digital_2 = digital[1::2]
-    time = np.arange(analog_1.shape[0])*1000/sampling_rate # Time relative to start of recording (ms).
+    # Time relative to start of recording (ms).
+    time = np.arange(analog_1.shape[0]).astype(np.int64)*1000/sampling_rate #warning: default data type np.int32 will lead to overflow
 
     if low_pass or high_pass:
         # Filter signals with specified high and low pass frequencies (Hz).
@@ -447,3 +449,36 @@ def dbscan_anomaly_detection(data):
             network_ano[past_id[-1]] = None
 
         
+
+def photometry2xarray(data_photometry):
+    """
+    Converts a pyphotometry dictionary into an xarray dataset. 
+    
+    Parameters
+    ----------
+    data_photometry : dict
+        A pyphotometry dictionary containing data and associated time stamps.
+        
+    Returns
+    -------
+    dataset : xarray.Dataset
+        An xarray Dataset containing data and attributes associated with the 
+        pyphotometry dictionary. 
+    """ 
+    
+    data_list = {}
+    attr_list = {}
+    time = data_photometry['time']
+
+    for k, data in data_photometry.items():
+        
+        if isinstance(data, (list,np.ndarray)) and len(data) == len(time):
+                array = xr.DataArray(data, coords={'time':time}, dims=['time'])
+                data_list[k] = array
+        else:
+            attr_list[k] = data
+
+    dataset = xr.Dataset(data_list)
+    dataset.attrs.update(attr_list)
+    
+    return dataset
