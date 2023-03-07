@@ -13,7 +13,8 @@ rule process_pycontrol:
     output:
         event_dataframe = '{session_path}/{session_id}/processed/df_events_cond.pkl',
         condition_dataframe = '{session_path}/{session_id}/processed/df_conditions.pkl',
-        pycontrol_dataframe = '{session_path}/{session_id}/processed/df_pycontrol.pkl'
+        pycontrol_dataframe = '{session_path}/{session_id}/processed/df_pycontrol.pkl',
+        trial_dataframe = '{session_path}/{session_id}/processed/df_trials.pkl'
     log:
         '{session_path}/{session_id}/processed/log/process_pycontrol.log'
     script:
@@ -32,9 +33,22 @@ rule pycontrol_figures:
 
 rule export_spike2:
     input:
-        pycontrol_dataframe = '{session_path}/{session_id}/processed/df_pycontrol.pkl'
+        pycontrol_dataframe = '{session_path}/{session_id}/processed/df_pycontrol.pkl',
+        df_photometry = '{session_path}/{session_id}/processed/df_photometry.nc'
     output:
         spike2_file = '{session_path}/{session_id}/processed/spike2.smrx',
-        done = touch('{session_path}/{session_id}/processed/task.done')
     script:
         'scripts/03_export_spike2.py'
+
+
+rule import_pyphotometry:
+    input:
+        pycontrol_dataframe = '{session_path}/{session_id}/processed/df_pycontrol.pkl',
+        trial_dataframe = '{session_path}/{session_id}/processed/df_trials.pkl',
+        event_dataframe = '{session_path}/{session_id}/processed/df_events_cond.pkl',
+        condition_dataframe = '{session_path}/{session_id}/processed/df_conditions.pkl',
+        photometry_folder = '{session_path}/{session_id}/photometry'
+    output:
+        df_photometry = '{session_path}/{session_id}/processed/df_photometry.nc',
+        done = touch('{session_path}/{session_id}/processed/task.done')
+
