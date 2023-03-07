@@ -450,7 +450,7 @@ def dbscan_anomaly_detection(data):
 
         
 
-def photometry2xarray(data_photometry):
+def photometry2xarray(data_photometry, skip_var=None):
     """
     Converts a pyphotometry dictionary into an xarray dataset. 
     
@@ -458,6 +458,8 @@ def photometry2xarray(data_photometry):
     ----------
     data_photometry : dict
         A pyphotometry dictionary containing data and associated time stamps.
+    skip_var: list
+        name of keyword in the data_photometry dict that you want to skip, mainly use to skip intermeidate variables
         
     Returns
     -------
@@ -469,14 +471,17 @@ def photometry2xarray(data_photometry):
     data_list = {}
     attr_list = {}
     time = data_photometry['time']
+    
+    if skip_var is None:
+        skip_var = []
 
     for k, data in data_photometry.items():
-        
-        if isinstance(data, (list,np.ndarray)) and len(data) == len(time):
-                array = xr.DataArray(data, coords={'time':time}, dims=['time'])
-                data_list[k] = array
-        else:
-            attr_list[k] = data
+        if not k in skip_var:
+            if isinstance(data, (list,np.ndarray)) and len(data) == len(time):
+                    array = xr.DataArray(data, coords={'time':time}, dims=['time'])
+                    data_list[k] = array
+            else:
+                attr_list[k] = data
 
     dataset = xr.Dataset(data_list)
     dataset.attrs.update(attr_list)
