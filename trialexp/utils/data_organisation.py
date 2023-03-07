@@ -176,7 +176,6 @@ def match_sessions_to_files(experiment, files_dir, ext='mp4', verbose=False) -> 
             Returns:
                     str (store list in sessions[x].file["ext"])
     ''' 
-
     # subject_IDs = [session.subject_ID for session in self.sessions]
     # datetimes = [session.datetime for session in self.sessions]
     files_list = [f for f in listdir(files_dir) if isfile(
