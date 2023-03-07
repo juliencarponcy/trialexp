@@ -17,7 +17,6 @@ from scipy.stats import linregress, zscore
 
 from trialexp.utils.rsync import *
 import xarray as xr
-from trialexp.process.data_import import Session
 
 '''
 Most of the photometry data processing functions are based on the intial design
@@ -46,6 +45,18 @@ Assumptions:
 # Note that there is a dependency in the workflow between these filtering 
 # and normalization functions. The normalization functions assume that the
 # data has already been filtered.
+
+def denoise_filter(photometry_dict:dict, lowpass_freq = 20) -> dict:
+    # apply a low-pass filter to remove high frequency noise
+    b,a = get_filt_coefs(low_pass=lowpass_freq, sampling_rate=photometry_dict['sampling_rate'])
+    analog_1_filt = filtfilt(b, a, photometry_dict['analog_1'], padtype='even')
+    analog_2_filt = filtfilt(b, a, photometry_dict['analog_2'], padtype='even')
+    
+    photometry_dict['analog_1_filt'] = analog_1_filt
+    photometry_dict['analog_2_filt'] = analog_2_filt
+    
+    return photometry_dict
+    
 
 def motion_correction(photometry_dict: dict) -> dict:
     
@@ -170,6 +181,7 @@ def import_ppd(file_path):
     digital_2 = digital[1::2]
     # Time relative to start of recording (ms).
     time = np.arange(analog_1.shape[0]).astype(np.int64)*1000/sampling_rate #warning: default data type np.int32 will lead to overflow
+    # time = np.arange(analog_1.shape[0])*1000/sampling_rate #warning: default data type np.int32 will lead to overflow
 
    
     # Extract rising edges for digital inputs.
@@ -451,7 +463,7 @@ def photometry2xarray(data_photometry, skip_var=None):
     
     data_list = {}
     attr_list = {}
-    time = data_photometry['time']
+    time = data_photometry['time'].astype(np.int64)
     
     if skip_var is None:
         skip_var = []
