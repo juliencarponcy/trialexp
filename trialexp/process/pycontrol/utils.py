@@ -23,7 +23,7 @@ from trialexp.process.pycontrol.spike2_export import Spike2Exporter
 
 def parse_session_dataframe(df_session):
     # parse and format the session dataframe imported from pycontrol
-    df_events = df_session[(df_session.type!='info') & (df_session.name!='rsync')]
+    df_events = df_session[(df_session.type!='info')]
     info = df_session[df_session.type=='info']
     info = dict(zip(info.name, info.value))
     df_events = df_events.drop(columns='duration')
