@@ -28,7 +28,7 @@ from plotly.subplots import make_subplots
 
 from trialexp.utils.pycontrol_utilities import *
 from trialexp.utils.data_organisation import *
-# from trialexp.utils.pyphotometry_utilities import *
+from trialexp.process.pyphotometry.photometry_functional import *
 from trialexp.process.pyphotometry.utils import *
 from trialexp.utils.DLC_utilities import *
 from trialexp.utils.rsync import *
@@ -2758,7 +2758,9 @@ class Experiment():
             last_before: str = None,
             when = 'all',
             task_names = 'all',
-            high_pass: int = None, # analog_1_df_over_f doesn't work with this
+            baseline_low_pass: int = None, # changed var name from high-pass to baseline_low_pass
+            # due to https://github.com/juliencarponcy/trialexp/pull/9
+            # fixed in https://github.com/juliencarponcy/trialexp/pull/9/commits/2bd4307af9ce2096ff1673b56cf6bacf0a2a8127#diff-90aedd18a2a5cd46987018614831622fb110ef9b08b1d3baad395bf36c0a6e1c
             low_pass: int = None, 
             median_filt: int = None,
             motion_corr: bool = False, 
@@ -2820,13 +2822,17 @@ class Experiment():
                         print(f'Processing subject {session.subject_ID} at: {session.datetime_string}')
 
                     try:
-                        df_meta_photo, col_names_numpy, photometry_array, fs = session.get_photometry_trials(
+                        df_meta_photo, col_names_numpy, photometry_array, fs = get_photometry_trials(
+                            session,
                             conditions_list = conditions_list, 
                             cond_aliases = cond_aliases,
                             trial_window = self.trial_window,
                             trig_on_ev = trig_on_ev,
                             last_before = last_before,
-                            high_pass = high_pass, 
+                            baseline_low_pass = baseline_low_pass, # var name changed from former high-pass,
+                            # was misleading on baseline computation
+                            # see https://github.com/juliencarponcy/trialexp/issues/8
+                            # first fix 
                             low_pass = low_pass, 
                             median_filt = median_filt,
                             motion_corr = motion_corr, 
