@@ -16,7 +16,7 @@ from scipy.signal import butter, filtfilt, medfilt
 from scipy.stats import linregress, zscore
 
 from trialexp.utils.rsync import *
-from trialexp.process.data_import import Session
+# from trialexp.process.data_import import Session
 
 '''
 Most of the photometry data processing functions are based on the intial design
