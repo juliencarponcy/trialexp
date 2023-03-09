@@ -70,7 +70,7 @@ dataset['rel_time_hold_for_water'] = rel_time_hold_for_water
 
 #%%
 df2plot = dataset[['rel_time_hold_for_water','analog_1_df_over_f']].to_dataframe()
-df2plot.rel_time_hold_for_water = df2plot.rel_time_hold_for_water//10*10
+df2plot.rel_time_hold_for_water = df2plot.rel_time_hold_for_water//10*10 # time windows: 100ms
 sns.lineplot(x='rel_time_hold_for_water', y='analog_1_df_over_f', data=df2plot)
 
 
