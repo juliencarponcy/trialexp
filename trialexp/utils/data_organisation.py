@@ -103,30 +103,26 @@ def reorg_to_sessions_folder(
             
             # if multiple streams for the data modality (e.g. 2 cameras / 2 probes etc.)
             if multi_stream_keywords and data_modality_ext[ext] in multi_stream_keywords.keys():
-                # create subfolders for each input
+
                 for stream in multi_stream_keywords[data_modality_ext[ext]]:
-                    input_folder = data_mod_folder / ('data_' + stream)
-                    input_folder.mkdir(parents=True, exist_ok=True)
+                    # input_folder = data_mod_folder / ('data_' + stream)
+                    # input_folder.mkdir(parents=True, exist_ok=True)
                     
                     # copy files to input folder
                     for f in filelist:
                         file_name = Path(f).name
                         if stream in f:
                             try:
-                                shutil.copy(f, input_folder / file_name)
+                                shutil.copy(f, data_mod_folder / file_name)
                             except shutil.SameFileError:
                                 pass
             # if single stream for the data modality (e.g. pycontrol / single-site photometry)
             else:
-                # copy files to data modality folder, in default subfolder
-                # the for loop should not be necessary here but filelist is still a list... so
-                # data_stream is the default name for single input data modalities (could be anything else)
-                input_folder = data_mod_folder / 'data_stream'
-                input_folder.mkdir(parents=True, exist_ok=True)
+                # copy files to data modality folder
                 for f in filelist:
                     file_name = Path(f).name
                     try:
-                        shutil.copy(f, input_folder / file_name)  
+                        shutil.copy(f, data_mod_folder / file_name)  
                     except shutil.SameFileError:
                         pass
 
@@ -180,7 +176,6 @@ def match_sessions_to_files(experiment, files_dir, ext='mp4', verbose=False) -> 
             Returns:
                     str (store list in sessions[x].file["ext"])
     ''' 
-
     # subject_IDs = [session.subject_ID for session in self.sessions]
     # datetimes = [session.datetime for session in self.sessions]
     files_list = [f for f in listdir(files_dir) if isfile(

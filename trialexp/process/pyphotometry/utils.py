@@ -16,6 +16,7 @@ from scipy.signal import butter, filtfilt, medfilt
 from scipy.stats import linregress, zscore
 
 from trialexp.utils.rsync import *
+# from trialexp.process.data_import import Session
 
 '''
 Most of the photometry data processing functions are based on the intial design
@@ -118,6 +119,7 @@ def fit_exp_func(data, fs: int = 100, medfilt_size: int = 3) -> np.ndarray:
 
     fitted_data = exp_func(time, * fit_params)
 
+
     return fitted_data
 
 
@@ -125,7 +127,7 @@ def fit_exp_func(data, fs: int = 100, medfilt_size: int = 3) -> np.ndarray:
 # Load analog data
 #----------------------------------------------------------------------------------
 
-def import_ppd(file_path, low_pass=20, high_pass=0.01, medfilt_size=None):
+def import_ppd(file_path):
     '''Function to import pyPhotometry binary data files into Python. The high_pass 
     and low_pass arguments determine the frequency in Hz of highpass and lowpass 
     filtering applied to the filtered analog signals. To disable highpass or lowpass
@@ -167,28 +169,7 @@ def import_ppd(file_path, low_pass=20, high_pass=0.01, medfilt_size=None):
     digital_2 = digital[1::2]
     time = np.arange(analog_1.shape[0])*1000/sampling_rate # Time relative to start of recording (ms).
 
-    if low_pass or high_pass:
-        # Filter signals with specified high and low pass frequencies (Hz).
-        b, a = get_filt_coefs(low_pass, high_pass, sampling_rate)
-        
-        if medfilt_size:
-            analog_1_medfilt = median_filtering(analog_1, medfilt_size = medfilt_size)
-            analog_2_medfilt = median_filtering(analog_2, medfilt_size = medfilt_size)
-            analog_1_filt = filtfilt(b, a, analog_1_medfilt)
-            analog_2_filt = filtfilt(b, a, analog_2_medfilt)
-            # analog_1_filt = sosfiltfilt(sos, analog_1_filt)
-            # analog_2_filt = sosfiltfilt(sos, analog_2_filt)   
-            # analog_1_filt = filtfilt(b, a, analog_1_medfilt, padlen = len(analog_1)-1)
-            # analog_2_filt = filtfilt(b, a, analog_2_medfilt, padlen = len(analog_2)-1)
-        else:
-            analog_1_filt = filtfilt(b, a, analog_1)
-            analog_2_filt = filtfilt(b, a, analog_2)
-    else:
-        if medfilt_size:
-            analog_1_filt = median_filtering(analog_1, medfilt_size = medfilt_size)
-            analog_2_filt = median_filtering(analog_2, medfilt_size = medfilt_size)  
-        else:
-            analog_1_filt = analog_2_filt = None
+   
     # Extract rising edges for digital inputs.
     pulse_inds_1 = 1+np.where(np.diff(digital_1) == 1)[0]
     pulse_inds_2 = 1+np.where(np.diff(digital_2) == 1)[0]
@@ -197,8 +178,6 @@ def import_ppd(file_path, low_pass=20, high_pass=0.01, medfilt_size=None):
     # Return signals + header information as a dictionary.
     data_dict = {'analog_1'      : analog_1,
                  'analog_2'      : analog_2,
-                 'analog_1_filt' : analog_1_filt,
-                 'analog_2_filt' : analog_2_filt,
                  'digital_1'     : digital_1,
                  'digital_2'     : digital_2,
                  'pulse_inds_1'  : pulse_inds_1,
@@ -212,6 +191,88 @@ def import_ppd(file_path, low_pass=20, high_pass=0.01, medfilt_size=None):
     
     return data_dict
 
+#----------------------------------------------------------------------------------
+# Rsync functions
+#----------------------------------------------------------------------------------
+
+
+def sync_photometry_file(
+        session_file: str,
+        photometry_file: str = None, 
+        rsync_chan: int = 2,
+        delete_unsynced: bool = True, 
+        verbose: bool = False):
+    """
+    This function create a rsync aligment object into the corresponding
+    session if the rsync pulses match betwwen pycontrol and pyphotometry files.
+
+        Parameters:
+            session_file (str): PyControl txt file path 
+            photometry_file (str): PyPhotometry ppd file path 
+            rsync_chan (int): Channel on which pulses have been
+                recorded on the py_photometry device.
+            delete_unsynced (bool): Delete the photometry file path in
+                session.files['ppd'] if rsync does not match
+            verbose (bool): display match/no match messages for each file
+
+        Returns:
+            None
+
+        The warning:
+            KMeans is known to have a memory leak on Windows with MKL, when there are less chunks than available threads...
+        
+        is due to rsync function.
+
+        https://stackoverflow.com/questions/69596239/how-to-avoid-memory-leak-when-dealing-with-kmeans-for-example-in-this-code-i-am
+        Follow the answer and set the einvironment variable OMP_NUM_THREADS to supress the warning.
+                
+    """
+    
+    session = Session(session_file, int_subject_IDs=True, verbose=False) 
+
+    session.files = dict()
+    session.files['ppd']  = [photometry_file] # list to make it backward compatible (implemented to allow for multiple matches [eg cameras])
+    if photometry_file:
+        # try to align times with rsync
+        try:
+            # Gives KeyError exception if no rsync pulses on pycontrol file
+            pycontrol_rsync_times = session.times['rsync']
+        
+            photometry_dict = import_ppd(photometry_file)
+            
+            photometry_rsync_times = photometry_dict['pulse_times_' + str(rsync_chan)]
+
+            photometry_rsync = Rsync_aligner(pulse_times_A= pycontrol_rsync_times, 
+                pulse_times_B= photometry_rsync_times, plot=False)
+            
+            if verbose:
+                print('pycontrol: ', session.subject_ID, session.datetime,
+                '/ pyphotometry: ', photometry_file, ' : rsync does match')
+            
+
+
+        # if rsync aligner fails    
+        except (RsyncError, ValueError, KeyError):
+            photometry_rsync = None
+
+            if verbose:
+                print('pycontrol: ', session.subject_ID, session.datetime,
+                '/ pyphotometry: ', photometry_file, ' : rsync does not match')
+
+            if delete_unsynced:
+                session.files['ppd'] = []
+
+    # if there is no subject + date match in .ppd files
+    else: 
+        photometry_rsync = None
+
+        if verbose:
+            print('pycontrol: ', session.subject_ID, session.datetime,
+            '/ pyphotometry: no file matching both subject and date')
+
+    # for now return a session with embedded rsync object. 
+    # Ouput will change when getting closer to fully functional implementation
+    return photometry_rsync
 
 #----------------------------------------------------------------------------------
 # From here, legacy methods which will be probably deprecated in the future
@@ -335,7 +396,7 @@ def find_n_gaussians(
     return n_best+1
 
 #----------------------------------------------------------------------------------
-# Processing helper
+# Processing helper remaining from legacy
 #----------------------------------------------------------------------------------
 
 def compute_PCA(

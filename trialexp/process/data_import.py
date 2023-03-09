@@ -10,6 +10,7 @@ import datetime
 import warnings
 import datetime
 import itertools
+from itertools import compress
 
 from collections import namedtuple
 from operator import itemgetter
@@ -27,7 +28,7 @@ from plotly.subplots import make_subplots
 
 from trialexp.utils.pycontrol_utilities import *
 from trialexp.utils.data_organisation import *
-# from trialexp.utils.pyphotometry_utilities import *
+from trialexp.process.pyphotometry.photometry_functional import *
 from trialexp.process.pyphotometry.utils import *
 from trialexp.utils.DLC_utilities import *
 from trialexp.utils.rsync import *
@@ -403,7 +404,7 @@ class Session():
         columns=['timestamp', 'trigger', 'valid', 'success', 'uid']
         columns = columns + ev_col_list
 
-        new_df = pd.DataFrame(index= df_events.index.get_level_values('trial_nb').unique(),
+        new_df = pd.DataFrame(index= range(1,len(all_trial_times_sorted)+1),
             columns=columns)
 
         # Create unique identifiers for trials
@@ -415,7 +416,7 @@ class Session():
         # fill new <event>_trial_time columns
         for ev in self.events_to_process:
             try:
-                new_df[str(ev + '_trial_time')] = df_events.loc[
+                new_df.loc[df_events.index.get_level_values('trial_nb').unique(), str(ev + '_trial_time')] = df_events.loc[
                     (df_events.index.get_level_values('trial_nb'), ev), 'trial_time'].values
             except KeyError as ke:
                 print('No event ', ke, ' found: ',
@@ -484,16 +485,12 @@ class Session():
                 df_conditions[cond] = 0
 
             # group by trigger and trial nb
-            df_conditions_summed = self.df_conditions[self.conditions + ['trial_nb']].groupby(['trial_nb'], as_index=False)
-            # Aggregate different timestamp ()
-            df_conditions_summed = df_conditions_summed.agg(lambda x: sum(x))   
-
-            # reindexing to have conditions for all trials even if no condition has been detected for some trials
-            df_conditions = df_conditions_summed.reindex(index=self.df_events.index, fill_value=0)   
-
-            df_conditions = pd.concat([self.df_events[['trigger','valid']], df_conditions], axis='columns', join='outer')
-
-            self.df_conditions = df_conditions
+            df_conditions_summed = self.df_conditions[self.conditions + ['trial_nb']].groupby(['trial_nb'], as_index=True).agg(lambda x: sum(x)) 
+            # Replicate the index of df_events to complete for trials where no condition were detected
+            df_conditions_summed = df_conditions_summed.reindex(index=self.df_events.index)
+            df_conditions_summed.loc[:,['trigger','valid','success']] = self.df_events.loc[:,['trigger','valid','success']]
+            
+            self.df_conditions = df_conditions_summed
             self.df_conditions.loc[:,self.conditions] = self.df_conditions[self.conditions].astype(bool)
 
         else:
@@ -562,8 +559,14 @@ class Session():
         return metadata_dict
 
     # Perform all the pretreatments to analyze behavioural file by trials
-    def get_session_by_trial(self, trial_window: list, timelim: list,
-            tasksfile, blank_spurious_event: list, blank_timelim: list, verbose=False):
+    def get_session_by_trial(
+            self, 
+            trial_window: list, 
+            timelim: list = None,
+            tasksfile: str = None, 
+            blank_spurious_event: list = None, 
+            blank_timelim: list = None, 
+            verbose: bool = False):
         """
 
         """
@@ -732,8 +735,7 @@ class Session():
             self.df_conditions.loc[(reach_success_bool), 'success'] = True
 
         # To perform for delayed tasks (check whether a US_end_timer was preceded by a spout)
-        elif self.task_name in ['reaching_go_spout_bar_dual_all_reward_dec22', 
-            'reaching_go_spout_bar_dual_dec22', 'reaching_go_spout_bar_nov22']:
+        elif self.task_name in ['reaching_go_spout_bar_nov22']:
 
             reach_time_before_reward = self.df_events.loc[:,['spout_trial_time','US_end_timer_trial_time']].apply(
                     lambda x: find_last_time_before_list(x['spout_trial_time'], x['US_end_timer_trial_time']), axis=1)    
@@ -743,15 +745,26 @@ class Session():
             reach_success_bool = reach_bool & self.df_conditions.waiting_for_spout
             # set these trials as successful
             self.df_conditions.loc[(reach_success_bool), 'success'] = True
+        
+        elif self.task_name in ['reaching_go_spout_bar_dual_all_reward_dec22', 
+            'reaching_go_spout_bar_dual_dec22']:
 
+            reach_time_before_reward = self.df_events.loc[:,['spout_trial_time','US_end_timer_trial_time']].apply(
+                    lambda x: find_last_time_before_list(x['spout_trial_time'], x['US_end_timer_trial_time']), axis=1)    
+            # select only trials with a spout event before a US_end_timer event
+            reach_bool = reach_time_before_reward.notnull()
+            # select trial where the hold time was present (not aborted)
+            reach_success_bool = reach_bool & self.df_conditions.Go_to_get_water
+            # set these trials as successful
+            self.df_conditions.loc[(reach_success_bool), 'success'] = True
 
-        # Reorder columns putting trigger, valid and success first for more clarity
-        col_list = list(self.df_conditions.columns.values)
-        col_to_put_first = ['trigger', 'success','valid']
-        for c in col_to_put_first:
-            col_list.remove(c)
-        col_list = ['trigger', 'success','valid'] + col_list
-        self.df_conditions = self.df_conditions[col_list]
+        # # Reorder columns putting trigger, valid and success first for more clarity
+        # col_list = list(self.df_conditions.columns.values)
+        # col_to_put_first = ['trigger', 'success','valid']
+        # for c in col_to_put_first:
+        #     col_list.remove(c)
+        # col_list = ['trigger', 'success','valid'] + col_list
+        # self.df_conditions = self.df_conditions[col_list]
 
         
 
@@ -960,7 +973,7 @@ class Session():
             median_filt: int = None, 
             motion_corr: bool = False, 
             df_over_f: bool = False,
-            zscore: bool = False, # To be implemented
+            z_score: bool = False, # To be implemented
             downsampling_factor: int = None,
             return_full_session: bool = False, 
             export_vars: list = ['analog_1','analog_2'],
@@ -1002,7 +1015,7 @@ class Session():
         df_over_f : bool, optional
             If True, computes the dF/F and exports the analog_1_df_over_f variable.
             Default is False.
-        zscore : bool, optional (not implemented yet)
+        z_score : bool, optional (not implemented yet)
             If True, z-scores the data.
             Default is False.
         downsampling_factor : int, optional
@@ -1076,9 +1089,11 @@ class Session():
                 export_vars.append('analog_1_corrected')
 
             elif df_over_f == True:
-                photometry_dict = compute_df_over_f(photometry_dict, low_pass_cutoff=0.001)
+                photometry_dict = compute_df_over_f(photometry_dict, low_pass_cutoff=0.01)
                 export_vars.append('analog_1_df_over_f')
-
+                if z_score == True:
+                    photometry_dict['zscored_df_over_f'] = zscore(photometry_dict['analog_1_df_over_f'])
+                    export_vars.append('zscored_df_over_f')
 
         elif high_pass or low_pass:
             export_vars.append('analog_1_filt')
@@ -1993,7 +2008,8 @@ class Experiment():
             self, 
             path: str, 
             int_subject_IDs: bool = True, 
-            update: bool = False, 
+            update: bool = False,
+            folder_by_session: bool = False, 
             verbose: bool = False):
         """
         Import all sessions from specified folder to create experiment object.  Only sessions in the 
@@ -2006,7 +2022,9 @@ class Experiment():
         update:             If True, do not rely only on .pkl file but check for new files
         verbose:            If True, output verbose on the status of the pycontrol files    
         """
-        # path = Path(path)
+        # If data organization based on session's folders
+        self.folder_by_session = folder_by_session
+
         if os.path.isfile(path):
             if path[-4:] == '.pkl':
                 self.path = Path(path)
@@ -2022,9 +2040,23 @@ class Experiment():
                     \n- a sessions.pkl file\
                     \n- a single pycontrol .txt file'))
 
-                    
+        # if path is a folder            
         elif os.path.isdir(path):
             self.path = Path(path)
+
+            if folder_by_session:
+                
+                path = Path(path)
+                session_folder_list = os.listdir(path)
+                # check if all are folders
+                is_folder = [os.path.isdir(path / s_path) for s_path in session_folder_list]
+                # only integrate folders
+                session_folder_list = list(compress(session_folder_list, is_folder))
+
+                pycontrol_folders = [path / s_f / 'pycontrol' for s_f in session_folder_list]
+                pycontrol_files = [f / os.listdir(f)[0] for f in pycontrol_folders if
+                    (len(os.listdir(f)) == 1) and (os.listdir(f)[0][-4:] == '.txt')]
+
 
             # Import sessions.
 
@@ -2043,17 +2075,25 @@ class Experiment():
         
 
             if update:
-                old_files = [session.file_name for session in self._sessions]
-                files = os.listdir(self.path)
-                new_files = [f for f in files if f[-4:] == '.txt' and f not in old_files]
+                if not folder_by_session:
+                    old_files = [session.file_name for session in self._sessions]
+                    files = os.listdir(self.path)
+                    new_files = [f for f in files if f[-4:] == '.txt' and f not in old_files]
 
-                if len(new_files) > 0:
-                    if verbose:
-                        print('Loading new data files..')
-                    self.by_trial = False
                     for file_name in new_files:
                         try:
-                            self._sessions.append(Session(os.path.join(self.path, file_name), int_subject_IDs))
+                            self._sessions.append(Session(Path(self.path) / file_name, int_subject_IDs))
+                        except Exception as error_message:
+                            if verbose:
+                                print('Unable to import file: ' + file_name)
+                                print(error_message)
+                
+                if folder_by_session:
+                    new_files = pycontrol_files
+
+                    for file_name in new_files:
+                        try:
+                            self._sessions.append(Session(file_name), int_subject_IDs)
                         except Exception as error_message:
                             if verbose:
                                 print('Unable to import file: ' + file_name)
@@ -2063,7 +2103,6 @@ class Experiment():
 
         else:
             raise(NotImplementedError)
-
 
         # Assign session numbers.
 
@@ -2787,11 +2826,14 @@ class Experiment():
             last_before: str = None,
             when = 'all',
             task_names = 'all',
-            high_pass: int = None, # analog_1_df_over_f doesn't work with this
+            baseline_low_pass: int = None, # changed var name from high-pass to baseline_low_pass
+            # due to https://github.com/juliencarponcy/trialexp/pull/9
+            # fixed in https://github.com/juliencarponcy/trialexp/pull/9/commits/2bd4307af9ce2096ff1673b56cf6bacf0a2a8127#diff-90aedd18a2a5cd46987018614831622fb110ef9b08b1d3baad395bf36c0a6e1c
             low_pass: int = None, 
             median_filt: int = None,
             motion_corr: bool = False, 
-            df_over_f: bool = False, 
+            df_over_f: bool = False,
+            z_score: bool = False, 
             downsampling_factor: int = None,
             export_vars: list = ['analog_1','analog_2'],
             # remove_artifacts: bool = False,
@@ -2848,17 +2890,22 @@ class Experiment():
                         print(f'Processing subject {session.subject_ID} at: {session.datetime_string}')
 
                     try:
-                        df_meta_photo, col_names_numpy, photometry_array, fs = session.get_photometry_trials(
+                        df_meta_photo, col_names_numpy, photometry_array, fs = get_photometry_trials(
+                            session,
                             conditions_list = conditions_list, 
                             cond_aliases = cond_aliases,
                             trial_window = self.trial_window,
                             trig_on_ev = trig_on_ev,
                             last_before = last_before,
-                            high_pass = high_pass, 
+                            baseline_low_pass = baseline_low_pass, # var name changed from former high-pass,
+                            # was misleading on baseline computation
+                            # see https://github.com/juliencarponcy/trialexp/issues/8
+                            # first fix 
                             low_pass = low_pass, 
                             median_filt = median_filt,
                             motion_corr = motion_corr, 
                             df_over_f = df_over_f, 
+                            z_score = z_score,
                             downsampling_factor = downsampling_factor, 
                             return_full_session = False,
                             export_vars = export_vars,
