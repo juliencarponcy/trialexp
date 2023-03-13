@@ -25,5 +25,5 @@
 23,reaching_go_spout_bar_nov22,hold_for_water,bar; bar_off; spout; US_end_timer,break_after_abort; US_end_timer; water_on; water by bar_off; water by spout; water for free; water success; busy_win_timer; spout; button_press; waiting_for_spout,,,,,,,
 24,reaching_go_spout_bar_dual_dec22,hold_for_water,bar; bar_off; spout; US_end_timer,Go_to_get_water; US_end_timer; break_after_abort; water_on; water by bar_off; water by spout; water for free; water success; button_press; busy_win_timer; spout; waiting_for_spout,,,,,,,
 ,reaching_go_spout_bar_dual_all_reward_dec22,hold_for_water; hold_for_air,bar; bar_off; spout; US_end_timer,Go_to_get_water; US_end_timer; break_after_abort; water_on; water by bar_off; water by spout; water for free; water success; button_press; error_trial; busy_win_timer; spout; hold_timer,,,,,,,
-,reaching_go_spout_incr_break2_nov22,busy_win,bar; bar_off; spout; US_end_timer,spout; US_end_timer,,,,,,,
+,reaching_go_spout_incr_break2_nov22,busy_win,bar; bar_off; spout; US_end_timer,spout; US_end_timer; button_press; busy_win,,,,,,,
 21,reaching_go_spout_feb23,bar_off; spout; US_end_timer,bar; bar_off; spout; US_end_timer,US_end_timer; water_on; Success:True; Success:False; busy_win; spout; button_press; hold_timer,,,,,,,

@@ -746,6 +746,16 @@ class Session():
             # set these trials as successful
             self.df_conditions.loc[(reach_success_bool), 'success'] = True
         
+        elif self.task_name in ['reaching_go_spout_incr_break2_nov22']:
+
+            reach_time_before_reward = self.df_events.loc[:,['spout_trial_time','US_end_timer_trial_time']].apply(
+                    lambda x: find_last_time_before_list(x['spout_trial_time'], x['US_end_timer_trial_time']), axis=1)    
+            # select only trials with a spout event before a US_end_timer event
+            reach_bool = reach_time_before_reward.notnull()
+
+            # set these trials as successful
+            self.df_conditions.loc[(reach_bool), 'success'] = True
+
         elif self.task_name in ['reaching_go_spout_bar_dual_all_reward_dec22', 
             'reaching_go_spout_bar_dual_dec22']:
 
