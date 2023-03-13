@@ -30,11 +30,8 @@ To actually execute the workflow, remove the `-n` option.
 
 It is possible that some session folder does not hvae the photometry data, in this case the analysis will fail. You can ask the workflow to continue with other session folder in case of failure with the `-k` option. By default, it will wait for 5s for the missing file. You can make it shorter by using the `--latency-wait` option
 
-`snakemake --cores --snakefile workflows/spout_bar_nov22.smk -k --latency-wait 2`
+`snakemake --cores --snakefile workflows/spout_bar_nov22.smk -k --latency-wait 1`
 
 
 Since the workflow is based on snakemake, you can also use any of the advanced option supported by snakemake. For detail please consult the snakemake [documentations](https://snakemake.readthedocs.io/en/stable/executing/cli.html)
 
-
-## Known bug
-Now you need to manually remove the `task.done` file if you want to force re-run the analsyis. I am working to fix it.

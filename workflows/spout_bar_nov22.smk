@@ -50,6 +50,8 @@ rule import_pyphotometry:
         photometry_folder = '{session_path}/{session_id}/photometry'
     output:
         df_photometry = '{session_path}/{session_id}/processed/df_photometry.nc',
+    script:
+        'scripts/04_import_pyphotometry.py'
 
 rule photometry_figure:
     input:
@@ -57,3 +59,5 @@ rule photometry_figure:
     output:
         trigger_photo_dir= directory('{session_path}/{session_id}/processed/figures/photometry'),
         done = touch('{session_path}/{session_id}/processed/task.done')
+    script:
+        'scripts/05_plot_pyphotometry.py'
