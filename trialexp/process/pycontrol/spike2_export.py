@@ -96,9 +96,18 @@ class Spike2Exporter:
             #     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
             
     def write_marker_for_state(self, X_ms, title, y_index, verbose=False):
-        '''
-        The x_ms format is expected to be [event1_onset, event1_offset, event2_onset, event2_offset] etc.
-        '''
+        """
+        Write a marker for the state in X_ms array.
+
+        Parameters:
+        X_ms (list): The x_ms format is expected to be [event1_onset, event1_offset, event2_onset, event2_offset] etc.
+        title (str): Title of the marker
+        y_index (int): Index of marker channel
+        verbose (bool, optional): For verbosity purpose. Defaults to False.
+
+        Returns:
+        None
+        """
         
         # remove NaN
         X_notnan_ms = [x for x in X_ms if not np.isnan(x)]
@@ -128,7 +137,37 @@ class Spike2Exporter:
             print(self.MyFile.ReadMarkers(int(y_index), nEvents, self.tFrom, self.tUpto)) #TODO failed Tick = -1
 
     def write_textmark(self, X_ms, title, y_index, txt, EventRate, time_vec_ms, verbose=False):
-        
+        """Writes text marks to file.
+
+        Parameters
+        ----------
+        self : object
+            Object of class
+        X_ms : float
+            location of the text in millesecond
+        title : string
+                Title of file
+        y_index : int
+                Index in y coordinate
+        txt : list 
+            List of strings for TextMarkers
+        EventRate : int
+                    Event Rate
+        time_vec_ms : array-like, shape (n_bins, n_features)
+                    Array of time in ms
+        verbose : bool, optional (default=False)
+                If true, print messages when writing or reading TextMarks.
+
+        Returns
+        -------
+        Hist : array-like
+            Array of Histogram values
+        MarkData : array-like
+                Array of DigMarker values
+        TMrkData : array-like
+                Array of TextMarker values
+        """
+            
         (hist, ___) = np.histogram(X_ms, bins=time_vec_ms) # time is 1000 too small
 
         eventfalldata = np.where(hist)
