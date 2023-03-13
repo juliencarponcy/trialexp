@@ -14,8 +14,8 @@ import numpy as np
 #%% Load inputs
 
 (sinput, soutput) = getSnake(locals(), 'workflows/spout_bar_nov22.smk',
-#  ['Z:/Julien/Data/head-fixed/_Other/test_folder/by_session_folder/JC317L-2022-12-16-174417\processed/df_photometry.pkl'],
-  ['Z:/Teris/ASAP/expt_sessions/kms064-2023-02-08-100449/processed/df_photometry.nc'],
+ ['Z:/Julien/Data/head-fixed/_Other/test_folder/by_session_folder/JC317L-2022-12-16-173145\processed/df_photometry.nc'],
+#   ['Z:/Teris/ASAP/expt_sessions/kms064-2023-02-08-100449/processed/df_photometry.nc'],
   'import_pyphotometry')
 
 
@@ -29,7 +29,6 @@ data_photometry = compute_df_over_f(data_photometry, low_pass_cutoff=0.001)
 #%% Conver to xarray
 skip_var = ['analog_1_est_motion','analog_1_corrected', 'analog_1_baseline_fluo']
 dataset = photometry2xarray(data_photometry, skip_var = skip_var)
-dataset.to_netcdf(soutput.df_photometry, engine='h5netcdf')
 
 #%% Load pycontrol file
 df_pycontrol = pd.read_pickle(sinput.pycontrol_dataframe)
@@ -68,10 +67,4 @@ rel_time_hold_for_water = xr.DataArray(
 
 dataset['rel_time_hold_for_water'] = rel_time_hold_for_water
 
-#%%
-df2plot = dataset[['rel_time_hold_for_water','analog_1_df_over_f']].to_dataframe()
-df2plot.rel_time_hold_for_water = df2plot.rel_time_hold_for_water//10*10 # time windows: 100ms
-sns.lineplot(x='rel_time_hold_for_water', y='analog_1_df_over_f', data=df2plot)
-
-
-# %%
+dataset.to_netcdf(soutput.df_photometry, engine='h5netcdf')
