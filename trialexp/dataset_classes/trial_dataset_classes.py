@@ -1288,6 +1288,8 @@ class Continuous_Dataset(Trials_Dataset):
         This function could share most of the comuputation with Continous_Dataset.lineplot()
         Heatmap representation, rather than line plot, of multiple continuous data, 
         typically representing individual mice or neurons.
+
+        return a list of figures and a list of subject_IDs
         """
         
         vars_dict, time_vec = self.check_vars_and_times_input(vars, time_unit)
@@ -1315,14 +1317,18 @@ class Continuous_Dataset(Trials_Dataset):
        
         plt.rcParams["figure.dpi"] = dpi
         plt.rcParams['font.family'] = ['Arial']
+
+        # create empty list of figures
+        figs = ['empty fig' for subject in subj_dict.keys()]
         # basic loop for plot
         for group_ID in group_IDs:
             for subject_ID, subject_idx in subj_dict.items():
+
                 fig_title = f'{subject_ID}'
-                fig, axs = plt.subplots(len(vars), len(condition_IDs), sharex= 'all',
+                figs[subject_idx], axs = plt.subplots(len(vars), len(condition_IDs), sharex= 'all',
                     squeeze = False , figsize = figsize)
                     # sharey = 'row', squeeze = False , figsize = figsize)
-                fig.suptitle(fig_title)
+                figs[subject_idx].suptitle(fig_title)
                 for row_idx, (var_name, col_idx) in enumerate(vars_dict.items()):
 
                     for cond_idx, condition_ID in enumerate(condition_IDs):
@@ -1349,6 +1355,8 @@ class Continuous_Dataset(Trials_Dataset):
                         if time_lim:
                             axs[row_idx, cond_idx].set_xlim([time_lim[0], time_lim[1]])
 
+        # return a 
+        return figs, list(subj_dict.values())
 
 class Event_Dataset(Trials_Dataset):
     """

@@ -211,7 +211,8 @@ def import_ppd(file_path):
 
 
 def sync_photometry_file(
-        session_file: str, 
+        session_file: str,
+        photometry_file: str = None, 
         rsync_chan: int = 2,
         delete_unsynced: bool = True, 
         verbose: bool = False):
@@ -221,6 +222,7 @@ def sync_photometry_file(
 
         Parameters:
             session_file (str): PyControl txt file path 
+            photometry_file (str): PyPhotometry ppd file path 
             rsync_chan (int): Channel on which pulses have been
                 recorded on the py_photometry device.
             delete_unsynced (bool): Delete the photometry file path in
@@ -228,7 +230,7 @@ def sync_photometry_file(
             verbose (bool): display match/no match messages for each file
 
         Returns:
-                None
+            None
 
         The warning:
             KMeans is known to have a memory leak on Windows with MKL, when there are less chunks than available threads...
@@ -242,46 +244,49 @@ def sync_photometry_file(
     
     session = Session(session_file, int_subject_IDs=True, verbose=False) 
 
-    
-    if session.files['ppd'] != []:
+    session.files = dict()
+    session.files['ppd']  = [photometry_file] # list to make it backward compatible (implemented to allow for multiple matches [eg cameras])
+    if photometry_file:
         # try to align times with rsync
         try:
             # Gives KeyError exception if no rsync pulses on pycontrol file
             pycontrol_rsync_times = session.times['rsync']
         
-            photometry_dict = import_ppd(session.files['ppd'][0])
+            photometry_dict = import_ppd(photometry_file)
             
             photometry_rsync_times = photometry_dict['pulse_times_' + str(rsync_chan)]
 
-            pyphoto_aligner = Rsync_aligner(pulse_times_A= pycontrol_rsync_times, 
+            photometry_rsync = Rsync_aligner(pulse_times_A= pycontrol_rsync_times, 
                 pulse_times_B= photometry_rsync_times, plot=False)
             
             if verbose:
                 print('pycontrol: ', session.subject_ID, session.datetime,
-                '/ pyphotometry: ', session.files['ppd'][0], ' : rsync does match')
+                '/ pyphotometry: ', photometry_file, ' : rsync does match')
             
-            session.photometry_rsync = pyphoto_aligner
+
 
         # if rsync aligner fails    
         except (RsyncError, ValueError, KeyError):
-            session.photometry_rsync = None
+            photometry_rsync = None
 
             if verbose:
                 print('pycontrol: ', session.subject_ID, session.datetime,
-                '/ pyphotometry: ', session.files['ppd'][0], ' : rsync does not match')
+                '/ pyphotometry: ', photometry_file, ' : rsync does not match')
 
             if delete_unsynced:
                 session.files['ppd'] = []
 
     # if there is no subject + date match in .ppd files
     else: 
-        session.photometry_rsync = None
+        photometry_rsync = None
 
         if verbose:
             print('pycontrol: ', session.subject_ID, session.datetime,
             '/ pyphotometry: no file matching both subject and date')
 
-
+    # for now return a session with embedded rsync object. 
+    # Ouput will change when getting closer to fully functional implementation
+    return photometry_rsync
 
 #----------------------------------------------------------------------------------
 # From here, legacy methods which will be probably deprecated in the future
@@ -405,7 +410,7 @@ def find_n_gaussians(
     return n_best+1
 
 #----------------------------------------------------------------------------------
-# Processing helper
+# Processing helper remaining from legacy
 #----------------------------------------------------------------------------------
 
 def compute_PCA(

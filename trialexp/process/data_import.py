@@ -28,7 +28,7 @@ from plotly.subplots import make_subplots
 
 from trialexp.utils.pycontrol_utilities import *
 from trialexp.utils.data_organisation import *
-# from trialexp.utils.pyphotometry_utilities import *
+from trialexp.process.pyphotometry.photometry_functional import *
 from trialexp.process.pyphotometry.utils import *
 from trialexp.utils.DLC_utilities import *
 from trialexp.utils.rsync import *
@@ -727,43 +727,49 @@ class Session():
                 print(self.task_name, self.subject_ID, self.datetime_string, len(cued_success_idx), len(uncued_success_idx))
 
 
-            elif self.task_name in ['reaching_go_spout_nov22']:
-                reach_time_before_reward = self.df_events.loc[:,['spout_trial_time','US_end_timer_trial_time']].apply(
+        elif self.task_name in ['reaching_go_spout_nov22']:
+            reach_time_before_reward = self.df_events.loc[:,['spout_trial_time','US_end_timer_trial_time']].apply(
+                lambda x: find_last_time_before_list(x['spout_trial_time'], x['US_end_timer_trial_time']), axis=1)    
+            # select only trials with a spout event before a US_end_timer event
+            reach_bool = reach_time_before_reward.notnull()
+            # select trial where the hold time was present (not aborted)
+            reach_success_bool = reach_bool & self.df_conditions.busy_win
+            # set these trials as successful
+            self.df_conditions.loc[(reach_success_bool), 'success'] = True
+
+        # To perform for delayed tasks (check whether a US_end_timer was preceded by a spout)
+        elif self.task_name in ['reaching_go_spout_bar_nov22']:
+
+            reach_time_before_reward = self.df_events.loc[:,['spout_trial_time','US_end_timer_trial_time']].apply(
                     lambda x: find_last_time_before_list(x['spout_trial_time'], x['US_end_timer_trial_time']), axis=1)    
-                # select only trials with a spout event before a US_end_timer event
-                reach_bool = reach_time_before_reward.notnull()
-                # select trial where the hold time was present (not aborted)
-                reach_success_bool = reach_bool & self.df_conditions.busy_win
-                # set these trials as successful
-                self.df_conditions.loc[(reach_success_bool), 'success'] = True
-                
-            # To perform for delayed tasks (check whether a US_end_timer was preceded by a spout)
-            elif self.task_name in ['reaching_go_spout_bar_nov22']:
-                reach_time_before_reward = self.df_events.loc[:,['spout_trial_time','US_end_timer_trial_time']].apply(
-                        lambda x: find_last_time_before_list(x['spout_trial_time'], x['US_end_timer_trial_time']), axis=1)    
-                # select only trials with a spout event before a US_end_timer event
-                reach_bool = reach_time_before_reward.notnull()
-                # select trial where the hold time was present (not aborted)
-                reach_success_bool = reach_bool & self.df_conditions.waiting_for_spout
-                # set these trials as successful
-                self.df_conditions.loc[(reach_success_bool), 'success'] = True
-                
-            elif self.task_name in ['reaching_go_spout_bar_dual_all_reward_dec22', 
-                'reaching_go_spout_bar_dual_dec22']:
-                reach_time_before_reward = self.df_events.loc[:,['spout_trial_time','US_end_timer_trial_time']].apply(
-                        lambda x: find_last_time_before_list(x['spout_trial_time'], x['US_end_timer_trial_time']), axis=1)    
-                # select only trials with a spout event before a US_end_timer event
-                reach_bool = reach_time_before_reward.notnull()
-                # select trial where the hold time was present (not aborted)
-                reach_success_bool = reach_bool & self.df_conditions.Go_to_get_water
-                # set these trials as successful
-                self.df_conditions.loc[(reach_success_bool), 'success'] = True
-                    
-        except Exception:
-            print('Error ecountered. Marking all trials as failure')
+            # select only trials with a spout event before a US_end_timer event
+            reach_bool = reach_time_before_reward.notnull()
+            # select trial where the hold time was present (not aborted)
+            reach_success_bool = reach_bool & self.df_conditions.waiting_for_spout
+            # set these trials as successful
+            self.df_conditions.loc[(reach_success_bool), 'success'] = True
         
+        elif self.task_name in ['reaching_go_spout_incr_break2_nov22']:
 
+            reach_time_before_reward = self.df_events.loc[:,['spout_trial_time','US_end_timer_trial_time']].apply(
+                    lambda x: find_last_time_before_list(x['spout_trial_time'], x['US_end_timer_trial_time']), axis=1)    
+            # select only trials with a spout event before a US_end_timer event
+            reach_bool = reach_time_before_reward.notnull()
 
+            # set these trials as successful
+            self.df_conditions.loc[(reach_bool), 'success'] = True
+
+        elif self.task_name in ['reaching_go_spout_bar_dual_all_reward_dec22', 
+            'reaching_go_spout_bar_dual_dec22']:
+
+            reach_time_before_reward = self.df_events.loc[:,['spout_trial_time','US_end_timer_trial_time']].apply(
+                    lambda x: find_last_time_before_list(x['spout_trial_time'], x['US_end_timer_trial_time']), axis=1)    
+            # select only trials with a spout event before a US_end_timer event
+            reach_bool = reach_time_before_reward.notnull()
+            # select trial where the hold time was present (not aborted)
+            reach_success_bool = reach_bool & self.df_conditions.Go_to_get_water
+            # set these trials as successful
+            self.df_conditions.loc[(reach_success_bool), 'success'] = True
 
         # # Reorder columns putting trigger, valid and success first for more clarity
         # col_list = list(self.df_conditions.columns.values)
@@ -2833,7 +2839,9 @@ class Experiment():
             last_before: str = None,
             when = 'all',
             task_names = 'all',
-            high_pass: int = None, # analog_1_df_over_f doesn't work with this
+            baseline_low_pass: int = None, # changed var name from high-pass to baseline_low_pass
+            # due to https://github.com/juliencarponcy/trialexp/pull/9
+            # fixed in https://github.com/juliencarponcy/trialexp/pull/9/commits/2bd4307af9ce2096ff1673b56cf6bacf0a2a8127#diff-90aedd18a2a5cd46987018614831622fb110ef9b08b1d3baad395bf36c0a6e1c
             low_pass: int = None, 
             median_filt: int = None,
             motion_corr: bool = False, 
@@ -2895,13 +2903,17 @@ class Experiment():
                         print(f'Processing subject {session.subject_ID} at: {session.datetime_string}')
 
                     try:
-                        df_meta_photo, col_names_numpy, photometry_array, fs = session.get_photometry_trials(
+                        df_meta_photo, col_names_numpy, photometry_array, fs = get_photometry_trials(
+                            session,
                             conditions_list = conditions_list, 
                             cond_aliases = cond_aliases,
                             trial_window = self.trial_window,
                             trig_on_ev = trig_on_ev,
                             last_before = last_before,
-                            high_pass = high_pass, 
+                            baseline_low_pass = baseline_low_pass, # var name changed from former high-pass,
+                            # was misleading on baseline computation
+                            # see https://github.com/juliencarponcy/trialexp/issues/8
+                            # first fix 
                             low_pass = low_pass, 
                             median_filt = median_filt,
                             motion_corr = motion_corr, 
