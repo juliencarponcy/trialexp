@@ -50,5 +50,10 @@ rule import_pyphotometry:
         photometry_folder = '{session_path}/{session_id}/photometry'
     output:
         df_photometry = '{session_path}/{session_id}/processed/df_photometry.nc',
-        done = touch('{session_path}/{session_id}/processed/task.done')
 
+rule photometry_figure:
+    input:
+        df_photometry = '{session_path}/{session_id}/processed/df_photometry.nc',
+    output:
+        trigger_photo_dir= directory('{session_path}/{session_id}/processed/figures/photometry'),
+        done = touch('{session_path}/{session_id}/processed/task.done')
