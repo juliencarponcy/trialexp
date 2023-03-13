@@ -10,6 +10,11 @@ The workflows are developed using [snakemake](https://snakemake.github.io/). Sna
 6. Possibly to run the code in a computing cluster to greatly speed up the analysis
 
 
+## Depedencies
+The snakemake workflow may contain additional dependency requirement. You will need to update your virutal environment with 
+
+` conda env update -f trialexp.yaml`
+
 ## Configuration
 - Specify the root of your session-based folder in `workflows\config\config.yaml` through the `session_base_dir` setting, e.g.
     ```
