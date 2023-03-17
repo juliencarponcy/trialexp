@@ -45,3 +45,14 @@ It is possible that some session folder does not have the photometry data, in th
 
 Since the workflow is based on snakemake, you can also use any of the advanced option supported by snakemake. For detail please consult the snakemake [documentations](https://snakemake.readthedocs.io/en/stable/executing/cli.html)
 
+## Development
+The best way to start developing new script is by using the interactive Python session in VS Code. 
+1. Open any scripts in the `workflow/scripts` folder
+2. The scripts are marked with [cell mode](https://code.visualstudio.com/docs/python/jupyter-support-py) `#%%`. Run the current cell by <kbd>shift</kbd>+<kbd>enter</kbd>. This will open the Python interactive window in the same folder as the script file
+3. Change the working directory of the Python session to the root folder of the project 
+
+    ```
+    import os;
+    os.chdir('../..')
+    ```
+4. Execute and test your code by using the cell mode 
