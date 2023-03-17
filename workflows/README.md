@@ -33,7 +33,7 @@ To actually execute the workflow, remove the `-n` option.
 
 `snakemake --cores --snakefile workflows/spout_bar_nov22.smk`
 
-It is possible that some session folder does not hvae the photometry data, in this case the analysis will fail. You can ask the workflow to continue with other session folder in case of failure with the `-k` option. By default, it will wait for 5s for the missing file. You can make it shorter by using the `--latency-wait` option
+It is possible that some session folder does not have the photometry data, in this case the analysis will fail. You can ask the workflow to continue with other session folder in case of failure with the `-k` option. By default, it will wait for 5s for the missing file. You can make it shorter by using the `--latency-wait` option
 
 `snakemake --cores --snakefile workflows/spout_bar_nov22.smk -k --latency-wait 1`
 
