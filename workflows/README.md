@@ -6,7 +6,7 @@ The workflows are developed using [snakemake](https://snakemake.github.io/). Sna
 2. Automatically running multiple tasks in parallel by analyzing the depedency grapch of the workflow
 3. Portability by integration with conda and container virtualization.
 4. Ability to automatically generate unit test for workflow
-5. Ability to generate detailed reports for each recoding sessions
+5. Ability to generate detailed reports for each recording sessions
 6. Possibly to run the code in a computing cluster to greatly speed up the analysis
 
 
