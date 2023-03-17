@@ -17,6 +17,7 @@ The snakemake workflow may contain additional dependency requirement. You will n
 
 ## Configuration
 - Specify the root of your session-based folder in `workflows\config\config.yaml` through the `session_base_dir` setting, e.g.
+
     ```
     session_root_dir: 'Z:/Teris/ASAP/expt_sessions/'
     
