@@ -6,23 +6,24 @@ import numpy as np
 from trialexp.process.pycontrol.session_analysis import *
 from trialexp.process.pycontrol.utils import *
 from trialexp.process.pycontrol.plot_utils import *
-from trialexp.process.pycontrol.session_analysis import Session
+from trialexp.process.pycontrol.session_analysis import Session # do not look used
+from trialexp.process.pycontrol.data_import import session_dataframe
 import sys
 from datetime import datetime
 from snakehelper.SnakeIOHelper import getSnake
 from pathlib import Path
 
-try:
-    sys.path.append(r'../pyControl')
-    import tools.data_import as di
-except ModuleNotFoundError:
-    print('Error: pyControl must be in the Python search path')
+# try:
+#     sys.path.append(r'../pyControl')
+#     import tools.data_import as di
+# except ModuleNotFoundError:
+#     print('Error: pyControl must be in the Python search path')
     
 #%% Load inputs
 
 (sinput, soutput) = getSnake(locals(), 'workflows/spout_bar_nov22.smk',
-#  ['Z:/Julien/Data/head-fixed/_Other/test_folder/by_session_folder/JC317L-2022-12-16-174417\processed/df_events_cond.pkl'],
-  ['Z:/Teris/ASAP/expt_sessions/kms064-2023-02-08-100449/processed/df_events_cond.pkl'],
+ ['//ettin/Magill_Lab/Julien/Data/head-fixed/_Other/test_folder/by_session_folder/JC316L-2022-12-09-171925\processed/df_events_cond.pkl'],
+#   ['Z:/Teris/ASAP/expt_sessions/kms064-2023-02-08-100449/processed/df_events_cond.pkl'],
   'process_pycontrol')
 
 #%% Read pycontrol file
@@ -31,7 +32,7 @@ filename = list(Path(sinput.session_path, 'pycontrol').glob('*.txt'))
 if len(filename)>1:
     raise ValueError('There are more than one pycontrol file there', filename)
 
-df_session = di.session_dataframe(filename[0])
+df_session = session_dataframe(filename[0])
 df_pycontrol = parse_session_dataframe(df_session)
 session_time = datetime.strptime(df_pycontrol.attrs['Start date'], '%Y/%m/%d %H:%M:%S')
 subjectID = df_pycontrol.attrs['Subject ID']
