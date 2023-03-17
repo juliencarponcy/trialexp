@@ -28,7 +28,7 @@ The snakemake file (*.smk) that define the workflow is in the `workflow` folder,
 
 ## Usage
 
-If not target is specified, snakemake will execute the first rule in the snakemake file by default.
+If no target is specified, snakemake will execute the first rule in the snakemake file by default.
 
 Execute the following command to run the workflow. It is strongely recommend to dry-run (simulate without actually executing anything) the first time you use a workflow with the `-n` command. The `--cores` command tells snakemake to use all avaiable cores, you can specify the exact number of core with the `-c` option, e.g. `-c 4`.
 
