@@ -49,10 +49,16 @@ Since the workflow is based on snakemake, you can also use any of the advanced o
 The best way to start developing new script is by using the interactive Python session in VS Code. 
 1. Open any scripts in the `workflow/scripts` folder
 2. The scripts are marked with [cell mode](https://code.visualstudio.com/docs/python/jupyter-support-py) `#%%`. Run the current cell by <kbd>shift</kbd>+<kbd>enter</kbd>. This will open the Python interactive window in the same folder as the script file
-3. Change the working directory of the Python session to the root folder of the project 
+3. Change the working directory of the Python session to the root folder of the project.
 
     ```
     import os;
     os.chdir('../..')
     ```
-4. Execute and test your code by using the cell mode 
+4. Double check that you are in the root of the project by running `os.getcwd()`. You should be at the `trialexp` folder.
+5. Execute and test your code by using the cell mode 
+
+### Helper functions
+By default, snakemake will inject a `snakemake` object during execution to give you the input and output file names. However, this object is not available when you execute script outside of the snakemake environment (e.g. running a script file during development). A helper module [snakehelper](https://github.com/teristam/snakehelper/tree/master) is created to compile the snakemake workflow and return the input and output file names, so that they can be used for development and debugging purpose.
+
+Executing workflow script in interactive mode is very similar to running normal Python scripts, except there is a special helper function `getSnake` that work as a "glue" between the snakemake environment and normal Python. It will compile the workflow according to some target files and specific rules, and return you the input and output file name in two dictionary objects. It is very useful when you are developing new scripts or debugging old ones on some specific data that generate a error. For detailed usage of the `getSnake` function, please consult the  [snakehelper](https://github.com/teristam/snakehelper/tree/master) repository.
