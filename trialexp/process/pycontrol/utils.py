@@ -1,5 +1,6 @@
 # Utility functions for pycontrol and pyphotometry files processing
 
+from collections import defaultdict
 import shutil
 from datetime import datetime
 from os import walk
@@ -16,10 +17,31 @@ from plotly.subplots import make_subplots
 from plotly.validators.scatter.marker import SymbolValidator
 
 from trialexp.process.data_import import Event, State
+from trialexp.process.pycontrol.spike2_export import Spike2Exporter
 
 ######## Analyzing event data
 
-def parse_events(session):
+def parse_session_dataframe(df_session):
+    # parse and format the session dataframe imported from pycontrol
+    df_events = df_session[(df_session.type!='info')]
+    info = df_session[df_session.type=='info']
+    info = dict(zip(info.name, info.value))
+    df_events = df_events.drop(columns='duration')
+    df_events.attrs.update(info)
+    
+    return df_events
+
+def print2event(df_events, conditions):
+    
+    df = df_events.copy()
+    
+    #Extract print event matched by conditions and turn them into events for later analysis
+    idx = (df.type=='print') & (df.value.isin(conditions))
+    df.loc[idx, 'name'] = df.loc[idx,'value'] 
+    
+    return df   
+
+def parse_events(session, conditions):
     #parse the event and state information and return it as a dataframe
 
     #parse the events list to distinguish between state and event
@@ -34,8 +56,12 @@ def parse_events(session):
     print_evts = []
     for ln in session.print_lines:
         s = ln.split()
-        print_evts.append(
-            Event(int(s[0]), 'Print@'+' '.join(s[1:])))
+        # s[0] is the time, s[1] is the print statement
+        time = s[0]
+        if s[1:] in conditions:
+            # treat print as another event
+            print_evts.append(
+                Event(int(s[0]), s[1:])) 
 
     # merge the print list and event list and sort them by timestamp
     all_events = events+print_evts
@@ -50,7 +76,7 @@ def parse_events(session):
             last_state = evt.name
             event = {
                'state':last_state,
-                'event_name':'state_change',
+                'event_name': last_state,
                 'time':evt.time,
             }
         else:
@@ -67,7 +93,6 @@ def parse_events(session):
 
     # remove rsync
     df_events = df_events[df_events.event_name!='rsync'].copy()
-        
     return df_events
 
 
@@ -79,7 +104,7 @@ def add_trial_number(df_events, trigger):
 
     df['trial_number'] = 0
 
-    df.loc[(df.state==trigger[0]) & (df.event_name==trigger[1]), 'trial_number'] = 1
+    df.loc[df.event_name==trigger, 'trial_number'] = 1
     df.trial_number = df.trial_number.cumsum()
     
     return df
@@ -135,6 +160,13 @@ def plot_session(df:pd.DataFrame, keys: list = None, state_def: list = None, pri
         else:
             for k in keys: 
                assert k in df.event_name.unique(), f"{k} is not found in self.time.keys()"
+        
+        
+        if export_smrx:
+            if smrx_filename is None:
+                raise ValueError('You must specify the smrx_filename filename if you want to export file')
+            else:
+                spike2exporter = Spike2Exporter(smrx_filename, df.time.max()*1000, verbose)
 
         def find_states(state_def_dict: dict):
             """
@@ -157,37 +189,40 @@ def plot_session(df:pd.DataFrame, keys: list = None, state_def: list = None, pri
             if state_def_dict is None:
                 return None
 
-            all_on_ms = df[(df.state == state_def_dict['onset']) & (df.event_name == 'state_change')].time.values
-            all_off_ms = df[(df.state == state_def_dict['offset']) & (df.event_name == 'state_change')].time.values
+            all_on_sec = df[(df.event_name == state_def_dict['onset'])].time.values
+            all_off_sec = df[(df.event_name == state_def_dict['offset'])].time.values
+            # print(all_on_sec)
 
-            onsets_ms = [np.NaN] * len(all_on_ms)
-            offsets_ms = [np.NaN] * len(all_on_ms)
+            onsets_sec = [np.NaN] * len(all_on_sec)
+            offsets_sec = [np.NaN] * len(all_on_sec)
 
-            for i, this_onset in enumerate(all_on_ms):  # slow
+            for i, this_onset in enumerate(all_on_sec):  # slow
                 good_offset_list_ms = []
-                for j, _ in enumerate(all_off_ms):
-                    if i < len(all_on_ms)-1:
-                        if all_on_ms[i] < all_off_ms[j] and all_off_ms[j] < all_on_ms[i+1]:
-                            good_offset_list_ms.append(all_off_ms[j])
+                for j, _ in enumerate(all_off_sec):
+                    if i < len(all_on_sec)-1:
+                        if all_on_sec[i] < all_off_sec[j] and all_off_sec[j] < all_on_sec[i+1]:
+                            good_offset_list_ms.append(all_off_sec[j])
                     else:
-                        if all_on_ms[i] < all_off_ms[j]:
-                            good_offset_list_ms.append(all_off_ms[j])
+                        if all_on_sec[i] < all_off_sec[j]:
+                            good_offset_list_ms.append(all_off_sec[j])
 
                 if len(good_offset_list_ms) > 0:
-                    onsets_ms[i] = this_onset
-                    offsets_ms[i] = good_offset_list_ms[0]
+                    onsets_sec[i] = this_onset
+                    offsets_sec[i] = good_offset_list_ms[0]
                 else:
                     ...  # keep them as nan
 
-            onsets_ms = [x for x in onsets_ms if not np.isnan(x)]  # remove nan
-            offsets_ms = [x for x in offsets_ms if not np.isnan(x)]
+            onsets_sec = [x for x in onsets_sec if not np.isnan(x)]  # remove nan
+            offsets_sec = [x for x in offsets_sec if not np.isnan(x)]
+            # print(onsets_sec)
 
-            state_ms = map(list, zip(onsets_ms, offsets_ms,
-                           [np.NaN] * len(onsets_ms)))
+            state_sec = map(list, zip(onsets_sec, offsets_sec,
+                           [np.NaN] * len(onsets_sec)))
             # [onset1, offset1, NaN, onset2, offset2, NaN, ....]
-            state_ms = [item for sublist in state_ms for item in sublist]
-            
-            return state_ms
+            state_sec = [item for sublist in state_sec for item in sublist]
+            # print(state_sec)
+
+            return state_sec
 
         y_index = 0
         
@@ -197,6 +232,11 @@ def plot_session(df:pd.DataFrame, keys: list = None, state_def: list = None, pri
             line1 = go.Scatter(x=df_evt2plot.time, y=[k]
                         * len(df_evt2plot), name=k, mode='markers', marker_symbol=symbols[y_index % 40])
             fig.add_trace(line1)
+            
+            if export_smrx:
+                spike2exporter.write_event(df_evt2plot.time.values, k, y_index)
+                
+                
 
 
         if event_ms is not None:
@@ -217,22 +257,24 @@ def plot_session(df:pd.DataFrame, keys: list = None, state_def: list = None, pri
             # Assuming a list of lists of two names
 
             if isinstance(state_def, list):# multiple entry
-                state_ms = None
+                state_sec = None
                 for state in state_def:
                     assert isinstance(state, dict)
                     
                     y_index +=1
-                    state_ms = find_states(state)
-                    # print([state['name']] * len(state_ms))
+                    state_sec = find_states(state)
                     
-                    line1 = go.Scatter(x=[x for x in state_ms], y=[state['name']] * len(state_ms), 
+                    line1 = go.Scatter(x=[x for x in state_sec], y=[state['name']] * len(state_sec), 
                         name=state['name'], mode='lines', line=dict(width=5))
                     fig.add_trace(line1)
+                    
+                    if export_smrx:
+                        spike2exporter.write_marker_for_state(state_sec, state['name'], y_index)
 
             else:
-                state_ms = None
+                state_sec = None
         else:
-            state_ms = None
+            state_sec = None
              
 
         fig.update_xaxes(title='Time (s)')
@@ -250,10 +292,104 @@ def plot_session(df:pd.DataFrame, keys: list = None, state_def: list = None, pri
 
         fig.show()
 
-        if export_smrx:
-            del MyFile
-            #NOTE when failed to close the file, restart the kernel to delete the corrupted file(s)
-            print(f'saved {smrx_filename}')
+
+def export_session(df:pd.DataFrame, keys: list = None, export_state=True, print_expr: list = None, 
+                    event_ms: list = None, smrx_filename: str = None, verbose :bool = False,
+                    print_to_text: bool = True):
+        """
+        Visualise a session using Plotly as a scrollable figure
+
+        keys: list
+            subset of self.times.keys() to be plotted as events
+            Use [] to plot nothing
+
+        state_def: dict, list, or None = None
+            must be None (default)
+            or dictionary of 
+                'name' : str
+                    Channel name
+                'onset' : str 
+                    key for onset 
+                'offset' : str
+                    key for offset
+            or list of such dictionaries
+
+            eg. dict(name='trial', onset='CS_Go', offset='refrac_period')
+            eg. {'name':'trial', 'onset':'CS_Go', 'offset':'refrac_period'}
+
+            For each onset, find the first offset event before the next onset 
+
+        event_ms: list of dict
+                'name':'name of something'
+                'time_ms': X
+            allow plotting timestamps as an event
+
+        state_ms: list of dict #TODO
+
+        verbose :bool = False
+
+
+        """
+
+        # see  \Users\phar0528\Anaconda3\envs\trialexp\Lib\site-packages\sonpy\MakeFile.py
+        #NOTE cannot put file path in the pydoc block
+
+        raw_symbols  = SymbolValidator().values
+        symbols = [raw_symbols[i+2] for i in range(0, len(raw_symbols), 12)]
+        # 40 symbols
+
+        if keys is None:
+            keys = df.name.unique()
+        else:
+            for k in keys: 
+               assert k in df.name.unique(), f"{k} is not found in self.time.keys()"
+        
+        
+        if smrx_filename is None:
+            raise ValueError('You must specify the smrx_filename filename if you want to export file')
+        else:
+            spike2exporter = Spike2Exporter(smrx_filename, df.time.max(), verbose)
+            
+        
+        def extract_states(df_pycontrol):
+            # extract the onset and offset of state automatically
+            df_states = df_pycontrol[df_pycontrol.type=='state']
+
+            states_dict = defaultdict(list)
+
+            #extract the starting and end point of stats
+            if len(df_states)>2:
+                curState  = df_states.iloc[0]['name']
+                start_time = df_states.iloc[0]['time']
+                
+                for _, row in df_states.iloc[1:].iterrows():
+                    if not row.name == curState:
+                        states_dict[curState].extend([start_time, row.time])
+                        start_time = row['time']
+                        curState = row['name']
+                        
+            return states_dict  
+
+        y_index = 0
+        
+        for kind, k in enumerate(keys):
+            y_index += 1
+            df_evt2plot = df[df.name==k]
+            spike2exporter.write_event(df_evt2plot.time.values, k, y_index)
+
+        if event_ms is not None:
+            if isinstance(event_ms, dict):
+                event_ms = [event_ms]
+            
+        if export_state:
+            # Draw states as gapped lines
+            state_dict = extract_states(df)
+            
+            for state, time_ms in state_dict.items():
+                y_index += 1
+                spike2exporter.write_marker_for_state(time_ms, state, y_index)
+
+
 
 
 #----------------------------------------------------------------------------------
@@ -408,33 +544,29 @@ def find_last_time_before_list(list_ev, list_lim):
     list_ev is the list of events to detect (contained in a cell of dataframe)
     list_lim is the list of events to use as limit
     '''
-    if len(list_ev) >= 1 and len(list_lim) >= 1:
-        last_time = max([i for i in list_ev if i < find_min_time_list(list_lim)], default=np.NaN)
     
-    # TODO check implementation for limit cases (when no lim events found)
-    elif isinstance(list_ev, int) and find_min_time_list(list_lim) is not np.NaN:
-        
-        if find_min_time_list(list_lim) > list_ev:
-            last_time = list_ev
-        else:
-            last_time = np.NaN
+    # Make sure the input are lists
+    if not isinstance(list_ev, list):
+        list_ev = [list_ev]
+    
+    if not isinstance(list_lim, list):
+        list_lim =[list_lim]
+    
+    last_time = max([i for i in list_ev if i < find_min_time_list(list_lim)], default=np.NaN)
 
-    elif len(list_ev) == 0 or len(list_lim) == 0:
-        last_time = np.NaN
-    else:
-        print(list_ev,type(list_ev))
+        
     return last_time
 
 
 def find_min_time_list(x):
-    if len(x) >= 1:
-        min_time = min([i for i in x if i>0], default=np.NaN)
-    elif isinstance(x, int) and x > 0:
-        min_time = x
-    elif len(x) == 0:
-        min_time = np.NaN
+    
+    if isinstance(x, list):
+        if len(x) == 0:
+            min_time = np.NaN
+        else:
+            min_time = min([i for i in x if i>0], default=np.NaN)
     else:
-        print(x,type(x))
+        min_time = x
 
     return min_time
 

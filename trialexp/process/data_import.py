@@ -658,6 +658,8 @@ class Session():
         self.df_conditions['success'] = False
         # self.df_events['success'] = False
         #print(self.task_name)
+        
+        
         # To perform for all Go-NoGo variants of the task (list below)
         if self.task_name in ['reaching_go_nogo', 'reaching_go_nogo_jc', 'reaching_go_nogo_opto_continuous',
             'reaching_go_nogo_opto_sinusoid' , 'reaching_go_nogo_opto_sinusoid_spout', 
@@ -691,12 +693,13 @@ class Session():
 
             # self.triggers[0] refers to CS_Go triggering event most of the time whereas self.triggers[1] refers to CS_NoGo
             # find if spout event within timelim for go trials
-            go_success = self.df_events.loc[
-                (self.df_events[self.df_events.trigger == self.triggers[0]].index),'spout_trial_time'].apply(
-                lambda x: find_if_event_within_timelim(x, self.timelim))
-            go_success_idx = go_success[go_success == True].index
-            # categorize successful go trials which have a spout event within timelim
-            self.df_conditions.loc[(go_success_idx),'success'] = True
+                go_success = self.df_events.loc[
+                    (self.df_events[self.df_events.trigger == self.triggers[0]].index),'spout_trial_time'].apply(
+                    lambda x: find_if_event_within_timelim(x, self.timelim))
+                go_success_idx = go_success[go_success == True].index
+                # categorize successful go trials which have a spout event within timelim
+                self.df_conditions.loc[(go_success_idx),'success'] = True
+
             # self.df_events.loc[(go_success_idx),'success'] = True
 
         # To perform for cued-uncued version of the go task
@@ -2582,7 +2585,7 @@ class Experiment():
                     # https://stackoverflow.com/questions/73800841/add-series-as-a-new-row-into-dataframe-triggers-futurewarning
                     # https://stackoverflow.com/questions/71465386/why-pd-concat-of-two-dataframe-leads-to-futurewarning-behavior-when-concatena
         
-        df_conditions_exp['condition_ID'] = df_conditions_exp['condition_ID'].astype(int)         
+        # df_conditions_exp['condition_ID'] = df_conditions_exp['condition_ID'].astype(int)         
         ev_dataset = Event_Dataset(df_events_exp, df_conditions_exp)
 
         ev_dataset.conditions = conditions_list

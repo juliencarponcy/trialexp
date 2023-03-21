@@ -32,4 +32,8 @@ dependencies:
   - papermill
   - plotly
   - pip:
-    - "-e setup.py"
+    - git+https://github.com/teristam/snakehelper.git
+    - snopy
+    - h5netcdf
+    - snakemake
+
