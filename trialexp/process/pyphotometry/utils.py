@@ -16,7 +16,7 @@ from scipy.signal import butter, filtfilt, medfilt
 from scipy.stats import linregress, zscore
 
 from trialexp.utils.rsync import *
-# from trialexp.process.data_import import Session
+import xarray as xr
 
 '''
 Most of the photometry data processing functions are based on the intial design
@@ -45,6 +45,18 @@ Assumptions:
 # Note that there is a dependency in the workflow between these filtering 
 # and normalization functions. The normalization functions assume that the
 # data has already been filtered.
+
+def denoise_filter(photometry_dict:dict, lowpass_freq = 20) -> dict:
+    # apply a low-pass filter to remove high frequency noise
+    b,a = get_filt_coefs(low_pass=lowpass_freq, sampling_rate=photometry_dict['sampling_rate'])
+    analog_1_filt = filtfilt(b, a, photometry_dict['analog_1'], padtype='even')
+    analog_2_filt = filtfilt(b, a, photometry_dict['analog_2'], padtype='even')
+    
+    photometry_dict['analog_1_filt'] = analog_1_filt
+    photometry_dict['analog_2_filt'] = analog_2_filt
+    
+    return photometry_dict
+    
 
 def motion_correction(photometry_dict: dict) -> dict:
     
@@ -167,7 +179,9 @@ def import_ppd(file_path):
     analog_2 = analog[1::2] * volts_per_division[1]
     digital_1 = digital[ ::2]
     digital_2 = digital[1::2]
-    time = np.arange(analog_1.shape[0])*1000/sampling_rate # Time relative to start of recording (ms).
+    # Time relative to start of recording (ms).
+    time = np.arange(analog_1.shape[0]).astype(np.int64)*1000/sampling_rate #warning: default data type np.int32 will lead to overflow
+    # time = np.arange(analog_1.shape[0])*1000/sampling_rate #warning: default data type np.int32 will lead to overflow
 
    
     # Extract rising edges for digital inputs.
@@ -433,3 +447,41 @@ def dbscan_anomaly_detection(data):
             network_ano[past_id[-1]] = None
 
         
+
+def photometry2xarray(data_photometry, skip_var=None):
+    """
+    Converts a pyphotometry dictionary into an xarray dataset. 
+    
+    Parameters
+    ----------
+    data_photometry : dict
+        A pyphotometry dictionary containing data and associated time stamps.
+    skip_var: list
+        name of keyword in the data_photometry dict that you want to skip, mainly use to skip intermeidate variables
+        
+    Returns
+    -------
+    dataset : xarray.Dataset
+        An xarray Dataset containing data and attributes associated with the 
+        pyphotometry dictionary. 
+    """ 
+    
+    data_list = {}
+    attr_list = {}
+    time = data_photometry['time'].astype(np.int64)
+    
+    if skip_var is None:
+        skip_var = []
+
+    for k, data in data_photometry.items():
+        if not k in skip_var:
+            if isinstance(data, (list,np.ndarray)) and len(data) == len(time):
+                    array = xr.DataArray(data, coords={'time':time}, dims=['time'])
+                    data_list[k] = array
+            else:
+                attr_list[k] = data
+
+    dataset = xr.Dataset(data_list)
+    dataset.attrs.update(attr_list)
+    
+    return dataset
