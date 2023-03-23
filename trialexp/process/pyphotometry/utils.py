@@ -17,7 +17,7 @@ from scipy.stats import linregress, zscore
 
 from trialexp.utils.rsync import *
 import xarray as xr
-
+from scipy.interpolate import interp1d
 '''
 Most of the photometry data processing functions are based on the intial design
 of the pyPhotometry package. They are stored in a dictionary containing both
@@ -485,3 +485,89 @@ def photometry2xarray(data_photometry, skip_var=None):
     dataset.attrs.update(attr_list)
     
     return dataset
+
+def resample_event(pyphoto_aligner, ref_time, event_time, event_value, fill_value=-1):
+    """
+    Resample an event to a reference time.
+
+    Parameters
+    ----------
+    pyphoto_aligner : object
+        An instance of the Rsync_aligner class.
+    ref_time : array-like
+        Reference time points.
+    event_time : array-like
+        Event time points.
+    event_value : array-like
+        Event values corresponding to the event time points.
+    fill_value : float, optional
+        Value used to fill in for requested points outside of the range of event_time. The default is -1.
+
+    Returns
+    -------
+    f : array-like
+        Resampled event values corresponding to the reference time points.
+    """
+    
+    new_time = pyphoto_aligner.A_to_B(event_time)
+    f = interp1d(new_time, event_value, kind = 'previous', 
+                bounds_error=False, fill_value=fill_value)
+    
+    return f(ref_time)
+
+
+#%% Calulate the relative time
+def get_rel_time(trigger_timestamp, window, aligner, ref_time):
+    # Calculate the time relative to a trigger timestamp)
+    ts = aligner.A_to_B(trigger_timestamp)
+    time_relative = np.ones_like(ref_time)*np.NaN
+    
+    for t in ts: 
+        d = ref_time-t
+        idx = (d>window[0]) & (d<window[1])
+        time_relative[idx] = d[idx]
+        
+    return time_relative
+
+
+def bin_rel_time(xr_dataset, bin_size):
+    """Bins relative time in the input Xarray dataset to the given bin size.
+    
+    
+    we need to do some special treatment to the relative time because the time stamp for that may not fall in the 
+    same time bin, and hence the mean value of them will be different for different trial
+    this will create problem with plotting and analysis later, so we need to fix it now
+
+    Args:
+        xr_dataset (xarray.core.dataset.Dataset): The input Xarray dataset.
+        bin_size (float): The size of each bin.
+
+    Returns:
+        xarray.core.dataset.Dataset: The binned Xarray dataset.
+    """
+    for k in xr_dataset.data_vars.keys():
+        if 'rel_time' in k:
+            xr_dataset[k] = np.round(xr_dataset[k]/bin_size)*bin_size
+            
+    return xr_dataset
+
+
+def bin_dataset(xr_dataset, bin_size):
+    """
+    Bin the input xarray dataset by grouping data within specified time intervals.
+    
+    Args:
+    xr_dataset (xarray.Dataset): Input xarray dataset to be binned
+    time_bin (float): Width of each time bin for grouping data
+    
+    Returns:
+    dataset_binned (xarray.Dataset): Binned xarray dataset
+    """
+    
+    time_bin = np.arange(xr_dataset.time.data[0], xr_dataset.time.data[-1], bin_size)
+
+    dataset_binned = xr_dataset.groupby_bins('time',time_bin, labels=time_bin[:-1]).mean(dim='time')
+
+    dataset_binned = bin_rel_time(dataset_binned, bin_size)
+    
+    return dataset_binned

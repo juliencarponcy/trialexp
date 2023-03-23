@@ -8,9 +8,9 @@ from glob import glob
 import xarray as xr
 from trialexp.utils.rsync import *
 import pandas as pd 
-from scipy.interpolate import interp1d
 import seaborn as sns 
 import numpy as np
+
 #%% Load inputs
 
 (sinput, soutput) = getSnake(locals(), 'workflows/spout_bar_nov22.smk',
@@ -38,33 +38,40 @@ df_condition = pd.read_pickle(sinput.condition_dataframe)
 # %% synchornize pyphotometry with pycontrol
 rsync_time = df_pycontrol[df_pycontrol.name=='rsync'].time
 photo_rsync = dataset.attrs['pulse_times_2']
+
+#align pycontrol time to pyphotometry
 pyphoto_aligner = Rsync_aligner(pulse_times_A= rsync_time, 
                 pulse_times_B= photo_rsync, plot=False) #align pycontrol time to pyphotometry time
 
 
-#%% Calulate the relative time
-def get_rel_time(trigger_timestamp, window, aligner, ref_time):
-    # Calculate the time relative to a trigger timestamp)
-    ts = aligner.A_to_B(trigger_timestamp)
-    time_relative = np.ones_like(ref_time)*np.NaN
-    
-    for t in ts: 
-        d = ref_time-t
-        idx = (d>window[0]) & (d<window[1])
-        time_relative[idx] = d[idx]
-        
-    return time_relative
-
+#%% Add in the relative time to different events
 df_trigger = df_pycontrol[df_pycontrol.name=='hold_for_water']
 
 time_rel = get_rel_time(df_trigger.time, [-2000,3000], pyphoto_aligner, dataset.time)
 
-
-#%%
 rel_time_hold_for_water = xr.DataArray(
     time_rel, coords={'time':dataset.time}, dims=('time')
 )
 
 dataset['rel_time_hold_for_water'] = rel_time_hold_for_water
 
+#%% Add in trial number
+trial_nb = resample_event(pyphoto_aligner, dataset.time, df_event.time, df_event.trial_nb)
+trial_nb_xr = xr.DataArray(
+    trial_nb.astype(np.int16), coords={'time':dataset.time}, dims=('time')
+)
+
+dataset['trial_nb'] = trial_nb_xr
+
+dataset = dataset.sel(time = dataset.trial_nb>0) #remove data outside of task
+
 dataset.to_netcdf(soutput.df_photometry, engine='h5netcdf')
+
+# %%
+# Bin the data such that we only have 1 data point per time bin
+
+dataset_binned = bin_dataset(dataset, 100)
+
+#%%
+sns.lineplot(x='rel_time_hold_for_water',
+             y='analog_1_df_over_f', data=dataset_binned)
