@@ -552,7 +552,7 @@ def bin_rel_time(xr_dataset, bin_size):
     return xr_dataset
 
 
-def bin_dataset(xr_dataset, bin_size):
+def bin_dataset(xr_dataset, bin_size, sampling_fs=1000):
     """
     Bin the input xarray dataset by grouping data within specified time intervals.
     
@@ -564,9 +564,10 @@ def bin_dataset(xr_dataset, bin_size):
     dataset_binned (xarray.Dataset): Binned xarray dataset
     """
     
-    time_bin = np.arange(xr_dataset.time.data[0], xr_dataset.time.data[-1], bin_size)
+    ds_factor = int(sampling_fs/bin_size)
+    # time_bin = np.arange(xr_dataset.time.data[0], xr_dataset.time.data[-1], bin_size)
 
-    dataset_binned = xr_dataset.groupby_bins('time',time_bin, labels=time_bin[:-1]).mean(dim='time')
+    dataset_binned = xr_dataset.coarsen(time=ds_factor, boundary='trim').mean()
 
     dataset_binned = bin_rel_time(dataset_binned, bin_size)
     

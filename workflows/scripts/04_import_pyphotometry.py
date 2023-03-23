@@ -70,8 +70,21 @@ dataset.to_netcdf(soutput.df_photometry, engine='h5netcdf')
 # %%
 # Bin the data such that we only have 1 data point per time bin
 
-dataset_binned = bin_dataset(dataset, 100)
+dataset_binned = bin_dataset(dataset, 10) 
+sns.lineplot(x='rel_time_hold_for_water',
+             y='analog_1_df_over_f', data=dataset_binned)
 
+#%% Merge conditions
+
+# Merge condition for each trial to the xarray
+
+df_trial_nb = dataset_binned.trial_nb.to_dataframe()
+df_trial_nb['trial_nb'] = df_trial_nb['trial_nb'].astype(np.int16)
+df_trial_condition = df_trial_nb.merge(df_condition, on='trial_nb')
+xr_condition = df_trial_condition.to_xarray()
+xr_condition.coords['index'] = dataset_binned.time_bins
+xr_condition
 #%%
 sns.lineplot(x='rel_time_hold_for_water',
              y='analog_1_df_over_f', data=dataset_binned)
+# %%
