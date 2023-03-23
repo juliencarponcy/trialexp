@@ -18,6 +18,7 @@ from scipy.stats import linregress, zscore
 from trialexp.utils.rsync import *
 import xarray as xr
 from scipy.interpolate import interp1d
+import logging
 '''
 Most of the photometry data processing functions are based on the intial design
 of the pyPhotometry package. They are stored in a dictionary containing both
@@ -572,3 +573,31 @@ def bin_dataset(xr_dataset, bin_size, sampling_fs=1000):
     dataset_binned = bin_rel_time(dataset_binned, bin_size)
     
     return dataset_binned
+
+
+def make_condition_xarray(df_condition, dataset_binned):
+    """
+    Merge condition for each trial to the xarray
+    
+    Args:
+    -----------------------------
+    df_condition : pd.DataFrame
+        Dataframe containing trial specific variables (e.g. condition to be analyzed)
+    dataset_binned : xr.dataset
+        Xarray dataset that has already been binned
+    
+    Returns:
+    -----------------------------
+    xr_condition : xr.dataset
+        Dataset with the condition merged in as a new dimension
+    
+    """
+    
+    df_trial_nb = dataset_binned.trial_nb.to_dataframe()
+    df_trial_nb['trial_nb'] = df_trial_nb['trial_nb'].astype(np.int16)
+    df_trial_condition = df_trial_nb.merge(df_condition, on='trial_nb')
+    df_trial_condition['time'] = dataset_binned.time
+    df_trial_condition = df_trial_condition.set_index('time')
+    xr_condition = df_trial_condition.to_xarray()
+    
+    return xr_condition

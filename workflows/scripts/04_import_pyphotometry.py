@@ -10,6 +10,7 @@ from trialexp.utils.rsync import *
 import pandas as pd 
 import seaborn as sns 
 import numpy as np
+import logging
 
 #%% Load inputs
 
@@ -73,15 +74,11 @@ dataset_binned = bin_dataset(dataset, 100)
 
 #%% Merge conditions
 
-# Merge condition for each trial to the xarray
+xr_condition = make_condition_xarray(df_condition, dataset_binned)
 
-df_trial_nb = dataset_binned.trial_nb.to_dataframe()
-df_trial_nb['trial_nb'] = df_trial_nb['trial_nb'].astype(np.int16)
-df_trial_condition = df_trial_nb.merge(df_condition, on='trial_nb')
-xr_condition = df_trial_condition.to_xarray()
-xr_condition.coords['index'] = dataset_binned.time_bins
-xr_condition
-#%%
-sns.lineplot(x='rel_time_hold_for_water',
-             y='analog_1_df_over_f', data=dataset_binned)
 # %%
+dataset_merged = xr.merge([xr_condition, dataset_binned], compat='override')
+# %%
+
+sns.lineplot(x='rel_time_hold_for_water',hue='spout',
+             y='analog_1_df_over_f', data=dataset_merged)
