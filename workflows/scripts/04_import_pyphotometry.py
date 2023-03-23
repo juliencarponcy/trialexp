@@ -69,10 +69,7 @@ dataset.to_netcdf(soutput.df_photometry, engine='h5netcdf')
 
 # %%
 # Bin the data such that we only have 1 data point per time bin
-
-dataset_binned = bin_dataset(dataset, 10) 
-sns.lineplot(x='rel_time_hold_for_water',
-             y='analog_1_df_over_f', data=dataset_binned)
+dataset_binned = bin_dataset(dataset, 100) 
 
 #%% Merge conditions
 

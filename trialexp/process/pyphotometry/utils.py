@@ -564,8 +564,8 @@ def bin_dataset(xr_dataset, bin_size, sampling_fs=1000):
     dataset_binned (xarray.Dataset): Binned xarray dataset
     """
     
-    ds_factor = int(sampling_fs/bin_size)
-    # time_bin = np.arange(xr_dataset.time.data[0], xr_dataset.time.data[-1], bin_size)
+    ds_factor = int((bin_size/1000)*sampling_fs)
+    logging.debug(f'Downsampling testby {ds_factor}')
 
     dataset_binned = xr_dataset.coarsen(time=ds_factor, boundary='trim').mean()
 
