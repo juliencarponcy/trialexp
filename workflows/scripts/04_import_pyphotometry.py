@@ -15,8 +15,8 @@ import logging
 #%% Load inputs
 
 (sinput, soutput) = getSnake(locals(), 'workflows/spout_bar_nov22.smk',
- ['Z:/Julien/Data/head-fixed/_Other/test_folder/by_session_folder/JC317L-2022-12-16-173145\processed/df_photometry.nc'],
-#   ['Z:/Teris/ASAP/expt_sessions/kms064-2023-02-08-100449/processed/df_photometry.nc'],
+#  ['Z:/Julien/Data/head-fixed/_Other/test_folder/by_session_folder/JC317L-2022-12-16-173145\processed/xr_photometry.nc'],
+  ['Z:/Teris/ASAP/expt_sessions/kms064-2023-02-08-100449/processed/xr_photometry.nc'],
   'import_pyphotometry')
 
 
@@ -66,19 +66,23 @@ dataset['trial_nb'] = trial_nb_xr
 
 dataset = dataset.sel(time = dataset.trial_nb>0) #remove data outside of task
 
-dataset.to_netcdf(soutput.df_photometry, engine='h5netcdf')
+dataset.to_netcdf(soutput.xr_photometry, engine='h5netcdf')
 
 # %%
 # Bin the data such that we only have 1 data point per time bin
-dataset_binned = bin_dataset(dataset, 100) 
+dataset_binned = bin_dataset(dataset, 50) 
 
 #%% Merge conditions
 
 xr_condition = make_condition_xarray(df_condition, dataset_binned)
 
 # %%
-dataset_merged = xr.merge([xr_condition, dataset_binned], compat='override')
+xr_session = xr.merge([xr_condition, dataset_binned], compat='override')
+
+xr_session.to_netcdf(soutput.xr_session, engine='h5netcdf')
+
 # %%
 
 sns.lineplot(x='rel_time_hold_for_water',hue='spout',
-             y='analog_1_df_over_f', data=dataset_merged)
+             y='analog_1_df_over_f', data=xr_session)
+# %%

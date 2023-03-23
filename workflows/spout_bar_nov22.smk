@@ -49,7 +49,8 @@ rule import_pyphotometry:
         condition_dataframe = '{session_path}/{session_id}/processed/df_conditions.pkl',
         photometry_folder = '{session_path}/{session_id}/photometry'
     output:
-        df_photometry = '{session_path}/{session_id}/processed/df_photometry.nc',
+        xr_photometry = '{session_path}/{session_id}/processed/xr_photometry.nc',
+        xr_session = '{session_path}/{session_id}/processed/xr_session.nc',
     script:
         'scripts/04_import_pyphotometry.py'
 

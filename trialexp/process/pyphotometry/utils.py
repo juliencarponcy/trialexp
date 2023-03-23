@@ -559,7 +559,7 @@ def bin_dataset(xr_dataset, bin_size, sampling_fs=1000):
     
     Args:
     xr_dataset (xarray.Dataset): Input xarray dataset to be binned
-    time_bin (float): Width of each time bin for grouping data
+    time_bin (float): Width of each time bin for grouping data, in ms
     
     Returns:
     dataset_binned (xarray.Dataset): Binned xarray dataset
