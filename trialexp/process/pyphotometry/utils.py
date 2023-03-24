@@ -601,3 +601,14 @@ def make_condition_xarray(df_condition, dataset_binned):
     xr_condition = df_trial_condition.to_xarray()
     
     return xr_condition
+
+
+
+def make_rel_time_xr(event_time, windows, pyphoto_aligner, ref_time):
+    time_rel = get_rel_time(event_time, windows, pyphoto_aligner, ref_time)
+
+    rel_time = xr.DataArray(
+        time_rel, coords={'time':ref_time}, dims=('time')
+    )
+    
+    return rel_time

@@ -11,6 +11,8 @@ import pandas as pd
 import seaborn as sns 
 import numpy as np
 import logging
+from trialexp.process.pycontrol import event_filters
+from trialexp.process.pycontrol.event_filters import extract_event_time
 
 #%% Load inputs
 
@@ -35,6 +37,7 @@ dataset = photometry2xarray(data_photometry, skip_var = skip_var)
 df_pycontrol = pd.read_pickle(sinput.pycontrol_dataframe)
 df_event = pd.read_pickle(sinput.event_dataframe)
 df_condition = pd.read_pickle(sinput.condition_dataframe)
+trial_window = df_event.attrs['trial_window']
 
 # %% synchornize pyphotometry with pycontrol
 rsync_time = df_pycontrol[df_pycontrol.name=='rsync'].time
@@ -49,13 +52,24 @@ pyphoto_aligner = Rsync_aligner(pulse_times_A= rsync_time,
 trigger = df_event.attrs['triggers'][0]
 df_trigger = df_pycontrol[df_pycontrol.name==trigger]
 
-time_rel = get_rel_time(df_trigger.time, [-2000,3000], pyphoto_aligner, dataset.time)
+time_rel = get_rel_time(df_trigger.time, trial_window, pyphoto_aligner, dataset.time)
 
 rel_time_hold_for_water = xr.DataArray(
     time_rel, coords={'time':dataset.time}, dims=('time')
 )
 
-dataset['rel_time_hold_for_water'] = rel_time_hold_for_water
+dataset['rel_time_'+trigger] = rel_time_hold_for_water
+
+
+#%% Add first bar off
+bar_off_time = extract_event_time(df_event, event_filters.get_first_bar_off)
+xr_first_bar_off = make_rel_time_xr(bar_off_time, trial_window, pyphoto_aligner, dataset.time)
+dataset['rel_time_first_bar_off'] = xr_first_bar_off
+
+#%% Add spout touch
+spout_time = extract_event_time(df_event, event_filters.get_first_spout)
+xr_spout = make_rel_time_xr(spout_time, trial_window, pyphoto_aligner, dataset.time)
+dataset['rel_time_spout'] = xr_spout
 
 #%% Add in trial number
 trial_nb = resample_event(pyphoto_aligner, dataset.time, df_event.time, df_event.trial_nb)
@@ -86,4 +100,13 @@ xr_session.to_netcdf(soutput.xr_session, engine='h5netcdf')
 
 sns.lineplot(x='rel_time_hold_for_water',hue='spout',
              y='analog_1_df_over_f', data=xr_session)
+
+# %%
+sns.lineplot(x='rel_time_first_bar_off',hue='spout',
+             y='analog_1_df_over_f', data=xr_session)
+
+# %%
+sns.lineplot(x='rel_time_spout',hue='spout',
+             y='analog_1_df_over_f', data=xr_session)
+
 # %%
