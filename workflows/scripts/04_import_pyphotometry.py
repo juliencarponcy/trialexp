@@ -94,17 +94,6 @@ xr_session = xr.merge([xr_condition, dataset_binned], compat='override')
 
 xr_session.to_netcdf(soutput.xr_session, engine='h5netcdf')
 
-# %%
 
-sns.lineplot(x='rel_time_hold_for_water',hue='success',
-             y='analog_1_df_over_f', data=xr_session)
-
-# %%
-sns.lineplot(x='rel_time_first_bar_off',hue='success',
-             y='analog_1_df_over_f', data=xr_session)
-
-# %%
-sns.lineplot(x='rel_time_spout',hue='success',
-             y='analog_1_df_over_f', data=xr_session)
 
 # %%
