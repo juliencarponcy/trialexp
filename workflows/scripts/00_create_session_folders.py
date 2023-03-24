@@ -65,6 +65,7 @@ for _, row in df_pycontrol.iterrows():
 
 df_pycontrol['pyphoto_path'] = matched_path
 df_pycontrol['pyphoto_filename'] = matched_fn
+df_pycontrol = df_pycontrol.dropna(subset='pyphoto_path')
 # %%
 for fn in tqdm(pycontrol_files):
     session_id = fn.stem
