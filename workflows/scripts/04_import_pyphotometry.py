@@ -46,7 +46,8 @@ pyphoto_aligner = Rsync_aligner(pulse_times_A= rsync_time,
 
 
 #%% Add in the relative time to different events
-df_trigger = df_pycontrol[df_pycontrol.name=='hold_for_water']
+trigger = df_event.attrs['triggers'][0]
+df_trigger = df_pycontrol[df_pycontrol.name==trigger]
 
 time_rel = get_rel_time(df_trigger.time, [-2000,3000], pyphoto_aligner, dataset.time)
 
