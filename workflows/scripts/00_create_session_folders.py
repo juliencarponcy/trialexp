@@ -95,6 +95,10 @@ def create_sync(pycontrol_file, pyphotometry_file):
             pulse_times_B= pycontrol_rsync, plot=False) #align pycontrol time to pyphotometry time
         except (RsyncError, ValueError):
             return None
+        
+def copy_if_not_exist(src, dest):
+    if not src.exists():
+        shutil.copy(src, dest)
 
 # %%
 matched = []
@@ -108,27 +112,27 @@ for _, row in df_pycontrol.iterrows():
     if not target_pycontrol_folder.exists():
         # create the base folder
         target_pycontrol_folder.mkdir(parents=True)
+        
+    if not target_pyphoto_folder.exists():
         target_pyphoto_folder.mkdir(parents=True)
         
-        pycontrol_file = row.path
-        pyphotometry_file = row.pyphoto_path
+    pycontrol_file = row.path
+    pyphotometry_file = row.pyphoto_path
+    
+    #copy the pycontrol files
+    copy_if_not_exist(pycontrol_file, target_pycontrol_folder)
+    
+    #copy all the analog data
+    analog_files = pycontrol_file.parent.glob(f'{session_id}*.pca')
+    for f in analog_files:
+        copy_if_not_exist(f, target_pycontrol_folder) 
         
-        #copy the pycontrol files
-        shutil.copy(pycontrol_file, target_pycontrol_folder)
-        
-        #copy all the analog data
-        analog_files = pycontrol_file.parent.glob(f'{session_id}*.pca')
-        for f in analog_files:
-            shutil.copy(f, target_pycontrol_folder) 
-        
-        #Copy pyphotometry file is they match
+    #Copy pyphotometry file if they match
+    if not pyphotometry_file.exists():
         if create_sync(str(pycontrol_file), str(pyphotometry_file)) is not None:
-            matched.append(True)
-            shutil.copy(pyphotometry_file, target_pyphoto_folder)
+            copy_if_not_exist(pyphotometry_file, target_pyphoto_folder)
         else:
             matched.append(False)
 
-    else:
-        print(f'{session_id} already exist')
 df_pycontrol['matched'] = matched
 # %%
