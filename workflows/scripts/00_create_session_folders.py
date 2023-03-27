@@ -13,15 +13,17 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from tqdm.auto import tqdm
+import time
 
 from trialexp.process.pycontrol.data_import import session_dataframe
 from trialexp.process.pyphotometry.utils import import_ppd
 from trialexp.utils.rsync import Rsync_aligner, RsyncError
+from tqdm import tqdm
 
 #%% 
-export_base_path = Path('Z:\Teris\ASAP\expt_sessions')
-pycontrol_folder = Path('Z:\\Teris\\ASAP\\pycontrol\\reaching_go_spout_bar_nov22')
-pyphoto_folder = Path('Z:\\Teris\\ASAP\\pyphotometry\\reaching_go_spout_bar_nov22')
+export_base_path = Path('Y:\\Teris\\ASAP\\expt_sessions')
+pycontrol_folder = Path('Y:\\Teris\\ASAP\\pycontrol\\reaching_go_spout_bar_nov22')
+pyphoto_folder = Path('Y:\\Teris\\ASAP\\pyphotometry\\reaching_go_spout_bar_nov22')
 
 pycontrol_files = list(pycontrol_folder.glob('*.txt'))
 pyphoto_files = list(pyphoto_folder.glob('*.ppd'))
@@ -97,12 +99,15 @@ def create_sync(pycontrol_file, pyphotometry_file):
             return None
         
 def copy_if_not_exist(src, dest):
-    if not src.exists():
+    if not (dest/src.name).exists():
         shutil.copy(src, dest)
 
 # %%
 matched = []
-for _, row in df_pycontrol.iterrows():
+x = df_pycontrol[df_pycontrol.session_id=="RE602-2023-03-17-150753"]
+
+for i in tqdm(range(len(df_pycontrol))):
+    row = df_pycontrol.iloc[i]
     session_id = row.session_id
     animal_id = row.animal_id
     
@@ -120,6 +125,7 @@ for _, row in df_pycontrol.iterrows():
     pyphotometry_file = row.pyphoto_path
     
     #copy the pycontrol files
+    # print(pycontrol_file, target_pycontrol_folder)
     copy_if_not_exist(pycontrol_file, target_pycontrol_folder)
     
     #copy all the analog data
@@ -134,5 +140,5 @@ for _, row in df_pycontrol.iterrows():
         else:
             matched.append(False)
 
-df_pycontrol['matched'] = matched
+# df_pycontrol['matched'] = matched
 # %%
