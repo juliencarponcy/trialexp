@@ -113,18 +113,18 @@ for _, row in df_pycontrol.iterrows():
         pycontrol_file = row.path
         pyphotometry_file = row.pyphoto_path
         
-        #double check they are really of the same session
+        #copy the pycontrol files
+        shutil.copy(pycontrol_file, target_pycontrol_folder)
+        
+        #copy all the analog data
+        analog_files = pycontrol_file.parent.glob(f'{session_id}*.pca')
+        for f in analog_files:
+            shutil.copy(f, target_pycontrol_folder) 
+        
+        #Copy pyphotometry file is they match
         if create_sync(str(pycontrol_file), str(pyphotometry_file)) is not None:
             matched.append(True)
-            
-            #copy the files
-            shutil.copy(pycontrol_file, target_pycontrol_folder)
             shutil.copy(pyphotometry_file, target_pyphoto_folder)
-            
-            #copy all the analog data
-            analog_files = pycontrol_file.parent.glob(f'{session_id}*.pca')
-            for f in analog_files:
-                shutil.copy(f, target_pycontrol_folder)                
         else:
             matched.append(False)
 
