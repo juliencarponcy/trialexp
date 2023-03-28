@@ -64,10 +64,16 @@ def motion_correction(photometry_dict: dict) -> dict:
     if any(['analog_1_filt' not in photometry_dict, 'analog_2_filt' not in photometry_dict]):
         raise Exception('Analog 1 and Analog 2 must be filtered before motion correction')
     
-    slope, intercept, r_value, p_value, std_err = linregress(x=photometry_dict['analog_2_filt'], y=photometry_dict['analog_1_filt'])
-    photometry_dict['analog_1_est_motion'] = intercept + slope * photometry_dict['analog_2_filt']
-    photometry_dict['analog_1_corrected'] = photometry_dict['analog_1_filt'] - photometry_dict['analog_1_est_motion']
-    
+    try:
+        slope, intercept, r_value, p_value, std_err = linregress(x=photometry_dict['analog_2_filt'], y=photometry_dict['analog_1_filt'])
+        photometry_dict['analog_1_est_motion'] = intercept + slope * photometry_dict['analog_2_filt']
+        photometry_dict['analog_1_corrected'] = photometry_dict['analog_1_filt'] - photometry_dict['analog_1_est_motion']
+    except ValueError:
+        print('Motion correction failed. Skipping motion correction')
+        # probably due to saturation , do not do motion correction
+        photometry_dict['analog_1_corrected'] = photometry_dict['analog_1_filt']
+
+
     return photometry_dict
 
 def compute_df_over_f(photometry_dict: dict, low_pass_cutoff: float = 0.001) -> dict:
