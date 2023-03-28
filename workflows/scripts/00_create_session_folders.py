@@ -53,13 +53,27 @@ def parse_pycontrol_fn(fn):
         date_string = m.group(2)
         expt_datetime = datetime.strptime(date_string, "%Y-%m-%d-%H%M%S")
         
-        return {'animal_id':animal_id, 'path':fn,                 
-                'session_id':fn.stem,
-                'filename':fn.stem, 
-                'timestamp':expt_datetime}
+        try:
+            df = session_dataframe(fn)
+            session_length = df.time.iloc[-1]
+            
+            return {'animal_id':animal_id, 
+                    'path':fn,                 
+                    'session_id':fn.stem,
+                    'filename':fn.stem, 
+                    'timestamp':expt_datetime,
+                    'session_length': session_length }
+        except KeyError:
+            return {'animal_id':animal_id, 
+                    'path':fn,                 
+                    'session_id':fn.stem,
+                    'filename':fn.stem, 
+                    'timestamp':expt_datetime,
+                    'session_length': 0 }
+   
     
 df_pycontrol = pd.DataFrame(list(map(parse_pycontrol_fn, pycontrol_files)))
-
+df_pycontrol = df_pycontrol[df_pycontrol.session_length>1000*60*5] #remove sessions that are too short
 #%% Match
 #Try to match pycontrol file together with pyphotometry file
 
@@ -103,8 +117,8 @@ def copy_if_not_exist(src, dest):
         shutil.copy(src, dest)
 
 # %%
-matched = []
-x = df_pycontrol[df_pycontrol.session_id=="RE602-2023-03-17-150753"]
+# matched = []
+# x = df_pycontrol[df_pycontrol.session_id=="RE602-2023-03-17-150753"]
 
 for i in tqdm(range(len(df_pycontrol))):
     row = df_pycontrol.iloc[i]
@@ -134,11 +148,7 @@ for i in tqdm(range(len(df_pycontrol))):
         copy_if_not_exist(f, target_pycontrol_folder) 
         
     #Copy pyphotometry file if they match
-    if not pyphotometry_file.exists():
-        if create_sync(str(pycontrol_file), str(pyphotometry_file)) is not None:
-            copy_if_not_exist(pyphotometry_file, target_pyphoto_folder)
-        else:
-            matched.append(False)
+    if create_sync(str(pycontrol_file), str(pyphotometry_file)) is not None:
+        copy_if_not_exist(pyphotometry_file, target_pyphoto_folder)
 
-# df_pycontrol['matched'] = matched
 # %%
