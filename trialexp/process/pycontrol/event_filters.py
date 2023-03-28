@@ -20,5 +20,5 @@ def get_first_spout(df_trial):
 def extract_event_time(df_event, filter_func, groupby_col='trial_nb'):
     #extract event on a trial based on a filter function
     
-    df_event_filtered = df_event.groupby(groupby_col).apply(filter_func).dropna(how='all')
+    df_event_filtered = df_event.groupby(groupby_col,group_keys=False).apply(filter_func).dropna(how='all')
     return df_event_filtered.time
