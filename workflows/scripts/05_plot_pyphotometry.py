@@ -17,7 +17,7 @@ import os
 
 (sinput, soutput) = getSnake(locals(), 'workflows/spout_bar_nov22.smk',
 #  ['//ettin/Magill_Lab/Julien/Data/head-fixed/_Other/test_folder/by_session_folder/JC316L-2022-12-09-171925/processed/figures/photometry'],
-  ['Z:/Teris/ASAP/expt_sessions/kms064-2023-02-08-100449/processed/figures/photometry'],
+  ['Z:/Teris/ASAP/expt_sessions/kms063-2023-02-27-164426/processed/log/photometry.done'],
   'photometry_figure')
 
 
@@ -37,3 +37,6 @@ for k in xr_session.data_vars.keys():
 
         fig.savefig(os.path.join(figure_dir, f'{k}.png'), dpi=300, bbox_inches='tight')
 
+
+# %%
+xr_session.close()
