@@ -738,7 +738,7 @@ class Session():
             self.df_conditions.loc[(reach_success_bool), 'success'] = True
 
         # To perform for delayed tasks (check whether a US_end_timer was preceded by a spout)
-        elif self.task_name in ['reaching_go_spout_bar_nov22']:
+        elif self.task_name in ['reaching_go_spout_bar_nov22','reaching_go_spout_bar_mar23']:
 
             reach_time_before_reward = self.df_events.loc[:,['spout_trial_time','US_end_timer_trial_time']].apply(
                     lambda x: find_last_time_before_list(x['spout_trial_time'], x['US_end_timer_trial_time']), axis=1)    
