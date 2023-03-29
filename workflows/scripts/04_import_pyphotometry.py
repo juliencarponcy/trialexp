@@ -18,7 +18,7 @@ from trialexp.process.pycontrol.event_filters import extract_event_time
 
 (sinput, soutput) = getSnake(locals(), 'workflows/spout_bar_nov22.smk',
 #  ['Z:/Julien/Data/head-fixed/_Other/test_folder/by_session_folder/JC317L-2022-12-16-173145\processed/xr_photometry.nc'],
-  ['Z:/Teris/ASAP/expt_sessions/kms064-2023-02-08-100449/processed/xr_photometry.nc'],
+  ['Z:/Teris/ASAP/expt_sessions/RE602-2023-03-16-091935/processed/xr_photometry.nc'],
   'import_pyphotometry')
 
 
@@ -92,6 +92,8 @@ dataset_binned = bin_dataset(dataset, 50)
 xr_condition = make_condition_xarray(df_condition, dataset_binned)
 xr_session = xr.merge([xr_condition, dataset_binned], compat='override')
 
+xr_session.attrs.update(dataset_binned.attrs)
+xr_session.attrs.update(df_pycontrol.attrs)
 xr_session.to_netcdf(soutput.xr_session, engine='h5netcdf')
 
 

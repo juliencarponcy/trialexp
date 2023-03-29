@@ -577,6 +577,7 @@ def bin_dataset(xr_dataset, bin_size, sampling_fs=1000):
     dataset_binned = xr_dataset.coarsen(time=ds_factor, boundary='trim').mean()
 
     dataset_binned = bin_rel_time(dataset_binned, bin_size)
+    dataset_binned.attrs.update(xr_dataset.attrs)
     
     return dataset_binned
 
