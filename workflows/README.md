@@ -23,6 +23,8 @@ The snakemake workflow may contain additional dependency requirement. You will n
     
     ```
 
+
+
 ## Folder structure
 The snakemake file (*.smk) that define the workflow is in the `workflow` folder, the scripts are in `workflows/scripts`, config files are in `workflows/config`.
 
@@ -55,6 +57,16 @@ The best way to start developing new script is by using the interactive Python s
     import os;
     os.chdir('../..')
     ```
+
+
+**Note:** If you want `getSnake` to switch to your project folder directly. Define a `SNAKEMAKE_DEBUG_ROOT` environment variable that points to the `trialexp` folder in your system. Alternatively, you can also create a `.env` file in the project root directory, defining that `SNAKEMAKE_DEBUG_ROOT` variable, e.g.
+
+
+```
+# .env
+SNAKEMAKE_DEBUG_ROOT = C:\code\trialexp
+```
+
 4. Double check that you are in the root of the project by running `os.getcwd()`. You should be at the `trialexp` folder.
 5. Execute and test your code by using the cell mode 
 
