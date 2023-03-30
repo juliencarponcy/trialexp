@@ -13,12 +13,14 @@ import numpy as np
 import logging
 from trialexp.process.pycontrol import event_filters
 from trialexp.process.pycontrol.event_filters import extract_event_time
+import itertools
+
 
 #%% Load inputs
 
 (sinput, soutput) = getSnake(locals(), 'workflows/spout_bar_nov22.smk',
 #  ['Z:/Julien/Data/head-fixed/_Other/test_folder/by_session_folder/JC317L-2022-12-16-173145\processed/xr_photometry.nc'],
-  ['Z:/Teris/ASAP/expt_sessions/RE602-2023-03-16-091935/processed/xr_photometry.nc'],
+  ['Y:/Teris/ASAP/expt_sessions/RE602-2023-03-16-091935/processed/xr_photometry.nc'],
   'import_pyphotometry')
 
 
@@ -48,29 +50,6 @@ pyphoto_aligner = Rsync_aligner(pulse_times_A= rsync_time,
                 pulse_times_B= photo_rsync, plot=False) #align pycontrol time to pyphotometry time
 
 
-#%% Add in the relative time to different events
-trigger = df_event.attrs['triggers'][0]
-df_trigger = df_pycontrol[df_pycontrol.name==trigger]
-
-time_rel = get_rel_time(df_trigger.time, trial_window, pyphoto_aligner, dataset.time)
-
-rel_time_hold_for_water = xr.DataArray(
-    time_rel, coords={'time':dataset.time}, dims=('time')
-)
-
-dataset['rel_time_'+trigger] = rel_time_hold_for_water
-
-
-#%% Add first bar off
-bar_off_time = extract_event_time(df_event, event_filters.get_first_bar_off)
-xr_first_bar_off = make_rel_time_xr(bar_off_time, trial_window, pyphoto_aligner, dataset.time)
-dataset['rel_time_first_bar_off'] = xr_first_bar_off
-
-#%% Add spout touch
-spout_time = extract_event_time(df_event, event_filters.get_first_spout)
-xr_spout = make_rel_time_xr(spout_time, trial_window, pyphoto_aligner, dataset.time)
-dataset['rel_time_spout'] = xr_spout
-
 #%% Add in trial number
 trial_nb = resample_event(pyphoto_aligner, dataset.time, df_event.time, df_event.trial_nb)
 trial_nb_xr = xr.DataArray(
@@ -78,7 +57,37 @@ trial_nb_xr = xr.DataArray(
 )
 
 dataset['trial_nb'] = trial_nb_xr
+#%% Add in the relative time to different events
+trial_nb_valid = trial_nb[trial_nb>=0]
+trial = np.arange(trial_nb_valid.min(), trial_nb_valid.max()+1)
+event_period = (trial_window[1] - trial_window[0])/1000
+sampling_freq = 1000
+event_time = np.linspace(trial_window[0], trial_window[1], int(event_period*sampling_freq)) #TODO
 
+#%%
+trigger = df_event.attrs['triggers'][0]
+df_trigger = df_pycontrol[df_pycontrol.name==trigger]
+
+rel_time_hold_for_water = make_event_xr(df_trigger.time, trial_window, pyphoto_aligner,
+                                        event_time, trial,dataset['analog_1_df_over_f'])
+
+dataset['rel_time_'+trigger] = rel_time_hold_for_water
+
+
+#%% Add first bar off
+bar_off_time = extract_event_time(df_event, event_filters.get_first_bar_off)
+xr_event_data = make_event_xr(bar_off_time, trial_window, pyphoto_aligner,
+                                        event_time, trial,dataset['analog_1_df_over_f'])
+dataset['rel_time_first_bar_off'] = xr_event_data
+
+#%% Add spout touch
+spout_time = extract_event_time(df_event, event_filters.get_first_spout)
+xr_event_data = make_event_xr(spout_time, trial_window, pyphoto_aligner,
+                                        event_time, trial,dataset['analog_1_df_over_f'])
+dataset['rel_time_spout'] = xr_event_data
+
+
+#%%
 dataset = dataset.sel(time = dataset.trial_nb>0) #remove data outside of task
 
 dataset.to_netcdf(soutput.xr_photometry, engine='h5netcdf')

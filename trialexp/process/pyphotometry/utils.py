@@ -19,6 +19,9 @@ from trialexp.utils.rsync import *
 import xarray as xr
 from scipy.interpolate import interp1d
 import logging
+import itertools
+
+
 '''
 Most of the photometry data processing functions are based on the intial design
 of the pyPhotometry package. They are stored in a dictionary containing both
@@ -523,6 +526,31 @@ def resample_event(pyphoto_aligner, ref_time, event_time, event_value, fill_valu
     return f(ref_time)
 
 
+def extract_event_data(trigger_timestamp, window, aligner, dataArray, data_len =None):
+    ts = aligner.A_to_B(trigger_timestamp)
+    ref_time = dataArray.time
+    data = []
+    event_found = []
+    
+    for t in ts: 
+        d = ref_time-t
+        idx = (d>window[0]) & (d<window[1])
+        if idx.sum()>0:
+            data.append(dataArray.data[idx])
+            event_found.append(True)
+        else:
+            event_found.append(False)
+            
+    # align to the longest element
+    data =  np.vstack(list(itertools.zip_longest(*data)))
+    
+    # if data_len is provide, perform additional check or correct the data length
+    if data_len is not None:
+        if not data.shape[0]==data_len:
+            data = data[:data_len,:]
+    
+    return data.astype(float),event_found #only float support NA
+
 #%% Calulate the relative time
 def get_rel_time(trigger_timestamp, window, aligner, ref_time):
     # Calculate the time relative to a trigger timestamp)
@@ -619,3 +647,12 @@ def make_rel_time_xr(event_time, windows, pyphoto_aligner, ref_time):
     )
     
     return rel_time
+
+def make_event_xr(t, trial_window, pyphoto_aligner, event_time, trial,  dataArray):
+    data, _ = extract_event_data(t, trial_window, pyphoto_aligner, dataArray)
+
+    #TODO: tackle the case when no trial window found
+    da = xr.DataArray(
+        data, coords={'event_time':event_time, 'trial':trial}, dims=('event_time','trial'))
+        
+    return da
