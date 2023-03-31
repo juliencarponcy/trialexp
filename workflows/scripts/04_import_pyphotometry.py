@@ -20,7 +20,7 @@ import itertools
 
 (sinput, soutput) = getSnake(locals(), 'workflows/spout_bar_nov22.smk',
 #  ['Z:/Julien/Data/head-fixed/_Other/test_folder/by_session_folder/JC317L-2022-12-16-173145\processed/xr_photometry.nc'],
-  ['Y:/Teris/ASAP/expt_sessions/RE602-2023-03-16-091935/processed/xr_photometry.nc'],
+  ['//ettin/Magill_Lab/Teris/ASAP/expt_sessions/RE602-2023-03-16-091935/processed/xr_photometry.nc'],
   'import_pyphotometry')
 
 
@@ -51,58 +51,58 @@ pyphoto_aligner = Rsync_aligner(pulse_times_A= rsync_time,
 
 
 #%% Add in trial number
-trial_nb = resample_event(pyphoto_aligner, dataset.time, df_event.time, df_event.trial_nb)
-trial_nb_xr = xr.DataArray(
-    trial_nb.astype(np.int16), coords={'time':dataset.time}, dims=('time')
+trial = resample_event(pyphoto_aligner, dataset.time, df_event.time, df_event.trial_nb)
+trial_xr = xr.DataArray(
+    trial.astype(np.int16), coords={'time':dataset.time}, dims=('time')
 )
 
-dataset['trial_nb'] = trial_nb_xr
+dataset['trial'] = trial_xr
+
 #%% Add in the relative time to different events
-trial_nb_valid = trial_nb[trial_nb>=0]
-trial = np.arange(trial_nb_valid.min(), trial_nb_valid.max()+1)
+# trial_nb_valid = trial_nb[trial_nb>=0]
+# trial_nb_coord = np.arange(trial_nb_valid.min(), trial_nb_valid.max()+1)
 event_period = (trial_window[1] - trial_window[0])/1000
 sampling_freq = 1000
-event_time = np.linspace(trial_window[0], trial_window[1], int(event_period*sampling_freq)) #TODO
+event_time_coord= np.linspace(trial_window[0], trial_window[1], int(event_period*sampling_freq)) #TODO
 
-#%%
+#%% Add trigger
 trigger = df_event.attrs['triggers'][0]
-df_trigger = df_pycontrol[df_pycontrol.name==trigger]
-
-rel_time_hold_for_water = make_event_xr(df_trigger.time, trial_window, pyphoto_aligner,
-                                        event_time, trial,dataset['analog_1_df_over_f'])
-
-dataset['rel_time_'+trigger] = rel_time_hold_for_water
-
+add_event_data(df_event, event_filters.get_first_event_from_name,
+               trial_window, pyphoto_aligner, dataset, event_time_coord, 
+               'analog_1_df_over_f', trigger, dataset.attrs['sampling_rate'],
+               filter_func_kwargs={'evt_name':trigger})
 
 #%% Add first bar off
-bar_off_time = extract_event_time(df_event, event_filters.get_first_bar_off)
-xr_event_data = make_event_xr(bar_off_time, trial_window, pyphoto_aligner,
-                                        event_time, trial,dataset['analog_1_df_over_f'])
-dataset['rel_time_first_bar_off'] = xr_event_data
+add_event_data(df_event, event_filters.get_first_bar_off, trial_window,
+               pyphoto_aligner, dataset,event_time_coord, 
+               'analog_1_df_over_f', 'first_bar_off', dataset.attrs['sampling_rate'])
 
-#%% Add spout touch
-spout_time = extract_event_time(df_event, event_filters.get_first_spout)
-xr_event_data = make_event_xr(spout_time, trial_window, pyphoto_aligner,
-                                        event_time, trial,dataset['analog_1_df_over_f'])
-dataset['rel_time_spout'] = xr_event_data
-
+#%% Add first spout
+add_event_data(df_event, event_filters.get_first_spout, trial_window,
+               pyphoto_aligner, dataset, event_time_coord, 
+               'analog_1_df_over_f', 'first_spout', dataset.attrs['sampling_rate'])
 
 #%%
-dataset = dataset.sel(time = dataset.trial_nb>0) #remove data outside of task
+dataset = dataset.sel(time = dataset.trial>=0) #remove data outside of task
+# dataset.expand_dims({'session_id':[dataset.attrs['session_id']]})
+
+# add in all metadata
+dataset.attrs.update(df_pycontrol.attrs)
+dataset.attrs.update(df_event.attrs)
 
 dataset.to_netcdf(soutput.xr_photometry, engine='h5netcdf')
 
 # %%
 # Bin the data such that we only have 1 data point per time bin
-dataset_binned = bin_dataset(dataset, 50) 
-
+# bin according to 50ms time bin, original sampling frequency is at 1000Hz
+dataset_binned = dataset.coarsen(time=50, event_time=50, boundary='trim').mean()
+dataset_binned.attrs.update(dataset.attrs)
 #%% Merge conditions
-
-xr_condition = make_condition_xarray(df_condition, dataset_binned)
-xr_session = xr.merge([xr_condition, dataset_binned], compat='override')
+df_condition = df_condition[df_condition.index>0]
+ds_condition = xr.Dataset.from_dataframe(df_condition)
+xr_session = xr.merge([ds_condition, dataset_binned])
 
 xr_session.attrs.update(dataset_binned.attrs)
-xr_session.attrs.update(df_pycontrol.attrs)
 xr_session.to_netcdf(soutput.xr_session, engine='h5netcdf')
 
 

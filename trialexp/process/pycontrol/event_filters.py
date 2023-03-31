@@ -1,4 +1,3 @@
-from trialexp.process.pyphotometry.utils import get_rel_time
 import xarray as xr
 
 def get_first_bar_off(df_trial):
@@ -17,8 +16,11 @@ def get_first_spout(df_trial):
     if len(spout) >0:
         return spout.iloc[0]
     
-def extract_event_time(df_event, filter_func, groupby_col='trial_nb'):
-    #extract event on a trial based on a filter function
+def get_first_event_from_name(df_trial, evt_name):
+    event =  df_trial[df_trial['name']==evt_name]
+    return event.iloc[0]
     
-    df_event_filtered = df_event.groupby(groupby_col,group_keys=False).apply(filter_func).dropna(how='all')
+def extract_event_time(df_event, filter_func, filter_func_kwargs, groupby_col='trial_nb'):
+    #extract event on a trial based on a filter function
+    df_event_filtered = df_event.groupby(groupby_col,group_keys=True).apply(filter_func, **filter_func_kwargs)
     return df_event_filtered.time

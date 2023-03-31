@@ -1,26 +1,24 @@
 # Utility functions for pycontrol and pyphotometry files processing
 
+import itertools
 import json
+import logging
 
-from matplotlib import pyplot as plt
 import numpy as np
-from sklearn.mixture import GaussianMixture
-
-from sklearn.cluster import DBSCAN
-from sklearn.decomposition import PCA
-from sklearn.metrics import pairwise_distances
-from sklearn.preprocessing import StandardScaler
-
+import xarray as xr
+from matplotlib import pyplot as plt
+from scipy.interpolate import interp1d
 from scipy.optimize import curve_fit
 from scipy.signal import butter, filtfilt, medfilt
 from scipy.stats import linregress, zscore
+from sklearn.cluster import DBSCAN
+from sklearn.decomposition import PCA
+from sklearn.metrics import pairwise_distances
+from sklearn.mixture import GaussianMixture
+from sklearn.preprocessing import StandardScaler
 
+from trialexp.process.pycontrol.event_filters import extract_event_time
 from trialexp.utils.rsync import *
-import xarray as xr
-from scipy.interpolate import interp1d
-import logging
-import itertools
-
 
 '''
 Most of the photometry data processing functions are based on the intial design
@@ -526,19 +524,51 @@ def resample_event(pyphoto_aligner, ref_time, event_time, event_value, fill_valu
     return f(ref_time)
 
 
-def extract_event_data(trigger_timestamp, window, aligner, dataArray, data_len =None):
+def extract_event_data(trigger_timestamp, window, aligner, dataArray, sampling_rate, data_len =None, time_tolerance=5):
+    '''
+    Extract continous data around a timestamp. The original timestamp will be
+    aligned to the coordinate of the dataArray with aligner
+    
+    Parameters:
+        trigger_timestamp : float or int
+            Timestamp around which data has to be extracted, in ms
+        window : tuple
+            Tuple containing minimum and maximum value of time window for which data is to be extracted
+        aligner : object
+            Object containing A_to_B() method for alignment of timestamp
+        dataArray : array-like
+            Array containing data from which required data is to be extracted. It it assumed to have a time coordinate in ms
+        data_len : int, optional
+            If provided, checks for length of output data
+        time_tolerance: int, default=5
+            the minimum time difference in ms that must be matched between the trigger stampstamp and the time coordinate of the dataArray
+    
+    Returns:
+        data : numpy.ndarray
+            Array of continuous data around the timestamp
+        event_found : list
+            List of boolean values indicating if any event was found around the given timestamp
+
+    '''
+
+    
     ts = aligner.A_to_B(trigger_timestamp)
     ref_time = dataArray.time
     data = []
     event_found = []
     
-    for t in ts: 
-        d = ref_time-t
-        idx = (d>window[0]) & (d<window[1])
-        if idx.sum()>0:
-            data.append(dataArray.data[idx])
+    for t in ts:
+        d = abs((ref_time-t).data)
+        #Find the most close matched time stamp and extend it both ends 
+        min_time = np.min(d)
+        if min_time < time_tolerance:
+            min_idx = np.argmin(d)
+            start_idx = min_idx +int(window[0]/1000*sampling_rate)
+            end_idx = min_idx + int(window[1]/1000*sampling_rate)
+            data.append(dataArray.data[start_idx:end_idx])
             event_found.append(True)
         else:
+            data.append([np.NaN])
             event_found.append(False)
             
     # align to the longest element
@@ -648,11 +678,80 @@ def make_rel_time_xr(event_time, windows, pyphoto_aligner, ref_time):
     
     return rel_time
 
-def make_event_xr(t, trial_window, pyphoto_aligner, event_time, trial,  dataArray):
-    data, _ = extract_event_data(t, trial_window, pyphoto_aligner, dataArray)
+def make_event_xr(event_time, trial_window, pyphoto_aligner,
+                  event_time_coordinate,  dataArray, sampling_rate):
+    '''
+    Create xarray.DataArray object for the continuous data around provided timestamp. 
 
-    #TODO: tackle the case when no trial window found
+    Parameters:
+        event_time : array_like
+            List of timestamps around which continuous data is to be extracted
+            it is assumed to have a index corresponds to the trial number
+        trial_window : tuple
+            Tuple containing minimum and maximum value of time window for which data is to be extracted
+        pyphoto_aligner : Object
+            Object containing A_to_B() method for alignment of timestamp
+        event_time_coordinate : array_like
+            List of trial numbers corresponding to each event_time
+        dataArray : array_like
+            Array containing time and data information
+            
+    Returns:
+        da : xarray.DataArray
+            DataArray object containing continuous data around the provided timestamp
+    
+    Note:
+        It returns only data from extract_event_data() function ignoring the event_found.
+    '''
+    assert event_time.index.name =='trial_nb', 'event_time should have a trial_nb index'
+    data, _ = extract_event_data(event_time, trial_window, pyphoto_aligner,
+                                dataArray, sampling_rate)
     da = xr.DataArray(
-        data, coords={'event_time':event_time, 'trial':trial}, dims=('event_time','trial'))
+        data, coords={'event_time':event_time_coordinate, 
+                      'trial_nb':event_time.index.values},
+                        dims=('event_time','trial_nb'))
         
     return da
+
+def add_event_data(df_event, filter_func, trial_window, aligner,
+                   dataset, event_time_coordinate, data_var_name, 
+                   event_name, sampling_rate, filter_func_kwargs={}):
+    '''
+    Add continuous data around provided timestamp to a dataset.
+
+    Parameters:
+        df_event : pandas.DataFrame
+            DataFrame containing event and timestamp information
+        filter_func : function
+            Function to filter particular events from the dataframe
+        trial_window : tuple
+            Tuple containing minimum and maximum value of time window for which data is to be extracted.
+        aligner : Object
+            Object containing A_to_B() method for alignment of timestamp
+        dataset : xarray.Dataset
+            Dataset in which data is to be added
+        event_time_coordinate : array_like
+            relative time coordinate in ms of the continous data
+        data_var_name : str
+            The variable name of the data in `dataset`.
+        event_name : str
+            name of the event
+        sampling_rate: int
+            sampling rate of the continous signal
+        filter_func_args: dict
+            argument that should be passed to the filter function
+        
+    Returns:
+        None
+
+    Note:
+        It updates the given `dataset` with a new variable that contains continuous data around 
+        each timestamp.  It requires two supporting functions make_event_xr() & extract_event_time().
+    '''
+
+    event_time = extract_event_time(df_event, filter_func, filter_func_kwargs)
+    xr_event_data = make_event_xr(event_time, trial_window, aligner,
+                                            event_time_coordinate,
+                                            dataset[data_var_name], sampling_rate)
+    dataset[f'{event_name}_{data_var_name}'] = xr_event_data
+# %%

@@ -9,7 +9,6 @@ from datetime import datetime
 import warnings
 import itertools
 
-from collections import namedtuple
 from operator import itemgetter
 
 import numpy as np
@@ -18,7 +17,6 @@ import pandas as pd
 from math import ceil
 from scipy.signal import butter, filtfilt, decimate
 from scipy.stats import linregress, zscore
-from trialexp.process.data_import import Event
 from trialexp.process.pycontrol.utils import find_if_event_within_timelim, find_last_time_before_list
 
     
