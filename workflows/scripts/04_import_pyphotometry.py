@@ -8,18 +8,13 @@ from glob import glob
 import xarray as xr
 from trialexp.utils.rsync import *
 import pandas as pd 
-import seaborn as sns 
 import numpy as np
-import logging
 from trialexp.process.pycontrol import event_filters
 from trialexp.process.pycontrol.event_filters import extract_event_time
-import itertools
 from workflows.scripts import settings
 #%% Load inputs
 
 (sinput, soutput) = getSnake(locals(), 'workflows/spout_bar_nov22.smk',
-#  ['Z:/Julien/Data/head-fixed/_Other/test_folder/by_session_folder/JC317L-2022-12-16-173145\processed/xr_photometry.nc'],
-#   ['//ettin/Magill_Lab/Teris/ASAP/expt_sessions/RE602-2023-03-16-091935/processed/xr_photometry.nc'],
    [settings.debug_folder + 'processed/xr_photometry.nc'],
   'import_pyphotometry')
 
@@ -56,11 +51,11 @@ trial_xr = xr.DataArray(
     trial.astype(np.int16), coords={'time':dataset.time}, dims=('time')
 )
 
+#Note: there will be NaN in trial number because any sample before the first pycontrol event after
+# the start of pyphotometry is undefined
 dataset['trial'] = trial_xr
 
 #%% Add in the relative time to different events
-# trial_nb_valid = trial_nb[trial_nb>=0]
-# trial_nb_coord = np.arange(trial_nb_valid.min(), trial_nb_valid.max()+1)
 event_period = (trial_window[1] - trial_window[0])/1000
 sampling_freq = 1000
 event_time_coord= np.linspace(trial_window[0], trial_window[1], int(event_period*sampling_freq)) #TODO
@@ -84,12 +79,10 @@ add_event_data(df_event, event_filters.get_first_spout, trial_window,
 
 #%%
 dataset = dataset.sel(time = dataset.trial>=0) #remove data outside of task
-# dataset.expand_dims({'session_id':[dataset.attrs['session_id']]})
 
 # add in all metadata
 dataset.attrs.update(df_pycontrol.attrs)
 dataset.attrs.update(df_event.attrs)
-
 dataset.to_netcdf(soutput.xr_photometry, engine='h5netcdf')
 
 # %%
@@ -97,10 +90,12 @@ dataset.to_netcdf(soutput.xr_photometry, engine='h5netcdf')
 # bin according to 50ms time bin, original sampling frequency is at 1000Hz
 dataset_binned = dataset.coarsen(time=50, event_time=50, boundary='trim').mean()
 dataset_binned.attrs.update(dataset.attrs)
+
 #%% Merge conditions
 df_condition = df_condition[df_condition.index>0]
 ds_condition = xr.Dataset.from_dataframe(df_condition)
 xr_session = xr.merge([ds_condition, dataset_binned])
 
+xr_session = xr_session.expand_dims({'session_id':[dataset.attrs['session_id']]})
 xr_session.attrs.update(dataset_binned.attrs)
 xr_session.to_netcdf(soutput.xr_session, engine='h5netcdf')

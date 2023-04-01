@@ -513,8 +513,9 @@ def resample_event(pyphoto_aligner, ref_time, event_time, event_value, fill_valu
 
     Returns
     -------
-    f : array-like
+    array-like
         Resampled event values corresponding to the reference time points.
+        can contain NaN value if there is no overlap data
     """
     
     new_time = pyphoto_aligner.A_to_B(event_time)
