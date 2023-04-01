@@ -569,11 +569,13 @@ def extract_event_data(trigger_timestamp, window, aligner, dataArray, sampling_r
             data.append(dataArray.data[start_idx:end_idx])
             event_found.append(True)
         else:
-            data.append([np.NaN])
+            x = np.zeros((int((window[1]-window[0])/1000*sampling_rate),))
+            data.append([x])
             event_found.append(False)
             
     # align to the longest element
-    data =  np.vstack(list(itertools.zip_longest(*data)))
+    # data =  np.vstack(list(itertools.zip_longest(*data)))
+    data  = np.vstack(data)
     
     # if data_len is provide, perform additional check or correct the data length
     if data_len is not None:
@@ -710,7 +712,7 @@ def make_event_xr(event_time, trial_window, pyphoto_aligner,
     da = xr.DataArray(
         data, coords={'event_time':event_time_coordinate, 
                       'trial_nb':event_time.index.values},
-                        dims=('event_time','trial_nb'))
+                        dims=('trial_nb','event_time'))
         
     return da
 
