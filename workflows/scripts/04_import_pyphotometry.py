@@ -14,13 +14,13 @@ import logging
 from trialexp.process.pycontrol import event_filters
 from trialexp.process.pycontrol.event_filters import extract_event_time
 import itertools
-
-
+from workflows.scripts import settings
 #%% Load inputs
 
 (sinput, soutput) = getSnake(locals(), 'workflows/spout_bar_nov22.smk',
 #  ['Z:/Julien/Data/head-fixed/_Other/test_folder/by_session_folder/JC317L-2022-12-16-173145\processed/xr_photometry.nc'],
-  ['//ettin/Magill_Lab/Teris/ASAP/expt_sessions/RE602-2023-03-16-091935/processed/xr_photometry.nc'],
+#   ['//ettin/Magill_Lab/Teris/ASAP/expt_sessions/RE602-2023-03-16-091935/processed/xr_photometry.nc'],
+   [settings.debug_folder + 'processed/xr_photometry.nc'],
   'import_pyphotometry')
 
 

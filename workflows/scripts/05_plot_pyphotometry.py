@@ -13,11 +13,12 @@ from scipy.interpolate import interp1d
 import seaborn as sns 
 import numpy as np
 import os
+from workflows.scripts import settings
+
 #%% Load inputs
 
 (sinput, soutput) = getSnake(locals(), 'workflows/spout_bar_nov22.smk',
-#  ['//ettin/Magill_Lab/Julien/Data/head-fixed/_Other/test_folder/by_session_folder/JC316L-2022-12-09-171925/processed/figures/photometry'],
-  ['Z:/Teris/ASAP/expt_sessions/kms063-2023-02-27-164426/processed/log/photometry.done'],
+  [settings.debug_folder + '/processed/log/photometry.done'],
   'photometry_figure')
 
 

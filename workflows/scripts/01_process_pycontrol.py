@@ -12,12 +12,13 @@ import sys
 from datetime import datetime
 from snakehelper.SnakeIOHelper import getSnake
 from pathlib import Path
+from workflows.scripts import settings
 
 #%% Load inputs
 
 (sinput, soutput) = getSnake(locals(), 'workflows/spout_bar_nov22.smk',
 #  ['//ettin/Magill_Lab/Julien/Data/head-fixed/_Other/test_folder/by_session_folder/JC316L-2022-12-09-171925\processed/df_events_cond.pkl'],
-  ['//ettin/Magill_Lab/Teris/ASAP/expt_sessions/RE602-2023-03-16-091935/processed/df_events_cond.pkl'],
+  [settings.debug_folder + 'processed/df_events_cond.pkl'],
   'process_pycontrol')
 
 #%% Read pycontrol file
