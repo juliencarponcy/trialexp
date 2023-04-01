@@ -27,17 +27,25 @@ xr_session = xr.open_dataset(sinput.xr_session)
 
 figure_dir = soutput.trigger_photo_dir
 
-#%% plot all relative time 
+#%% plot all event-related data
 for k in xr_session.data_vars.keys():
-    if 'rel_time' in k:
+    da = xr_session[k]
+    if 'event_time' in da.coords:
+        df2plot = xr_session[[k,'success']].to_dataframe().reset_index()
+        
         fig, ax = plt.subplots(1,1,dpi=300, figsize=(6,6))
 
-        ax = sns.lineplot(x=k,hue='success',
-                    y='analog_1_df_over_f', data=xr_session)
+        ax = sns.lineplot(x='event_time',hue='success', y=k, data=df2plot)
         ax.set(xlabel=k, ylabel='Delta F/F')
 
         fig.savefig(os.path.join(figure_dir, f'{k}.png'), dpi=300, bbox_inches='tight')
 
+#%%
+da = xr_session[['hold_for_water_analog_1_df_over_f', 'success']]
 
+df2plot = da.to_dataframe()
+
+#%%
+sns.lineplot(x='event_time', y='hold_for_water_analog_1_df_over_f', data=df2plot)
 # %%
 xr_session.close()

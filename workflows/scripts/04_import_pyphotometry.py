@@ -104,7 +104,3 @@ xr_session = xr.merge([ds_condition, dataset_binned])
 
 xr_session.attrs.update(dataset_binned.attrs)
 xr_session.to_netcdf(soutput.xr_session, engine='h5netcdf')
-
-
-
-# %%
