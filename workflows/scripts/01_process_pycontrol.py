@@ -17,7 +17,6 @@ from workflows.scripts import settings
 #%% Load inputs
 
 (sinput, soutput) = getSnake(locals(), 'workflows/spout_bar_nov22.smk',
-#  ['//ettin/Magill_Lab/Julien/Data/head-fixed/_Other/test_folder/by_session_folder/JC316L-2022-12-09-171925\processed/df_events_cond.pkl'],
   [settings.debug_folder + 'processed/df_events_cond.pkl'],
   'process_pycontrol')
 
