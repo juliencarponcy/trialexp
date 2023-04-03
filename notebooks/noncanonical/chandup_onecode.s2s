@@ -9,6 +9,8 @@ var code% := 1;
 var mask%[256];
 var i%;
 
+FrontView(vh%);
+
 DlgCreate("Choose a Marker Channel");
 DlgChan(1, "Trigger channels", 8+16+32);
 DlgInteger(2, "Marker Filter Code for trigger",0, 255, 0, 0, 1);
