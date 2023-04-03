@@ -8,7 +8,6 @@ from trialexp.process.pycontrol.utils import *
 from trialexp.process.pycontrol.plot_utils import *
 from trialexp.process.pycontrol.session_analysis import Session # do not look used
 from trialexp.process.pycontrol.data_import import session_dataframe
-import sys
 from datetime import datetime
 from snakehelper.SnakeIOHelper import getSnake
 from pathlib import Path
