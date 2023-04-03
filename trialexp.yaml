@@ -34,7 +34,7 @@ dependencies:
   - xarray
   - pip:
     - git+https://github.com/teristam/snakehelper.git
-    - snopy
+    - sonpy
     - h5netcdf
     - snakemake
 
