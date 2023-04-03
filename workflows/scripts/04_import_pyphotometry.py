@@ -26,7 +26,7 @@ data_photometry = denoise_filter(data_photometry)
 data_photometry = motion_correction(data_photometry)
 data_photometry = compute_df_over_f(data_photometry, low_pass_cutoff=0.001)
 
-#%% Conver to xarray
+#%% Convert to xarray
 skip_var = ['analog_1_est_motion','analog_1_corrected', 'analog_1_baseline_fluo']
 dataset = photometry2xarray(data_photometry, skip_var = skip_var)
 
@@ -96,6 +96,12 @@ df_condition = df_condition[df_condition.index>0]
 ds_condition = xr.Dataset.from_dataframe(df_condition)
 xr_session = xr.merge([ds_condition, dataset_binned])
 
+#add in session_id so that we can combine multiple sessions easily later
 xr_session = xr_session.expand_dims({'session_id':[dataset.attrs['session_id']]})
+
 xr_session.attrs.update(dataset_binned.attrs)
+
+#Save the final dataset
 xr_session.to_netcdf(soutput.xr_session, engine='h5netcdf')
+
+# %%
