@@ -1,7 +1,7 @@
 # Utility functions for pycontrol and pyphotometry files processing
 
-from collections import defaultdict
 import shutil
+from collections import defaultdict, namedtuple
 from datetime import datetime
 from os import walk
 from os.path import isfile, join
@@ -16,8 +16,10 @@ from pandas import Timestamp
 from plotly.subplots import make_subplots
 from plotly.validators.scatter.marker import SymbolValidator
 
-from trialexp.process.data_import import Event, State
 from trialexp.process.pycontrol.spike2_export import Spike2Exporter
+
+Event = namedtuple('Event', ['time','name'])
+State = namedtuple('State', ['time','name'])
 
 ######## Analyzing event data
 

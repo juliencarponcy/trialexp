@@ -1,42 +1,38 @@
 # Python classes for importing pyControl data files and representing pyControl 
 # sessions and experiments.  Dependencies: Python 3.5+, Numpy.
-from cmath import isnan, nan
-
-import os
-from pathlib import Path
-import pickle
-import re
-import datetime
-import warnings
 import datetime
 import itertools
-from itertools import compress
-
+import os
+import pickle
+import re
+import warnings
+from cmath import isnan, nan
 from collections import namedtuple
+from itertools import compress
+from math import ceil
 from operator import itemgetter
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
-
-from math import ceil
-from scipy.signal import butter, filtfilt, decimate
-from scipy.stats import linregress, zscore
-
 import plotly.graph_objects as go
-from plotly.validators.scatter.marker import SymbolValidator
 from plotly.subplots import make_subplots
-
-from trialexp.utils.pycontrol_utilities import *
-from trialexp.utils.data_organisation import *
-from trialexp.process.pyphotometry.photometry_functional import *
-from trialexp.process.pyphotometry.utils import *
-from trialexp.utils.DLC_utilities import *
-from trialexp.utils.rsync import *
+from plotly.validators.scatter.marker import SymbolValidator
+from scipy.signal import butter, decimate, filtfilt
+from scipy.stats import linregress, zscore
 
 from trialexp.dataset_classes.trial_dataset_classes import *
 
-Event = namedtuple('Event', ['time','name'])
-State = namedtuple('State', ['time','name'])
+from trialexp.process.pyphotometry.photometry_functional import *
+from trialexp.process.pyphotometry.utils import *
+from trialexp.process.pycontrol.utils import *
+
+from trialexp.utils.data_organisation import *
+from trialexp.utils.DLC_utilities import *
+from trialexp.utils.pycontrol_utilities import *
+from trialexp.utils.rsync import *
+
+
 
 # Custom type, assess usefulness
 NoneType = type(None)
@@ -1493,8 +1489,9 @@ class Session():
                assert k in self.times.keys(), f"{k} is not found in self.time.keys()"
 
         if export_smrx:
-            from sonpy import lib as sp
             import time
+
+            from sonpy import lib as sp
             if smrx_filename is None:
                 raise Exception('smrx_filename is required')
             #TODO assert .smlx

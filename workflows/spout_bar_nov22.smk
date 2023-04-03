@@ -28,13 +28,14 @@ rule pycontrol_figures:
     output:
         event_histogram = report('{session_path}/{session_id}//processed/figures/event_histogram_{session_id}.png', 
                                     caption='report/event_histogram.rst', category='Plots' ),
+        rule_complete = touch('{session_path}/{session_id}/processed/log/pycontrol.done')
     script:
         'scripts/02_plot_pycontrol_data.py'
 
 rule export_spike2:
     input:
         pycontrol_dataframe = '{session_path}/{session_id}/processed/df_pycontrol.pkl',
-        df_photometry = '{session_path}/{session_id}/processed/df_photometry.nc'
+        df_photometry = '{session_path}/{session_id}/processed/xr_photometry.nc'
     output:
         spike2_file = '{session_path}/{session_id}/processed/spike2.smrx',
     script:
@@ -47,17 +48,26 @@ rule import_pyphotometry:
         trial_dataframe = '{session_path}/{session_id}/processed/df_trials.pkl',
         event_dataframe = '{session_path}/{session_id}/processed/df_events_cond.pkl',
         condition_dataframe = '{session_path}/{session_id}/processed/df_conditions.pkl',
-        photometry_folder = '{session_path}/{session_id}/photometry'
+        photometry_folder = '{session_path}/{session_id}/pyphotometry'
     output:
-        df_photometry = '{session_path}/{session_id}/processed/df_photometry.nc',
+        xr_photometry = '{session_path}/{session_id}/processed/xr_photometry.nc',
+        xr_session = '{session_path}/{session_id}/processed/xr_session.nc',
     script:
         'scripts/04_import_pyphotometry.py'
 
 rule photometry_figure:
     input:
-        df_photometry = '{session_path}/{session_id}/processed/df_photometry.nc',
+        xr_session = '{session_path}/{session_id}/processed/xr_session.nc',
     output:
         trigger_photo_dir= directory('{session_path}/{session_id}/processed/figures/photometry'),
-        done = touch('{session_path}/{session_id}/processed/task.done')
+        rule_complete = touch('{session_path}/{session_id}/processed/log/photometry.done')
     script:
         'scripts/05_plot_pyphotometry.py'
+
+rule final:
+    input:
+        photometry_done = '{session_path}/{session_id}/processed/log/photometry.done',
+        pycontrol_done = '{session_path}/{session_id}/processed/log/pycontrol.done',
+        spike2='{session_path}/{session_id}/processed/spike2.smrx'
+    output:
+        done = touch('{session_path}/{session_id}/processed/task.done')

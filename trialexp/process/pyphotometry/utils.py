@@ -1,22 +1,24 @@
 # Utility functions for pycontrol and pyphotometry files processing
 
+import itertools
 import json
+import logging
 
-from matplotlib import pyplot as plt
 import numpy as np
-from sklearn.mixture import GaussianMixture
-
-from sklearn.cluster import DBSCAN
-from sklearn.decomposition import PCA
-from sklearn.metrics import pairwise_distances
-from sklearn.preprocessing import StandardScaler
-
+import xarray as xr
+from matplotlib import pyplot as plt
+from scipy.interpolate import interp1d
 from scipy.optimize import curve_fit
 from scipy.signal import butter, filtfilt, medfilt
 from scipy.stats import linregress, zscore
+from sklearn.cluster import DBSCAN
+from sklearn.decomposition import PCA
+from sklearn.metrics import pairwise_distances
+from sklearn.mixture import GaussianMixture
+from sklearn.preprocessing import StandardScaler
 
+from trialexp.process.pycontrol.event_filters import extract_event_time
 from trialexp.utils.rsync import *
-import xarray as xr
 
 '''
 Most of the photometry data processing functions are based on the intial design
@@ -63,10 +65,16 @@ def motion_correction(photometry_dict: dict) -> dict:
     if any(['analog_1_filt' not in photometry_dict, 'analog_2_filt' not in photometry_dict]):
         raise Exception('Analog 1 and Analog 2 must be filtered before motion correction')
     
-    slope, intercept, r_value, p_value, std_err = linregress(x=photometry_dict['analog_2_filt'], y=photometry_dict['analog_1_filt'])
-    photometry_dict['analog_1_est_motion'] = intercept + slope * photometry_dict['analog_2_filt']
-    photometry_dict['analog_1_corrected'] = photometry_dict['analog_1_filt'] - photometry_dict['analog_1_est_motion']
-    
+    try:
+        slope, intercept, r_value, p_value, std_err = linregress(x=photometry_dict['analog_2_filt'], y=photometry_dict['analog_1_filt'])
+        photometry_dict['analog_1_est_motion'] = intercept + slope * photometry_dict['analog_2_filt']
+        photometry_dict['analog_1_corrected'] = photometry_dict['analog_1_filt'] - photometry_dict['analog_1_est_motion']
+    except ValueError:
+        print('Motion correction failed. Skipping motion correction')
+        # probably due to saturation , do not do motion correction
+        photometry_dict['analog_1_corrected'] = photometry_dict['analog_1_filt']
+
+
     return photometry_dict
 
 def compute_df_over_f(photometry_dict: dict, low_pass_cutoff: float = 0.001) -> dict:
@@ -485,3 +493,268 @@ def photometry2xarray(data_photometry, skip_var=None):
     dataset.attrs.update(attr_list)
     
     return dataset
+
+def resample_event(pyphoto_aligner, ref_time, event_time, event_value, fill_value=-1):
+    """
+    Resample an event to a reference time.
+
+    Parameters
+    ----------
+    pyphoto_aligner : object
+        An instance of the Rsync_aligner class.
+    ref_time : array-like
+        Reference time points.
+    event_time : array-like
+        Event time points.
+    event_value : array-like
+        Event values corresponding to the event time points.
+    fill_value : float, optional
+        Value used to fill in for requested points outside of the range of event_time. The default is -1.
+
+    Returns
+    -------
+    array-like
+        Resampled event values corresponding to the reference time points.
+        can contain NaN value if there is no overlap data
+    """
+    
+    new_time = pyphoto_aligner.A_to_B(event_time)
+    f = interp1d(new_time, event_value, kind = 'previous', 
+                bounds_error=False, fill_value=fill_value)
+    
+    return f(ref_time)
+
+
+def extract_event_data(trigger_timestamp, window, aligner, dataArray, sampling_rate, data_len =None, time_tolerance=5):
+    '''
+    Extract continous data around a timestamp. The original timestamp will be
+    aligned to the coordinate of the dataArray with aligner
+    
+    Parameters:
+        trigger_timestamp : float or int
+            Timestamp around which data has to be extracted, in ms
+        window : tuple
+            Tuple containing minimum and maximum value of time window for which data is to be extracted
+        aligner : object
+            Object containing A_to_B() method for alignment of timestamp
+        dataArray : array-like
+            Array containing data from which required data is to be extracted. It it assumed to have a time coordinate in ms
+        data_len : int, optional
+            If provided, checks for length of output data
+        time_tolerance: int, default=5
+            the minimum time difference in ms that must be matched between the trigger stampstamp and the time coordinate of the dataArray
+    
+    Returns:
+        data : numpy.ndarray
+            Array of continuous data around the timestamp
+        event_found : list
+            List of boolean values indicating if any event was found around the given timestamp
+
+    '''
+
+    
+    ts = aligner.A_to_B(trigger_timestamp)
+    ref_time = dataArray.time
+    data = []
+    event_found = []
+    
+    for t in ts:
+        d = abs((ref_time-t).data)
+        #Find the most close matched time stamp and extend it both ends 
+        min_time = np.min(d)
+        if min_time < time_tolerance:
+            min_idx = np.argmin(d)
+            start_idx = min_idx +int(window[0]/1000*sampling_rate)
+            end_idx = min_idx + int(window[1]/1000*sampling_rate)
+            data.append(dataArray.data[start_idx:end_idx])
+            event_found.append(True)
+        else:
+            x = np.zeros((int((window[1]-window[0])/1000*sampling_rate),))
+            data.append([x])
+            event_found.append(False)
+            
+    # align to the longest element
+    # data =  np.vstack(list(itertools.zip_longest(*data)))
+    data  = np.vstack(data)
+    
+    # if data_len is provide, perform additional check or correct the data length
+    if data_len is not None:
+        if not data.shape[0]==data_len:
+            data = data[:data_len,:]
+    
+    return data.astype(float),event_found #only float support NA
+
+#%% Calulate the relative time
+def get_rel_time(trigger_timestamp, window, aligner, ref_time):
+    # Calculate the time relative to a trigger timestamp)
+    ts = aligner.A_to_B(trigger_timestamp)
+    time_relative = np.ones_like(ref_time)*np.NaN
+    
+    for t in ts: 
+        d = ref_time-t
+        idx = (d>window[0]) & (d<window[1])
+        time_relative[idx] = d[idx]
+        
+    return time_relative
+
+
+def bin_rel_time(xr_dataset, bin_size):
+    """Bins relative time in the input Xarray dataset to the given bin size.
+    
+    
+    we need to do some special treatment to the relative time because the time stamp for that may not fall in the 
+    same time bin, and hence the mean value of them will be different for different trial
+    this will create problem with plotting and analysis later, so we need to fix it now
+
+    Args:
+        xr_dataset (xarray.core.dataset.Dataset): The input Xarray dataset.
+        bin_size (float): The size of each bin.
+
+    Returns:
+        xarray.core.dataset.Dataset: The binned Xarray dataset.
+    """
+    for k in xr_dataset.data_vars.keys():
+        if 'rel_time' in k:
+            xr_dataset[k] = np.round(xr_dataset[k]/bin_size)*bin_size
+            
+    return xr_dataset
+
+
+def bin_dataset(xr_dataset, bin_size, sampling_fs=1000):
+    """
+    Bin the input xarray dataset by grouping data within specified time intervals.
+    
+    Args:
+    xr_dataset (xarray.Dataset): Input xarray dataset to be binned
+    time_bin (float): Width of each time bin for grouping data, in ms
+    
+    Returns:
+    dataset_binned (xarray.Dataset): Binned xarray dataset
+    """
+    
+    ds_factor = int((bin_size/1000)*sampling_fs)
+    logging.debug(f'Downsampling testby {ds_factor}')
+
+    dataset_binned = xr_dataset.coarsen(time=ds_factor, boundary='trim').mean()
+
+    dataset_binned = bin_rel_time(dataset_binned, bin_size)
+    dataset_binned.attrs.update(xr_dataset.attrs)
+    
+    return dataset_binned
+
+
+def make_condition_xarray(df_condition, dataset_binned):
+    """
+    Merge condition for each trial to the xarray
+    
+    Args:
+    -----------------------------
+    df_condition : pd.DataFrame
+        Dataframe containing trial specific variables (e.g. condition to be analyzed)
+    dataset_binned : xr.dataset
+        Xarray dataset that has already been binned
+    
+    Returns:
+    -----------------------------
+    xr_condition : xr.dataset
+        Dataset with the condition merged in as a new dimension
+    
+    """
+    
+    df_trial_nb = dataset_binned.trial_nb.to_dataframe()
+    df_trial_nb['trial_nb'] = df_trial_nb['trial_nb'].astype(np.int16)
+    df_trial_condition = df_trial_nb.merge(df_condition, on='trial_nb')
+    df_trial_condition['time'] = dataset_binned.time
+    df_trial_condition = df_trial_condition.set_index('time')
+    xr_condition = df_trial_condition.to_xarray()
+    
+    return xr_condition
+
+
+
+def make_rel_time_xr(event_time, windows, pyphoto_aligner, ref_time):
+    time_rel = get_rel_time(event_time, windows, pyphoto_aligner, ref_time)
+
+    rel_time = xr.DataArray(
+        time_rel, coords={'time':ref_time}, dims=('time')
+    )
+    
+    return rel_time
+
+def make_event_xr(event_time, trial_window, pyphoto_aligner,
+                  event_time_coordinate,  dataArray, sampling_rate):
+    '''
+    Create xarray.DataArray object for the continuous data around provided timestamp. 
+
+    Parameters:
+        event_time : array_like
+            List of timestamps around which continuous data is to be extracted
+            it is assumed to have a index corresponds to the trial number
+        trial_window : tuple
+            Tuple containing minimum and maximum value of time window for which data is to be extracted
+        pyphoto_aligner : Object
+            Object containing A_to_B() method for alignment of timestamp
+        event_time_coordinate : array_like
+            List of trial numbers corresponding to each event_time
+        dataArray : array_like
+            Array containing time and data information
+            
+    Returns:
+        da : xarray.DataArray
+            DataArray object containing continuous data around the provided timestamp
+    
+    Note:
+        It returns only data from extract_event_data() function ignoring the event_found.
+    '''
+    assert event_time.index.name =='trial_nb', 'event_time should have a trial_nb index'
+    data, _ = extract_event_data(event_time, trial_window, pyphoto_aligner,
+                                dataArray, sampling_rate)
+    da = xr.DataArray(
+        data, coords={'event_time':event_time_coordinate, 
+                      'trial_nb':event_time.index.values},
+                        dims=('trial_nb','event_time'))
+        
+    return da
+
+def add_event_data(df_event, filter_func, trial_window, aligner,
+                   dataset, event_time_coordinate, data_var_name, 
+                   event_name, sampling_rate, filter_func_kwargs={}):
+    '''
+    Add continuous data around provided timestamp to a dataset.
+
+    Parameters:
+        df_event : pandas.DataFrame
+            DataFrame containing event and timestamp information
+        filter_func : function
+            Function to filter particular events from the dataframe
+        trial_window : tuple
+            Tuple containing minimum and maximum value of time window for which data is to be extracted.
+        aligner : Object
+            Object containing A_to_B() method for alignment of timestamp
+        dataset : xarray.Dataset
+            Dataset in which data is to be added
+        event_time_coordinate : array_like
+            relative time coordinate in ms of the continous data
+        data_var_name : str
+            The variable name of the data in `dataset`.
+        event_name : str
+            name of the event
+        sampling_rate: int
+            sampling rate of the continous signal
+        filter_func_args: dict
+            argument that should be passed to the filter function
+        
+    Returns:
+        None
+
+    Note:
+        It updates the given `dataset` with a new variable that contains continuous data around 
+        each timestamp.  It requires two supporting functions make_event_xr() & extract_event_time().
+    '''
+
+    event_time = extract_event_time(df_event, filter_func, filter_func_kwargs)
+    xr_event_data = make_event_xr(event_time, trial_window, aligner,
+                                            event_time_coordinate,
+                                            dataset[data_var_name], sampling_rate)
+    dataset[f'{event_name}_{data_var_name}'] = xr_event_data
+# %%

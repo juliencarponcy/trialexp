@@ -5,20 +5,16 @@ Export event data to spike2
 import pandas as pd 
 from trialexp.process.pycontrol.utils import export_session
 from snakehelper.SnakeIOHelper import getSnake
-
+from workflows.scripts import settings
 
 #%%
 
 (sinput, soutput) = getSnake(locals(), 'workflows/spout_bar_nov22.smk',
-#   ['Z:/Julien/Data/head-fixed/_Other/test_folder/by_session_folder/JC316L-2022-12-07-163252\processed/spike2.smrx'],
-    ['Z:\Teris\ASAP\expt_sessions\kms064-2023-02-08-100449\processed\spike2.smrx'],
+    [settings.debug_folder +'\processed\spike2.smrx'],
   'export_spike2')
 
 #%% Load data
 df_pycontrol = pd.read_pickle(sinput.pycontrol_dataframe)
-
-
-#%%
 
 #remove all state change event
 df_pycontrol = df_pycontrol.dropna(subset='name')

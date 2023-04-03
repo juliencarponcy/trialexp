@@ -9,7 +9,6 @@ from datetime import datetime
 import warnings
 import itertools
 
-from collections import namedtuple
 from operator import itemgetter
 
 import numpy as np
@@ -18,7 +17,6 @@ import pandas as pd
 from math import ceil
 from scipy.signal import butter, filtfilt, decimate
 from scipy.stats import linregress, zscore
-from trialexp.process.data_import import Event
 from trialexp.process.pycontrol.utils import find_if_event_within_timelim, find_last_time_before_list
 
     
@@ -121,7 +119,10 @@ def get_task_specs(tasks_trig_and_events, task_name):
 
     # match triggers (events/state used for t0)
     triggers = np.array2string(tasks_trig_and_events['triggers'][tasks_trig_and_events['task'] == task_name].values).strip("'[]").split('; ')
-            
+    if triggers[0] =='':
+        raise ValueError(f'Cannot found the task  {task_name} in tasks_params!')
+    
+           
     # events to extract
     events_to_process = np.array2string(tasks_trig_and_events['events'][tasks_trig_and_events['task'] == task_name].values).strip("'[]").split('; ')
     # printed line in task file indicating
@@ -286,7 +287,8 @@ def compute_success(df_events_trials, df_cond, task_name, triggers=None, timelim
 
     # To perform for delayed tasks (check whether a US_end_timer was preceded by a spout)
     elif task_name in ['reaching_go_spout_bar_dual_all_reward_dec22', 
-        'reaching_go_spout_bar_dual_dec22', 'reaching_go_spout_bar_nov22']:
+        'reaching_go_spout_bar_dual_dec22', 'reaching_go_spout_bar_nov22',
+        'reaching_go_spout_bar_mar23']:
 
         if 'spout_trial_time' in df_events.columns and 'US_end_timer_trial_time' in df_events.columns:
 
