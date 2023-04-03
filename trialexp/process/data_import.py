@@ -22,8 +22,11 @@ from scipy.signal import butter, decimate, filtfilt
 from scipy.stats import linregress, zscore
 
 from trialexp.dataset_classes.trial_dataset_classes import *
+
 from trialexp.process.pyphotometry.photometry_functional import *
 from trialexp.process.pyphotometry.utils import *
+from trialexp.process.pycontrol.utils import *
+
 from trialexp.utils.data_organisation import *
 from trialexp.utils.DLC_utilities import *
 from trialexp.utils.pycontrol_utilities import *
