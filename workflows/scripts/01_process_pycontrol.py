@@ -52,7 +52,8 @@ df_events_trials, df_events = extract_trial_by_trigger(df_pycontrol, triggers[0]
 
 df_conditions = compute_conditions_by_trial(df_events_trials, conditions)
 
-df_conditions = compute_success(df_events_trials, df_conditions, task_name, timelim =timelim)
+df_conditions = compute_success(df_events_trials, df_conditions, task_name, 
+                                triggers, timelim)
 
 #%%  Merge condition back with event dataframe
 
