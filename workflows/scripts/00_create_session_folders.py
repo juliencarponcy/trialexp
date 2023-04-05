@@ -15,66 +15,13 @@ import pandas as pd
 from tqdm.auto import tqdm
 import time
 
-from trialexp.process.pycontrol.data_import import session_dataframe
-from trialexp.process.pyphotometry.utils import import_ppd
-from trialexp.utils.rsync import Rsync_aligner, RsyncError
+from trialexp.utils.pycontrol_utilities import parse_pycontrol_fn, create_sync
+from trialexp.utils.pyphotometry_utilities import parse_pyhoto_fn
+from trialexp.utils.ephys_utilities import parse_openephys_folder, get_recordings_properties
+
+
 from tqdm import tqdm
 
-#%% Build a dataframe of the photometry files for matching later
-def parse_pyhoto_fn(fn):
-    pattern = r'(\w+)-(.*)\.ppd'
-    m = re.search(pattern, fn.name)
-    if m:
-        animal_id = m.group(1)
-        date_string = m.group(2)
-        expt_datetime = datetime.strptime(date_string, "%Y-%m-%d-%H%M%S")
-        
-        return {'animal_id':animal_id, 'path':fn, 
-                'filename':fn.stem, 
-                'timestamp':expt_datetime}
-
-
-#%%
-def parse_pycontrol_fn(fn):
-    pattern = r'(\w+)-(.*)\.txt'
-    m = re.search(pattern, fn.name)
-    if m:
-        animal_id = m.group(1)
-        date_string = m.group(2)
-        expt_datetime = datetime.strptime(date_string, "%Y-%m-%d-%H%M%S")
-        
-        try:
-            df = session_dataframe(fn)
-            session_length = df.time.iloc[-1]
-            
-            return {'animal_id':animal_id, 
-                    'path':fn,                 
-                    'session_id':fn.stem,
-                    'filename':fn.stem, 
-                    'timestamp':expt_datetime,
-                    'session_length': session_length }
-        except KeyError:
-            return {'animal_id':animal_id, 
-                    'path':fn,                 
-                    'session_id':fn.stem,
-                    'filename':fn.stem, 
-                    'timestamp':expt_datetime,
-                    'session_length': 0 }
-# %%
-def create_sync(pycontrol_file, pyphotometry_file):
-    with warnings.catch_warnings():
-        warnings.simplefilter('ignore')
-        pyphotometry_file = import_ppd(pyphotometry_file)
-        data_pycontrol = session_dataframe(pycontrol_file)
-
-        photo_rsync = pyphotometry_file['pulse_times_2']
-        pycontrol_rsync = data_pycontrol[data_pycontrol.name=='rsync'].time
-        
-        try:
-            return Rsync_aligner(pulse_times_A= photo_rsync, 
-            pulse_times_B= pycontrol_rsync, plot=False) #align pycontrol time to pyphotometry time
-        except (RsyncError, ValueError):
-            return None
         
 def copy_if_not_exist(src, dest):
     if not (dest/src.name).exists():
@@ -91,7 +38,7 @@ tasks = tasks_params_df.task.values.tolist()
 for task_id, task in enumerate(tasks):
 
     print(f'task {task_id+1}/{len(tasks)}: {task}')
-    export_base_path = Path(f'/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/_Other/test_folder/by_session_folder/{task}')
+    export_base_path = Path(f'/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/by_sessions/{task}')
 
     pycontrol_folder = Path(f'/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/pycontrol/{task}')
     pyphoto_folder = Path(f'/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/pyphotometry/data/{task}')

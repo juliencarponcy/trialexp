@@ -1,6 +1,7 @@
 # Utility functions for pycontrol and pyphotometry files processing
+from re import search
+from datetime import datetime
 
-import json
 import pandas as pd
 from matplotlib import pyplot as plt
 import numpy as np
@@ -15,6 +16,19 @@ from scipy.optimize import curve_fit
 from scipy.signal import butter, filtfilt, medfilt
 from trialexp.utils.rsync import *
 
+
+def parse_pyhoto_fn(fn):
+    pattern = r'(\w+)-(.*)\.ppd'
+    m = search(pattern, fn.name)
+    if m:
+        animal_id = m.group(1)
+        date_string = m.group(2)
+        expt_datetime = datetime.strptime(date_string, "%Y-%m-%d-%H%M%S")
+        
+        return {'animal_id':animal_id, 'path':fn, 
+                'filename':fn.stem, 
+                'timestamp':expt_datetime}    
+    
 #----------------------------------------------------------------------------------
 # Plotting
 #----------------------------------------------------------------------------------

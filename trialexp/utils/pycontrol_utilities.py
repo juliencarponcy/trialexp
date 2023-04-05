@@ -7,13 +7,55 @@ to find events timestamps for differential trial alignment.
 
 It is possibly best to store the remaining methods in appropriate modules
 '''
-
+import numpy as np
+import warnings
 from datetime import datetime
 from re import search
 
-import numpy as np
+from trialexp.process.pycontrol.data_import import session_dataframe
+from trialexp.process.pyphotometry.utils import import_ppd
+from trialexp.utils.rsync import Rsync_aligner, RsyncError
 
+def create_sync(pycontrol_file, pyphotometry_file):
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore')
+        pyphotometry_file = import_ppd(pyphotometry_file)
+        data_pycontrol = session_dataframe(pycontrol_file)
 
+        photo_rsync = pyphotometry_file['pulse_times_2']
+        pycontrol_rsync = data_pycontrol[data_pycontrol.name=='rsync'].time
+        
+        try:
+            return Rsync_aligner(pulse_times_A= photo_rsync, 
+            pulse_times_B= pycontrol_rsync, plot=False) #align pycontrol time to pyphotometry time
+        except (RsyncError, ValueError):
+            return None
+
+def parse_pycontrol_fn(fn):
+    pattern = r'(\w+)-(.*)\.txt'
+    m = search(pattern, fn.name)
+    if m:
+        animal_id = m.group(1)
+        date_string = m.group(2)
+        expt_datetime = datetime.strptime(date_string, "%Y-%m-%d-%H%M%S")
+        
+        try:
+            df = session_dataframe(fn)
+            session_length = df.time.iloc[-1]
+            
+            return {'animal_id':animal_id, 
+                    'path':fn,                 
+                    'session_id':fn.stem,
+                    'filename':fn.stem, 
+                    'timestamp':expt_datetime,
+                    'session_length': session_length }
+        except KeyError:
+            return {'animal_id':animal_id, 
+                    'path':fn,                 
+                    'session_id':fn.stem,
+                    'filename':fn.stem, 
+                    'timestamp':expt_datetime,
+                    'session_length': 0 }
 '''
 following is depracted until possible re-use elsewhere
 #----------------------------------------------------------------------------------
