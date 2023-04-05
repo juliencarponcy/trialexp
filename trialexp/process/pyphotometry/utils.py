@@ -557,19 +557,25 @@ def extract_event_data(trigger_timestamp, window, aligner, dataArray, sampling_r
     ref_time = dataArray.time
     data = []
     event_found = []
+    pre_time_shift = int(window[0]/1000*sampling_rate)
+    post_time_shift = int(window[1]/1000*sampling_rate)
     
     for t in ts:
         d = abs((ref_time-t).data)
         #Find the most close matched time stamp and extend it both ends 
-        min_time = np.min(d)
-        if min_time < time_tolerance:
-            min_idx = np.argmin(d)
-            start_idx = min_idx +int(window[0]/1000*sampling_rate)
-            end_idx = min_idx + int(window[1]/1000*sampling_rate)
+        min_idx = np.argmin(d)
+        min_time = d[min_idx]
+        
+        start_idx = min_idx + pre_time_shift
+        end_idx = min_idx + post_time_shift
+        
+        # make sure we have enough data to extract
+        if min_time < time_tolerance and (start_idx>0) and (end_idx < len(dataArray.data)):
+
             data.append(dataArray.data[start_idx:end_idx])
             event_found.append(True)
         else:
-            x = np.zeros((int((window[1]-window[0])/1000*sampling_rate),))
+            x = np.zeros((int((window[1]-window[0])/1000*sampling_rate),))*np.NaN
             data.append([x])
             event_found.append(False)
             
@@ -706,6 +712,9 @@ def make_event_xr(event_time, trial_window, pyphoto_aligner,
     Note:
         It returns only data from extract_event_data() function ignoring the event_found.
     '''
+    if len(event_time)==0:
+        return None
+    
     assert event_time.index.name =='trial_nb', 'event_time should have a trial_nb index'
     data, _ = extract_event_data(event_time, trial_window, pyphoto_aligner,
                                 dataArray, sampling_rate)
@@ -756,5 +765,7 @@ def add_event_data(df_event, filter_func, trial_window, aligner,
     xr_event_data = make_event_xr(event_time, trial_window, aligner,
                                             event_time_coordinate,
                                             dataset[data_var_name], sampling_rate)
-    dataset[f'{event_name}_{data_var_name}'] = xr_event_data
+    
+    if xr_event_data is not None:
+        dataset[f'{event_name}_{data_var_name}'] = xr_event_data
 # %%

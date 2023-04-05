@@ -23,4 +23,8 @@ def get_first_event_from_name(df_trial, evt_name):
 def extract_event_time(df_event, filter_func, filter_func_kwargs, groupby_col='trial_nb'):
     #extract event on a trial based on a filter function
     df_event_filtered = df_event.groupby(groupby_col,group_keys=True).apply(filter_func, **filter_func_kwargs)
-    return df_event_filtered.time
+    if len(df_event_filtered)>0:
+        return df_event_filtered.time
+    else:
+        print(f'No event for {filter_func.__name__} found')
+        return []
