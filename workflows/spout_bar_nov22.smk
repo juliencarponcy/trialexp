@@ -5,7 +5,7 @@ configfile : 'workflows/config/config.yaml'
 # report: 'report/workflow.rst'
 
 rule all:
-    input: expand('{path}/processed/task.done', path = Path(config['session_root_dir']).glob('*/*'))
+    input: expand('{path}/processed/task.done', path = Path(config['session_root_dir']).glob('lick_go_nogo_unconditionned_opto/*'))
     
 rule process_pycontrol:
     input:
@@ -26,8 +26,7 @@ rule pycontrol_figures:
     log:
         '{session_path}/{task}/{session_id}/processed/log/pycontrol_figures.log'
     output:
-        event_histogram = report('{session_path}/{task}/{session_id}//processed/figures/event_histogram_{session_id}.png', 
-                                    caption='report/event_histogram.rst', category='Plots' ),
+        event_histogram = '{session_path}/{task}/{session_id}//processed/figures/event_histogram.png', 
         rule_complete = touch('{session_path}/{task}/{session_id}/processed/log/pycontrol.done')
     script:
         'scripts/02_plot_pycontrol_data.py'
@@ -35,7 +34,6 @@ rule pycontrol_figures:
 rule export_spike2:
     input:
         pycontrol_dataframe = '{session_path}/{task}/{session_id}/processed/df_pycontrol.pkl',
-        df_photometry = '{session_path}/{task}/{session_id}/processed/xr_photometry.nc'
     output:
         spike2_file = '{session_path}/{task}/{session_id}/processed/spike2.smrx',
     script:
