@@ -52,6 +52,8 @@ rule import_pyphotometry:
     output:
         xr_photometry = '{session_path}/{task}/{session_id}/processed/xr_photometry.nc',
         xr_session = '{session_path}/{task}/{session_id}/processed/xr_session.nc',
+    log:
+        '{session_path}/{task}/{session_id}/processed/log/import_pyphotometry.log'
     script:
         'scripts/04_import_pyphotometry.py'
 
@@ -64,9 +66,18 @@ rule photometry_figure:
     script:
         'scripts/05_plot_pyphotometry.py'
 
+
+def photometry_input(wildcards):
+    #determine if photometry needs to run in the current folder
+    ppd_files = glob(f'{wildcards.session_path}/{wildcards.task}/{wildcards.session_id}/pyphotometry/*.ppd')
+    if len(ppd_files)>0:
+        return f'{wildcards.session_path}/{wildcards.task}/{wildcards.session_id}/processed/log/photometry.done'
+    else:
+        return []
+
 rule final:
     input:
-        photometry_done = '{session_path}/{task}/{session_id}/processed/log/photometry.done',
+        photometry_done = photometry_input,
         pycontrol_done = '{session_path}/{task}/{session_id}/processed/log/pycontrol.done',
         spike2='{session_path}/{task}/{session_id}/processed/spike2.smrx'
     output:
