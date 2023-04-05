@@ -17,6 +17,7 @@ from plotly.subplots import make_subplots
 from plotly.validators.scatter.marker import SymbolValidator
 
 from trialexp.process.pycontrol.spike2_export import Spike2Exporter
+from pathlib import Path
 
 Event = namedtuple('Event', ['time','name'])
 State = namedtuple('State', ['time','name'])
@@ -28,8 +29,17 @@ def parse_session_dataframe(df_session):
     df_events = df_session[(df_session.type!='info')]
     info = df_session[df_session.type=='info']
     info = dict(zip(info.name, info.value))
+    
+    # error correction for some task name
+    if 'pycontrol_share' in info['Task name']:
+        #the full path is stored, only take the last bit
+        taskname = Path(info['Task name']).parts[-1]
+        info['Task name'] = taskname
+    
     df_events = df_events.drop(columns='duration')
     df_events.attrs.update(info)
+    
+    
     
     return df_events
 
