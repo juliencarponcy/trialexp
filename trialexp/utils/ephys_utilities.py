@@ -1,4 +1,4 @@
-import re
+from re import search, split
 from pathlib import Path
 from datetime import datetime, timedelta
 
@@ -9,14 +9,21 @@ from neo.rawio.openephysbinaryrawio import explore_folder
 from trialexp.utils.rsync import *
 
 def parse_openephys_folder(fn):
-    m = re.split('_', fn)
-    if m:
-        animal_id = m[0]
+    m = split('_', fn)
+    if isinstance(m,list) and len(m) >=3:
+        subject_name = m[0]
+        pattern_id = r'(\d+)'
+        id = search(pattern_id, subject_name)
+        if id:
+            subject_id = id.group(1)
+        else:
+            subject_id = None
         date_string = m[1]
         time_string = m[2]
         expt_datetime = datetime.strptime(date_string+'_'+time_string, "%Y-%m-%d_%H-%M-%S")
         
-        return {'animal_id':animal_id,
+        return {'subject_name': subject_name, 
+                'subject_id': subject_id,
                 'foldername':fn, 
                 'exp_datetime':expt_datetime}
 
@@ -80,4 +87,7 @@ def get_recordings_properties(ephys_base_path, fn):
     return pd.DataFrame(recordings_properties)
 
 def get_ephys_rsync(recordings_properties: pd.DataFrame, rsync_ephys_chan_idx: int = 2):
-    ...
+    TTL_folder = recordings_properties.nidaq_TTL_path
+    event_array = np.load(Path(TTL_folder, 'states.npy'))
+    ts_array = np.load(Path(TTL_folder, 'timestamps.npy'))
+    rsync_ephys_ts = ts_array[event_array == rsync_ephys_chan_idx]

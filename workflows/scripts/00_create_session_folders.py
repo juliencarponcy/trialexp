@@ -42,10 +42,11 @@ for task_id, task in enumerate(tasks):
 
     pycontrol_folder = Path(f'/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/pycontrol/{task}')
     pyphoto_folder = Path(f'/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/pyphotometry/data/{task}')
+    ephys_base_path = '/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/_Other/test_folder_ephys'
 
     pycontrol_files = list(pycontrol_folder.glob('*.txt'))
     pyphoto_files = list(pyphoto_folder.glob('*.ppd'))
-
+    open_ephys_folders = os.listdir(Path(ephys_base_path))
 
     df_pycontrol = pd.DataFrame(list(map(parse_pycontrol_fn, pycontrol_files)))
     try:
@@ -55,7 +56,10 @@ for task_id, task in enumerate(tasks):
         continue
 
     df_pyphoto = pd.DataFrame(list(map(parse_pyhoto_fn, pyphoto_files)))
-
+    all_parsed_ephys_folders = list(map(parse_openephys_folder, open_ephys_folders))
+    # remove unsuccessful ephys folders parsing 
+    parsed_ephys_folders = [result for result in all_parsed_ephys_folders if result is not None]
+    df_ephys_exp = pd.DataFrame(parsed_ephys_folders)
     # Match
     #Try to match pycontrol file together with pyphotometry file
 
@@ -63,31 +67,38 @@ for task_id, task in enumerate(tasks):
     matched_fn  = []
 
     for _, row in df_pycontrol.iterrows():
-        try:
-            min_td = np.min(abs(row.timestamp - df_pyphoto.timestamp))
-            idx = np.argmin(abs(row.timestamp - df_pyphoto.timestamp))
+        
+        # will only compute time diff on matching subject_id
+        if not df_pyphoto.empty:
+            df_pyphoto_subject = df_pyphoto[df_pyphoto.subject_id == row.subject_id]
+        else:
+            matched_path.append(None)
+            matched_fn.append(None)
+            continue
 
-            if min_td < timedelta(minutes=5):
-                matched_path.append(df_pyphoto.iloc[idx].path)
-                matched_fn.append(df_pyphoto.iloc[idx].filename)
+        if not df_pyphoto_subject.empty:
+            min_td = np.min(abs(row.timestamp - df_pyphoto_subject.timestamp))
+            idx = np.argmin(abs(row.timestamp - df_pyphoto_subject.timestamp))
+
+            if min_td < timedelta(minutes=15):
+                matched_path.append(df_pyphoto_subject.iloc[idx].path)
+                matched_fn.append(df_pyphoto_subject.iloc[idx].filename)
             else:
                 matched_path.append(None)
                 matched_fn.append(None)
-
-        except AttributeError:
-            print(f'error while computing timestamp difference with photometry: {row.filename}')
+        else:
             matched_path.append(None)
             matched_fn.append(None)
 
     df_pycontrol['pyphoto_path'] = matched_path
     df_pycontrol['pyphoto_filename'] = matched_fn
-    df_pycontrol = df_pycontrol[(df_pycontrol.animal_id!='00') & (df_pycontrol.animal_id!='01')] # do not copy the test data
+    df_pycontrol = df_pycontrol[(df_pycontrol.subject_id!='00') & (df_pycontrol.subject_id!='01')] # do not copy the test data
     df_pycontrol = df_pycontrol.dropna(subset='pyphoto_path')
 
     for i in tqdm(range(len(df_pycontrol))):
         row = df_pycontrol.iloc[i]
         session_id = row.session_id
-        animal_id = row.animal_id
+        subject_id = row.subject_id
         
         target_pycontrol_folder = Path(export_base_path, session_id, 'pycontrol')
         target_pyphoto_folder = Path(export_base_path, session_id, 'pyphotometry')

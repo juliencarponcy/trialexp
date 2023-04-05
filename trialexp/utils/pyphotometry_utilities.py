@@ -21,11 +21,19 @@ def parse_pyhoto_fn(fn):
     pattern = r'(\w+)-(.*)\.ppd'
     m = search(pattern, fn.name)
     if m:
-        animal_id = m.group(1)
+        subject_name = m.group(1)
+        pattern_id = r'(\d+)'
+        id = search(pattern_id, subject_name)
+        if id:
+            subject_id = id.group(1)
+        else:
+            subject_id = None
         date_string = m.group(2)
         expt_datetime = datetime.strptime(date_string, "%Y-%m-%d-%H%M%S")
         
-        return {'animal_id':animal_id, 'path':fn, 
+        return {'subject_name': subject_name, 
+                'subject_id': subject_id,
+                'path':fn, 
                 'filename':fn.stem, 
                 'timestamp':expt_datetime}    
     
