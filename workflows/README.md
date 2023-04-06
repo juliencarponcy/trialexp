@@ -16,7 +16,7 @@ The snakemake workflow may contain additional dependency requirement. You will n
 ` conda env update -f trialexp.yaml`
 
 ## Configuration
-- Specify the root of your session-based folder and project folder in the `.env` file
+Specify the root of your session-based folder and project folder in the `.env` file
     ```
     SNAKEMAKE_DEBUG_ROOT=<your project root folder here>
     SESSION_ROOT_FOLDER=<the path of the by_session folder>
