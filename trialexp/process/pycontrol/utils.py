@@ -33,14 +33,13 @@ def parse_session_dataframe(df_session):
     # error correction for some task name
     if 'pycontrol_share' in info['Task name']:
         #the full path is stored, only take the last bit
-        taskname = Path(info['Task name']).parts[-1]
+        # taskname = Path(info['Task name']).parts[-1]
+        taskname = (info['Task name']).split('\\')[-1]
         info['Task name'] = taskname
     
     df_events = df_events.drop(columns='duration')
     df_events.attrs.update(info)
-    
-    
-    
+
     return df_events
 
 def print2event(df_events, conditions):

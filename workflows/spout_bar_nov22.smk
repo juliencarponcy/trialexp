@@ -1,11 +1,16 @@
 from glob import glob
 from pathlib import Path
+import os
+from dotenv import load_dotenv
 
-configfile : 'workflows/config/config.yaml'
-# report: 'report/workflow.rst'
+load_dotenv()
+
+envvars:
+    'SNAKEMAKE_DEBUG_ROOT',
+    'SESSION_ROOT_FOLDER'
 
 rule all:
-    input: expand('{path}/processed/task.done', path = Path(config['session_root_dir']).glob('lick_go_nogo_unconditionned_opto/*'))
+    input: expand('{path}/processed/task.done', path = Path(os.environ['SESSION_ROOT_FOLDER']).glob('lick_go_nogo_unconditionned_opto/*'))
     
 rule process_pycontrol:
     input:
@@ -22,11 +27,11 @@ rule process_pycontrol:
 
 rule pycontrol_figures:
     input:
-        event_dataframe = '{session_path}/{task}/{session_id}//processed/df_events_cond.pkl'
+        event_dataframe = '{session_path}/{task}/{session_id}/processed/df_events_cond.pkl'
     log:
         '{session_path}/{task}/{session_id}/processed/log/pycontrol_figures.log'
     output:
-        event_histogram = '{session_path}/{task}/{session_id}//processed/figures/event_histogram.png', 
+        event_histogram = '{session_path}/{task}/{session_id}/processed/figures/event_histogram.png', 
         rule_complete = touch('{session_path}/{task}/{session_id}/processed/log/pycontrol.done')
     script:
         'scripts/02_plot_pycontrol_data.py'
@@ -68,6 +73,7 @@ rule photometry_figure:
 def photometry_input(wildcards):
     #determine if photometry needs to run in the current folder
     ppd_files = glob(f'{wildcards.session_path}/{wildcards.task}/{wildcards.session_id}/pyphotometry/*.ppd')
+    print('Searching for ppd file', ppd_files)
     if len(ppd_files)>0:
         return f'{wildcards.session_path}/{wildcards.task}/{wildcards.session_id}/processed/log/photometry.done'
     else:

@@ -1,3 +1,7 @@
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
 ######################
 ## Analysis settings
 
@@ -6,8 +10,7 @@ timelim = [1000, 4000] # in ms
 
 #################
 ## Debug settings
-
-# debug_folder = r'//ettin/Magill_Lab/Teris/ASAP/expt_sessions/kms063-2023-02-27-164426/'
-# debug_folder = r'//ettin/Magill_Lab/Teris/ASAP/expt_sessions/kms058-2023-03-07-104332/'
-
-debug_folder = r'//ettin/Magill_Lab/Julien/Data/head-fixed/by_sessions/cued_uncued_oct22/kms047-2022-10-10-155638/'
+root_folder = os.environ.get('SESSION_ROOT_FOLDER')
+if root_folder=='':
+    print(f'You should set the environmental variable SESSION_ROOT_FOLDER first')
+debug_folder = root_folder+ r'/lick_go_nogo_unconditionned_opto/JC290PS-2022-02-02-104625'
