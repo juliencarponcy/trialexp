@@ -35,18 +35,18 @@ tasks = tasks_params_df.task.values.tolist()
 
 # %%
 
-for task_id, task in enumerate(tasks):
+for task_id, task in enumerate(tasks[23:]):
 
     print(f'task {task_id+1}/{len(tasks)}: {task}')
     export_base_path = Path(f'/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/by_sessions/{task}')
 
     pycontrol_folder = Path(f'/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/pycontrol/{task}')
     pyphoto_folder = Path(f'/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/pyphotometry/data/{task}')
-    ephys_base_path = '/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/_Other/test_folder_ephys'
+    ephys_base_path = Path(f'/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/openephys')
 
     pycontrol_files = list(pycontrol_folder.glob('*.txt'))
     pyphoto_files = list(pyphoto_folder.glob('*.ppd'))
-    open_ephys_folders = os.listdir(Path(ephys_base_path))
+    open_ephys_folders = os.listdir(ephys_base_path)
 
     df_pycontrol = pd.DataFrame(list(map(parse_pycontrol_fn, pycontrol_files)))
     try:
@@ -60,38 +60,68 @@ for task_id, task in enumerate(tasks):
     # remove unsuccessful ephys folders parsing 
     parsed_ephys_folders = [result for result in all_parsed_ephys_folders if result is not None]
     df_ephys_exp = pd.DataFrame(parsed_ephys_folders)
+    
     # Match
     #Try to match pycontrol file together with pyphotometry file
-
-    matched_path = []
-    matched_fn  = []
+    matched_photo_path = []
+    matched_photo_fn  = []
+    matched_ephys_path = []
+    matched_ephys_fn  = []
 
     for _, row in df_pycontrol.iterrows():
         
+        # Photometry matching
         # will only compute time diff on matching subject_id
         if not df_pyphoto.empty:
             df_pyphoto_subject = df_pyphoto[df_pyphoto.subject_id == row.subject_id]
         else:
-            matched_path.append(None)
-            matched_fn.append(None)
-            continue
+            matched_photo_path.append(None)
+            matched_photo_fn.append(None)
 
         if not df_pyphoto_subject.empty:
             min_td = np.min(abs(row.timestamp - df_pyphoto_subject.timestamp))
             idx = np.argmin(abs(row.timestamp - df_pyphoto_subject.timestamp))
 
             if min_td < timedelta(minutes=15):
-                matched_path.append(df_pyphoto_subject.iloc[idx].path)
-                matched_fn.append(df_pyphoto_subject.iloc[idx].filename)
+                matched_photo_path.append(df_pyphoto_subject.iloc[idx].path)
+                matched_photo_fn.append(df_pyphoto_subject.iloc[idx].filename)
             else:
-                matched_path.append(None)
-                matched_fn.append(None)
-        else:
-            matched_path.append(None)
-            matched_fn.append(None)
+                matched_photo_path.append(None)
+                matched_photo_fn.append(None)
+        
+        elif not df_pyphoto.empty and df_pyphoto_subject.empty:
+            matched_photo_path.append(None)
+            matched_photo_fn.append(None)
 
-    df_pycontrol['pyphoto_path'] = matched_path
-    df_pycontrol['pyphoto_filename'] = matched_fn
+        # Ephys matching
+        if not df_ephys_exp.empty:
+            df_ephys_exp_subject = df_ephys_exp[df_ephys_exp.subject_id == row.subject_id]
+
+            if not df_ephys_exp_subject.empty:
+                min_td = np.min(abs(row.timestamp - df_ephys_exp_subject.exp_datetime))
+                idx = np.argmin(abs(row.timestamp - df_ephys_exp_subject.exp_datetime))
+
+                if min_td < timedelta(days=0.25):
+                    matched_ephys_path.append(ephys_base_path / df_ephys_exp_subject.iloc[idx].foldername)
+                    matched_ephys_fn.append(df_ephys_exp_subject.iloc[idx].foldername)
+                else:
+                    matched_ephys_path.append(None)
+                    matched_ephys_fn.append(None)
+            
+            elif not df_ephys_exp.empty and df_ephys_exp_subject.empty:
+                matched_ephys_path.append(None)
+                matched_ephys_fn.append(None)
+
+        else:
+            matched_ephys_path.append(None)
+            matched_ephys_fn.append(None)
+
+    df_pycontrol['pyphoto_path'] = matched_photo_path
+    df_pycontrol['pyphoto_filename'] = matched_photo_fn
+
+    df_pycontrol['ephys_path'] = matched_ephys_path
+    df_pycontrol['ephys_folder_name'] = matched_ephys_fn
+    
     df_pycontrol = df_pycontrol[(df_pycontrol.subject_id!='00') & (df_pycontrol.subject_id!='01')] # do not copy the test data
     df_pycontrol = df_pycontrol.dropna(subset='pyphoto_path')
 
@@ -102,6 +132,7 @@ for task_id, task in enumerate(tasks):
         
         target_pycontrol_folder = Path(export_base_path, session_id, 'pycontrol')
         target_pyphoto_folder = Path(export_base_path, session_id, 'pyphotometry')
+        target_ephys_folder = Path(export_base_path, session_id, 'ephys')
         
         if not target_pycontrol_folder.exists():
             # create the base folder
@@ -109,10 +140,13 @@ for task_id, task in enumerate(tasks):
             
         if not target_pyphoto_folder.exists():
             target_pyphoto_folder.mkdir(parents=True)
+
+        if not target_ephys_folder.exists():
+            target_ephys_folder.mkdir(parents=True)
             
         pycontrol_file = row.path
         pyphotometry_file = row.pyphoto_path
-        
+
         #copy the pycontrol files
         # print(pycontrol_file, target_pycontrol_folder)
         copy_if_not_exist(pycontrol_file, target_pycontrol_folder)
@@ -126,4 +160,10 @@ for task_id, task in enumerate(tasks):
         if create_sync(str(pycontrol_file), str(pyphotometry_file)) is not None:
             copy_if_not_exist(pyphotometry_file, target_pyphoto_folder)
 
-# %%
+
+        #write information about ephys recrodings in the ephys folder
+        if row.ephys_folder_name:
+            recordings_properties = get_recordings_properties(ephys_base_path, row.ephys_folder_name)
+            recordings_properties.to_csv(target_ephys_folder / 'rec_properties.csv')
+
+
