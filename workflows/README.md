@@ -16,14 +16,11 @@ The snakemake workflow may contain additional dependency requirement. You will n
 ` conda env update -f trialexp.yaml`
 
 ## Configuration
-- Specify the root of your session-based folder in `workflows\config\config.yaml` through the `session_base_dir` setting, e.g.
-
+- Specify the root of your session-based folder and project folder in the `.env` file
     ```
-    session_root_dir: 'Z:/Teris/ASAP/expt_sessions/'
-    
+    SNAKEMAKE_DEBUG_ROOT=<your project root folder here>
+    SESSION_ROOT_FOLDER=<the path of the by_session folder>
     ```
-
-
 
 ## Folder structure
 The snakemake file (*.smk) that define the workflow is in the `workflow` folder, the scripts are in `workflows/scripts`, config files are in `workflows/config`.
