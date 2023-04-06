@@ -10,7 +10,7 @@ envvars:
     'SESSION_ROOT_FOLDER'
 
 rule all:
-    input: expand('{path}/processed/task.done', path = Path(os.environ['SESSION_ROOT_FOLDER']).glob('lick_go_nogo_unconditionned_opto/*'))
+    input: expand('{path}/processed/task.done', path = Path(os.environ['SESSION_ROOT_FOLDER']).glob('*/*'))
     
 rule process_pycontrol:
     input:
@@ -73,7 +73,6 @@ rule photometry_figure:
 def photometry_input(wildcards):
     #determine if photometry needs to run in the current folder
     ppd_files = glob(f'{wildcards.session_path}/{wildcards.task}/{wildcards.session_id}/pyphotometry/*.ppd')
-    print('Searching for ppd file', ppd_files)
     if len(ppd_files)>0:
         return f'{wildcards.session_path}/{wildcards.task}/{wildcards.session_id}/processed/log/photometry.done'
     else:
