@@ -56,6 +56,7 @@ def get_recordings_properties(ephys_base_path, fn):
 
     recordings_properties['AP_stream'] = list()
     recordings_properties['AP_folder'] = list()
+    recordings_properties['exp_nb'] = list()
     recordings_properties['rec_nb'] = list()
     recordings_properties['tstart'] = list()
     recordings_properties['rec_start_datetime'] = list()
@@ -75,7 +76,8 @@ def get_recordings_properties(ephys_base_path, fn):
 
                 recordings_properties['AP_stream'].append(AP_stream)
                 recordings_properties['AP_folder'].append(split('#',AP_stream)[1])
-
+                
+                recordings_properties['exp_nb'].append(exp_nb)
                 recordings_properties['rec_nb'].append(rec_nb)
                 recordings_properties['tstart'].append(
                     folder_structure['Record Node 101']['experiments'][exp_nb]['recordings'][rec_nb]['streams']['continuous'][AP_streams[0]]['t_start']
