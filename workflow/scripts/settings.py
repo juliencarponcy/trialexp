@@ -13,4 +13,4 @@ timelim = [1000, 4000] # in ms
 root_folder = os.environ.get('SESSION_ROOT_FOLDER')
 if root_folder=='':
     print(f'You should set the environmental variable SESSION_ROOT_FOLDER first')
-debug_folder = root_folder+ r'/pavlovian_nobar_nodelay/kms053-2022-07-27-183042'
+debug_folder = root_folder+ r'/reaching_go_spout_bar_nov22/RE602-2023-03-20-145614'

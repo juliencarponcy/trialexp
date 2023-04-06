@@ -9,7 +9,7 @@ from workflow.scripts import settings
 import os 
 #%%
 
-(sinput, soutput) = getSnake(locals(), 'workflows/spout_bar_nov22.smk',
+(sinput, soutput) = getSnake(locals(), 'workflow/Snakefile',
     [os.path.join(settings.debug_folder,'processed','spike2.smrx')],
   'export_spike2')
 
@@ -21,6 +21,13 @@ df_pycontrol = df_pycontrol.dropna(subset='name')
 df2plot = df_pycontrol[df_pycontrol.type != 'state']
 keys = df2plot.name.unique()
 
+
+#%% Check if we need to export photometry data too
+if soutput.xr_session is not None:
+  print('test')
+
+
+#%%
 export_session(df_pycontrol, keys,
              smrx_filename=soutput.spike2_file)
 # %%

@@ -10,7 +10,7 @@ envvars:
     'SESSION_ROOT_FOLDER'
 
 rule all:
-    input: expand('{path}/processed/task.done', path = Path(os.environ['SESSION_ROOT_FOLDER']).glob('*/*'))
+    input: expand('{path}/processed/task.done', path = Path(os.environ['SESSION_ROOT_FOLDER']).glob('reaching_go_spout_bar_nov22/*'))
     
 rule process_pycontrol:
     input:
@@ -36,9 +36,19 @@ rule pycontrol_figures:
     script:
         'scripts/02_plot_pycontrol_data.py'
 
+def xr_photometry(wildcards):
+    #determine if photometry is an additional requirement for export_spike2
+    ppd_files = glob(f'{wildcards.session_path}/{wildcards.task}/{wildcards.session_id}/pyphotometry/*.ppd')
+    print(ppd_files)
+    if len(ppd_files)>0:
+        return f'{wildcards.session_path}/{wildcards.task}/{wildcards.session_id}/processed/xr_photometry.nc'
+    else:
+        return []
+
 rule export_spike2:
     input:
         pycontrol_dataframe = '{session_path}/{task}/{session_id}/processed/df_pycontrol.pkl',
+        xr_session = xr_photometry
     output:
         spike2_file = '{session_path}/{task}/{session_id}/processed/spike2.smrx',
     script:
