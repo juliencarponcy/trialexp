@@ -11,12 +11,12 @@ from trialexp.process.pycontrol.data_import import session_dataframe
 from datetime import datetime
 from snakehelper.SnakeIOHelper import getSnake
 from pathlib import Path
-from workflows.scripts import settings
+from workflow.scripts import settings
 import os 
 
 #%% Load inputs
 
-(sinput, soutput) = getSnake(locals(), 'workflows/spout_bar_nov22.smk',
+(sinput, soutput) = getSnake(locals(), 'workflow/Snakefile',
   [os.path.join(settings.debug_folder,'processed','df_events_cond.pkl')],
   'process_pycontrol')
 

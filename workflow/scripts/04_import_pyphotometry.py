@@ -11,11 +11,11 @@ import pandas as pd
 import numpy as np
 from trialexp.process.pycontrol import event_filters
 from trialexp.process.pycontrol.event_filters import extract_event_time
-from workflows.scripts import settings
+from workflow.scripts import settings
 import os
 #%% Load inputs
 
-(sinput, soutput) = getSnake(locals(), 'workflows/spout_bar_nov22.smk',
+(sinput, soutput) = getSnake(locals(), 'workflow/Snakefile',
    [os.path.join(settings.debug_folder, 'processed','xr_photometry.nc')],
   'import_pyphotometry')
 

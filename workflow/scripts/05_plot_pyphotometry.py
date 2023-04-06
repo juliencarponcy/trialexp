@@ -13,11 +13,11 @@ from scipy.interpolate import interp1d
 import seaborn as sns 
 import numpy as np
 import os
-from workflows.scripts import settings
+from workflow.scripts import settings
 
 #%% Load inputs
 
-(sinput, soutput) = getSnake(locals(), 'workflows/spout_bar_nov22.smk',
+(sinput, soutput) = getSnake(locals(), 'workflow/Snakefile',
   [os.path.join(settings.debug_folder,'processed','log','photometry.done')],
   'photometry_figure')
 
