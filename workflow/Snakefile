@@ -39,7 +39,6 @@ rule pycontrol_figures:
 def xr_photometry(wildcards):
     #determine if photometry is an additional requirement for export_spike2
     ppd_files = glob(f'{wildcards.session_path}/{wildcards.task}/{wildcards.session_id}/pyphotometry/*.ppd')
-    print(ppd_files)
     if len(ppd_files)>0:
         return f'{wildcards.session_path}/{wildcards.task}/{wildcards.session_id}/processed/xr_photometry.nc'
     else:
@@ -48,7 +47,7 @@ def xr_photometry(wildcards):
 rule export_spike2:
     input:
         pycontrol_dataframe = '{session_path}/{task}/{session_id}/processed/df_pycontrol.pkl',
-        xr_session = xr_photometry
+        xr_session = xr_photometry,
     output:
         spike2_file = '{session_path}/{task}/{session_id}/processed/spike2.smrx',
     script:
