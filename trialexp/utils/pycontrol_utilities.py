@@ -13,23 +13,6 @@ from datetime import datetime
 from re import search
 
 from trialexp.process.pycontrol.data_import import session_dataframe
-from trialexp.process.pyphotometry.utils import import_ppd
-from trialexp.utils.rsync import Rsync_aligner, RsyncError
-
-def create_sync(pycontrol_file, pyphotometry_file):
-    with warnings.catch_warnings():
-        warnings.simplefilter('ignore')
-        pyphotometry_file = import_ppd(pyphotometry_file)
-        data_pycontrol = session_dataframe(pycontrol_file)
-
-        photo_rsync = pyphotometry_file['pulse_times_2']
-        pycontrol_rsync = data_pycontrol[data_pycontrol.name=='rsync'].time
-        
-        try:
-            return Rsync_aligner(pulse_times_A= photo_rsync, 
-            pulse_times_B= pycontrol_rsync, plot=False) #align pycontrol time to pyphotometry time
-        except (RsyncError, ValueError):
-            return None
 
 def parse_pycontrol_fn(fn):
     pattern = r'(\w+)-(.*)\.txt'

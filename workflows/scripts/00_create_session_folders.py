@@ -3,25 +3,17 @@ Script to create the session folder structure
 '''
 #%%
 import os
-import re
 import shutil
-import warnings
-from datetime import datetime, timedelta
-from glob import glob
+from datetime import timedelta
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from tqdm.auto import tqdm
-import time
-
-from trialexp.utils.pycontrol_utilities import parse_pycontrol_fn, create_sync
-from trialexp.utils.pyphotometry_utilities import parse_pyhoto_fn
-from trialexp.utils.ephys_utilities import parse_openephys_folder, get_recordings_properties
-
-
 from tqdm import tqdm
 
+from trialexp.utils.pycontrol_utilities import parse_pycontrol_fn
+from trialexp.utils.pyphotometry_utilities import parse_pyhoto_fn, create_photo_sync
+from trialexp.utils.ephys_utilities import parse_openephys_folder, get_recordings_properties, create_ephys_rsync
         
 def copy_if_not_exist(src, dest):
     if not (dest/src.name).exists():
@@ -35,7 +27,7 @@ tasks = tasks_params_df.task.values.tolist()
 
 # %%
 
-for task_id, task in enumerate(tasks[23:]):
+for task_id, task in enumerate(tasks):
 
     print(f'task {task_id+1}/{len(tasks)}: {task}')
     export_base_path = Path(f'/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/by_sessions/{task}')
@@ -157,13 +149,22 @@ for task_id, task in enumerate(tasks[23:]):
             copy_if_not_exist(f, target_pycontrol_folder) 
             
         #Copy pyphotometry file if they match
-        if create_sync(str(pycontrol_file), str(pyphotometry_file)) is not None:
+        if create_photo_sync(str(pycontrol_file), str(pyphotometry_file)) is not None:
             copy_if_not_exist(pyphotometry_file, target_pyphoto_folder)
 
 
         #write information about ephys recrodings in the ephys folder
         if row.ephys_folder_name:
             recordings_properties = get_recordings_properties(ephys_base_path, row.ephys_folder_name)
+            # try to sync ephys recordings
+            recordings_properties['syncable'] = False
+            
+            sync_paths = recordings_properties.sync_path.unique()
+            for sync_path in sync_paths:
+                if create_ephys_rsync(str(pycontrol_file), sync_path) is not None:
+                    copy_if_not_exist(sync_path / 'states.npy', target_ephys_folder)
+                    copy_if_not_exist(sync_path / 'timestamps.npy', target_ephys_folder)
+                    recordings_properties.loc[recordings_properties.sync_path == sync_path, 'syncable'] = True
             recordings_properties.to_csv(target_ephys_folder / 'rec_properties.csv')
 
 

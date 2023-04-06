@@ -1,11 +1,13 @@
 from re import search, split
 from pathlib import Path
 from datetime import datetime, timedelta
+import warnings
 
 import pandas as pd
 
 from neo.rawio.openephysbinaryrawio import explore_folder
 
+from trialexp.process.pycontrol.data_import import session_dataframe
 from trialexp.utils.rsync import *
 
 def parse_openephys_folder(fn):
@@ -61,7 +63,7 @@ def get_recordings_properties(ephys_base_path, fn):
     recordings_properties['tstart'] = list()
     recordings_properties['rec_start_datetime'] = list()
     recordings_properties['full_path'] = list()
-    recordings_properties['nidaq_TTL_path'] = list()
+    recordings_properties['sync_path'] = list()
 
     exp_keys = list(folder_structure['Record Node 101']['experiments'].keys())
     
@@ -83,20 +85,31 @@ def get_recordings_properties(ephys_base_path, fn):
                     folder_structure['Record Node 101']['experiments'][exp_nb]['recordings'][rec_nb]['streams']['continuous'][AP_streams[0]]['t_start']
                 )
                 recordings_properties['rec_start_datetime'].append(
-                    exp_dict['exp_datetime'] + timedelta(0,recordings_properties['tstart'][idx])
+                    exp_dict['exp_datetime'] + timedelta(0, recordings_properties['tstart'][idx])
                 )
                 recordings_properties['full_path'].append(
                     Path(ephys_base_path) / fn / 'Record Node 101' / experiment_names[exp_idx] / ('recording' + str(rec_nb)) / 'continuous' / recordings_properties['AP_folder'][idx]
                 )
 
-                recordings_properties['nidaq_TTL_path'].append(
+                recordings_properties['sync_path'].append(
                     Path(ephys_base_path) / fn / 'Record Node 104' / experiment_names[exp_idx] / ('recording' + str(rec_nb)) / 'events' / 'NI-DAQmx-103.PXIe-6341' / 'TTL'
                 )
 
     return pd.DataFrame(recordings_properties)
 
-def get_ephys_rsync(recordings_properties: pd.DataFrame, rsync_ephys_chan_idx: int = 2):
-    TTL_folder = recordings_properties.nidaq_TTL_path
-    event_array = np.load(Path(TTL_folder, 'states.npy'))
-    ts_array = np.load(Path(TTL_folder, 'timestamps.npy'))
+def create_ephys_rsync(pycontrol_file: str, sync_path: str, rsync_ephys_chan_idx: int = 2):
+    event_array = np.load(Path(sync_path, 'states.npy'))
+    ts_array = np.load(Path(sync_path, 'timestamps.npy'))
     rsync_ephys_ts = ts_array[event_array == rsync_ephys_chan_idx]
+    
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore')
+        data_pycontrol = session_dataframe(pycontrol_file)
+
+        pycontrol_rsync = data_pycontrol[data_pycontrol.name=='rsync'].time
+        
+        try:
+            return Rsync_aligner(pulse_times_A= rsync_ephys_ts*1000, 
+            pulse_times_B= pycontrol_rsync, plot=False) #align pycontrol time to pyphotometry time
+        except (RsyncError, ValueError):
+            return None
