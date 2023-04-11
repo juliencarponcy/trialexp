@@ -5,7 +5,7 @@ configfile : 'workflows/config/config.yaml'
 # report: 'report/workflow.rst'
 
 rule all:
-    input: expand('{sessions}/processed/task.done', sessions = Path(config['session_root_dir']).glob('*'))
+    input: expand('{sessions}/processed/task.done', sessions = Path(config['neuropixels_root_dir']).glob('*'))
 
 rule path_to_sort:
     input:
@@ -32,7 +32,7 @@ rule spikesort:
     log:
         '{session_path}/{session_id}/processed/log/process_pycontrol.log'
     script:
-        'scripts/01_process_pycontrol.py'
+        'scripts/s01_sort_ks3.py'
 
 rule pycontrol_figures:
     input:

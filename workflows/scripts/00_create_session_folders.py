@@ -161,10 +161,13 @@ for task_id, task in enumerate(tasks):
             
             sync_paths = recordings_properties.sync_path.unique()
             for sync_path in sync_paths:
+                # copy syncing files in 
                 if create_ephys_rsync(str(pycontrol_file), sync_path) is not None:
                     copy_if_not_exist(sync_path / 'states.npy', target_ephys_folder)
                     copy_if_not_exist(sync_path / 'timestamps.npy', target_ephys_folder)
                     recordings_properties.loc[recordings_properties.sync_path == sync_path, 'syncable'] = True
             recordings_properties.to_csv(target_ephys_folder / 'rec_properties.csv')
 
+            
 
+# %%
