@@ -32,6 +32,8 @@ dependencies:
   - papermill
   - plotly
   - xarray
+  - neo
+  - spikeinterface
   - pip:
     - git+https://github.com/teristam/snakehelper.git
     - sonpy
