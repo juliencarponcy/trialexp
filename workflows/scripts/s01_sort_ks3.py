@@ -22,8 +22,8 @@ from trialexp.process.ephys.spikesort import sort
 #%% Load inputs
 
 (sinput, soutput) = getSnake(locals(), 'workflows/spikesort.smk',
-  [settings.debug_folder + 'spike_templates.npy'],
-  'spikesort')
+  [settings.debug_folder + '/processed/spike_sorting.done'],
+  'spike_sorting')
 
 
 # %%
