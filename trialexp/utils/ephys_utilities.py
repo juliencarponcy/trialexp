@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 import warnings
 
 import pandas as pd
+import numpy as np
 
 from neo.rawio.openephysbinaryrawio import explore_folder
 
@@ -61,9 +62,11 @@ def get_recordings_properties(ephys_base_path, fn):
     recordings_properties['exp_nb'] = list()
     recordings_properties['rec_nb'] = list()
     recordings_properties['tstart'] = list()
+    recordings_properties['sample_rate'] = list()
     recordings_properties['rec_start_datetime'] = list()
     recordings_properties['full_path'] = list()
     recordings_properties['sync_path'] = list()
+    recordings_properties['duration'] = list()
 
     exp_keys = list(folder_structure['Record Node 101']['experiments'].keys())
     
@@ -84,6 +87,9 @@ def get_recordings_properties(ephys_base_path, fn):
                 recordings_properties['tstart'].append(
                     folder_structure['Record Node 101']['experiments'][exp_nb]['recordings'][rec_nb]['streams']['continuous'][AP_streams[0]]['t_start']
                 )
+                recordings_properties['sample_rate'].append(
+                    folder_structure['Record Node 101']['experiments'][exp_nb]['recordings'][rec_nb]['streams']['continuous'][AP_streams[0]]['sample_rate']
+                )
                 recordings_properties['rec_start_datetime'].append(
                     exp_dict['exp_datetime'] + timedelta(0, recordings_properties['tstart'][idx])
                 )
@@ -95,7 +101,16 @@ def get_recordings_properties(ephys_base_path, fn):
                     Path(ephys_base_path) / fn / 'Record Node 104' / experiment_names[exp_idx] / ('recording' + str(rec_nb)) / 'events' / 'NI-DAQmx-103.PXIe-6341' / 'TTL'
                 )
 
+                recordings_properties['duration'].append(
+                    get_recording_duration(recordings_properties['full_path'][-1] , recordings_properties['sample_rate'][-1])
+                )
+
     return pd.DataFrame(recordings_properties)
+
+def get_recording_duration(rec_path: str, sample_rate: int):
+    timestamps = np.load(Path(rec_path) / 'timestamps.npy')
+    duration = len(timestamps) / sample_rate
+    return duration
 
 def create_ephys_rsync(pycontrol_file: str, sync_path: str, rsync_ephys_chan_idx: int = 2):
     event_array = np.load(Path(sync_path, 'states.npy'))

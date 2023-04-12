@@ -27,7 +27,7 @@ tasks = tasks_params_df.task.values.tolist()
 
 # %%
 
-for task_id, task in enumerate(tasks):
+for task_id, task in enumerate(tasks[23:]):
 
     print(f'task {task_id+1}/{len(tasks)}: {task}')
     export_base_path = Path(f'/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/by_sessions/{task}')
@@ -158,14 +158,31 @@ for task_id, task in enumerate(tasks):
             recordings_properties = get_recordings_properties(ephys_base_path, row.ephys_folder_name)
             # try to sync ephys recordings
             recordings_properties['syncable'] = False
-            
+            recordings_properties['longest'] = False
             sync_paths = recordings_properties.sync_path.unique()
             for sync_path in sync_paths:
                 # copy syncing files in 
                 if create_ephys_rsync(str(pycontrol_file), sync_path) is not None:
-                    copy_if_not_exist(sync_path / 'states.npy', target_ephys_folder)
-                    copy_if_not_exist(sync_path / 'timestamps.npy', target_ephys_folder)
                     recordings_properties.loc[recordings_properties.sync_path == sync_path, 'syncable'] = True
+            
+            longest_syncable = recordings_properties.loc[recordings_properties.syncable == True, 'duration'].max()
+            recordings_properties.loc[(recordings_properties.duration == longest_syncable) & (recordings_properties.syncable == True), 'longest'] = True
+
+            sync_path = recordings_properties.loc[recordings_properties.longest == True, 'sync_path'].unique()
+            
+            if len(sync_path) > 1:
+                raise NotImplementedError(f'multiple valids sync_path for the session, something went wrong: {row.ephys_folder_name}')
+            
+            # copy sync files from the longest syncable recording
+            elif len(sync_path) == 1:
+
+                copy_if_not_exist(sync_path[0] / 'states.npy', target_ephys_folder)
+                copy_if_not_exist(sync_path[0] / 'timestamps.npy', target_ephys_folder)
+
+            else:
+                # no syncable recordings
+                ...
+
             recordings_properties.to_csv(target_ephys_folder / 'rec_properties.csv')
 
             
