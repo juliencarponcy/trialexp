@@ -4,8 +4,9 @@ from pathlib import Path
 configfile : 'workflows/config/config.yaml'
 # report: 'report/workflow.rst'
 
+
 rule all:
-    input: expand('{session_path}/{task_path}/{session_id}/processed/spike_sorting.done', sessions = Path(config['session_root_dir']).glob('*'))
+    input: expand('{sessions}/processed/spike_sorting.done', sessions = Path(config['session_root_dir']).glob('*/*'))
 
 
 # rule create_folder:
@@ -21,5 +22,5 @@ rule spike_sorting:
     output:
         spike_templateA = '{session_path}/{task_path}/{session_id}/ephys/probeA/spike_templates.npy',
         spike_templateB = '{session_path}/{task_path}/{session_id}/ephys/probeB/spike_templates.npy',
-        rule_complete = touch('{session_path}/{task_path}/{session_id}/processed/spike_sorting.done')
+        rule_complete = touch(r'{session_path}/{task_path}/{session_id}/processed/spike_sorting.done')
 
