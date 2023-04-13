@@ -35,7 +35,7 @@ verbose = True
 rec_properties_path = Path(sinput.rec_properties)
 rec_properties = pd.read_csv(rec_properties_path, index_col= None)
 
-output_folder = rec_properties_path.parent / 'sorting'
+temp_output_folder = rec_properties_path.parent / 'temp'
 
 # Only select longest syncable recordings to sort
 idx_to_sort = rec_properties[rec_properties.longest == True].index.values
@@ -56,9 +56,11 @@ for idx_rec in idx_to_sort:
     else:
         raise ValueError(f'invalid probe name rec: {rec_properties_path.parent}')
     
-    output_probe_folder = output_folder / probe_folder_name 
-    if not output_probe_folder.exists():
-        output_probe_folder.mkdir(parents=True)
+    temp_output_probe_folder = temp_output_folder / probe_folder_name 
+    if not temp_output_probe_folder.exists():
+        temp_output_probe_folder.mkdir(parents=True)
+
+    output_sorting_folder = rec_properties_path.parent / 'sorted' / probe_folder_name
 
     ephys_path = Path(rec_properties.full_path.iloc[idx_rec]).parent.parent.parent.parent.parent
     relative_ephys_path = os.path.join(*ephys_path.parts[5:])
@@ -73,7 +75,7 @@ for idx_rec in idx_to_sort:
     recording = select_segment_recording(recordings, segment_indices= int(rec_nb-1)) # index-based
 
     if verbose:
-        print(f'{Path(ephys_path).parts[-1]}, {probe_folder_name}, exp nb:{exp_nb} rec nb:{rec_nb}. recording duration: {recording.get_total_duration()}')   
+        print(f'{Path(ephys_path).parts[-1]}, {probe_folder_name}, exp_nb:{exp_nb}, rec_nb:{rec_nb}. recording duration: {recording.get_total_duration()}s')   
 
     sorter_specific_params = {
         # 'n_jobs': 24, 
@@ -86,11 +88,11 @@ for idx_rec in idx_to_sort:
     sorting = ss.run_sorter(
             sorter_name = sorter_name,
             recording = recording, 
-            output_folder = output_probe_folder,
+            output_folder = temp_output_probe_folder,
             remove_existing_folder = True, 
             delete_output_folder = False, 
             verbose = True,
             **sorter_specific_params)
 
-    sorting.save(folder= output_folder / probe_folder_name)
+    sorting.save(folder = output_sorting_folder)
 # %%
