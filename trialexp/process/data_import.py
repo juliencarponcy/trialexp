@@ -1500,7 +1500,10 @@ class Session():
             if mtc is None:
                 raise Exception('smrx_filename has to end with .smrx')
 
-            MyFile = sp.SonFile(smrx_filename)
+            MyFile = sp.SonFile(smrx_filename, nChans = int(400)) #NOTE int() is required
+            #NOTE nChans = ctypes.c_uint16(400) # TypeError
+            #NOTE nChans = 400 # MyFile.MaxChannels() = -1
+            #NOTE sonpy 1.9.5 works with nChans (1.8.5. doesn't)
             CurChan = 0
             UsedChans = 0
             Scale = 65535/20
@@ -1519,7 +1522,7 @@ class Session():
                 raise Exception('No time stamp found: Cannot determine MaxTime()')
 
             else:
-                max_time_ms1 = np.max(times) #TODO ValueError when np.max([]) 
+                max_time_ms1 = np.max(times_) #TODO ValueError when np.max([]) 
 
                 list_of_match = [re.match('^\d+', L) for L in self.print_lines if re.match('^\d+', L) is not None]
                 max_time_ms2 = np.max([int(m.group(0)) for m in list_of_match])
