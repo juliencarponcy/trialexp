@@ -19,7 +19,7 @@ class Spike2Exporter:
         if mtc is None:
             raise Exception('smrx_filename has to end with .smrx')
 
-        self.MyFile = sp.SonFile(smrx_filename)
+        self.MyFile = sp.SonFile(smrx_filename, nChans = int(400)) # Allow up to 400 channels
         self.smrx_filename = smrx_filename
         self.CurChan = 0
         self.UsedChans = 0
