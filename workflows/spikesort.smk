@@ -1,12 +1,9 @@
 from glob import glob
 from pathlib import Path
-
-configfile : 'workflows/config/config.yaml'
-# report: 'report/workflow.rst'
-
+import os 
 
 rule all:
-    input: expand('{sessions}/processed/spike_sorting.done', sessions = Path(config['session_root_dir']).glob('*/*'))
+    input: expand('{sessions}/processed/spike_sorting.done', sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob('*/*'))
 
 
 # rule create_folder:
@@ -27,8 +24,8 @@ rule spike_sorting:
     input:
         rec_properties = rec_properties_input
     output:
-        spike_templateA = '{session_path}/{task_path}/{session_id}/ephys/sorted/probeA/spike_templates.npy',
-        spike_templateB = '{session_path}/{task_path}/{session_id}/ephys/sorted/probeB/spike_templates.npy',
+        output_folder = directory('{session_path}/{task_path}/{session_id}/ephys/output')
+        sorting_folder = directory('{session_path}/{task_path}/{session_id}/ephys/sorting')
         rule_complete = touch(r'{session_path}/{task_path}/{session_id}/processed/spike_sorting.done')
     log:
         '{session_path}/{task_path}/{session_id}/processed/log/process_spike_sorting.log'
