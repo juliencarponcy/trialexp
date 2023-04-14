@@ -4,7 +4,6 @@ Script to create the session folder structure
 #%%
 import os
 import warnings
-
 from pathlib import Path
 
 import pandas as pd
@@ -27,11 +26,8 @@ from trialexp.process.ephys.spikesort import sort
 
 
 # %%
-# session_path = '/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/by_sessions/reaching_go_spout_bar_nov22/kms058-2023-03-25-184034'
-# # rec_path = 
 sorter_name = 'kilosort3'
 verbose = True
-# rec_properties_path = Path(session_path) / 'ephys' / 'rec_properties.csv'
 rec_properties_path = Path(sinput.rec_properties)
 rec_properties = pd.read_csv(rec_properties_path, index_col= None)
 
@@ -40,8 +36,10 @@ temp_output_folder = rec_properties_path.parent / 'temp'
 # Only select longest syncable recordings to sort
 idx_to_sort = rec_properties[rec_properties.longest == True].index.values
 
-root_data_path = r'/home/MRC.OX.AC.UK/phar0732/ettin/'
+root_data_path = os.environ['SORTING_ROOT_DATA_PATH']
 
+output_folder = Path(soutput.output_folder)
+sorting_folder = Path(soutput.sorting_folder)
 # %%
 for idx_rec in idx_to_sort:
     exp_nb = rec_properties.exp_nb.iloc[idx_rec]
@@ -55,10 +53,6 @@ for idx_rec in idx_to_sort:
         probe_folder_name = 'ProbeB'
     else:
         raise ValueError(f'invalid probe name rec: {rec_properties_path.parent}')
-    
-    temp_output_probe_folder = temp_output_folder / probe_folder_name 
-    if not temp_output_probe_folder.exists():
-        temp_output_probe_folder.mkdir(parents=True)
 
     output_sorting_folder = rec_properties_path.parent / 'sorted' / probe_folder_name
 
@@ -73,7 +67,6 @@ for idx_rec in idx_to_sort:
         recordings = se.read_openephys(ephys_path, block_index=exp_nb, stream_name=AP_stream) # nb-based
     
     recording = select_segment_recording(recordings, segment_indices= int(rec_nb-1)) # index-based
-
     if verbose:
         print(f'{Path(ephys_path).parts[-1]}, {probe_folder_name}, exp_nb:{exp_nb}, rec_nb:{rec_nb}. recording duration: {recording.get_total_duration()}s')   
 
@@ -88,11 +81,11 @@ for idx_rec in idx_to_sort:
     sorting = ss.run_sorter(
             sorter_name = sorter_name,
             recording = recording, 
-            output_folder = temp_output_probe_folder,
+            output_folder = output_folder/probe_folder_name,
             remove_existing_folder = True, 
             delete_output_folder = False, 
             verbose = True,
             **sorter_specific_params)
 
-    sorting.save(folder = output_sorting_folder)
+    sorting.save(folder = sorting_folder/probe_folder_name)
 # %%
