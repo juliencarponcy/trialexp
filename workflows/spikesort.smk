@@ -1,6 +1,9 @@
 from glob import glob
 from pathlib import Path
 import os 
+from dotenv import load_dotenv
+
+load_dotenv()
 
 rule all:
     input: expand('{sessions}/processed/spike_workflow.done', sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob('*/*'))
@@ -11,8 +14,6 @@ rule all:
 #         create_folder_done = touch('{session_path}/{session_id}/spike_sorting.done')
 #     script:
 #         'scripts/s00_create_session_folders.py'
-
-
 
 rule spike_sorting:
     input:
