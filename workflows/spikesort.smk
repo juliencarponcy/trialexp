@@ -1,12 +1,9 @@
 from glob import glob
 from pathlib import Path
-
-configfile : 'workflows/config/config.yaml'
-# report: 'report/workflow.rst'
-
+import os 
 
 rule all:
-    input: expand('{sessions}/processed/spike_sorting.done', sessions = Path(config['session_root_dir']).glob('*/*'))
+    input: expand('{sessions}/processed/spike_workflow.done', sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob('*/*'))
 
 
 # rule create_folder:
@@ -15,20 +12,14 @@ rule all:
 #     script:
 #         'scripts/s00_create_session_folders.py'
 
-def rec_properties_input(wildcards):
-    # determine if there is an ephys recording for that folder
-    recording_csv = glob(f'{wildcards.session_path}/{wildcards.task_path}/{wildcards.session_id}/ephys/rec_properties.csv')
-    if len(recording_csv) > 0:
-        return f'{wildcards.session_path}/{wildcards.task_path}/{wildcards.session_id}/ephys/rec_properties.csv'
-    else:
-        return []
+
 
 rule spike_sorting:
     input:
-        rec_properties = rec_properties_input
+        rec_properties = '{session_path}/{task_path}/{session_id}/ephys/rec_properties.csv'
     output:
-        spike_templateA = '{session_path}/{task_path}/{session_id}/ephys/sorted/probeA/spike_templates.npy',
-        spike_templateB = '{session_path}/{task_path}/{session_id}/ephys/sorted/probeB/spike_templates.npy',
+        output_folder = directory('{session_path}/{task_path}/{session_id}/ephys/output'),
+        sorting_folder = directory('{session_path}/{task_path}/{session_id}/ephys/sorting'),
         rule_complete = touch(r'{session_path}/{task_path}/{session_id}/processed/spike_sorting.done')
     threads: 64
     log:
@@ -36,8 +27,16 @@ rule spike_sorting:
     shell:
         "python workflows/scripts/s01_sort_ks3.py --log {log} {input} {output}"
 
+def rec_properties_input(wildcards):
+    # determine if there is an ephys recording for that folder
+    recording_csv = glob(f'{wildcards.session_path}/{wildcards.task_path}/{wildcards.session_id}/ephys/rec_properties.csv')
+    if len(recording_csv) > 0:
+        return f'{wildcards.session_path}/{wildcards.task_path}/{wildcards.session_id}/processed/spike_sorting.done'
+    else:
+        return []
+
 rule final:
     input:
-        spike_sorting_done = '{session_path}/{task_path}/{session_id}/processed/spike_sorting.done'
+        spike_sorting_done = rec_properties_input,
     output:
         done = touch('{session_path}/{task_path}/{session_id}/processed/spike_workflow.done')
