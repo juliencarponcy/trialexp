@@ -4,7 +4,7 @@ Script to create the session folder structure
 #%%
 import os
 import warnings
-
+import shutil
 from pathlib import Path
 
 import pandas as pd
@@ -27,8 +27,7 @@ from trialexp.process.ephys.spikesort import sort
 
 
 # %%
-# session_path = '/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/by_sessions/reaching_go_spout_bar_nov22/kms058-2023-03-25-184034'
-# # rec_path = 
+
 sorter_name = 'kilosort3'
 verbose = True
 # rec_properties_path = Path(session_path) / 'ephys' / 'rec_properties.csv'
@@ -94,5 +93,10 @@ for idx_rec in idx_to_sort:
             verbose = True,
             **sorter_specific_params)
 
+    # delete previous output_sorting_folder and its contents if it exists,
+    # this prevent the save method to crash.
+    if output_sorting_folder.exists():
+        shutil.rmtree(output_sorting_folder)
+    
     sorting.save(folder = output_sorting_folder)
 # %%

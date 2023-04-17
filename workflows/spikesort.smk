@@ -30,6 +30,7 @@ rule spike_sorting:
         spike_templateA = '{session_path}/{task_path}/{session_id}/ephys/sorted/probeA/spike_templates.npy',
         spike_templateB = '{session_path}/{task_path}/{session_id}/ephys/sorted/probeB/spike_templates.npy',
         rule_complete = touch(r'{session_path}/{task_path}/{session_id}/processed/spike_sorting.done')
+    threads: 96
     log:
         '{session_path}/{task_path}/{session_id}/processed/log/process_spike_sorting.log'
     script:
