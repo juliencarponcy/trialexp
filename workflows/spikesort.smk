@@ -25,8 +25,21 @@ rule spike_sorting:
     threads: 64
     log:
         '{session_path}/{task_path}/{session_id}/processed/log/process_spike_sorting.log'
-    shell:
-        "python workflows/scripts/s01_sort_ks3.py > {log} {input} {output}"
+    script:
+        "scripts/s01_sort_ks3.py"
+
+rule spike_metrics_ks3:
+    input:
+        rec_properties = '{session_path}/{task_path}/{session_id}/ephys/rec_properties.csv',
+        sorter_specific_folder = '{session_path}/{task_path}/{session_id}/ephys/sorter'
+    output:
+        spike_metrics_folder = directory('{session_path}/{task_path}/{session_id}/ephys/sorter'),
+        rule_complete = touch('{session_path}/{task_path}/{session_id}/processed/spike_metrics.done')
+    threads: 64
+    log:
+        '{session_path}/{task_path}/{session_id}/processed/log/process_spike_metrics.log'
+    script:
+        "scripts/s02_cluster_metrics_ks3.py"
 
 def rec_properties_input(wildcards):
     # determine if there is an ephys recording for that folder
