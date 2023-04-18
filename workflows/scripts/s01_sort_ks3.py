@@ -1,5 +1,5 @@
 '''
-Script to create the session folder structure
+Script to compute cell metrics by CellExplorer from Kilosort3 results
 '''
 #%%
 import os
@@ -17,7 +17,7 @@ import spikeinterface.extractors as se
 import spikeinterface.sorters as ss
 from spikeinterface.core import select_segment_recording
 
-
+from workflows.scripts import settings
 from trialexp.process.ephys.spikesort import sort
 
 

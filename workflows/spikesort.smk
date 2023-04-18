@@ -33,7 +33,8 @@ rule spike_metrics_ks3:
         rec_properties = '{session_path}/{task_path}/{session_id}/ephys/rec_properties.csv',
         sorter_specific_folder = '{session_path}/{task_path}/{session_id}/ephys/sorter'
     output:
-        spike_metrics_folder = directory('{session_path}/{task_path}/{session_id}/ephys/sorter'),
+        spike_metrics_A = '{session_path}/{task_path}/{session_id}/ephys/sorter/kilosort3/ProbeA/sorter_output/recording.cell_metrics.cellinfo.mat',
+        spike_metrics_B = '{session_path}/{task_path}/{session_id}/ephys/sorter/kilosort3/ProbeB/sorter_output/recording.cell_metrics.cellinfo.mat',
         rule_complete = touch('{session_path}/{task_path}/{session_id}/processed/spike_metrics.done')
     threads: 64
     log:
