@@ -51,7 +51,7 @@ eng.addpath(c, nargout=0)
 # %% Process CellExplorer Cell metrics
 for probe_folder in probe_folders:
 
-    cell_exp_session = eng.sessionTemplate(probe_folders[0], 'showGUI', False)
+    cell_exp_session = eng.sessionTemplate(probe_folder, 'showGUI', False)
     
     # adjusting wrong default params
     # sampling rate
