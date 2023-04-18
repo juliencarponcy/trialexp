@@ -19,14 +19,14 @@ rule spike_sorting:
     input:
         rec_properties = '{session_path}/{task_path}/{session_id}/ephys/rec_properties.csv'
     output:
-        output_folder = directory('{session_path}/{task_path}/{session_id}/ephys/output'),
-        sorting_folder = directory('{session_path}/{task_path}/{session_id}/ephys/sorting'),
+        sorter_specific_folder = directory('{session_path}/{task_path}/{session_id}/ephys/sorter'),
+        si_sorted_folder = directory('{session_path}/{task_path}/{session_id}/ephys/si_sorted'),
         rule_complete = touch(r'{session_path}/{task_path}/{session_id}/processed/spike_sorting.done')
     threads: 64
     log:
         '{session_path}/{task_path}/{session_id}/processed/log/process_spike_sorting.log'
     shell:
-        "python workflows/scripts/s01_sort_ks3.py --log {log} {input} {output}"
+        "python workflows/scripts/s01_sort_ks3.py > {log} {input} {output}"
 
 def rec_properties_input(wildcards):
     # determine if there is an ephys recording for that folder

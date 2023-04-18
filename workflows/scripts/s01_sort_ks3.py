@@ -42,8 +42,9 @@ idx_to_sort = rec_properties[rec_properties.longest == True].index.values
 
 root_data_path = os.environ['SORTING_ROOT_DATA_PATH']
 
-output_folder = Path(soutput.output_folder)
-sorting_folder = Path(soutput.sorting_folder)
+si_sorted_folder = Path(soutput.si_sorted_folder)
+sorter_specific_folder = Path(soutput.sorter_specific_folder)
+
 # %%
 for idx_rec in idx_to_sort:
     exp_nb = rec_properties.exp_nb.iloc[idx_rec]
@@ -52,13 +53,15 @@ for idx_rec in idx_to_sort:
     
     # symplifying folder names for each probe
     if 'ProbeA' in AP_stream:    
-        probe_folder_name = 'ProbeA'
+        probe_name = 'ProbeA'
     elif 'ProbeB' in AP_stream:
-        probe_folder_name = 'ProbeB'
+        probe_name = 'ProbeB'
     else:
         raise ValueError(f'invalid probe name rec: {rec_properties_path.parent}')
 
-    output_sorting_folder = rec_properties_path.parent / 'sorted' / probe_folder_name
+    # Define outputs folder, specific for each probe and sorter
+    output_sorter_specific_folder = sorter_specific_folder / sorter_name / probe_name
+    output_si_sorted_folder = si_sorted_folder / sorter_name / probe_name
 
     ephys_path = Path(rec_properties.full_path.iloc[idx_rec]).parent.parent.parent.parent.parent
     relative_ephys_path = os.path.join(*ephys_path.parts[5:])
@@ -72,7 +75,7 @@ for idx_rec in idx_to_sort:
     
     recording = select_segment_recording(recordings, segment_indices= int(rec_nb-1)) # index-based
     if verbose:
-        print(f'{Path(ephys_path).parts[-1]}, {probe_folder_name}, exp_nb:{exp_nb}, rec_nb:{rec_nb}. recording duration: {recording.get_total_duration()}s')   
+        print(f'{Path(ephys_path).parts[-1]}, {probe_name}, exp_nb:{exp_nb}, rec_nb:{rec_nb}. recording duration: {recording.get_total_duration()}s')   
 
     sorter_specific_params = {
         # 'n_jobs': 24, 
@@ -85,7 +88,7 @@ for idx_rec in idx_to_sort:
     sorting = ss.run_sorter(
             sorter_name = sorter_name,
             recording = recording, 
-            output_folder = output_folder/probe_folder_name,
+            output_folder = output_sorter_specific_folder,
             remove_existing_folder = True, 
             delete_output_folder = False, 
             verbose = True,
@@ -94,9 +97,9 @@ for idx_rec in idx_to_sort:
 
     # delete previous output_sorting_folder and its contents if it exists,
     # this prevent the save method to crash.
-    if output_sorting_folder.exists():
-        shutil.rmtree(output_sorting_folder)
+    if output_si_sorted_folder.exists():
+        shutil.rmtree(output_si_sorted_folder)
     
-    sorting.save(folder = output_sorting_folder)
+    sorting.save(folder = output_si_sorted_folder)
 
 # %%
