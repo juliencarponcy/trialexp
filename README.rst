@@ -56,6 +56,12 @@ Usage
 
 ``pip install -e .``
 
+* Edit config files
+    * for execution: ```workflow/conf/config.yaml``
+    * for development: 
+        - ``.env`` setting the directory for snakehelper to switch to automatically (i.e. project root folder)
+        - ``workflow/settings.py`` setting the debug session folder during development
+
 * Launch Jupyter
 ``jupyter-notebook``
     

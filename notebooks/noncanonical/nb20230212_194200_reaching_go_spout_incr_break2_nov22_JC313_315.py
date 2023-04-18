@@ -105,7 +105,7 @@ ss = exp_cohort.sessions
 ss_ = [this_ss for this_ss in ss
        # [313, 314, 315, 316, 317, 318]
        if (this_ss.subject_ID in [313, 314, 315])
-       and (this_ss.experiment_name == 'reaching_go_spout_incr_break2_nov22')
+       and (this_ss.task_name == 'reaching_go_spout_incr_break2_nov22')
        and (this_ss.datetime.date() >= datetime.date(2022, 12, 3))]
 ss_
 
@@ -129,34 +129,6 @@ ss_[0].datetime.date()
 
 
 # # SLOW 3m
-
-# In[ ]:
-
-
-# # Process the whole experimental folder by trials
-
-# exp_cohort.process_exp_by_trial(
-#     trial_window, timelim, tasksfile, blank_spurious_event='spout', blank_timelim=[0, 65])
-#     # not working
-
-# # Find if there is a matching photometry file and if it can be used:
-# # rsync synchronization pulses matching between behaviour and photometry
-
-# # Find if there is a matching photometry file:
-# exp_cohort.match_sessions_to_files(photometry_dir, ext='ppd')
-
-# # rsync synchronization pulses matching between behaviour and photometry
-# exp_cohort.sync_photometry_files(2)
-
-# # Find matching videos
-# exp_cohort.match_sessions_to_files(video_dir, ext='mp4')
-
-# # FInd matching DeepLabCut outputs files
-# exp_cohort.match_sessions_to_files(video_dir, ext='h5', verbose=True)
-
-
-# # exp_cohort.save()
-
 
 # In[ ]:
 
@@ -214,12 +186,6 @@ re.match('abc ','abc de')
 expr = '^\d+(?= ' + '.?Timestamp' + ')'
 a = [re.match(expr, L) for L in exp_cohort.sessions[0].print_lines if re.match(expr , L) is not None]
 int(a[0].group(0))
-
-
-# In[ ]:
-
-
-
 
 
 # In[ ]:

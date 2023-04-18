@@ -11,12 +11,13 @@
 #
 # install: conda env create -f trialexp.yaml
 # update:  conda env update -f trialexp.yaml
+#  pip install sonpy
 name: trialexp
 channels:
   - conda-forge
   - defaults
 dependencies:
-  - python=3.8
+  - python=3.9
   - pip
   - numpy
   - scipy
@@ -30,6 +31,10 @@ dependencies:
   - seaborn
   - papermill
   - plotly
-  - sonpy
+  - xarray
   - pip:
-    - "-e setup.py"
+    - git+https://github.com/teristam/snakehelper.git
+    - sonpy
+    - h5netcdf
+    - snakemake
+

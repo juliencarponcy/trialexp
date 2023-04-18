@@ -9,8 +9,6 @@
 
 # Quick analysis of instrumental reaching
 
-# 
-
 # In[ ]:
 
 
@@ -93,11 +91,14 @@ smrx_folder_path = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\pycontrol\reachin
 
 
 import datetime
+
+update_all_smrx = False
+
 ss = exp_cohort.sessions
 
 ss_ = [this_ss for this_ss in ss
        if (this_ss.subject_ID in [58, 60, 61, 62, 63, 64])
-       and (this_ss.experiment_name == 'reaching_go_spout_incr_break2_nov22')
+       and (this_ss.task_name == 'reaching_go_spout_incr_break2_nov22')
        and (this_ss.datetime.date() >= datetime.date(2023, 1, 26))]
 ss_
 
@@ -121,34 +122,6 @@ ss_[0].datetime.date()
 
 
 # # SLOW 3m
-
-# In[ ]:
-
-
-# # Process the whole experimental folder by trials
-
-# exp_cohort.process_exp_by_trial(
-#     trial_window, timelim, tasksfile, blank_spurious_event='spout', blank_timelim=[0, 65])
-#     # not working
-
-# # Find if there is a matching photometry file and if it can be used:
-# # rsync synchronization pulses matching between behaviour and photometry
-
-# # Find if there is a matching photometry file:
-# exp_cohort.match_sessions_to_files(photometry_dir, ext='ppd')
-
-# # rsync synchronization pulses matching between behaviour and photometry
-# exp_cohort.sync_photometry_files(2)
-
-# # Find matching videos
-# exp_cohort.match_sessions_to_files(video_dir, ext='mp4')
-
-# # FInd matching DeepLabCut outputs files
-# exp_cohort.match_sessions_to_files(video_dir, ext='h5', verbose=True)
-
-
-# # exp_cohort.save()
-
 
 # In[ ]:
 
@@ -211,15 +184,19 @@ import re
 # In[ ]:
 
 
-
+for ss in exp_cohort.sessions:
+    smrxname = re.sub('\.txt', f'_{ss.task_name}.smrx', ss.file_name)
+    print(smrxname)
 
 
 # In[ ]:
 
 
-for ss in exp_cohort.sessions:
-    smrxname = re.sub('\.txt', f'_{ss.task_name}.smrx', ss.file_name)
-    print(smrxname)
+exp_cohort.sessions[0].print_lines[0]
+
+a = re.sub('\n','',exp_cohort.sessions[0].print_lines[0])
+
+print(a)
 
 
 # 
@@ -264,22 +241,24 @@ for ss in exp_cohort.sessions:
     }
     ]
 
-    try:
-        ss.plot_session(
-            keys, state_def, export_smrx=True, event_ms=event_ms, smrx_filename= smrxname)
+    if update_all_smrx or not os.path.isfile(smrxname):
 
-        summary_df = pd.concat([summary_df, 
-            pd.DataFrame({
-                'file':ss.file_name,
-                'task':ss.task_name,
-                'triggered_by_spout': len(x_spout),
-                'triggered_by_bar_off': len(x_bar),
-                'reaching_trials': len(bw),
-                'trials': len(ss.times['busy_win'])},
-                index=[0])
-                ],
-                ignore_index=True)
-    except Exception as err:
-        print(f"Unexpected {err=}, {type(err)=}, for {file_name_}")
+        try:
+            ss.plot_session(
+                keys, state_def, export_smrx=True, event_ms=event_ms, smrx_filename= smrxname)
+
+            summary_df = pd.concat([summary_df, 
+                pd.DataFrame({
+                    'file':ss.file_name,
+                    'task':ss.task_name,
+                    'triggered_by_spout': len(x_spout),
+                    'triggered_by_bar_off': len(x_bar),
+                    'reaching_trials': len(bw),
+                    'trials': len(ss.times['busy_win'])},
+                    index=[0])
+                    ],
+                    ignore_index=True)
+        except Exception as err:
+            print(f"Unexpected {err=}, {type(err)=}, for {file_name_}")
 
 

@@ -1,41 +1,38 @@
 # Python classes for importing pyControl data files and representing pyControl 
 # sessions and experiments.  Dependencies: Python 3.5+, Numpy.
-from cmath import isnan, nan
-
-import os
-from pathlib import Path
-import pickle
-import re
-import datetime
-import warnings
 import datetime
 import itertools
-
+import os
+import pickle
+import re
+import warnings
+from cmath import isnan, nan
 from collections import namedtuple
+from itertools import compress
+from math import ceil
 from operator import itemgetter
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
-
-from math import ceil
-from scipy.signal import butter, filtfilt, decimate
-from scipy.stats import linregress, zscore
-
 import plotly.graph_objects as go
-from plotly.validators.scatter.marker import SymbolValidator
 from plotly.subplots import make_subplots
-
-from trialexp.utils.pycontrol_utilities import *
-from trialexp.utils.data_organisation import *
-# from trialexp.utils.pyphotometry_utilities import *
-from trialexp.process.pyphotometry.utils import *
-from trialexp.utils.DLC_utilities import *
-from trialexp.utils.rsync import *
+from plotly.validators.scatter.marker import SymbolValidator
+from scipy.signal import butter, decimate, filtfilt
+from scipy.stats import linregress, zscore
 
 from trialexp.dataset_classes.trial_dataset_classes import *
 
-Event = namedtuple('Event', ['time','name'])
-State = namedtuple('State', ['time','name'])
+from trialexp.process.pyphotometry.photometry_functional import *
+from trialexp.process.pyphotometry.utils import *
+from trialexp.process.pycontrol.utils import *
+
+from trialexp.utils.data_organisation import *
+from trialexp.utils.DLC_utilities import *
+from trialexp.utils.pycontrol_utilities import *
+from trialexp.utils.rsync import *
+
+
 
 # Custom type, assess usefulness
 NoneType = type(None)
@@ -160,7 +157,22 @@ class Session():
         self.times = {event_name: np.array([ev.time for ev in self.events if ev.name == event_name])  
                       for event_name in ID2name.values()}
 
-        self.print_lines = [line[2:] for line in all_lines if line[0]=='P']
+        # self.print_lines = [line[2:] for line in all_lines if line[0]=='P']
+
+        # capture multiple line print messages as self.print_lines
+        count = 0
+        self.print_lines = []
+        while count < len(all_lines):
+            if bool(re.match('P\s\d+\s',all_lines[count])):  # all_lines[count][0] == 'P'
+                self.print_lines.append(all_lines[count][2:])
+                count += 1
+                while (count < len(all_lines)) and not(bool(re.match('[PVD]\s\d+\s', all_lines[count]))):
+                    self.print_lines[-1] = self.print_lines[-1] + \
+                        "\n" + all_lines[count]
+                    count += 1
+            else:
+                count += 1
+
         self.v_lines = [line[2:] for line in all_lines if line[0]=='V']
         
         self.state_IDs = state_IDs
@@ -388,7 +400,7 @@ class Session():
         columns=['timestamp', 'trigger', 'valid', 'success', 'uid']
         columns = columns + ev_col_list
 
-        new_df = pd.DataFrame(index= df_events.index.get_level_values('trial_nb').unique(),
+        new_df = pd.DataFrame(index= range(1,len(all_trial_times_sorted)+1),
             columns=columns)
 
         # Create unique identifiers for trials
@@ -400,7 +412,7 @@ class Session():
         # fill new <event>_trial_time columns
         for ev in self.events_to_process:
             try:
-                new_df[str(ev + '_trial_time')] = df_events.loc[
+                new_df.loc[df_events.index.get_level_values('trial_nb').unique(), str(ev + '_trial_time')] = df_events.loc[
                     (df_events.index.get_level_values('trial_nb'), ev), 'trial_time'].values
             except KeyError as ke:
                 print('No event ', ke, ' found: ',
@@ -469,16 +481,12 @@ class Session():
                 df_conditions[cond] = 0
 
             # group by trigger and trial nb
-            df_conditions_summed = self.df_conditions[self.conditions + ['trial_nb']].groupby(['trial_nb'], as_index=False)
-            # Aggregate different timestamp ()
-            df_conditions_summed = df_conditions_summed.agg(lambda x: sum(x))   
-
-            # reindexing to have conditions for all trials even if no condition has been detected for some trials
-            df_conditions = df_conditions_summed.reindex(index=self.df_events.index, fill_value=0)   
-
-            df_conditions = pd.concat([self.df_events[['trigger','valid']], df_conditions], axis='columns', join='outer')
-
-            self.df_conditions = df_conditions
+            df_conditions_summed = self.df_conditions[self.conditions + ['trial_nb']].groupby(['trial_nb'], as_index=True).agg(lambda x: sum(x)) 
+            # Replicate the index of df_events to complete for trials where no condition were detected
+            df_conditions_summed = df_conditions_summed.reindex(index=self.df_events.index)
+            df_conditions_summed.loc[:,['trigger','valid','success']] = self.df_events.loc[:,['trigger','valid','success']]
+            
+            self.df_conditions = df_conditions_summed
             self.df_conditions.loc[:,self.conditions] = self.df_conditions[self.conditions].astype(bool)
 
         else:
@@ -547,8 +555,14 @@ class Session():
         return metadata_dict
 
     # Perform all the pretreatments to analyze behavioural file by trials
-    def get_session_by_trial(self, trial_window: list, timelim: list,
-            tasksfile, blank_spurious_event: list, blank_timelim: list, verbose=False):
+    def get_session_by_trial(
+            self, 
+            trial_window: list, 
+            timelim: list = None,
+            tasksfile: str = None, 
+            blank_spurious_event: list = None, 
+            blank_timelim: list = None, 
+            verbose: bool = False):
         """
 
         """
@@ -640,6 +654,8 @@ class Session():
         self.df_conditions['success'] = False
         # self.df_events['success'] = False
         #print(self.task_name)
+        
+        
         # To perform for all Go-NoGo variants of the task (list below)
         if self.task_name in ['reaching_go_nogo', 'reaching_go_nogo_jc', 'reaching_go_nogo_opto_continuous',
             'reaching_go_nogo_opto_sinusoid' , 'reaching_go_nogo_opto_sinusoid_spout', 
@@ -673,12 +689,13 @@ class Session():
 
             # self.triggers[0] refers to CS_Go triggering event most of the time whereas self.triggers[1] refers to CS_NoGo
             # find if spout event within timelim for go trials
-            go_success = self.df_events.loc[
-                (self.df_events[self.df_events.trigger == self.triggers[0]].index),'spout_trial_time'].apply(
-                lambda x: find_if_event_within_timelim(x, self.timelim))
-            go_success_idx = go_success[go_success == True].index
-            # categorize successful go trials which have a spout event within timelim
-            self.df_conditions.loc[(go_success_idx),'success'] = True
+                go_success = self.df_events.loc[
+                    (self.df_events[self.df_events.trigger == self.triggers[0]].index),'spout_trial_time'].apply(
+                    lambda x: find_if_event_within_timelim(x, self.timelim))
+                go_success_idx = go_success[go_success == True].index
+                # categorize successful go trials which have a spout event within timelim
+                self.df_conditions.loc[(go_success_idx),'success'] = True
+
             # self.df_events.loc[(go_success_idx),'success'] = True
 
         # To perform for cued-uncued version of the go task
@@ -717,8 +734,7 @@ class Session():
             self.df_conditions.loc[(reach_success_bool), 'success'] = True
 
         # To perform for delayed tasks (check whether a US_end_timer was preceded by a spout)
-        elif self.task_name in ['reaching_go_spout_bar_dual_all_reward_dec22', 
-            'reaching_go_spout_bar_dual_dec22', 'reaching_go_spout_bar_nov22']:
+        elif self.task_name in ['reaching_go_spout_bar_nov22','reaching_go_spout_bar_mar23']:
 
             reach_time_before_reward = self.df_events.loc[:,['spout_trial_time','US_end_timer_trial_time']].apply(
                     lambda x: find_last_time_before_list(x['spout_trial_time'], x['US_end_timer_trial_time']), axis=1)    
@@ -728,15 +744,36 @@ class Session():
             reach_success_bool = reach_bool & self.df_conditions.waiting_for_spout
             # set these trials as successful
             self.df_conditions.loc[(reach_success_bool), 'success'] = True
+        
+        elif self.task_name in ['reaching_go_spout_incr_break2_nov22']:
 
+            reach_time_before_reward = self.df_events.loc[:,['spout_trial_time','US_end_timer_trial_time']].apply(
+                    lambda x: find_last_time_before_list(x['spout_trial_time'], x['US_end_timer_trial_time']), axis=1)    
+            # select only trials with a spout event before a US_end_timer event
+            reach_bool = reach_time_before_reward.notnull()
 
-        # Reorder columns putting trigger, valid and success first for more clarity
-        col_list = list(self.df_conditions.columns.values)
-        col_to_put_first = ['trigger', 'success','valid']
-        for c in col_to_put_first:
-            col_list.remove(c)
-        col_list = ['trigger', 'success','valid'] + col_list
-        self.df_conditions = self.df_conditions[col_list]
+            # set these trials as successful
+            self.df_conditions.loc[(reach_bool), 'success'] = True
+
+        elif self.task_name in ['reaching_go_spout_bar_dual_all_reward_dec22', 
+            'reaching_go_spout_bar_dual_dec22']:
+
+            reach_time_before_reward = self.df_events.loc[:,['spout_trial_time','US_end_timer_trial_time']].apply(
+                    lambda x: find_last_time_before_list(x['spout_trial_time'], x['US_end_timer_trial_time']), axis=1)    
+            # select only trials with a spout event before a US_end_timer event
+            reach_bool = reach_time_before_reward.notnull()
+            # select trial where the hold time was present (not aborted)
+            reach_success_bool = reach_bool & self.df_conditions.Go_to_get_water
+            # set these trials as successful
+            self.df_conditions.loc[(reach_success_bool), 'success'] = True
+
+        # # Reorder columns putting trigger, valid and success first for more clarity
+        # col_list = list(self.df_conditions.columns.values)
+        # col_to_put_first = ['trigger', 'success','valid']
+        # for c in col_to_put_first:
+        #     col_list.remove(c)
+        # col_list = ['trigger', 'success','valid'] + col_list
+        # self.df_conditions = self.df_conditions[col_list]
 
         
 
@@ -945,7 +982,7 @@ class Session():
             median_filt: int = None, 
             motion_corr: bool = False, 
             df_over_f: bool = False,
-            zscore: bool = False, # To be implemented
+            z_score: bool = False, # To be implemented
             downsampling_factor: int = None,
             return_full_session: bool = False, 
             export_vars: list = ['analog_1','analog_2'],
@@ -987,7 +1024,7 @@ class Session():
         df_over_f : bool, optional
             If True, computes the dF/F and exports the analog_1_df_over_f variable.
             Default is False.
-        zscore : bool, optional (not implemented yet)
+        z_score : bool, optional (not implemented yet)
             If True, z-scores the data.
             Default is False.
         downsampling_factor : int, optional
@@ -1061,9 +1098,11 @@ class Session():
                 export_vars.append('analog_1_corrected')
 
             elif df_over_f == True:
-                photometry_dict = compute_df_over_f(photometry_dict, low_pass_cutoff=0.001)
+                photometry_dict = compute_df_over_f(photometry_dict, low_pass_cutoff=0.01)
                 export_vars.append('analog_1_df_over_f')
-
+                if z_score == True:
+                    photometry_dict['zscored_df_over_f'] = zscore(photometry_dict['analog_1_df_over_f'])
+                    export_vars.append('zscored_df_over_f')
 
         elif high_pass or low_pass:
             export_vars.append('analog_1_filt')
@@ -1450,8 +1489,9 @@ class Session():
                assert k in self.times.keys(), f"{k} is not found in self.time.keys()"
 
         if export_smrx:
-            from sonpy import lib as sp
             import time
+
+            from sonpy import lib as sp
             if smrx_filename is None:
                 raise Exception('smrx_filename is required')
             #TODO assert .smlx
@@ -1460,7 +1500,10 @@ class Session():
             if mtc is None:
                 raise Exception('smrx_filename has to end with .smrx')
 
-            MyFile = sp.SonFile(smrx_filename)
+            MyFile = sp.SonFile(smrx_filename, nChans = int(400)) #NOTE int() is required
+            #NOTE nChans = ctypes.c_uint16(400) # TypeError
+            #NOTE nChans = 400 # MyFile.MaxChannels() = -1
+            #NOTE sonpy 1.9.5 works with nChans (1.8.5. doesn't)
             CurChan = 0
             UsedChans = 0
             Scale = 65535/20
@@ -1474,22 +1517,27 @@ class Session():
             EventRate = 1/(dTimeBase*1e3)  # Hz, period is 1000 greater than the timebase
             SubDvd = 1                     # How many ticks between attached items in WaveMarks
 
-            max_time_ms1 = np.max([np.max(self.times[k]) for k in keys if any(self.times[k])]) #TODO when no data 
+            times_ = [np.max(self.times[k]) for k in keys if any(self.times[k])]
+            if times_ == []:
+                raise Exception('No time stamp found: Cannot determine MaxTime()')
 
-            list_of_match = [re.match('^\d+', L) for L in self.print_lines if re.match('^\d+', L) is not None]
-            max_time_ms2 = np.max([int(m.group(0)) for m in list_of_match])
+            else:
+                max_time_ms1 = np.max(times_) #TODO ValueError when np.max([]) 
 
-            max_time_ms = np.max([max_time_ms1, max_time_ms2])
-            time_vec_ms = np.arange(0, max_time_ms, 1000/EventRate)
-            # time_vec_micros = np.arange(0, max_time_ms*1000, 10**6 * 1/EventRate)
+                list_of_match = [re.match('^\d+', L) for L in self.print_lines if re.match('^\d+', L) is not None]
+                max_time_ms2 = np.max([int(m.group(0)) for m in list_of_match])
 
-            samples_per_s = EventRate
-            interval = 1/samples_per_s
+                max_time_ms = np.max([max_time_ms1, max_time_ms2])
+                time_vec_ms = np.arange(0, max_time_ms, 1000/EventRate)
+                # time_vec_micros = np.arange(0, max_time_ms*1000, 10**6 * 1/EventRate)
 
-            samples_per_ms = 1/1000 * EventRate
-            interval = 1/samples_per_s
+                samples_per_s = EventRate
+                interval = 1/samples_per_s
 
-            MyFile.SetTimeBase(dTimeBase)  # Set timebase
+                samples_per_ms = 1/1000 * EventRate
+                interval = 1/samples_per_s
+
+                MyFile.SetTimeBase(dTimeBase)  # Set timebase
 
 
         def write_event(MyFile, X_ms, title, y_index, EventRate, time_vec_ms):
@@ -1535,7 +1583,6 @@ class Session():
                 #     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
 
         def write_marker_for_state(MyFile,X_ms, title, y_index, EventRate, time_vec_ms):
-            #TODO nearly there, but file cannot be open
 
             # remove NaN
             X_notnan_ms = [x for x in X_ms if not np.isnan(x)]
@@ -1583,9 +1630,14 @@ class Session():
                     MarkData[i] = sp.DigMark(eventfalldata[0][i]*1000, 1) #onset
                 else:
                     raise Exception('oh no')
-                TMrkData[i] = sp.TextMarker(txt[i], MarkData[i]) #TODO
                 
-            MyFile.SetTextMarkChannel(y_index, EventRate, max(len(s) for s in txt)+1)
+                #NOTE Spike2 truncates text longer than 79 characters???
+                TMrkData[i] = sp.TextMarker(re.sub('\n', '', txt[i]), MarkData[i])
+
+            if len(txt) == 0:
+                MyFile.SetTextMarkChannel(y_index, EventRate, 32)
+            else:
+                MyFile.SetTextMarkChannel(y_index, EventRate, max(len(s) for s in txt)+1)
             MyFile.SetChannelTitle(y_index, title)
             if eventfalldata[0] is not []:
                 MyFile.WriteTextMarks(y_index, TMrkData)
@@ -1722,8 +1774,8 @@ class Session():
 
         if print_to_text:
 
-            EXPR = '^(\d+)\s(.+)'
-            list_of_match = [re.match(EXPR, L) for L in self.print_lines if re.match(EXPR, L) is not None]
+            EXPR = '^(\d+)\s(.+)' #NOTE . doesn't capture \n and re.DOTALL is required below
+            list_of_match = [re.match(EXPR, L, re.DOTALL) for L in self.print_lines if re.match(EXPR, L) is not None]
             ts_ms = [int(m.group(1)) for m in list_of_match]
             txt = [m.group(2) for m in list_of_match]
   
@@ -1739,7 +1791,7 @@ class Session():
                 write_textmark( MyFile, ts_ms, 'print lines', y_index, txt, EventRate, time_vec_ms)
 
         if vchange_to_text:
-            EXPR = '^(\d+)\s(.+)'
+            EXPR = '^([1-9]\d*)\s(.+)' #NOTE Need to ignore the defaults (V 0 ****)
             list_of_match = [re.match(EXPR, L) for L in self.v_lines if re.match(EXPR, L) is not None]
             ts_ms = [int(m.group(1)) for m in list_of_match]
             txt = [m.group(2) for m in list_of_match]
@@ -1974,7 +2026,8 @@ class Experiment():
             self, 
             path: str, 
             int_subject_IDs: bool = True, 
-            update: bool = False, 
+            update: bool = False,
+            folder_by_session: bool = False, 
             verbose: bool = False):
         """
         Import all sessions from specified folder to create experiment object.  Only sessions in the 
@@ -1987,7 +2040,9 @@ class Experiment():
         update:             If True, do not rely only on .pkl file but check for new files
         verbose:            If True, output verbose on the status of the pycontrol files    
         """
-        # path = Path(path)
+        # If data organization based on session's folders
+        self.folder_by_session = folder_by_session
+
         if os.path.isfile(path):
             if path[-4:] == '.pkl':
                 self.path = Path(path)
@@ -2003,9 +2058,23 @@ class Experiment():
                     \n- a sessions.pkl file\
                     \n- a single pycontrol .txt file'))
 
-                    
+        # if path is a folder            
         elif os.path.isdir(path):
             self.path = Path(path)
+
+            if folder_by_session:
+                
+                path = Path(path)
+                session_folder_list = os.listdir(path)
+                # check if all are folders
+                is_folder = [os.path.isdir(path / s_path) for s_path in session_folder_list]
+                # only integrate folders
+                session_folder_list = list(compress(session_folder_list, is_folder))
+
+                pycontrol_folders = [path / s_f / 'pycontrol' for s_f in session_folder_list]
+                pycontrol_files = [f / os.listdir(f)[0] for f in pycontrol_folders if
+                    (len(os.listdir(f)) == 1) and (os.listdir(f)[0][-4:] == '.txt')]
+
 
             # Import sessions.
 
@@ -2024,17 +2093,25 @@ class Experiment():
         
 
             if update:
-                old_files = [session.file_name for session in self._sessions]
-                files = os.listdir(self.path)
-                new_files = [f for f in files if f[-4:] == '.txt' and f not in old_files]
+                if not folder_by_session:
+                    old_files = [session.file_name for session in self._sessions]
+                    files = os.listdir(self.path)
+                    new_files = [f for f in files if f[-4:] == '.txt' and f not in old_files]
 
-                if len(new_files) > 0:
-                    if verbose:
-                        print('Loading new data files..')
-                    self.by_trial = False
                     for file_name in new_files:
                         try:
-                            self._sessions.append(Session(os.path.join(self.path, file_name), int_subject_IDs))
+                            self._sessions.append(Session(Path(self.path) / file_name, int_subject_IDs))
+                        except Exception as error_message:
+                            if verbose:
+                                print('Unable to import file: ' + file_name)
+                                print(error_message)
+                
+                if folder_by_session:
+                    new_files = pycontrol_files
+
+                    for file_name in new_files:
+                        try:
+                            self._sessions.append(Session(file_name), int_subject_IDs)
                         except Exception as error_message:
                             if verbose:
                                 print('Unable to import file: ' + file_name)
@@ -2044,7 +2121,6 @@ class Experiment():
 
         else:
             raise(NotImplementedError)
-
 
         # Assign session numbers.
 
@@ -2514,7 +2590,7 @@ class Experiment():
                     # https://stackoverflow.com/questions/73800841/add-series-as-a-new-row-into-dataframe-triggers-futurewarning
                     # https://stackoverflow.com/questions/71465386/why-pd-concat-of-two-dataframe-leads-to-futurewarning-behavior-when-concatena
         
-        df_conditions_exp['condition_ID'] = df_conditions_exp['condition_ID'].astype(int)         
+        # df_conditions_exp['condition_ID'] = df_conditions_exp['condition_ID'].astype(int)         
         ev_dataset = Event_Dataset(df_events_exp, df_conditions_exp)
 
         ev_dataset.conditions = conditions_list
@@ -2768,11 +2844,14 @@ class Experiment():
             last_before: str = None,
             when = 'all',
             task_names = 'all',
-            high_pass: int = None, # analog_1_df_over_f doesn't work with this
+            baseline_low_pass: int = None, # changed var name from high-pass to baseline_low_pass
+            # due to https://github.com/juliencarponcy/trialexp/pull/9
+            # fixed in https://github.com/juliencarponcy/trialexp/pull/9/commits/2bd4307af9ce2096ff1673b56cf6bacf0a2a8127#diff-90aedd18a2a5cd46987018614831622fb110ef9b08b1d3baad395bf36c0a6e1c
             low_pass: int = None, 
             median_filt: int = None,
             motion_corr: bool = False, 
-            df_over_f: bool = False, 
+            df_over_f: bool = False,
+            z_score: bool = False, 
             downsampling_factor: int = None,
             export_vars: list = ['analog_1','analog_2'],
             # remove_artifacts: bool = False,
@@ -2829,17 +2908,22 @@ class Experiment():
                         print(f'Processing subject {session.subject_ID} at: {session.datetime_string}')
 
                     try:
-                        df_meta_photo, col_names_numpy, photometry_array, fs = session.get_photometry_trials(
+                        df_meta_photo, col_names_numpy, photometry_array, fs = get_photometry_trials(
+                            session,
                             conditions_list = conditions_list, 
                             cond_aliases = cond_aliases,
                             trial_window = self.trial_window,
                             trig_on_ev = trig_on_ev,
                             last_before = last_before,
-                            high_pass = high_pass, 
+                            baseline_low_pass = baseline_low_pass, # var name changed from former high-pass,
+                            # was misleading on baseline computation
+                            # see https://github.com/juliencarponcy/trialexp/issues/8
+                            # first fix 
                             low_pass = low_pass, 
                             median_filt = median_filt,
                             motion_corr = motion_corr, 
                             df_over_f = df_over_f, 
+                            z_score = z_score,
                             downsampling_factor = downsampling_factor, 
                             return_full_session = False,
                             export_vars = export_vars,

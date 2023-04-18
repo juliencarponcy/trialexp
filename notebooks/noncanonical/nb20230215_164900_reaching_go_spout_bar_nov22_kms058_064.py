@@ -95,10 +95,40 @@ smrx_folder_path = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\pycontrol\reachin
 import datetime
 ss = exp_cohort.sessions
 
+
+
+# In[ ]:
+
+
+for i, _ in enumerate(ss):
+    print(ss[i].file_name)
+
+
+# In[ ]:
+
+
+print(ss[-2].file_name)
+print(ss[-2].subject_ID)
+print(ss[-2].experiment_name)
+
+
+
+# In[ ]:
+
+
+update_all_smrx = False
+
 ss_ = [this_ss for this_ss in ss
        if (this_ss.subject_ID in [58, 60, 61, 62, 63, 64])
-       and (this_ss.experiment_name == 'reaching_go_spout_bar_nov22')]
+       and (this_ss.task_name == 'reaching_go_spout_bar_nov22')]
 ss_
+
+
+# In[ ]:
+
+
+for i, _ in enumerate(ss_):
+    print(ss_[i].file_name)
 
 
 # In[ ]:
@@ -233,22 +263,25 @@ for ss in exp_cohort.sessions:
     }
     ]
 
-    try:
-        ss.plot_session(
-            keys, state_def, export_smrx=True, event_ms=event_ms, smrx_filename= smrxname)
 
-        summary_df = pd.concat([summary_df, 
-            pd.DataFrame({
-                'file':ss.file_name,
-                'task':ss.task_name,
-                'triggered_by_spout': len(x_spout),
-                'triggered_by_bar_off': len(x_bar),
-                'reaching_trials': len(bw),
-                'trials': len(ss.times['busy_win'])},
-                index=[0])
-                ],
-                ignore_index=True)
-    except Exception as err:
-        print(f"Unexpected {err=}, {type(err)=}, for {file_name_}")
+    if update_all_smrx or not os.path.isfile(smrxname):
+
+        try:
+            ss.plot_session(
+                keys, state_def, export_smrx=True, event_ms=event_ms, smrx_filename= smrxname)
+
+            summary_df = pd.concat([summary_df, 
+                pd.DataFrame({
+                    'file':ss.file_name,
+                    'task':ss.task_name,
+                    'triggered_by_spout': len(x_spout),
+                    'triggered_by_bar_off': len(x_bar),
+                    'reaching_trials': len(bw),
+                    'trials': len(ss.times['busy_win'])},
+                    index=[0])
+                    ],
+                    ignore_index=True)
+        except Exception as err:
+            print(f"Unexpected {err=}, {type(err)=}, for {file_name_}")
 
 

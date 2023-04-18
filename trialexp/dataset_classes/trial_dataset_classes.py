@@ -252,10 +252,10 @@ class Trials_Dataset():
         if not isinstance(days_to_exclude, list):
             days_to_exclude = [days_to_exclude]
 
-        if all([isinstance(d, datetime) for d in days_to_exclude]):
-            days_to_exclude = [d.date() for d in days_to_exclude]
-        elif all([isinstance(d, date) for d in days_to_exclude]):
+        if all([isinstance(d, date) for d in days_to_exclude]):
             days_to_exclude = days_to_exclude
+        elif all([isinstance(d, datetime) for d in days_to_exclude]):
+            days_to_exclude = [d.date() for d in days_to_exclude]
         else:
             raise TypeError("days_to_exclude has to be a list of datetime or date")
         filter = self.metadata_df['datetime'].apply(
@@ -279,8 +279,8 @@ class Trials_Dataset():
             subject_IDs_to_exclude = [subject_IDs_to_exclude]
         filter = self.metadata_df['subject_ID'].apply(lambda x: x in subject_IDs_to_exclude)
         self.metadata_df.loc[filter,'keep'] = False
-
-    def filter_min(self, min_trials : int = 5):
+    
+    def filter_min_by_condition(self, min_trials : int = 10):
         """
         filter subjects who do not have sufficient trials in a condition,
         NB: this is not removing the trials of this subject in the other
@@ -299,38 +299,86 @@ class Trials_Dataset():
             idx_filter = np.concatenate(trials_idx[discarded].values)
             self.metadata_df.loc[idx_filter,'keep'] = False
 
+    def filter_min_by_session(self, min_trials : int = 5):
+        """
+        filter subjects who do not have sufficient trials in a condition,
+        NB: this is not removing the trials of this subject in the other
+        conditions! 
+        If you want to exclude animals which have less than x trials in
+        a condition from the full dataset, use sequentially:
+        <trial_dataset>.filter_min(min_trials = x)
+        <trial_dataset>.filterout_if_not_in_all_cond()
+        """
+
+        nb_trials = self.metadata_df.groupby(['condition_ID', 'group_ID','subject_ID','session_nb']).agg(len)['trial_ID']
+        trials_idx = self.metadata_df.groupby(['condition_ID', 'group_ID','subject_ID','session_nb']).agg(list)['trial_ID']
+        discarded = nb_trials[nb_trials < min_trials].index
+        if len(discarded) > 0:
+            trials_idx[discarded]
+            idx_filter = np.concatenate(trials_idx[discarded].values)
+            self.metadata_df.loc[idx_filter,'keep'] = False
+
     def filter_lastNsessions(self, n : int):
         """
         Only keep the last n sessions for each animal.
-        The five sessions are counted for the sessions with 'keep' == True
+        The sessions are counted for the sessions with 'keep' == True
         """
-        subject_IDs = list(set(self.metadata_df['subject_ID']))
-        subject_IDs.sort()
+        metadata_df = self.metadata_df[self.metadata_df['keep'] == True].copy()
+        subject_IDs = metadata_df['subject_ID'].unique()
 
-        tf = pd.Series([False] * self.metadata_df.shape[0])
-        for s in subject_IDs:
-            # NOTE copy() is needed
-            session_nbs = self.metadata_df.loc[:, 'session_nb'].copy()
+        idx_reject = list()
+        for subject_ID in subject_IDs:
+            session_nbs = metadata_df[metadata_df['subject_ID'] == subject_ID].session_nb.unique()
+            session_nbs = np.flip(np.sort(session_nbs))
 
-            session_nbs.loc[(
-                (self.metadata_df['subject_ID'] != s)
-                | (self.metadata_df['keep'] != True)
-            )] = -1
+            if len(session_nbs) > n:
+                invalid_sessions_nb = session_nbs[n:]
 
-            largestNs = list(set(session_nbs))
-            largestNs.sort(reverse=True)
+                for inv_s in invalid_sessions_nb:    
+                    idx_reject = idx_reject + list(metadata_df[(metadata_df['subject_ID'] == subject_ID) & (metadata_df['session_nb'] == inv_s)].index.values)
 
-            largestNs = largestNs[0:n]
+        self.metadata_df.loc[(idx_reject), 'keep'] = False
 
-            if -1 in largestNs:
-                largestNs.remove(-1)
+    def filter_lastNdays(self, n : int):
+        """
+        Only keep the last n sessions for each animal.
+        The sessions are counted for the sessions with 'keep' == True
+        """
+        metadata_df = self.metadata_df[self.metadata_df['keep'] == True].copy()
+        subject_IDs = metadata_df['subject_ID'].unique()
 
-            for k in largestNs:
-                tf.loc[session_nbs == k] = True
+        idx_reject = list()
+        for subject_ID in subject_IDs:
+            dates = metadata_df[metadata_df['subject_ID'] == subject_ID].datetime.apply(lambda d: d.date()).unique()
+            dates = np.flip(np.sort(dates))
 
+            if len(dates) > n:
+                invalid_dates = dates[n:]
 
-        self.metadata_df.loc[:,'keep'] = False
-        self.metadata_df.loc[tf,'keep'] = True
+                for inv_d in invalid_dates:    
+                    idx_reject = idx_reject + list(metadata_df[(metadata_df['subject_ID'] == subject_ID) & (metadata_df.datetime.apply(lambda d: d.date()) == inv_d)].index.values)
+
+        self.metadata_df.loc[(idx_reject), 'keep'] = False
+
+    def filter_firstNsessions(self, n : int):
+        """
+        Only keep the first n sessions for each animal.
+        """
+        metadata_df = self.metadata_df[self.metadata_df['keep'] == True].copy()
+        subject_IDs = metadata_df['subject_ID'].unique()
+
+        idx_reject = list()
+        for subject_ID in subject_IDs:
+            session_nbs = metadata_df[metadata_df['subject_ID'] == subject_ID].session_nb.unique()
+            session_nbs = np.sort(session_nbs)
+
+            if len(session_nbs) > n:
+                invalid_sessions_nb = session_nbs[n:]
+
+                for inv_s in invalid_sessions_nb:    
+                    idx_reject = idx_reject + list(metadata_df[(metadata_df['subject_ID'] == subject_ID) & (metadata_df['session_nb'] == inv_s)].index.values)
+
+        self.metadata_df.loc[(idx_reject), 'keep'] = False
 
     def filterout_if_not_in_all_cond(self):
         """
@@ -457,15 +505,15 @@ class Trials_Dataset():
                 | (self.metadata_df['keep'] != True)
             )] = -1
 
-            largestNs = list(set(session_nbs))
-            largestNs.sort(reverse=True)
+            smallestNs = list(set(session_nbs))
+            smallestNs.sort(reverse=True)
 
-            largestNs = largestNs[0:n]
+            smallestNs = smallestNs[0:n]
 
-            if -1 in largestNs:
-                largestNs.remove(-1)
+            if -1 in smallestNs:
+                smallestNs.remove(-1)
 
-            for k in largestNs:
+            for k in smallestNs:
                 tfkeep.loc[session_nbs == k] = True
 
         return tfkeep
@@ -973,9 +1021,9 @@ class Continuous_Dataset(Trials_Dataset):
                 if plot_groups and not plot_subjects:
                     ...
                 else:
-                    axs[0, cond_idx+1].set_title(str(self.cond_aliases[cond_ID]))
+                    axs[0, cond_idx+1].set_title(str(self.cond_aliases[cond_idx]))
             else:
-                    axs[0, cond_idx].set_title(str(self.cond_aliases[cond_ID]))
+                    axs[0, cond_idx].set_title(str(self.cond_aliases[cond_idx]))
 
                     
             # Compute means and sems
@@ -1054,7 +1102,7 @@ class Continuous_Dataset(Trials_Dataset):
                             # if a group is more than a single subject
                             if len(mean_group.shape) > 1:
                                 axs[ax_idx, 0].plot(time_vec, mean_group[ax_idx, :], lw=group_lw,
-                                    color = group_colors(cond_ID), label=self.cond_aliases[cond_ID])
+                                    color = group_colors(cond_ID), label=self.cond_aliases[cond_idx])
                 
                                 if error is not None:
                                     # fill sem
@@ -1066,7 +1114,7 @@ class Continuous_Dataset(Trials_Dataset):
                             # if single subject in the group
                             else:
                                 axs[ax_idx, 0].plot(time_vec, mean_group, lw=group_lw,
-                                color = group_colors(cond_ID), label=self.cond_aliases[cond_ID])
+                                color = group_colors(cond_ID), label=self.cond_aliases[cond_idx])
 
                         else:
                             if g_idx == 0 and cond_idx == 0:
@@ -1105,7 +1153,7 @@ class Continuous_Dataset(Trials_Dataset):
             subj_dfs = pd.concat(subj_dfs)
 
             group_dfs[cond_idx] = pd.DataFrame(list(zip([cond_ID] * len(group_IDs),  
-                [str(self.cond_aliases[cond_ID])] * len(group_IDs),  group_IDs, group_n)))
+                [str(self.cond_aliases[cond_idx])] * len(group_IDs),  group_IDs, group_n)))
 
             group_dfs[cond_idx].columns = ['condition_ID', 'condition_alias', 'group_ID', 'group_trial_n']
 
@@ -1240,6 +1288,8 @@ class Continuous_Dataset(Trials_Dataset):
         This function could share most of the comuputation with Continous_Dataset.lineplot()
         Heatmap representation, rather than line plot, of multiple continuous data, 
         typically representing individual mice or neurons.
+
+        return a list of figures and a list of subject_IDs
         """
         
         vars_dict, time_vec = self.check_vars_and_times_input(vars, time_unit)
@@ -1251,7 +1301,7 @@ class Continuous_Dataset(Trials_Dataset):
 
 
         # Do not take trials/subjects filtered out
-        filtered_df = self.metadata_df[self.metadata_df['keep'] == True]
+        filtered_df = self.metadata_df[self.metadata_df['keep'] == True].copy()
         # Perform grouping, this could be customized later
         gby = filtered_df.groupby(['group_ID','subject_ID','condition_ID'])
         gby = gby.agg({'trial_ID': list})
@@ -1267,14 +1317,18 @@ class Continuous_Dataset(Trials_Dataset):
        
         plt.rcParams["figure.dpi"] = dpi
         plt.rcParams['font.family'] = ['Arial']
+
+        # create empty list of figures
+        figs = ['empty fig' for subject in subj_dict.keys()]
         # basic loop for plot
         for group_ID in group_IDs:
             for subject_ID, subject_idx in subj_dict.items():
+
                 fig_title = f'{subject_ID}'
-                fig, axs = plt.subplots(len(vars), len(condition_IDs), sharex= 'all',
+                figs[subject_idx], axs = plt.subplots(len(vars), len(condition_IDs), sharex= 'all',
                     squeeze = False , figsize = figsize)
                     # sharey = 'row', squeeze = False , figsize = figsize)
-                fig.suptitle(fig_title)
+                figs[subject_idx].suptitle(fig_title)
                 for row_idx, (var_name, col_idx) in enumerate(vars_dict.items()):
 
                     for cond_idx, condition_ID in enumerate(condition_IDs):
@@ -1301,6 +1355,8 @@ class Continuous_Dataset(Trials_Dataset):
                         if time_lim:
                             axs[row_idx, cond_idx].set_xlim([time_lim[0], time_lim[1]])
 
+        # return a 
+        return figs, list(subj_dict.values())
 
 class Event_Dataset(Trials_Dataset):
     """
@@ -1892,9 +1948,15 @@ class Event_Dataset(Trials_Dataset):
 
         return gr_df, out_list, ax, im1
     
-    def plot_raster(self, keys: list = None, conditions_IDs : list = None, separate: bool = True, colors : list = 'default',
-        module: str = 'matplotlib',
-        raster_y: str = 'trial', target: np.array = None):
+    def plot_raster(
+            self, keys: list = None, 
+            conditions_IDs : list = None, 
+            separate: bool = True, 
+            colors : list = 'default',
+            module: str = 'matplotlib',
+            raster_y: str = 'trial', 
+            target: np.array = None,
+            figsize: tuple = None):
         """
         Raster plot for Event_Dataset
         # TODO introduce separation between conditions instead of/alternative to triggers
@@ -1939,8 +2001,12 @@ class Event_Dataset(Trials_Dataset):
         event_cols = [
             event_col for event_col in self.data.columns if '_trial_time' in event_col]
 
+        
+        if not figsize:
+            cm = 1/2.54  # centimeters in inches
+            figsize = (21.0*cm, 29.7*cm)
 
-
+        # easily done by set().intersection
         def intersection(lst1, lst2):
             lst3 = [value for value in lst1 if value in lst2]
             return lst3
@@ -1979,9 +2045,8 @@ class Event_Dataset(Trials_Dataset):
             if target is None:
 
                 if module == 'matplotlib':
-                    cm = 1/2.54  # centimeters in inches
                     fig, ax = plt.subplots(len(event_cols), len(conditions_IDs),
-                        sharex=True, sharey=False, figsize=(21.0*cm, 29.7*cm))
+                        sharex=True, sharey=False, figsize=figsize)
 
                     if len(conditions_IDs) == 1:
                         ax = ax[:, np.newaxis]
@@ -2193,6 +2258,7 @@ class Event_Dataset(Trials_Dataset):
                 )
             fig.show()
 
+        return fig
 
 # TODO: store into helper files
 def histo_only(x: np.array, trial_window: list, bin_size: int):
