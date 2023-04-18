@@ -21,7 +21,7 @@ rule spike_sorting:
     output:
         sorter_specific_folder = directory('{session_path}/{task_path}/{session_id}/ephys/sorter'),
         si_sorted_folder = directory('{session_path}/{task_path}/{session_id}/ephys/si_sorted'),
-        rule_complete = touch(r'{session_path}/{task_path}/{session_id}/processed/spike_sorting.done')
+        rule_complete = touch('{session_path}/{task_path}/{session_id}/processed/spike_sorting.done')
     threads: 64
     log:
         '{session_path}/{task_path}/{session_id}/processed/log/process_spike_sorting.log'
