@@ -49,16 +49,21 @@ for probe_folder in probe_folders:
 
     cell_exp_session = eng.sessionTemplate(probe_folder, 'showGUI', False)
     
+    ### Important:
+    # The following defaults have been modified in CellExplorer base code
+    # to match NeuroPixels defaults, has setting them afterwards induced bugs
+    
     # adjusting wrong default params
     # sampling rate
-    cell_exp_session['extracellular']['sr'] = matlab.double([30000])
-    # nb of channels
-    cell_exp_session['extracellular']['nChannels'] = matlab.double([384])
+    # cell_exp_session['extracellular']['sr'] = matlab.double([30000])
+    # nb of channels: WARNING: This change of parameter introduced an error in Matlab
+    # cell_exp_session['extracellular']['nChannels'] = matlab.double([384])
 
     # Process Cell Metrics
     cell_metrics = eng.ProcessCellMetrics('session', cell_exp_session, \
         'showGUI', False, 'showWaveforms', False, 'showFigures', False, \
-        'manualAdjustMonoSyn', False)
+        'manualAdjustMonoSyn', False, 'forceReloadSpikes', True, 'forceReload', True, \
+        'summaryFigures', True)
 
     # Dump cell metrics dict in pkl
     # with open(probe_folder / 'cell_metrics.pkl', 'wb') as handle:
