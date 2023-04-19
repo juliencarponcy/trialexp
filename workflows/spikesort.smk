@@ -8,20 +8,14 @@ load_dotenv()
 rule all:
     input: expand('{sessions}/processed/spike_workflow.done', sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob('*/*'))
 
-
-# rule create_folder:
-#     output:
-#         create_folder_done = touch('{session_path}/{session_id}/spike_sorting.done')
-#     script:
-#         'scripts/s00_create_session_folders.py'
-
 rule spike_sorting:
     input:
         rec_properties = '{session_path}/{task_path}/{session_id}/ephys/rec_properties.csv'
     output:
         sorter_specific_folder = directory('{session_path}/{task_path}/{session_id}/ephys/sorter'),
         si_sorted_folder = directory('{session_path}/{task_path}/{session_id}/ephys/si_sorted'),
-        rule_complete = touch('{session_path}/{task_path}/{session_id}/processed/spike_sorting.done')
+        rule_complete = touch('{session_path}/{task_path}/{session_id}/processed/spike_sorting.done'),
+
     threads: 64
     log:
         '{session_path}/{task_path}/{session_id}/processed/log/process_spike_sorting.log'
@@ -31,7 +25,9 @@ rule spike_sorting:
 rule spike_metrics_ks3:
     input:
         rec_properties = '{session_path}/{task_path}/{session_id}/ephys/rec_properties.csv',
-        sorter_specific_folder = '{session_path}/{task_path}/{session_id}/ephys/sorter'
+        ks_3_spike_templates_A = '{session_path}/{task_path}/{session_id}/ephys/sorter/kilosort3/probeA/sorter_output/spike_templates.npy',
+        ks_3_spike_templates_B = '{session_path}/{task_path}/{session_id}/ephys/sorter/kilosort3/probeB/sorter_output/spike_templates.npy'
+
     output:
         spike_metrics_A = '{session_path}/{task_path}/{session_id}/ephys/sorter/kilosort3/ProbeA/sorter_output/recording.cell_metrics.cellinfo.mat',
         spike_metrics_B = '{session_path}/{task_path}/{session_id}/ephys/sorter/kilosort3/ProbeB/sorter_output/recording.cell_metrics.cellinfo.mat',
