@@ -3,15 +3,10 @@ Script to create the session folder structure
 '''
 #%%
 import os
-
 from pathlib import Path
 
-import pandas as pd
 import matlab.engine
-
 from snakehelper.SnakeIOHelper import getSnake
-
-import spikeinterface.full as si
 
 from workflows.scripts import settings
 
@@ -27,8 +22,6 @@ from workflows.scripts import settings
 
 sorter_name = 'kilosort3'
 verbose = True
-rec_properties_path = Path(sinput.rec_properties)
-rec_properties = pd.read_csv(rec_properties_path, index_col= None)
 
 sorter_specific_path = Path(sinput.ks_3_spike_templates_A).parent.parent.parent
 
@@ -36,9 +29,11 @@ probe_folders = [str(sorter_specific_path / probe_folder / 'sorter_output') for 
 
 # %% Start Matlab engine and add paths
 eng = matlab.engine.start_matlab()
-s = eng.genpath('/home/MRC.OX.AC.UK/phar0732/Documents/GitHub/spikes')
-n = eng.genpath('/home/MRC.OX.AC.UK/phar0732/Documents/GitHub/npy-matlab')
-c = eng.genpath('/home/MRC.OX.AC.UK/phar0732/Documents/GitHub/CellExplorer')
+
+# Adding Path to Matlab from Environment variables defined in .env file.
+s = eng.genpath(os.environ['CORTEX_LAB_SPIKES_PATH'])
+n = eng.genpath(os.environ['NPY_MATLAB_PATH'])
+c = eng.genpath(os.environ['CELL_EXPLORER_PATH'])
 
 eng.addpath(s, nargout=0)
 eng.addpath(n, nargout=0)
