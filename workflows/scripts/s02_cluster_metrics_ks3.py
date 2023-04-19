@@ -3,10 +3,6 @@ Script to create the session folder structure
 '''
 #%%
 import os
-import warnings
-
-import shutil
-import pickle
 
 from pathlib import Path
 
@@ -34,7 +30,7 @@ verbose = True
 rec_properties_path = Path(sinput.rec_properties)
 rec_properties = pd.read_csv(rec_properties_path, index_col= None)
 
-sorter_specific_path = Path(sinput.sorter_specific_folder) / sorter_name
+sorter_specific_path = Path(sinput.ks_3_spike_templates_A).parent.parent.parent
 
 probe_folders = [str(sorter_specific_path / probe_folder / 'sorter_output') for probe_folder in os.listdir(sorter_specific_path)]
 
@@ -55,9 +51,9 @@ for probe_folder in probe_folders:
     
     # adjusting wrong default params
     # sampling rate
-    cell_exp_session['extracellular']['sr'] = 30000
+    cell_exp_session['extracellular']['sr'] = matlab.double([30000])
     # nb of channels
-    cell_exp_session['extracellular']['nChannels'] = 384
+    cell_exp_session['extracellular']['nChannels'] = matlab.double([384])
 
     # Process Cell Metrics
     cell_metrics = eng.ProcessCellMetrics('session', cell_exp_session, \
@@ -68,5 +64,7 @@ for probe_folder in probe_folders:
     # with open(probe_folder / 'cell_metrics.pkl', 'wb') as handle:
     #     pickle.dump(cell_metrics, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-
+  
+# %% Stop Matlab engine
+eng.quit()
 # %%
