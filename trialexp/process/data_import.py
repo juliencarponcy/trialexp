@@ -1401,8 +1401,8 @@ class Session():
         return self
 
     def plot_session(self, keys: list = None, state_def: list = None, print_expr: list = None, 
-                    event_ms: list = None, export_smrx: bool = False, smrx_filename: str = None, verbose :bool = False,
-                    print_to_text: bool = True, vchange_to_text: bool = True):
+        event_ms: list = None, export_smrx: bool = False, smrx_filename: str = None, verbose :bool = False,
+        print_to_text: bool = True, vchange_to_text: bool = True, photometry_dict : dict = None):
         """
         Visualise a session using Plotly as a scrollable figure
 
@@ -1472,6 +1472,15 @@ class Session():
         vchange_to_text: Bool = True
             Variable changes during the session, eg. "V 12560 windor_dur_ms 3000", will be converted to text (and TextMark channel in Spike2)
 
+        photometry_dict : dict
+            cf. the output of get_photometry_trials
+                expecting 'time_pyc' which is the 'time' convereted with photometry_aligner.B_to_A(photometry_dict['time']) 
+
+            The following chanels will be added:
+                analog_1
+                analog_2
+                analog_1_df_over_f
+
         """
 
         # see  \Users\phar0528\Anaconda3\envs\trialexp\Lib\site-packages\sonpy\MakeFile.py
@@ -1499,28 +1508,49 @@ class Session():
             mtc = re.search('\.smrx$', smrx_filename)
             if mtc is None:
                 raise Exception('smrx_filename has to end with .smrx')
-
+            #NOTE see MakeFile.py 
             MyFile = sp.SonFile(smrx_filename, nChans = int(400)) #NOTE int() is required
             #NOTE nChans = ctypes.c_uint16(400) # TypeError
             #NOTE nChans = 400 # MyFile.MaxChannels() = -1
             #NOTE sonpy 1.9.5 works with nChans (1.8.5. doesn't)
-            CurChan = 0
-            UsedChans = 0
-            Scale = 65535/20
-            Offset = 0
-            ChanLow = 0
-            ChanHigh = 5
+            # CurChan = 0
+            # UsedChans = 0
+            # Scale = 65535/20
+            # Offset = 0
+            # ChanLow = 0
+            # ChanHigh = 5
             tFrom = 0
             tUpto = sp.MaxTime64()         # The maximum allowed time in a 64-bit SON file
             dTimeBase = 1e-6               # s = microseconds
             x86BufSec = 2.
             EventRate = 1/(dTimeBase*1e3)  # Hz, period is 1000 greater than the timebase
-            SubDvd = 1                     # How many ticks between attached items in WaveMarks
+            # How many ticks between attached items in WaveMarks
+            SubDvd = 1
 
             times_ = [np.max(self.times[k]) for k in keys if any(self.times[k])]
             if times_ == []:
-                raise Exception('No time stamp found: Cannot determine MaxTime()')
+                if photometry_dict is not None:
+                    photometry_aligner = Rsync_aligner(self.photometry_rsync.pulse_times_A,
+                                                self.photometry_rsync.pulse_times_B,
+                                                chunk_size=5, plot=False, raise_exception=True)
+                    photometry_times_pyc = photometry_aligner.B_to_A(photometry_dict['time'])
 
+                    nan_indices = np.argwhere(np.isnan(photometry_times_pyc))
+
+                    T_nonan = np.delete(photometry_times_pyc, nan_indices)
+                    max_time_ms = T_nonan[-1]
+
+                    samples_per_s = EventRate #TODO
+                    interval = 1/samples_per_s
+
+                    samples_per_ms = 1/1000 * EventRate
+                    interval = 1/samples_per_s
+
+                    time_vec_ms = np.arange(0, max_time_ms, 1000/EventRate)
+                    MyFile.SetTimeBase(dTimeBase)
+                else:
+                    raise Exception('No time stamp found: Cannot determine MaxTime()')
+                
             else:
                 max_time_ms1 = np.max(times_) #TODO ValueError when np.max([]) 
 
@@ -1650,6 +1680,43 @@ class Session():
                 except:
                     print('error in print')
 
+        def write_waveform_photometry(MyFile, T, AdcData, title, y_index, dTimeBase, multiplier):
+            # T  list of uniform
+            # AdcData ... is this float or int????
+            # title 
+            # y_index, channel ID
+            # multiplier, a positive integer specifing the sampling interval as a multiple of dTimeBase 1e-6
+
+            tFrom = 0
+            MyFile.SetWaveChannel(y_index, 1*multiplier, sp.DataType.Adc)
+            MyFile.SetChannelTitle(y_index, title)
+            MyFile.SetChannelUnits(y_index, 'a.u.')
+
+            def getSpike2ScaleOffset(data):
+                # y axis value = (16-bit ADC value)*scale/6553.6 + offset
+                # https://github.com/kouichi-c-nakamura/Chan_Spike2/blob/main/%40WaveformChan/WaveformChan.m#L688
+                int16_info = np.iinfo(np.int16)
+                scale = ((np.max(data) - np.min(data))*6553.6) / float(int16_info.max - int16_info.min)
+                offset = np.max(data) - float(int16_info.max) * scale/6553.6
+
+                return scale, offset
+
+            scale, offset = getSpike2ScaleOffset(AdcData)
+            
+            MyFile.SetChannelScale(y_index, scale)
+            MyFile.SetChannelOffset(y_index, offset)
+
+            # https://github.com/kouichi-c-nakamura/Chan_Spike2/blob/main/%40WaveformChan/WaveformChan.m#L669
+            AdcData_int = np.int16([(adc - offset)*6553.6/scale for adc in AdcData]) # np.ndarray
+
+            #AdcData is meant to be in int16 (-32,768 to 32,767) or short in C
+            MyFile.SetChannelYRange(y_index, np.max(AdcData_int), np.min(AdcData_int))
+
+            tNext = MyFile.WriteInts(y_index, AdcData_int, tFrom)
+            # MyFile.WriteInts(y_index, AdcData, tNext)
+
+            #TODO
+
         def find_states(state_def_dict: dict):
             """
             state_def: dict, list, or None = None
@@ -1729,8 +1796,9 @@ class Session():
         y_index = 0
         for kind, k in enumerate(keys):
             y_index += 1
-            line1 = go.Scatter(x=self.times[k]/1000, y=[k]
-                        * len(self.times[k]), name=k, mode='markers', marker_symbol=symbols[y_index % 40])
+            line1 = go.Scatter(x=self.times[k]/1000, 
+                    y=[k] * len(self.times[k]), 
+                    name=k, mode='markers', marker_symbol=symbols[y_index % 40])
             fig.add_trace(line1)
 
             if export_smrx:
@@ -1838,7 +1906,58 @@ class Session():
                 state_ms = None
         else:
             state_ms = None
-             
+            
+        if photometry_dict is not None:
+            
+            photometry_aligner = Rsync_aligner(self.photometry_rsync.pulse_times_A,
+                                               self.photometry_rsync.pulse_times_B,
+                                               chunk_size=5, plot=False, raise_exception=True)
+            photometry_times_pyc = photometry_aligner.B_to_A(photometry_dict['time'])
+
+            y_index += 1
+            #NOTE this will require adding extra axes for each waveform channels #TODO
+
+            # line1 = go.Scatter(x=[t /1000 for t in photometry_times_pyc], 
+            #         y=photometry_dict['analog_1'], #TODO to modify it for a channel
+            #     name='analog1', mode='lines', line=dict(width=1))
+            # fig.add_trace(line1)
+
+            # line2 = go.Scatter(x=[t / 1000 for t in photometry_times_pyc],
+            #         y=photometry_dict['analog_2'],
+            #         name='analog2', mode='lines', line=dict(width=1))
+            # fig.add_trace(line2)
+
+            # line3 = go.Scatter(x=[t / 1000 for t in photometry_times_pyc],
+            #         y=photometry_dict['analog_1_df_over_f'],
+            #         name='analog_1_df_over_f', mode='lines', line=dict(width=1))
+            # fig.add_trace(line3)
+
+            #NOTE It appears that Plotly cannot handle continuous data very well, maybe too many data points
+
+            if export_smrx:
+
+                Y = photometry_dict['analog_1']
+                T = photometry_times_pyc 
+
+                nan_indices = np.argwhere(np.isnan(T))
+
+                T_nonan = np.delete(T, nan_indices)
+                Y_nonan = np.delete(Y, nan_indices)
+
+                # Need to use interp to accomodate data into Spike2 bins
+                new_T = np.arange(0, time_vec_ms[-1], 1/photometry_dict['sampling_rate']*1000) #TODO how to determine this?
+                new_Y = np.interp(new_T, T_nonan, Y_nonan)
+
+                FIG, AX = plt.subplots()
+                
+                AX.plot(new_T, new_Y)
+
+                plt.show()
+
+                write_waveform_photometry(MyFile, new_T, new_Y, 'alalog_1', y_index, dTimeBase, int(1e4) ) #TODO int(photometry_dict['sampling_rate']/dTimeBase)
+                #write_waveform_photometry(MyFile, new_T, new_Y, 'alalog_2', y_index, dTimeBase, int(1e4))
+                #write_waveform_photometry(MyFile, new_T, new_Y, 'analog_1_df_over_f', y_index , dTimeBase,  int(1e4))
+
 
         fig.update_xaxes(title='Time (s)')
         fig.update_yaxes(fixedrange=True) # Fix the Y axis
