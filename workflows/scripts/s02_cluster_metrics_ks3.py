@@ -31,7 +31,7 @@ probe_folders = [str(sorter_specific_path / probe_folder / 'sorter_output') for 
 eng = matlab.engine.start_matlab()
 
 # Adding Path to Matlab from Environment variables defined in .env file.
-s = eng.genpath(os.environ['CORTEX_LAB_SPIKES_PATH'])
+s = eng.genpath(os.environ['CORTEX_LAB_SPIKES_PATH']) # maybe unnecessary, just open all ks3 results
 n = eng.genpath(os.environ['NPY_MATLAB_PATH'])
 c = eng.genpath(os.environ['CELL_EXPLORER_PATH'])
 
@@ -61,7 +61,7 @@ for probe_folder in probe_folders:
         'summaryFigures', True)
 
     # Dump cell metrics dict in pkl
-    # with open(probe_folder / 'cell_metrics.pkl', 'wb') as handle:
+    # with open(probe_folder / 'cell_metrics.pkl', 'wb') as handle: 
     #     pickle.dump(cell_metrics, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
   
