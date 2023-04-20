@@ -5,17 +5,24 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+def rec_properties_input(wildcards):
+    # determine if there is an ephys recording for that folder
+    recording_csv = glob(f'{wildcards.session_path}/{wildcards.task_path}/{wildcards.session_id}/ephys/rec_properties.csv')
+    if len(recording_csv) > 0:
+        return f'{wildcards.session_path}/{wildcards.task_path}/{wildcards.session_id}/ephys/rec_properties.csv'
+    else:
+        return []
+
 rule all:
     input: expand('{sessions}/processed/spike_workflow.done', sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob('*/*'))
 
 rule spike_sorting:
     input:
-        rec_properties = '{session_path}/{task_path}/{session_id}/ephys/rec_properties.csv'
+        rec_properties = rec_properties_input
     output:
-        sorter_specific_folder = directory('{session_path}/{task_path}/{session_id}/ephys/sorter'),
-        si_sorted_folder = directory('{session_path}/{task_path}/{session_id}/ephys/si_sorted'),
-        rule_complete = touch('{session_path}/{task_path}/{session_id}/processed/spike_sorting.done'),
-
+        rule_complete = touch('{session_path}/{task_path}/{session_id}/processed/spike_sorting.done'),       
+        ks_3_spike_templates_A = '{session_path}/{task_path}/{session_id}/ephys/sorter/kilosort3/probeA/sorter_output/spike_templates.npy',
+        ks_3_spike_templates_B = '{session_path}/{task_path}/{session_id}/ephys/sorter/kilosort3/probeB/sorter_output/spike_templates.npy'
     threads: 64
     log:
         '{session_path}/{task_path}/{session_id}/processed/log/process_spike_sorting.log'
@@ -24,7 +31,7 @@ rule spike_sorting:
 
 rule spike_metrics_ks3:
     input:
-        rec_properties = '{session_path}/{task_path}/{session_id}/ephys/rec_properties.csv',
+        sorting_complete = '{session_path}/{task_path}/{session_id}/processed/spike_sorting.done',
         ks_3_spike_templates_A = '{session_path}/{task_path}/{session_id}/ephys/sorter/kilosort3/probeA/sorter_output/spike_templates.npy',
         ks_3_spike_templates_B = '{session_path}/{task_path}/{session_id}/ephys/sorter/kilosort3/probeB/sorter_output/spike_templates.npy'
 
@@ -38,16 +45,9 @@ rule spike_metrics_ks3:
     script:
         "scripts/s02_cluster_metrics_ks3.py"
 
-def rec_properties_input(wildcards):
-    # determine if there is an ephys recording for that folder
-    recording_csv = glob(f'{wildcards.session_path}/{wildcards.task_path}/{wildcards.session_id}/ephys/rec_properties.csv')
-    if len(recording_csv) > 0:
-        return f'{wildcards.session_path}/{wildcards.task_path}/{wildcards.session_id}/processed/spike_sorting.done'
-    else:
-        return []
 
 rule final:
     input:
-        spike_sorting_done = rec_properties_input,
+        spike_metrics_done = '{session_path}/{task_path}/{session_id}/processed/spike_metrics.done'
     output:
         done = touch('{session_path}/{task_path}/{session_id}/processed/spike_workflow.done')
