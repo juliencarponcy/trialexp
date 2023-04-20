@@ -12,12 +12,10 @@ from pathlib import Path
 import pandas as pd
 
 from snakehelper.SnakeIOHelper import getSnake
-from workflows.scripts import settings
+from workflow.scripts import settings
 import spikeinterface.extractors as se
 import spikeinterface.sorters as ss
 from spikeinterface.core import select_segment_recording
-
-from workflows.scripts import settings
 from trialexp.process.ephys.spikesort import sort
 
 
