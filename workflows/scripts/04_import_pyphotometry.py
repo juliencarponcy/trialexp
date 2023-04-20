@@ -15,7 +15,7 @@ from workflows.scripts import settings
 #%% Load inputs
 
 (sinput, soutput) = getSnake(locals(), 'workflows/spout_bar_nov22.smk',
-   [settings.debug_folder + 'processed/xr_photometry.nc'],
+   [settings.debug_folder + '/processed/xr_photometry.nc'],
   'import_pyphotometry')
 
 

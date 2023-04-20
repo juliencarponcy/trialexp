@@ -16,7 +16,7 @@ from workflows.scripts import settings
 #%% Load inputs
 
 (sinput, soutput) = getSnake(locals(), 'workflows/spout_bar_nov22.smk',
-  [settings.debug_folder + 'processed/df_events_cond.pkl'],
+  [settings.debug_folder + '/processed/df_events_cond.pkl'],
   'process_pycontrol')
 
 #%% Read pycontrol file
@@ -33,7 +33,7 @@ task_name = df_pycontrol.attrs['Task name']
 session_id = Path(sinput.session_path).name
 
 df_pycontrol.attrs['session_id'] = session_id
-df_pycontrol.to_pickle(soutput.pycontrol_dataframe)
+# df_pycontrol.to_pickle(soutput.pycontrol_dataframe)
 
 #%% Read task definition
 tasks = pd.read_csv('params/tasks_params.csv', usecols=[1, 2, 3, 4], index_col=False)
