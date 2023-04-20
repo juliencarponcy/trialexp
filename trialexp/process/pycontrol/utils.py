@@ -28,7 +28,6 @@ def parse_session_dataframe(df_session):
     df_events = df_session[(df_session.type!='info')]
     info = df_session[df_session.type=='info']
     info = dict(zip(info.name, info.value))
-    df_events = df_events.drop(columns='duration')
     df_events.attrs.update(info)
     
     return df_events
