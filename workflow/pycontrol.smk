@@ -2,8 +2,8 @@ from glob import glob
 from pathlib import Path
 import os
 
-rule all:
-    input: expand('{sessions}/processed/task.done', sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob('*/*'))
+rule pycontrol_all:
+    input: expand('{sessions}/processed/pycontrol_workflow.done', sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob('*/*'))
 
 rule process_pycontrol:
     input:
@@ -69,10 +69,10 @@ def photometry_input(wildcards):
     else:
         return []
 
-rule final:
+rule pycontrol_final:
     input:
         photometry_done = photometry_input,
         pycontrol_done = '{session_path}/{task}/{session_id}/processed/log/pycontrol.done',
         spike2='{session_path}/{task}/{session_id}/processed/spike2.smrx'
     output:
-        done = touch('{session_path}/{task}/{session_id}/processed/task.done')
+        done = touch('{session_path}/{task}/{session_id}/processed/pycontrol_workflow.done')

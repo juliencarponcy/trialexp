@@ -13,7 +13,7 @@ def rec_properties_input(wildcards):
     else:
         return []
 
-rule all:
+rule spike_sort_all:
     input: expand('{sessions}/processed/spike_workflow.done', sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob('*/*'))
 
 rule spike_sorting:
@@ -46,7 +46,7 @@ rule spike_metrics_ks3:
         "scripts/s02_cluster_metrics_ks3.py"
 
 
-rule final:
+rule spike_sort_final:
     input:
         spike_metrics_done = '{session_path}/{task_path}/{session_id}/processed/spike_metrics.done'
     output:
