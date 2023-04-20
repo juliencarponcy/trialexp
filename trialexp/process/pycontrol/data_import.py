@@ -288,6 +288,28 @@ def session_dataframe(file_path, paired_events={}, pair_end_suffix=None):
             line_dicts.append({'type'  : 'print',
                                'time'  : int(line[2:].split(' ',1)[0]),
                                'value' : line[2:].split(' ',1)[1]})
+        elif line[0] == 'V': #Variable line
+            vars = line.split(' ')[1:]
+            
+            # variables may contains list, that will complicate its parsing
+            # trying to work around that now
+            if len(vars) == 3:
+                # no list
+                timestamp = int(vars[0])
+                var_name = vars[1]
+                var_value = float(vars[2])
+            else:
+                # possible list in the last item
+                timestamp = int(vars[0])
+                var_name = vars[1]
+                var_value = ' '.join(vars[2:])
+            
+            line_dicts.append({
+                'type': 'parameters',
+                'name': var_name,
+                'time': timestamp,
+                'value': var_value
+            })
 
     df = pd.DataFrame(line_dicts)
     
