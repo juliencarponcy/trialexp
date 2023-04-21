@@ -42,8 +42,8 @@ idx_to_sort = rec_properties[rec_properties.longest == True].index.values
 
 root_data_path = os.environ['SORTING_ROOT_DATA_PATH']
 
-si_sorted_folder = Path(soutput.si_sorted_folder)
-sorter_specific_folder = Path(soutput.sorter_specific_folder)
+si_sorted_folder = Path(sinput.rec_properties).parent / 'si_sorted'
+sorter_specific_folder = Path(sinput.rec_properties).parent / 'sorter'
 
 # %%
 for idx_rec in idx_to_sort:
