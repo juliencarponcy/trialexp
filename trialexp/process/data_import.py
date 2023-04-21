@@ -1680,14 +1680,15 @@ class Session():
                 except:
                     print('error in print')
 
-        def write_waveform_photometry(MyFile, T, AdcData, title, y_index, dTimeBase, multiplier):
+        def write_waveform(MyFile, T, AdcData, title, y_index, dTimeBase, multiplier):
             # T  list of uniform
             # AdcData ... is this float or int????
             # title 
             # y_index, channel ID
             # multiplier, a positive integer specifing the sampling interval as a multiple of dTimeBase 1e-6
 
-            tFrom = 0
+            tFrom = 0 #TODO
+
             MyFile.SetWaveChannel(y_index, 1*multiplier, sp.DataType.Adc)
             MyFile.SetChannelTitle(y_index, title)
             MyFile.SetChannelUnits(y_index, 'a.u.')
@@ -1914,50 +1915,54 @@ class Session():
                                                chunk_size=5, plot=False, raise_exception=True)
             photometry_times_pyc = photometry_aligner.B_to_A(photometry_dict['time'])
 
-            y_index += 1
-            #NOTE this will require adding extra axes for each waveform channels #TODO
+            T = photometry_times_pyc # not down-sampled yet
 
-            # line1 = go.Scatter(x=[t /1000 for t in photometry_times_pyc], 
-            #         y=photometry_dict['analog_1'], #TODO to modify it for a channel
-            #     name='analog1', mode='lines', line=dict(width=1))
+            ## for data before downsampling
+
+            y_index += 1
+            multiplier = int((1/photometry_dict['sampling_rate']) / dTimeBase) #NOTE need to be prepared 
+
+            nan_indices = np.argwhere(np.isnan(T))
+            T_nonan = np.delete(T, nan_indices)
+
+            Y = photometry_dict['analog_1']
+            Y_nonan = np.delete(Y, nan_indices)  # []
+
+            new_T = np.arange(0, time_vec_ms[-1], 1/1000*1000) #NOTE sampling_rate was originally 1000
+            new_Y = np.interp(new_T, T_nonan, Y_nonan)
+
+           # line1 = go.Scatter(x=new_T, y =new_Y,
+            #         name='analog_1', mode='lines', line=dict(width=1))
             # fig.add_trace(line1)
 
-            # line2 = go.Scatter(x=[t / 1000 for t in photometry_times_pyc],
-            #         y=photometry_dict['analog_2'],
-            #         name='analog2', mode='lines', line=dict(width=1))
-            # fig.add_trace(line2)
+            if export_smrx:
+                write_waveform(MyFile, new_T, new_Y, 'analog_1', y_index, dTimeBase, multiplier)
 
-            # line3 = go.Scatter(x=[t / 1000 for t in photometry_times_pyc],
-            #         y=photometry_dict['analog_1_df_over_f'],
+            ## analog_1_df_over_f
+
+            y_index += 1
+
+            multiplier = int((1/photometry_dict['sampling_rate']) / dTimeBase) #NOTE need to be prepared 
+
+            Tdown = [T[i] for i in range(0, len(T), 10)] #down sampling time vector
+
+            nan_indices = np.argwhere(np.isnan(Tdown))
+            Tdown_nonan = np.delete(Tdown, nan_indices)
+
+
+            Y = photometry_dict['analog_1_df_over_f']
+            Y_nonan = np.delete(Y, nan_indices) # []
+
+            # Need to use interp to accomodate data into Spike2 bins
+            new_T = np.arange(0, time_vec_ms[-1], 1/photometry_dict['sampling_rate']*1000) #NOTE sampling_rate is already downsampled by 10
+            new_Y = np.interp(new_T, Tdown_nonan, Y_nonan)
+
+            # line3 = go.Scatter(x=new_T, y=new_Y,
             #         name='analog_1_df_over_f', mode='lines', line=dict(width=1))
             # fig.add_trace(line3)
 
-            #NOTE It appears that Plotly cannot handle continuous data very well, maybe too many data points
-
             if export_smrx:
-
-                Y = photometry_dict['analog_1']
-                T = photometry_times_pyc 
-
-                nan_indices = np.argwhere(np.isnan(T))
-
-                T_nonan = np.delete(T, nan_indices)
-                Y_nonan = np.delete(Y, nan_indices)
-
-                # Need to use interp to accomodate data into Spike2 bins
-                new_T = np.arange(0, time_vec_ms[-1], 1/photometry_dict['sampling_rate']*1000) #TODO how to determine this?
-                new_Y = np.interp(new_T, T_nonan, Y_nonan)
-
-                FIG, AX = plt.subplots()
-                
-                AX.plot(new_T, new_Y)
-
-                plt.show()
-
-                write_waveform_photometry(MyFile, new_T, new_Y, 'alalog_1', y_index, dTimeBase, int(1e4) ) #TODO int(photometry_dict['sampling_rate']/dTimeBase)
-                #write_waveform_photometry(MyFile, new_T, new_Y, 'alalog_2', y_index, dTimeBase, int(1e4))
-                #write_waveform_photometry(MyFile, new_T, new_Y, 'analog_1_df_over_f', y_index , dTimeBase,  int(1e4))
-
+                write_waveform(MyFile, new_T, new_Y, 'analog_1_df_over_f', y_index, dTimeBase, multiplier)
 
         fig.update_xaxes(title='Time (s)')
         fig.update_yaxes(fixedrange=True) # Fix the Y axis
