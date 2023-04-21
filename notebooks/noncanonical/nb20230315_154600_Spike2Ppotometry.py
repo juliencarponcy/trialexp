@@ -6,7 +6,7 @@
 # 
 # 
 
-# In[32]:
+# In[ ]:
 
 
 import os
@@ -158,7 +158,7 @@ exp_cohort.sessions[0].print_lines[0:30]
 # In[ ]:
 
 
-for ss in exp_cohort.sessions:
+for session in exp_cohort.sessions:
     smrxname = re.sub('\.txt', f'_{ss.task_name}.smrx', ss.file_name)
     print(smrxname)
 
@@ -421,6 +421,47 @@ print(offset)
 
 
 session.plot_session(keys=[], export_smrx = True, smrx_filename = 'temp.smrx', photometry_dict = photometry_dict)
+
+
+# In[ ]:
+
+
+keys = [
+    'button_press', 'bar', 'bar_off', 'spout', 'US_delay_timer', 'CS_offset_timer']
+
+state_def = [
+    {'name': 'waiting_for_bar',    'onset': 'waiting_for_bar',
+        'offset': 'hold_for_water'},
+    {'name': 'hold_for_water',    'onset': 'hold_for_water',
+        'offset': ['waiting_for_spout', 'break_after_abort']},
+    {'name': 'waiting_for_spout',    'onset': 'waiting_for_spout',
+        'offset': ['busy_win', 'break_after_trial']},
+    {'name': 'busy_win',    'onset': 'busy_win',    'offset': 'break_after_trial'},
+    {'name': 'break_after_trial', 'onset': 'break_after_trial',
+        'offset': 'waiting_for_bar'},
+    {'name': 'break_after_abort', 'onset': 'break_after_abort', 'offset': 'waiting_for_bar'}]
+
+
+bw = ss.times['busy_win']
+sp = ss.times['spout']
+
+x_spout = [this_bw for this_bw in bw for spouts in sp if (
+    spouts < this_bw) and (this_bw - spouts < 100)]
+
+x_bar = [this_bw for this_bw in bw if not any(
+    [(spouts < this_bw) and (this_bw - spouts < 100) for spouts in sp])]
+    
+event_ms = [{
+    'name': 'triggered by spout',
+    'time_ms': x_spout
+},
+{
+    'name': 'triggered by bar_off',
+    'time_ms': x_bar
+}
+]
+
+session.plot_session(keys, state_def, export_smrx=True, smrx_filename = 'temp1.smrx', event_ms=event_ms, photometry_dict = photometry_dict)
 
 
 # # get_photometry_trials?
