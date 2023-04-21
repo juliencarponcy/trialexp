@@ -1917,10 +1917,10 @@ class Session():
 
             T = photometry_times_pyc # not down-sampled yet
 
-            ## for data before downsampling
+            ## for data before downsampling: analog_1
 
             y_index += 1
-            multiplier = int((1/photometry_dict['sampling_rate']) / dTimeBase) #NOTE need to be prepared 
+            multiplier = int((1/1000) / dTimeBase) #NOTE sampling_rate was originally 1000
 
             nan_indices = np.argwhere(np.isnan(T))
             T_nonan = np.delete(T, nan_indices)
@@ -1931,14 +1931,36 @@ class Session():
             new_T = np.arange(0, time_vec_ms[-1], 1/1000*1000) #NOTE sampling_rate was originally 1000
             new_Y = np.interp(new_T, T_nonan, Y_nonan)
 
-           # line1 = go.Scatter(x=new_T, y =new_Y,
+            # line1 = go.Scatter(x=new_T, y =new_Y,
             #         name='analog_1', mode='lines', line=dict(width=1))
             # fig.add_trace(line1)
 
             if export_smrx:
                 write_waveform(MyFile, new_T, new_Y, 'analog_1', y_index, dTimeBase, multiplier)
 
-            ## analog_1_df_over_f
+
+            ## for data before downsampling: analog_2
+
+            y_index += 1
+            multiplier = int((1/1000) / dTimeBase) #NOTE sampling_rate was originally 1000
+
+            nan_indices = np.argwhere(np.isnan(T))
+            T_nonan = np.delete(T, nan_indices)
+
+            Y = photometry_dict['analog_2']
+            Y_nonan = np.delete(Y, nan_indices)  # []
+
+            new_T = np.arange(0, time_vec_ms[-1], 1/1000*1000) #NOTE sampling_rate was originally 1000
+            new_Y = np.interp(new_T, T_nonan, Y_nonan)
+
+            # line2 = go.Scatter(x=new_T, y =new_Y,
+            #         name='analog_2', mode='lines', line=dict(width=1))
+            # fig.add_trace(line2)
+
+            if export_smrx:
+                write_waveform(MyFile, new_T, new_Y, 'analog_2', y_index, dTimeBase, multiplier)
+
+            ## down-sampled: analog_1_df_over_f
 
             y_index += 1
 
