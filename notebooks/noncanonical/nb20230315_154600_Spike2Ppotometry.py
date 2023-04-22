@@ -6,7 +6,7 @@
 # 
 # 
 
-# In[38]:
+# In[ ]:
 
 
 import os
@@ -21,7 +21,7 @@ get_ipython().system('jupyter nbconvert "{input_path}" --to="python" --output="{
 
 # # Imports
 
-# In[ ]:
+# In[1]:
 
 
 # allow for automatic reloading of classes and function when updating the code
@@ -207,15 +207,20 @@ cond_aliases
 
 # ## modified from `get_photometry_trials`
 # 
-# `get_photometry_trials` in `\process\data_import.py`
+# taken from `trialexp\process\pyphotometry\photometry_functional.py`
 # 
 # confusingly the same name of fuctions are found in 
 # ```
 # \process\data_import.py
 # \process\pycontrol\data_import.py
 # \process\pycontrol\session_analysis.py
+# \process\pyphotometry\photometry_functional.py
 # ```
 # 
+# 
+# parameters are taken from `notebooks\noncanonical\nb20230222_092800_poster_delayed_tasks_photometry.ipynb`
+# calls `get_photometry_groups` in `trialexp\process\data_import.py`
+# calls `get_photometry_trials` in `trialexp\process\pyphotometry\photometry_functional.py`
 
 # In[ ]:
 
@@ -393,35 +398,6 @@ else:
     # photo_array = np.ndarray((len(trials_idx), len(photometry_idx),len(export_vars)))
 
 # df_meta_photo, col_names_numpy, photo_array, photometry_dict
-
-
-# In[ ]:
-
-
-Y = photometry_dict['analog_1']
-T = photometry_times_pyc 
-
-nan_indices = np.argwhere(np.isnan(T))
-
-T_nonan = np.delete(T, nan_indices)
-Y_nonan = np.delete(Y, nan_indices)
-
-
-# Use Waveform
-# Need to use interp to accomodate data into Spike2 bins
-new_T = np.arange(0, 100, 0.01) #TODO
-new_Y = np.interp(new_T, T_nonan, Y_nonan)
-
-
-# In[ ]:
-
-
-int16_info = np.iinfo(np.int16)
-data = new_Y
-scale = ((np.max(data) - np.min(data))*6553.6) / float(int16_info.max - int16_info.min)
-offset = np.max(data) - float(int16_info.max) * scale/6553.6
-print(scale)
-print(offset)
 
 
 # # session.plot_session()
