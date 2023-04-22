@@ -6,7 +6,7 @@
 # 
 # 
 
-# In[ ]:
+# In[38]:
 
 
 import os
@@ -158,7 +158,7 @@ exp_cohort.sessions[0].print_lines[0:30]
 # In[ ]:
 
 
-for session in exp_cohort.sessions:
+for ss in exp_cohort.sessions:
     smrxname = re.sub('\.txt', f'_{ss.task_name}.smrx', ss.file_name)
     print(smrxname)
 
@@ -205,7 +205,16 @@ condition_list
 cond_aliases
 
 
-# Copy and modify `get_photometry_trials`
+# ## modified from `get_photometry_trials`
+# 
+# `get_photometry_trials` in `\process\data_import.py`
+# 
+# confusingly the same name of fuctions are found in 
+# ```
+# \process\data_import.py
+# \process\pycontrol\data_import.py
+# \process\pycontrol\session_analysis.py
+# ```
 # 
 
 # In[ ]:
