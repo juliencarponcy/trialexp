@@ -1971,6 +1971,12 @@ class Session():
             waveform_for_original_Fs('analog_2', photometry_dict, T, y_index, dTimeBase,export_smrx, MyFile)
 
             y_index += 1
+            waveform_for_original_Fs('analog_1_filt', photometry_dict, T, y_index, dTimeBase,export_smrx, MyFile)
+
+            y_index += 1
+            waveform_for_original_Fs('analog_2_filt', photometry_dict, T, y_index, dTimeBase,export_smrx, MyFile)
+
+            y_index += 1
             waveform_for_original_Fs('analog_1_est_motion', photometry_dict, T, y_index, dTimeBase,export_smrx, MyFile)
 
             y_index += 1
