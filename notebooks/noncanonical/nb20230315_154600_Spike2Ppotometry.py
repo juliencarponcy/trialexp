@@ -6,7 +6,7 @@
 # 
 # 
 
-# In[ ]:
+# In[3]:
 
 
 import os
@@ -21,7 +21,7 @@ get_ipython().system('jupyter nbconvert "{input_path}" --to="python" --output="{
 
 # # Imports
 
-# In[1]:
+# In[4]:
 
 
 # allow for automatic reloading of classes and function when updating the code
@@ -38,7 +38,7 @@ import re
 
 # # Variables
 
-# In[ ]:
+# In[5]:
 
 
 trial_window = [-2000, 6000]  # in ms
@@ -64,7 +64,7 @@ photometry_dir = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\pyphotometry\data\r
 video_dir = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\videos'
 
 
-# In[ ]:
+# In[6]:
 
 
 tasks = pd.read_csv(tasksfile, usecols=[1, 2, 3, 4], index_col=False)
@@ -74,7 +74,7 @@ tasks
 # ### Create an experiment object
 # 
 
-# In[ ]:
+# In[7]:
 
 
 # Folder of a full experimental batch, all animals included
@@ -98,7 +98,7 @@ exp_cohort.by_trial = True
 smrx_folder_path = r'\\ettin\Magill_Lab\Julien\Data\head-fixed\pycontrol\reaching_go_spout_bar_nov22\processed'
 
 
-# In[ ]:
+# In[8]:
 
 
 exp_cohort.match_sessions_to_files(photometry_dir, ext='ppd')
@@ -106,7 +106,7 @@ exp_cohort.sync_photometry_files(2)
 exp_cohort.save()
 
 
-# In[ ]:
+# In[9]:
 
 
 update_all_smrx = False
@@ -120,13 +120,13 @@ ss_ = [this_ss for this_ss in ss
 ss_
 
 
-# In[ ]:
+# In[10]:
 
 
 exp_cohort.sessions = ss_
 
 
-# In[ ]:
+# In[11]:
 
 
 # Many combinations possible
@@ -149,13 +149,13 @@ groups = None
 # Window to exctract (in ms)
 
 
-# In[ ]:
+# In[12]:
 
 
 exp_cohort.sessions[0].print_lines[0:30]
 
 
-# In[ ]:
+# In[13]:
 
 
 for ss in exp_cohort.sessions:
@@ -163,7 +163,7 @@ for ss in exp_cohort.sessions:
     print(smrxname)
 
 
-# In[ ]:
+# In[14]:
 
 
 exp_cohort.sessions[0].print_lines[0]
@@ -173,13 +173,13 @@ a = re.sub('\n', '', exp_cohort.sessions[0].print_lines[0])
 print(a)
 
 
-# In[ ]:
+# In[15]:
 
 
 vars(exp_cohort.sessions[0].photometry_rsync)
 
 
-# In[ ]:
+# In[16]:
 
 
 i = 0
@@ -191,14 +191,14 @@ photometry_dict = import_ppd(exp_cohort.sessions[i].files['ppd'][0])
 photometry_times_pyc = photometry_aligner.B_to_A(photometry_dict['time'])
 
 
-# In[ ]:
+# In[17]:
 
 
 lst = list(exp_cohort.sessions[i].__dict__.keys())
 print(lst)
 
 
-# In[ ]:
+# In[18]:
 
 
 condition_list
@@ -222,7 +222,7 @@ cond_aliases
 # calls `get_photometry_groups` in `trialexp\process\data_import.py`
 # calls `get_photometry_trials` in `trialexp\process\pyphotometry\photometry_functional.py`
 
-# In[ ]:
+# In[19]:
 
 
 session = exp_cohort.sessions[i]
@@ -319,7 +319,7 @@ col_names_numpy = {var: var_idx for var_idx, var in enumerate(export_vars)}
 
 
 
-# In[ ]:
+# In[20]:
 
 
 trials_idx = np.zeros((1, 1))
@@ -328,7 +328,7 @@ timestamps_pycontrol = np.zeros((1, 1))
 print(trials_idx.shape)
 
 
-# In[ ]:
+# In[21]:
 
 
 # assumes that sync between pycontrol and photometry has been performed in previous step
@@ -358,7 +358,7 @@ photometry_idx = [range(idx + int(trial_window[0]/(1000/photometry_dict['samplin
     idx + int(trial_window[1]/(1000/photometry_dict['sampling_rate']))) for idx in photometry_idx]
 
 
-# In[ ]:
+# In[22]:
 
 
 photo_array = np.ndarray((len(trials_idx), len(photometry_idx[0]),len(export_vars)))
@@ -375,7 +375,7 @@ df_meta_photo['task_name'] = session.task_name
 # df_meta_photo['condition_ID'] = condition_ID
 
 
-# In[ ]:
+# In[23]:
 
 
 if 'photo_array' in locals():
@@ -449,10 +449,166 @@ event_ms = [{
 session.plot_session(keys, state_def, export_smrx=True, smrx_filename = 'temp1.smrx', event_ms=event_ms, photometry_dict = photometry_dict)
 
 
-# # get_photometry_trials?
+# # Photometry data processing?
 # 
-# `get_photometry_trials` > `get_trials_times_from_conditions`
 # 
-# This function won't work for non-trial based analysis because it's dependent on `conditions_list`
+
+# In[28]:
+
+
+[print(k) for k in photometry_dict.keys()];
+
+
+# In[36]:
+
+
+nan_indices = np.argwhere(np.isnan(photometry_times_pyc))
+T_nonan = np.delete(photometry_times_pyc, nan_indices)
+max_time_ms = T_nonan[-1]
+
+def get_newTandY_orig(T, photometry_dict, name, max_time_ms):
+    T = photometry_times_pyc # not down-sampled yet
+
+    nan_indices = np.argwhere(np.isnan(T))
+    T_nonan = np.delete(T, nan_indices)
+
+    Y = photometry_dict[name]
+    Y_nonan = np.delete(Y, nan_indices)  # []
+    max_time_ms = T_nonan[-1]
+
+
+
+    new_T = np.arange(0, max_time_ms, 1/1000*1000) #NOTE sampling_rate was originally 1000
+    new_Y = np.interp(new_T, T_nonan, Y_nonan)
+    return new_T, new_Y
+
+
+def get_newTandY_down(T, photometry_dict, name, max_time_ms):
+    Tdown = [T[i] for i in range(0, len(T), 10)] #down sampled time vector
+
+    nan_indices = np.argwhere(np.isnan(Tdown))
+    Tdown_nonan = np.delete(Tdown, nan_indices)
+
+    Y = photometry_dict[name]
+    Y_nonan = np.delete(Y, nan_indices) # []
+
+    # Need to use interp to accomodate data into Spike2 bins
+    new_T = np.arange(0, max_time_ms, 1/photometry_dict['sampling_rate']*1000) #NOTE sampling_rate is already downsampled by 10
+    new_Y = np.interp(new_T, Tdown_nonan, Y_nonan)
+    return new_T, new_Y
+
+
+# process/pyphotometry/utils.py/motion_corretion()
+
+# In[56]:
+
+
+from matplotlib import pyplot as plt
+
+fig, ax = plt.subplots()
+
+T = photometry_times_pyc
+time_vec_ms = np.arange(0, max_time_ms, 1000/1e-3)
+t, y1 = get_newTandY_orig(T, photometry_dict, 'analog_1_filt', max_time_ms)
+
+t, y2 = get_newTandY_orig(T, photometry_dict, 'analog_2_filt', max_time_ms)
+plt.plot(y1, y2,marker='.', linestyle=None, mfc='none', alpha=0.01)
+
+plt.show()
+
+fig, ax = plt.subplots()
+
+plt.hist2d(y1, y2, bins=(100, 100), cmap='viridis')
+
+# Add a colorbar
+plt.colorbar()
+
+# Customize and show the plot
+plt.xlabel('analog_1_filt')
+plt.ylabel('analog_2_filt')
+plt.title('Heatmap Representation')
+# plt.grid(True)
+plt.show()
+
+
+# In[86]:
+
+
+slope, intercept, r_value, p_value, std_err = linregress(
+    x=photometry_dict['analog_2_filt'], y=photometry_dict['analog_1_filt'])
+
+print(f"slope: {slope:.3f}\nintercept: {intercept:.3f}\nr_value: {r_value:.3f}\np_value: {p_value}")
+
+
+
+
+fig, ax = plt.subplots()
+
+plt.hist2d(y2, y1, bins=(100, 100), cmap='viridis')
+
+# Add a colorbar
+plt.colorbar()
+
+x0 = np.arange(np.min(y2), np.max(y2), (np.max(y2) - np.min(y2))/1000)
+y0 = slope*x0 + intercept
+
+plt.plot(x0, y0, '-', color='yellow', linewidth=2)
+
+# Customize and show the plot
+plt.xlabel('analog_2_filt, red')
+plt.ylabel('analog_1_filt, green')
+plt.title('Heatmap Representation')
+# plt.grid(True)
+plt.show()
+
+fig, ax = plt.subplots()
+
+plt.hist2d(y2, y1, bins=(100, 100), cmap='viridis', vmax=2000)
+plt.plot(x0, y0, '-', color='yellow', linewidth=2)
+plt.colorbar()
+
+plt.xlabel('analog_2_filt, red')
+plt.ylabel('analog_1_filt, green')
+plt.title('Heatmap Representation')
+plt.show()
+
+
+# This method uses motion artifacts and real signals together.  
 # 
+# My concern is that because there are so many data points at baseline, eg X = 0.55, y= 0.165, the regression cofficients are not working well to fit values with higher fluorescence.
+# 
+# I suspect that the intercept is working well but the slope is far from being accurate.
+# 
+# Perhaps we need to apply some kind of adjusted weight to carry out regression better.
+# 
+# It appears that at higher X and Y values, data points go further up from the regression line. Because they have more than baseline signals, this deflection may be critical. 
+# 
+# In other words, the regressdion line is __underestimating__ an effect from motion captured in red channels.
+# 
+# Then, model predicted motion component is expected to be lower than the signals in analog_1. In reality, it is too big. So the direction of error is not 
+
+# In[78]:
+
+
+fig, ax = plt.subplots()
+
+t, y3 = get_newTandY_orig(T, photometry_dict, 'analog_1_est_motion', max_time_ms)
+t, y4 = get_newTandY_orig(T, photometry_dict, 'analog_1_corrected', max_time_ms)
+
+plt.plot(t/1000, y1, '-', label='analog_1_filt', linewidth=0.75)
+# plt.plot(t/1000, y2, '-', label='analog_2_filt', linewidth=0.75)
+plt.plot(t/1000, y3, '-', label='analog_1_est_motion', linewidth=0.75)
+plt.plot(t/1000, y4, '-', label='analog_1_corrected', linewidth=0.75)
+
+# Customize and show the plot
+plt.legend()
+
+plt.xlabel('Time (s)')
+plt.ylabel('Photometry')
+plt.title('Motion correction')
+# plt.grid(True)
+plt.xlim(2015,2040)
+plt.show()
+
+
 # 
