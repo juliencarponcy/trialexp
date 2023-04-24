@@ -561,15 +561,17 @@ def extract_event_data(trigger_timestamp, window, aligner, dataArray, sampling_r
     for t in ts:
         d = abs((ref_time-t).data)
         #Find the most close matched time stamp and extend it both ends 
-        min_time = np.min(d)
-        if min_time < time_tolerance:
+        min_idx = np.argmin(d)
+        min_time = d[min_idx]
+        start_idx = min_idx +int(window[0]/1000*sampling_rate)
+        end_idx = min_idx + int(window[1]/1000*sampling_rate)
+        
+        if min_time < time_tolerance and (start_idx>0) and (end_idx< len(dataArray.data)):
             min_idx = np.argmin(d)
-            start_idx = min_idx +int(window[0]/1000*sampling_rate)
-            end_idx = min_idx + int(window[1]/1000*sampling_rate)
             data.append(dataArray.data[start_idx:end_idx])
             event_found.append(True)
         else:
-            x = np.zeros((int((window[1]-window[0])/1000*sampling_rate),))
+            x = np.zeros((int((window[1]-window[0])/1000*sampling_rate),))*np.NaN
             data.append([x])
             event_found.append(False)
             
