@@ -96,19 +96,7 @@ for idx_rec in idx_to_sort:
             verbose = True,
             **sorter_specific_params)
 
-    # Delete temporary copies of the recording and whitening matrix
-    rec_copy_path = temp_output_sorter_specific_folder / 'sorter_output' / 'recording.dat'
-    whitening_mat_path = temp_output_sorter_specific_folder / 'sorter_output' / 'temp_wh.dat'
-    rec_copy_path.unlink()
-    whitening_mat_path.unlink()
 
-    # copy content of the ks3 folder to the server
-    files_to_copy = rec_copy_path.parent.glob('*')
-    for file_to_copy in files_to_copy:
-        shutil.copy(file_to_copy, output_sorter_specific_folder/ 'sorter_output' /  file_to_copy.name)
-    
-    # delete all local files 
-    shutil.rmtree(temp_output_sorter_specific_folder.parent)
     
     # delete previous output_sorting_folder and its contents if it exists,
     # this prevent the save method to crash.
