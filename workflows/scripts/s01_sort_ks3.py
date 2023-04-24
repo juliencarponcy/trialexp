@@ -44,6 +44,7 @@ root_data_path = os.environ['SORTING_ROOT_DATA_PATH']
 
 si_sorted_folder = Path(sinput.rec_properties).parent / 'si_sorted'
 sorter_specific_folder = Path(sinput.rec_properties).parent / 'sorter'
+temp_sorter_specific_folder = Path(os.environ['TEMP_DATA_PATH'])  
 
 # %%
 for idx_rec in idx_to_sort:
@@ -61,6 +62,7 @@ for idx_rec in idx_to_sort:
 
     # Define outputs folder, specific for each probe and sorter
     output_sorter_specific_folder = sorter_specific_folder / sorter_name / probe_name
+    temp_output_sorter_specific_folder = temp_sorter_specific_folder / sorter_name / probe_name
     output_si_sorted_folder = si_sorted_folder / sorter_name / probe_name
 
     ephys_path = Path(rec_properties.full_path.iloc[idx_rec]).parent.parent.parent.parent.parent
@@ -88,13 +90,26 @@ for idx_rec in idx_to_sort:
     sorting = ss.run_sorter(
             sorter_name = sorter_name,
             recording = recording, 
-            output_folder = output_sorter_specific_folder,
+            output_folder = temp_output_sorter_specific_folder,
             remove_existing_folder = True, 
             delete_output_folder = False, 
             verbose = True,
             **sorter_specific_params)
 
+    # Delete temporary copies of the recording and whitening matrix
+    rec_copy_path = temp_output_sorter_specific_folder / 'sorter_output' / 'recording.dat'
+    whitening_mat_path = temp_output_sorter_specific_folder / 'sorter_output' / 'temp_wh.dat'
+    rec_copy_path.unlink()
+    whitening_mat_path.unlink()
 
+    # copy content of the ks3 folder to the server
+    files_to_copy = rec_copy_path.parent.glob('*')
+    for file_to_copy in files_to_copy:
+        shutil.copy(file_to_copy, output_sorter_specific_folder/ 'sorter_output' /  file_to_copy.name)
+    
+    # delete all local files 
+    shutil.rmtree(temp_output_sorter_specific_folder.parent)
+    
     # delete previous output_sorting_folder and its contents if it exists,
     # this prevent the save method to crash.
     if output_si_sorted_folder.exists():
@@ -103,3 +118,11 @@ for idx_rec in idx_to_sort:
     sorting.save(folder = output_si_sorted_folder)
 
 # %%
+
+    # # skip sorting if results already present
+    # # Warning: this is temp fix, as it could alter version control from snakemake
+    # if (output_sorter_specific_folder / 'sorter_output'/ 'spike_templates.npy').exists():
+    #     print(f'folder: {output_sorter_specific_folder} has previously been sorted, skipping it')
+    #     continue
+    # else:
+    #     print(f'processing folder: {output_sorter_specific_folder}')
