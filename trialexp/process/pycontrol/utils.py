@@ -298,7 +298,8 @@ def plot_session(df:pd.DataFrame, keys: list = None, state_def: list = None, pri
 def export_session(df:pd.DataFrame, keys: list = None, export_state=True, print_expr: list = None, 
                     event_ms: list = None, smrx_filename: str = None, verbose :bool = False,
                     print_to_text: bool = True, 
-                    data_photometry: dict = None, photometry_times_pyc: np.ndarray = None):
+                    data_photometry: dict = None, photometry_times_pyc: np.ndarray = None,
+                    photometry_keys: list = None):
         """
         Visualise a session using Plotly as a scrollable figure
 
@@ -333,11 +334,15 @@ def export_session(df:pd.DataFrame, keys: list = None, export_state=True, print_
             The output filename (*.smrx)
 
         data_photometry: dict = None
-            Holding photometry data    
+            Holding photometry data
+            If None, the photometry channels will be skipped
         
         photometry_times_pyc: np.ndarray
             Rsync-ed pyphotometry time stamps in pycontrol time in ms
         
+        photometry_keys: list = None
+            Specify what channels to export.
+
         verbose :bool = False
 
 
@@ -401,7 +406,8 @@ def export_session(df:pd.DataFrame, keys: list = None, export_state=True, print_
                 y_index += 1
                 spike2exporter.write_marker_for_state(time_ms, state, y_index)
 
-        if (data_photometry is not None) and (photometry_times_pyc is not None):
+        if (data_photometry is not None) and (photometry_times_pyc is not None) \
+            and (photometry_keys is not None) :
 
             multiplier = int((1/1000) / spike2exporter.dTimeBase) #NOTE sampling_rate was originally 1000, and we assume that it is unchanged
             T = photometry_times_pyc
@@ -410,29 +416,33 @@ def export_session(df:pd.DataFrame, keys: list = None, export_state=True, print_
 
             new_T = np.arange(0, df.time.max(), 1/1000*1000) #NOTE sampling_rate was originally 1000
 
-            def write_photom(name, photometry_dict, nan_indices, new_T, 
-                             spike2exporter, y_index, multiplier):
-                Y = photometry_dict[name]
+            def write_photometry(name):
+                Y = data_photometry[name]
                 Y_no_nan = np.delete(Y, nan_indices)  # []
 
-                new_Y = np.interp(new_T, T_no_nan, Y_no_nan)
+                if len(Y_no_nan) == len(T_no_nan):
+                    new_Y = np.interp(new_T, T_no_nan, Y_no_nan)
 
-                spike2exporter.write_waveform(new_Y, name, y_index, multiplier)
+                    spike2exporter.write_waveform(new_Y, name, y_index, multiplier)
+                else:
+                    # the length mismatch, maybe a wrong data type (not a time series?)
+                    #TODO issue a warning or raise an error? 
+                    ...
 
-
-            for name in ['analog_1', 'analog_2',  'analog_1_filt', 'analog_2_filt',
-                            'analog_1_est_motion', 'analog_1_corrected', 'analog_1_baseline_fluo', 
-                            'analog_1_df_over_f']:
+            for name in photometry_keys:
                 y_index += 1
-                write_photom(name, y_index, multiplier)
+                if name in data_photometry:
+                    write_photometry(name)
+                else:
+                    # name is not found in data_photometry
+                    #TODO issue a warning or error or nothing? 
+                    ...
 
-
-        elif (data_photometry is None) and (photometry_times_pyc is not None):
-            raise ValueError('You must specify the data_photometry and photometry_times_pyc if you want to export photometry data')
+        elif (data_photometry is None) :
+            ...
+            # skip exporting photometry
             
-        elif (data_photometry is None) and (photometry_times_pyc is not None):
-            raise ValueError('You must specify the data_photometry and photometry_times_pyc if you want to export photometry data')
-
+ 
 
 
 #----------------------------------------------------------------------------------

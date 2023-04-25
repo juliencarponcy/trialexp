@@ -19,11 +19,12 @@ from trialexp.process.pyphotometry.utils import *
 
 fn = glob(sinput.photometry_folder+'\*.ppd')[0]
 data_photometry = import_ppd(fn)
+
 data_photometry = denoise_filter(data_photometry)
 data_photometry = motion_correction(data_photometry)
 data_photometry = compute_df_over_f(data_photometry, low_pass_cutoff=0.001)
 
-photo_time = data_photometry['pulse_times_2']
+
 # no down-sampling here
 
 #%% Load data
@@ -33,19 +34,22 @@ pycontrol_time = df_pycontrol[df_pycontrol.name == 'rsync'].time
 
 
 #%%
-photometry_aligner = Rsync_aligner(pycontrol_time, photo_time)
-photometry_times_pyc = photometry_aligner.B_to_A(photo_time)
+photometry_aligner = Rsync_aligner(pycontrol_time, data_photometry['pulse_times_2'])
+photometry_times_pyc = photometry_aligner.B_to_A(data_photometry['time'])
 
 #remove all state change event
 df_pycontrol = df_pycontrol.dropna(subset='name')
 df2plot = df_pycontrol[df_pycontrol.type != 'state']
 keys = df2plot.name.unique()
 
+photometry_keys =  ['analog_1', 'analog_2',  'analog_1_filt', 'analog_2_filt',
+                  'analog_1_est_motion', 'analog_1_corrected', 'analog_1_baseline_fluo', 
+                  'analog_1_df_over_f']
+
 #%%
 export_session(df_pycontrol, keys, 
              data_photometry = data_photometry,
              photometry_times_pyc = photometry_times_pyc,
+             photometry_keys = photometry_keys,
              smrx_filename=soutput.spike2_file)
-#%%
-import xarray as xr
-xr_photo = xr.load_dataset(sinput.df_photometry)
+# %%
