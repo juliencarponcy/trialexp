@@ -23,9 +23,9 @@ from workflows.scripts import settings
 sorter_name = 'kilosort3'
 verbose = True
 
-sorter_specific_path = Path(sinput.ks_3_spike_templates_A).parent.parent.parent
+temp_ks3_folder = Path(os.environ['TEMP_DATA_PATH']) / sorter_name
 
-probe_folders = [str(sorter_specific_path / probe_folder / 'sorter_output') for probe_folder in os.listdir(sorter_specific_path)]
+probe_folders = [str(temp_ks3_folder / probe_folder / 'sorter_output') for probe_folder in os.listdir(temp_ks3_folder)]
 
 # %% Start Matlab engine and add paths
 eng = matlab.engine.start_matlab()

@@ -22,7 +22,7 @@ from trialexp.process.ephys.spikesort import sort
 
 
 #%% Load inputs
-spike_sorting_done_path = str(Path(os.environ['TEMP_DATA_PATH'], *Path(settings.debug_folder).parts[-2:]) / 'processed/spike_sorting.done')
+spike_sorting_done_path = str(Path(settings.debug_folder) / 'processed' / 'spike_sorting.done')
 print(spike_sorting_done_path)
 (sinput, soutput) = getSnake(locals(), 'workflows/spikesort.smk',
  [spike_sorting_done_path], 'spike_sorting')
@@ -35,16 +35,13 @@ verbose = True
 rec_properties_path = Path(sinput.rec_properties)
 rec_properties = pd.read_csv(rec_properties_path, index_col= None)
 
-temp_output_folder = rec_properties_path.parent / 'temp'
-
 # Only select longest syncable recordings to sort
 idx_to_sort = rec_properties[rec_properties.longest == True].index.values
 
 root_data_path = os.environ['SORTING_ROOT_DATA_PATH']
 
-si_sorted_folder = Path(sinput.rec_properties).parent / 'si_sorted'
-sorter_specific_folder = Path(sinput.rec_properties).parent / 'sorter'
-temp_sorter_specific_folder = Path(os.environ['TEMP_DATA_PATH'])  
+si_sorted_folder = Path(os.environ['TEMP_DATA_PATH']) / 'si'
+temp_sorter_folder = Path(os.environ['TEMP_DATA_PATH']) 
 
 # %%
 for idx_rec in idx_to_sort:
@@ -61,8 +58,8 @@ for idx_rec in idx_to_sort:
         raise ValueError(f'invalid probe name rec: {rec_properties_path.parent}')
 
     # Define outputs folder, specific for each probe and sorter
-    output_sorter_specific_folder = sorter_specific_folder / sorter_name / probe_name
-    temp_output_sorter_specific_folder = temp_sorter_specific_folder / sorter_name / probe_name
+    # output_sorter_specific_folder = sorter_specific_folder / sorter_name / probe_name
+    temp_output_sorter_specific_folder = temp_sorter_folder / sorter_name / probe_name
     output_si_sorted_folder = si_sorted_folder / sorter_name / probe_name
 
     ephys_path = Path(rec_properties.full_path.iloc[idx_rec]).parent.parent.parent.parent.parent
