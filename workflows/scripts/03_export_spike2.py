@@ -24,9 +24,20 @@ data_photometry = motion_correction(data_photometry)
 data_photometry = compute_df_over_f(data_photometry, low_pass_cutoff=0.001)
 
 
+
 #%% Load data
 df_pycontrol = pd.read_pickle(sinput.pycontrol_dataframe)
 
+
+#%%
+#TODO how do I get photometry_rsync.pulse_times_A and photometry_rsync.pulse_times_B???
+photometry_aligner = Rsync_aligner(exp_cohort.sessions[i].photometry_rsync.pulse_times_A,
+                                   exp_cohort.sessions[i].photometry_rsync.pulse_times_B,
+                                   chunk_size=5, plot=False, raise_exception=True)
+
+photometry_times_pyc = photometry_aligner.B_to_A(data_photometry['time'])
+
+#TODO I should hack the code of get_photometry_trials and process data similarly but for a session as well
 
 #remove all state change event
 df_pycontrol = df_pycontrol.dropna(subset='name')
