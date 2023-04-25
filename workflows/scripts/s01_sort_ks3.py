@@ -22,10 +22,10 @@ from trialexp.process.ephys.spikesort import sort
 
 
 #%% Load inputs
-
+spike_sorting_done_path = str(Path(os.environ['TEMP_DATA_PATH'], *Path(settings.debug_folder).parts[-2:]) / 'processed/spike_sorting.done')
+print(spike_sorting_done_path)
 (sinput, soutput) = getSnake(locals(), 'workflows/spikesort.smk',
-  [settings.debug_folder + r'/processed/spike_sorting.done'],
-  'spike_sorting')
+ [spike_sorting_done_path], 'spike_sorting')
 
 
 # %%

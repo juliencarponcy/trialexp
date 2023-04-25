@@ -5,13 +5,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-envvars: 
-    'TEMP_DATA_PATH'
-
 def rec_properties_input(wildcards):
     # determine if there is an ephys recording for that folder
     recording_csv = glob(f'{wildcards.session_path}/{wildcards.task_path}/{wildcards.session_id}/ephys/rec_properties.csv')
     if len(recording_csv) > 0:
+        print(f'{wildcards.session_path}/{wildcards.task_path}/{wildcards.session_id}/ephys/rec_properties.csv')
         return f'{wildcards.session_path}/{wildcards.task_path}/{wildcards.session_id}/ephys/rec_properties.csv'
     else:
         return []
@@ -23,15 +21,10 @@ rule spike_sorting:
     input:
         rec_properties = rec_properties_input
 
-    # params:
-    #     local_root_sorting_folder = os.environ['TEMP_DATA_PATH']
-
     output:
         rule_complete = touch('{session_path}/{task_path}/{session_id}/processed/spike_sorting.done'),       
         ks_3_dir_A = '{session_path}/{task_path}/{session_id}/ProbeA/sorter_output',
         ks_3_dir_B = '{session_path}/{task_path}/{session_id}/ProbeB/sorter_output'
-        # ks_3_dir_A = directory('{params.local_root_sorting_folder}/probeA/sorter_output'),
-        # ks_3_dir_B = directory('{params.local_root_sorting_folder}/probeB/sorter_output')
     
     threads: 64
 
@@ -44,8 +37,8 @@ rule spike_metrics_ks3:
         ks_3_dir_A = '{params.local_root_sorting_folder}/{task_path}/{session_id}/probeA/sorter_output',
         ks_3_dir_B = '{params.local_root_sorting_folder}/{task_path}/{session_id}/probeB/sorter_output'
 
-    # params:
-    #     local_root_sorting_folder = os.environ['TEMP_DATA_PATH']
+    params:
+        local_root_sorting_folder = os.environ['TEMP_DATA_PATH']
 
     output:
         spike_metrics_A = '{params.local_root_sorting_folder}/{task_path}/{session_id}/probeA/sorter_output/recording.cell_metrics.cellinfo.mat',
@@ -61,13 +54,11 @@ rule spike_metrics_ks3:
 
 rule move_to_server:
     input: 
-        rec_properties = rules.spike_sorting.input.rec_properties,
-        # metrics_complete = '{params.local_root_sorting_folder}/{task_path}/{session_id}/processed/spike_metrics.done',
-        ks_3_dir_A = '{params.local_root_sorting_folder}/{task_path}/{session_id}/ProbeA/sorter_output',
-        ks_3_dir_B = '{params.local_root_sorting_folder}/{task_path}/{session_id}/ProbeB/sorter_output',
+        ks_3_dir_A = rules.spike_sorting.output.ks_3_dir_A,
+        ks_3_dir_B = rules.spike_sorting.output.ks_3_dir_B
 
-    # params:
-    #     local_root_sorting_folder = Path(os.environ['TEMP_DATA_PATH'])
+    params:
+        local_root_sorting_folder = Path(os.environ['TEMP_DATA_PATH'])
 
     output:
         move_complete = touch('{session_path}/{task_path}/{session_id}/processed/move_to_server.done')
