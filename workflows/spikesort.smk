@@ -57,12 +57,14 @@ rule move_to_server:
 
     priority: 30
 
-    shell:
-        'mkdir -p {wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed/kilosort3'
-        'mv {params.local_root_sorting_folder}/kilosort3 {wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed/kilosort3'
-        'mkdir -p {wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed/si'
-        'mv {params.local_root_sorting_folder}/si {wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed/si'
-
+    run:
+        shell('mkdir -p {wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed/kilosort3')
+        shell('mv {params.local_root_sorting_folder}/kilosort3 {wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed/kilosort3')
+        shell('mkdir -p {wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed/si')
+        shell('mv {params.local_root_sorting_folder}/si {wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed/si')
+        # The following should not be necessary but did not worked properly, maybe because of filesystem on ettin
+        shell('rm -rf {params.local_root_sorting_folder}/kilosort3')
+        shell('rm -rf {params.local_root_sorting_folder}/si')
 
 rule final:
     input:
