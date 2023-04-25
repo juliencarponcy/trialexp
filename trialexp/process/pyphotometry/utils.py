@@ -559,22 +559,27 @@ def extract_event_data(trigger_timestamp, window, aligner, dataArray, sampling_r
     event_found = []
     
     for t in ts:
-        d = abs((ref_time-t).data)
-        #Find the most close matched time stamp and extend it both ends 
-        min_idx = np.argmin(d)
-        min_time = d[min_idx]
-        start_idx = min_idx +int(window[0]/1000*sampling_rate)
-        end_idx = min_idx + int(window[1]/1000*sampling_rate)
-        
-        if min_time < time_tolerance and (start_idx>0) and (end_idx< len(dataArray.data)):
+        if t is not None:
+            d = abs((ref_time-t).data)
+            #Find the most close matched time stamp and extend it both ends 
             min_idx = np.argmin(d)
-            data.append(dataArray.data[start_idx:end_idx])
-            event_found.append(True)
+            min_time = d[min_idx]
+            start_idx = min_idx +int(window[0]/1000*sampling_rate)
+            end_idx = min_idx + int(window[1]/1000*sampling_rate)
+            
+            if min_time < time_tolerance and (start_idx>0) and (end_idx< len(dataArray.data)):
+                min_idx = np.argmin(d)
+                data.append(dataArray.data[start_idx:end_idx])
+                event_found.append(True)
+            else:
+                x = np.zeros((int((window[1]-window[0])/1000*sampling_rate),))*np.NaN
+                data.append([x])
+                event_found.append(False)
         else:
             x = np.zeros((int((window[1]-window[0])/1000*sampling_rate),))*np.NaN
             data.append([x])
             event_found.append(False)
-            
+        
     # align to the longest element
     # data =  np.vstack(list(itertools.zip_longest(*data)))
     data  = np.vstack(data)
@@ -708,9 +713,12 @@ def make_event_xr(event_time, trial_window, pyphoto_aligner,
     Note:
         It returns only data from extract_event_data() function ignoring the event_found.
     '''
+    
+   
     assert event_time.index.name =='trial_nb', 'event_time should have a trial_nb index'
     data, _ = extract_event_data(event_time, trial_window, pyphoto_aligner,
                                 dataArray, sampling_rate)
+
     da = xr.DataArray(
         data, coords={'event_time':event_time_coordinate, 
                       'trial_nb':event_time.index.values},
