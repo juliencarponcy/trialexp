@@ -35,7 +35,7 @@ rule pycontrol_figures:
 rule export_spike2:
     input:
         pycontrol_dataframe = '{session_path}/{session_id}/processed/df_pycontrol.pkl',
-        df_photometry = '{session_path}/{session_id}/processed/xr_photometry.nc'
+        photometry_folder = '{session_path}/{session_id}/pyphotometry'
     output:
         spike2_file = '{session_path}/{session_id}/processed/spike2.smrx',
     script:
