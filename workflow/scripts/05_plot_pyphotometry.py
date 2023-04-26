@@ -13,11 +13,11 @@ from scipy.interpolate import interp1d
 import seaborn as sns 
 import numpy as np
 import os
-from workflows.scripts import settings
+from workflow.scripts import settings
 
 #%% Load inputs
 
-(sinput, soutput) = getSnake(locals(), 'workflows/spout_bar_nov22.smk',
+(sinput, soutput) = getSnake(locals(), 'workflow/pycontrol.smk',
   [settings.debug_folder + '/processed/log/photometry.done'],
   'photometry_figure')
 
@@ -33,11 +33,14 @@ for k in xr_session.data_vars.keys():
     if 'event_time' in da.coords:
         df2plot = xr_session[[k,'success']].to_dataframe().reset_index()
         
-        fig, ax = plt.subplots(1,1,dpi=300, figsize=(6,6))
+        if not all(df2plot[k].isna()): #make sure data are correct
+          
+          fig, ax = plt.subplots(1,1,dpi=300, figsize=(6,6))
 
-        ax = sns.lineplot(x='event_time',hue='success', y=k, data=df2plot)
-        ax.set(ylabel=k, xlabel='Delta F/F')
+          ax = sns.lineplot(x='event_time',hue='success', y=k, data=df2plot)
+          ax.set(ylabel=k, xlabel='Delta F/F')
 
-        fig.savefig(os.path.join(figure_dir, f'{k}.png'), dpi=300, bbox_inches='tight')
+          fig.savefig(os.path.join(figure_dir, f'{k}.png'), dpi=300, bbox_inches='tight')
 
 xr_session.close()
+# %%
