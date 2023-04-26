@@ -63,7 +63,9 @@ for idx_rec in idx_to_sort:
     output_si_sorted_folder = si_sorted_folder / sorter_name / probe_name
 
     ephys_path = Path(rec_properties.full_path.iloc[idx_rec]).parent.parent.parent.parent.parent
-    relative_ephys_path = os.path.join(*ephys_path.parts[5:])
+    
+    # Maybe not the best method to get it
+    relative_ephys_path = os.path.join(*ephys_path.parts[6:])
     ephys_path = os.path.join(root_data_path, relative_ephys_path)
     
     experiments_nb = rec_properties.exp_nb.unique()
@@ -81,7 +83,7 @@ for idx_rec in idx_to_sort:
         # 'total_memory': 512000000000, 
         # 'chunk_size': None, 
         # 'chunk_memory': 12800000000,
-        'chunk_duration': '10s', 
+        'chunk_duration': '1s', 
         'progress_bar': False}
 
     sorting = ss.run_sorter(
