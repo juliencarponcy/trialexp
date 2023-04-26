@@ -230,7 +230,7 @@ def _toDate(d): # Convert input to datetime.date object.
 # Session Dataframe
 #----------------------------------------------------------------------------------
 
-def session_dataframe(file_path, paired_events={}, pair_end_suffix=None):
+def session_dataframe(file_path, paired_events={}, pair_end_suffix=None, verbose=False):
     '''Generate a pandas dataframe from a pyControl data file containing the 
     sessions data.  The data frame has columns:
     type : Whether the row contains session 'info', a 'state' entry, 
@@ -264,7 +264,8 @@ def session_dataframe(file_path, paired_events={}, pair_end_suffix=None):
 
     # Load data from file.
     with open(file_path, 'r') as f:
-        print('Importing data file: '+os.path.split(file_path)[1])
+        if verbose:
+            print('Importing data file: '+os.path.split(file_path)[1])
         all_lines = [line.strip() for line in f.readlines() if line.strip()]
     
     # Make dataframe.
