@@ -17,8 +17,7 @@ from trialexp.utils.ephys_utilities import parse_openephys_folder, get_recording
         
 def copy_if_not_exist(src, dest):
     if not (dest/src.name).exists():
-        # shutil.copy(src, dest)
-        pass
+        shutil.copy(src, dest)
 
 
 #%% Retrieve all task names from the tasks_params.csv
