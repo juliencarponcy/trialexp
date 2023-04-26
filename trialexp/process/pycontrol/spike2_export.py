@@ -23,10 +23,10 @@ class Spike2Exporter:
         self.smrx_filename = smrx_filename
         self.CurChan = 0
         self.UsedChans = 0
-        self.Scale = 65535/20
-        self.Offset = 0
-        self.ChanLow = 0
-        self.ChanHigh = 5
+        # self.Scale = 65535/20
+        # self.Offset = 0
+        # self.ChanLow = 0
+        # self.ChanHigh = 5
         self.tFrom = 0
         self.tUpto = sp.MaxTime64()         # The maximum allowed time in a 64-bit SON file
         self.dTimeBase = 1e-6               # s = microseconds
@@ -199,7 +199,41 @@ class Spike2Exporter:
                 print(self.yFile.ReadTextMarks(int(y_index), nEvents, self.tFrom, self.tUpto))
             except:
                 print('error in print')
-                
+
+    def write_waveform(self, AdcData, title, y_index, multiplier):
+        """
+        cf. write_waveform() in trialexp\process\data_import.py 
+
+
+        """ 
+
+        self.MyFile.SetWaveChannel(y_index, 1*multiplier, sp.DataType.Adc)
+        self.MyFile.SetChannelTitle(y_index, title)
+        self.MyFile.SetChannelUnits(y_index, 'a.u.')
+
+        def getSpike2ScaleOffset(data):
+            # y axis value = (16-bit ADC value)*scale/6553.6 + offset
+            # https://github.com/kouichi-c-nakamura/Chan_Spike2/blob/main/%40WaveformChan/WaveformChan.m#L688
+            int16_info = np.iinfo(np.int16)
+            scale = ((np.max(data) - np.min(data))*6553.6) / float(int16_info.max - int16_info.min)
+            offset = np.max(data) - float(int16_info.max) * scale/6553.6
+
+            return scale, offset
+
+        scale, offset = getSpike2ScaleOffset(AdcData)
+        
+        self.MyFile.SetChannelScale(y_index, scale)
+        self.MyFile.SetChannelOffset(y_index, offset)
+
+        # https://github.com/kouichi-c-nakamura/Chan_Spike2/blob/main/%40WaveformChan/WaveformChan.m#L669
+        AdcData_int = np.int16([(adc - offset)*6553.6/scale for adc in AdcData]) # np.ndarray
+
+        #AdcData is meant to be in int16 (-32,768 to 32,767) or short in C
+        self.MyFile.SetChannelYRange(y_index, np.max(AdcData_int), np.min(AdcData_int))
+
+        self.MyFile.WriteInts(y_index, AdcData_int, self.tFrom)
+
+
     def __del__(self):
         del self.MyFile
         # check if the file save is successful
