@@ -179,6 +179,15 @@ print(a)
 vars(exp_cohort.sessions[0].photometry_rsync)
 
 
+# in `sync_photometry_file()` in `trialexp\process\pyphotometry\utils.py`
+# 
+# ```pythoh
+# photometry_rsync = Rsync_aligner(pulse_times_A= pycontrol_rsync_times, 
+#                 pulse_times_B= photometry_rsync_times, plot=False)
+# ```
+# 
+# https://pycontrol.readthedocs.io/en/latest/user-guide/synchronisation/#synchronising-data
+
 # In[16]:
 
 

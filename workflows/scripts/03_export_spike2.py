@@ -6,7 +6,8 @@ import pandas as pd
 from trialexp.process.pycontrol.utils import export_session
 from snakehelper.SnakeIOHelper import getSnake
 from workflows.scripts import settings
-from glob import glob 
+from glob import glob
+from pathlib import Path
 from trialexp.process.pyphotometry.utils import *
 
 #%%
@@ -17,12 +18,17 @@ from trialexp.process.pyphotometry.utils import *
 
 #%% Photometry dict
 
-fn = glob(sinput.photometry_folder+'\*.ppd')[0]
-data_photometry = import_ppd(fn)
+#fn = glob(sinput.photometry_folder+'\*.ppd')[0]
+fn = list(Path(sinput.photometry_folder).glob('*.ppd'))
+if fn == []:
+  data_photometry = None    
+else:
+  fn = fn[0]
+  data_photometry = import_ppd(fn)
 
-data_photometry = denoise_filter(data_photometry)
-data_photometry = motion_correction(data_photometry)
-data_photometry = compute_df_over_f(data_photometry, low_pass_cutoff=0.001)
+  data_photometry = denoise_filter(data_photometry)
+  data_photometry = motion_correction(data_photometry)
+  data_photometry = compute_df_over_f(data_photometry, low_pass_cutoff=0.001)
 
 
 # no down-sampling here
@@ -34,8 +40,11 @@ pycontrol_time = df_pycontrol[df_pycontrol.name == 'rsync'].time
 
 
 #%%
-photometry_aligner = Rsync_aligner(pycontrol_time, data_photometry['pulse_times_2'])
-photometry_times_pyc = photometry_aligner.B_to_A(data_photometry['time'])
+if fn == []:
+  photometry_times_pyc = None
+else:
+  photometry_aligner = Rsync_aligner(pycontrol_time, data_photometry['pulse_times_2'])
+  photometry_times_pyc = photometry_aligner.B_to_A(data_photometry['time'])
 
 #remove all state change event
 df_pycontrol = df_pycontrol.dropna(subset='name')
