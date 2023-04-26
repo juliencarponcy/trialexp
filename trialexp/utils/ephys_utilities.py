@@ -126,5 +126,5 @@ def create_ephys_rsync(pycontrol_file: str, sync_path: str, rsync_ephys_chan_idx
         try:
             return Rsync_aligner(pulse_times_A= rsync_ephys_ts*1000, 
             pulse_times_B= pycontrol_rsync, plot=False) #align pycontrol time to pyphotometry time
-        except (RsyncError, ValueError):
+        except (RsyncError, ValueError) as e:
             return None
