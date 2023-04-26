@@ -17,11 +17,16 @@ from trialexp.utils.ephys_utilities import parse_openephys_folder, get_recording
         
 def copy_if_not_exist(src, dest):
     if not (dest/src.name).exists():
-        shutil.copy(src, dest)
+        # shutil.copy(src, dest)
+        pass
 
 
 #%% Retrieve all task names from the tasks_params.csv
-tasks_params_path = Path(os.getcwd()).parent.parent / 'params' / 'tasks_params.csv'
+SESSION_ROOT_DIR = Path(os.environ['SESSION_ROOT_DIR'])
+ETTIN_DATA_FOLDER = SESSION_ROOT_DIR.parents[1]
+PROJECT_ROOT = Path(os.environ['SNAKEMAKE_DEBUG_ROOT'])
+
+tasks_params_path = PROJECT_ROOT / 'params' / 'tasks_params.csv'
 tasks_params_df = pd.read_csv(tasks_params_path)
 tasks = tasks_params_df.task.values.tolist()
 
@@ -30,11 +35,11 @@ tasks = tasks_params_df.task.values.tolist()
 for task_id, task in enumerate(tasks):
 
     print(f'task {task_id+1}/{len(tasks)}: {task}')
-    export_base_path = Path(f'/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/by_sessions/{task}')
+    export_base_path = SESSION_ROOT_DIR/f'{task}'
 
-    pycontrol_folder = Path(f'/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/pycontrol/{task}')
-    pyphoto_folder = Path(f'/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/pyphotometry/data/{task}')
-    ephys_base_path = Path(f'/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/openephys')
+    pycontrol_folder = ETTIN_DATA_FOLDER/'head-fixed'/'pycontrol'/f'{task}'
+    pyphoto_folder = ETTIN_DATA_FOLDER/'head-fixed'/'pyphotometry'/'data'/f'{task}'
+    ephys_base_path = ETTIN_DATA_FOLDER/'head-fixed'/'openephys'
 
     pycontrol_files = list(pycontrol_folder.glob('*.txt'))
     pyphoto_files = list(pyphoto_folder.glob('*.ppd'))
@@ -44,7 +49,7 @@ for task_id, task in enumerate(tasks):
     try:
         df_pycontrol = df_pycontrol[df_pycontrol.session_length>1000*60*5] #remove sessions that are too short
     except AttributeError:
-        print('no session length for task {task}, skipping folder')
+        print(f'no session length for task {task}, skipping folder')
         continue
 
     df_pyphoto = pd.DataFrame(list(map(parse_pyhoto_fn, pyphoto_files)))
@@ -64,12 +69,14 @@ for task_id, task in enumerate(tasks):
         
         # Photometry matching
         # will only compute time diff on matching subject_id
+        # First identify the same animal
         if not df_pyphoto.empty:
             df_pyphoto_subject = df_pyphoto[df_pyphoto.subject_id == row.subject_id]
         else:
             matched_photo_path.append(None)
             matched_photo_fn.append(None)
 
+        # find the closet match in time
         if not df_pyphoto_subject.empty:
             min_td = np.min(abs(row.timestamp - df_pyphoto_subject.timestamp))
             idx = np.argmin(abs(row.timestamp - df_pyphoto_subject.timestamp))
@@ -115,6 +122,8 @@ for task_id, task in enumerate(tasks):
     df_pycontrol['ephys_folder_name'] = matched_ephys_fn
     
     df_pycontrol = df_pycontrol[(df_pycontrol.subject_id!='00') & (df_pycontrol.subject_id!='01')] # do not copy the test data
+    
+    #TODO need to consider the case where there is only pycontrol data but no photometry
     df_pycontrol = df_pycontrol.dropna(subset='pyphoto_path')
 
     for i in tqdm(range(len(df_pycontrol))):
@@ -186,5 +195,4 @@ for task_id, task in enumerate(tasks):
             recordings_properties.to_csv(target_ephys_folder / 'rec_properties.csv')
 
             
-
 # %%
