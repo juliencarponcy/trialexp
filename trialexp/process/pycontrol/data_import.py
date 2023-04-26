@@ -297,7 +297,7 @@ def session_dataframe(file_path, paired_events={}, pair_end_suffix=None):
                 # no list
                 timestamp = int(vars[0])
                 var_name = vars[1]
-                var_value = float(vars[2])
+                var_value = vars[2]
             else:
                 # possible list in the last item
                 timestamp = int(vars[0])
