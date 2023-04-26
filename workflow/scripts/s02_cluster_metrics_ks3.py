@@ -8,7 +8,7 @@ from pathlib import Path
 import matlab.engine
 from snakehelper.SnakeIOHelper import getSnake
 
-from workflows.scripts import settings
+from workflow.scripts import settings
 
 #%% Load inputs
 

@@ -28,8 +28,14 @@ def parse_session_dataframe(df_session):
     df_events = df_session[(df_session.type!='info')]
     info = df_session[df_session.type=='info']
     info = dict(zip(info.name, info.value))
-    df_events.attrs.update(info)
     
+    #correct for naming error in info
+    if 'Task name' in info and 'pycontrol_share' in info['Task name']:
+        task_name = info['Task name'].split('\\')[-1]
+        info['Task name'] = task_name
+                                            
+    df_events.attrs.update(info)
+
     return df_events
 
 def print2event(df_events, conditions):
