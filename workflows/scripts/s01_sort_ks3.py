@@ -82,7 +82,7 @@ for idx_rec in idx_to_sort:
         # 'chunk_size': None, 
         # 'chunk_memory': 12800000000,
         'chunk_duration': '10s', 
-        'progress_bar': True}
+        'progress_bar': False}
 
     sorting = ss.run_sorter(
             sorter_name = sorter_name,

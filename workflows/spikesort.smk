@@ -59,6 +59,7 @@ rule move_to_server:
 
     run:
         shell('mkdir -p {wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed/kilosort3')
+        #modify to avoid double nesting of processed/kilosort3/kilosort3 not done as pipeline would take so much time to run again
         shell('mv {params.local_root_sorting_folder}/kilosort3 {wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed/kilosort3')
         shell('mkdir -p {wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed/si')
         shell('mv {params.local_root_sorting_folder}/si {wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed/si')
@@ -66,8 +67,19 @@ rule move_to_server:
         shell('rm -rf {params.local_root_sorting_folder}/kilosort3')
         shell('rm -rf {params.local_root_sorting_folder}/si')
 
+rule ephys_sync:
+    input:
+        rec_properties = rec_properties_input,
+        move_complete = '{sessions}/{task_path}/{session_id}/processed/move_to_server.done'
+
+    output:
+        ephys_sync_complete = touch('{sessions}/{task_path}/{session_id}/processed/ephys_sync.done')
+
+    script:
+        "scripts/s04_ephys_sync.py"
+
 rule final:
     input:
-        move_complete = '{session_path}/{task_path}/{session_id}/processed/move_to_server.done'
+        ephys_sync_complete = '{session_path}/{task_path}/{session_id}/processed/ephys_sync.done'
     output:
         done = touch('{session_path}/{task_path}/{session_id}/processed/spike_workflow.done')
