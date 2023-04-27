@@ -58,10 +58,10 @@ rule move_to_server:
     priority: 30
 
     run:
-        shell('mkdir -p {wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed/kilosort3')
+        # shell('mkdir -p {wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed')
         #modify to avoid double nesting of processed/kilosort3/kilosort3 not done as pipeline would take so much time to run again
-        shell('mv {params.local_root_sorting_folder}/kilosort3 {wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed/kilosort3')
-        shell('mkdir -p {wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed/si')
+        shell('mv {params.local_root_sorting_folder}/kilosort3 {wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed')
+        # shell('mkdir -p {wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed/si')
         shell('mv {params.local_root_sorting_folder}/si {wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed/si')
         # The following should not be necessary but did not worked properly, maybe because of filesystem on ettin
         shell('rm -rf {params.local_root_sorting_folder}/kilosort3')

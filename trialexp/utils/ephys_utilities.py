@@ -112,19 +112,20 @@ def get_recording_duration(rec_path: str, sample_rate: int):
     duration = len(timestamps) / sample_rate
     return duration
 
-def create_ephys_rsync(pycontrol_file: str, sync_path: str, rsync_ephys_chan_idx: int = 2):
+def create_ephys_rsync(pycontrol_file: str, sync_path: str, ephys_start_time: float = 0, rsync_ephys_chan_idx: int = 2):
     event_array = np.load(Path(sync_path, 'states.npy'))
-    ts_array = np.load(Path(sync_path, 'timestamps.npy'))
+    ts_array = np.load(Path(sync_path, 'timestamps.npy')) - ephys_start_time
     rsync_ephys_ts = ts_array[event_array == rsync_ephys_chan_idx]
     
     with warnings.catch_warnings():
         warnings.simplefilter('ignore')
         data_pycontrol = session_dataframe(pycontrol_file)
 
-        pycontrol_rsync = data_pycontrol[data_pycontrol.name=='rsync'].time
+        pycontrol_rsync = data_pycontrol[data_pycontrol.name=='rsync'].time.values
         
         try:
-            return Rsync_aligner(pulse_times_A= rsync_ephys_ts*1000, 
-            pulse_times_B= pycontrol_rsync, plot=False) #align pycontrol time to pyphotometry time
+            # All times turned into ms, rsync_ephys_ts originally in sec
+            return Rsync_aligner(pulse_times_A= pycontrol_rsync, 
+            pulse_times_B= rsync_ephys_ts*1000, units_A=1, units_B=1, plot=False) #align pycontrol time to pyphotometry time
         except (RsyncError, ValueError):
             return None

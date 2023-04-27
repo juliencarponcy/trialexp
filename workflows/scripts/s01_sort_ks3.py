@@ -23,7 +23,7 @@ from trialexp.process.ephys.spikesort import sort
 
 #%% Load inputs
 spike_sorting_done_path = str(Path(settings.debug_folder) / 'processed' / 'spike_sorting.done')
-print(spike_sorting_done_path)
+# print(spike_sorting_done_path)
 (sinput, soutput) = getSnake(locals(), 'workflows/spikesort.smk',
  [spike_sorting_done_path], 'spike_sorting')
 
@@ -79,11 +79,11 @@ for idx_rec in idx_to_sort:
         print(f'{Path(ephys_path).parts[-1]}, {probe_name}, exp_nb:{exp_nb}, rec_nb:{rec_nb}. recording duration: {recording.get_total_duration()}s')   
 
     sorter_specific_params = {
-        # 'n_jobs': 24, 
+        'n_jobs': 32, 
         # 'total_memory': 512000000000, 
         # 'chunk_size': None, 
         # 'chunk_memory': 12800000000,
-        'chunk_duration': '1s', 
+        'chunk_duration': '10s', 
         'progress_bar': False}
 
     sorting = ss.run_sorter(
