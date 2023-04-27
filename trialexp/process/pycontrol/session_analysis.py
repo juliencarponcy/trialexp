@@ -29,10 +29,23 @@ def add_time_rel_trigger(df_events, trigger_time, trigger_name, col_name, trial_
     df['trigger'] = trigger_name
 
     #TODO: can this be overalpping?
+    # note: this trial window acctually depends on how long we wait for the spout
+    # we probably need a better way to search for the event rather than just looking around it 
+    # within a fixed time window
+    # TODO: we need to filter it based on the next trigger time
 
-    for t in trigger_time:
+    for i, t in enumerate(trigger_time):
         td = df.time - t
-        idx = (trial_window[0]<=td) & (td<trial_window[1])
+        
+        if i<(len(trigger_time)-1):
+            #include all event until the next trial
+            time2next_trigger = trigger_time[i+1] - t
+            print(time2next_trigger)
+            idx = (trial_window[0]<=td) & (td<(time2next_trigger+trial_window[0]))
+        else:
+            # No need to put an end to the last trial
+            idx = (trial_window[0]<=td)
+            
         assert sum(idx)>0, 'Error: no event detected around trigger'
         df.loc[idx, col_name] =  df[idx].time - t
 
