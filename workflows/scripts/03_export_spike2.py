@@ -61,4 +61,3 @@ export_session(df_pycontrol, keys,
              photometry_times_pyc = photometry_times_pyc,
              photometry_keys = photometry_keys,
              smrx_filename=soutput.spike2_file)
-# %%

@@ -216,6 +216,8 @@ class Spike2Exporter:
             # https://github.com/kouichi-c-nakamura/Chan_Spike2/blob/main/%40WaveformChan/WaveformChan.m#L688
             int16_info = np.iinfo(np.int16)
             scale = ((np.max(data) - np.min(data))*6553.6) / float(int16_info.max - int16_info.min)
+            if scale == 0: # this happens when min == max
+                scale = 1
             offset = np.max(data) - float(int16_info.max) * scale/6553.6
 
             return scale, offset
@@ -225,8 +227,18 @@ class Spike2Exporter:
         self.MyFile.SetChannelScale(y_index, scale)
         self.MyFile.SetChannelOffset(y_index, offset)
 
+        #NOTE Cannot handle float NaN: convert them to zeros
+        # AdcData_nonan = [0 if np.isnan(x) else x for x in AdcData]
+
+        if any([np.isnan(x) for x in AdcData]):
+            raise Exception('found NaN')
+
+        if any([np.isinf(x) for x in AdcData]):
+            raise Exception('Found inf')
+
         # https://github.com/kouichi-c-nakamura/Chan_Spike2/blob/main/%40WaveformChan/WaveformChan.m#L669
-        AdcData_int = np.int16([(adc - offset)*6553.6/scale for adc in AdcData]) # np.ndarray
+        AdcData_int = np.int16(
+            [(adc - offset)*6553.6/scale for adc in AdcData])  # np.ndarray
 
         #AdcData is meant to be in int16 (-32,768 to 32,767) or short in C
         self.MyFile.SetChannelYRange(y_index, np.max(AdcData_int), np.min(AdcData_int))
