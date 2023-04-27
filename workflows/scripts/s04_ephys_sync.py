@@ -40,42 +40,41 @@ rec_properties = pd.read_csv(rec_properties_path, index_col= None)
 idx_to_sort = rec_properties[rec_properties.longest == True].index.values
 
 # %%
-idx_rec = idx_to_sort[0]
-# %%
 
-exp_nb = rec_properties.exp_nb.iloc[idx_rec]
-rec_nb = rec_properties.rec_nb.iloc[idx_rec]
-AP_stream = rec_properties.AP_stream.iloc[idx_rec]
+for idx_rec in  idx_to_sort:
 
-exp_start_datetime = datetime.strptime(rec_properties.exp_datetime.iloc[idx_rec], '%Y-%m-%d %H:%M:%S')
-tstart = rec_properties.tstart.iloc[idx_rec]
+    exp_nb = rec_properties.exp_nb.iloc[idx_rec]
+    rec_nb = rec_properties.rec_nb.iloc[idx_rec]
+    AP_stream = rec_properties.AP_stream.iloc[idx_rec]
 
-
-# TODO: modify the move_to_server shell command to avoid double nesting kilosort3/kilosort3
-ks3_path = rec_properties_path.parent.parent / 'processed' / 'kilosort3'
-if 'ProbeA' in AP_stream:
-    ks3_path = ks3_path / 'ProbeA' / 'sorter_output' / 'spike_times.npy'
-elif 'ProbeB' in AP_stream:
-    ks3_path = ks3_path / 'ProbeB' / 'sorter_output' / 'spike_times.npy'
-else:
-    raise Exception(f'There is an issue with the stream name: {AP_stream}')
-
-if not ks3_path.exists():
-    raise Exception(f'Cannot find the spike_times.npy file at: {ks3_path}')
+    exp_start_datetime = datetime.strptime(rec_properties.exp_datetime.iloc[idx_rec], '%Y-%m-%d %H:%M:%S')
+    tstart = rec_properties.tstart.iloc[idx_rec]
 
 
+    # TODO: modify the move_to_server shell command to avoid double nesting kilosort3/kilosort3
+    ks3_path = rec_properties_path.parent.parent / 'processed' / 'kilosort3'
+    if 'ProbeA' in AP_stream:
+        ks3_path = ks3_path / 'ProbeA' / 'sorter_output' / 'spike_times.npy'
+    elif 'ProbeB' in AP_stream:
+        ks3_path = ks3_path / 'ProbeB' / 'sorter_output' / 'spike_times.npy'
+    else:
+        raise Exception(f'There is an issue with the stream name: {AP_stream}')
 
-# %%
-rsync = create_ephys_rsync(str(pycontrol_path), sync_path, tstart)
+    if not ks3_path.exists():
+        raise Exception(f'Cannot find the spike_times.npy file at: {ks3_path}')
 
-spike_times = np.load(ks3_path)
-# print(np.nanmin(spike_times), np.nanmax(spike_times))
 
-# Careful with the forced 30 value, sampling rate slightly diverging from 30kHz
-# should be dealt-with by open-ephys/ks3, but need to be checked
-spike_times_converted = spike_times/30
-synced_spike_times = rsync.B_to_A(spike_times_converted)
-# print(np.nanmin(synced_spike_times), np.nanmax(synced_spike_times))
 
-np.save(ks3_path.parent / 'rsync_corrected_spike_times.npy', synced_spike_times)
-# %%
+    rsync = create_ephys_rsync(str(pycontrol_path), sync_path, tstart)
+
+    spike_times = np.load(ks3_path)
+    # print(np.nanmin(spike_times), np.nanmax(spike_times))
+
+    # Careful with the forced 30 value, sampling rate slightly diverging from 30kHz
+    # should be dealt-with by open-ephys/ks3, but need to be checked
+    spike_times_converted = spike_times/30
+    synced_spike_times = rsync.B_to_A(spike_times_converted)
+    # print(np.nanmin(synced_spike_times), np.nanmax(synced_spike_times))
+
+    np.save(ks3_path.parent / 'rsync_corrected_spike_times.npy', synced_spike_times)
+    # %%
