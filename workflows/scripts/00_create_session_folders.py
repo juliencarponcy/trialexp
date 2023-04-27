@@ -30,7 +30,7 @@ tasks = tasks_params_df.task.values.tolist()
 for task_id, task in enumerate(tasks):
 
     print(f'task {task_id+1}/{len(tasks)}: {task}')
-    export_base_path = Path(f'/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/by_sessions/{task}')
+    export_base_path = Path(f'/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/by_sessions_new/{task}')
 
     pycontrol_folder = Path(f'/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/pycontrol/{task}')
     pyphoto_folder = Path(f'/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/pyphotometry/data/{task}')
