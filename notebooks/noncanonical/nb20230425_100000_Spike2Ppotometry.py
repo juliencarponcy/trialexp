@@ -6,7 +6,7 @@
 # 
 # 
 
-# In[50]:
+# In[1]:
 
 
 # import ipynbname
@@ -463,7 +463,9 @@ def get_newTandY_down(T, photometry_dict, name, max_time_ms):
 # 
 # 
 
-# In[33]:
+# ## PLS regression
+
+# In[24]:
 
 
 # PLS
@@ -505,7 +507,7 @@ print(f'R2 score: {r2:.2f}')
 
 
 
-# In[35]:
+# In[25]:
 
 
 len(X_test)
@@ -515,7 +517,7 @@ len(X_test)
 # 
 # Model is still twice as large as the real data
 
-# In[49]:
+# In[26]:
 
 
 from matplotlib import pyplot as plt
@@ -537,18 +539,122 @@ plt.show()
 
 
 
+# In[47]:
+
+
+#  Applying bandpass (including highpass 0.001 Hz) filter to remove ultraslow components
+
+from scipy.signal import butter
+from trialexp.process.pyphotometry.utils import *
+
+
+
+# In[60]:
+
+
+list(lowpass_freq)
+
+
+# In[61]:
+
+
+# explore low-pass cut off freq
+start_time_ms = 2000 * 1000  # 2000 seconds in milliseconds
+end_time_ms = 2100 * 1000
+
+pairs = [(t, d) for t, d in zip(T, photometry_dict['analog_1']) if start_time_ms <= t < end_time_ms]
+T_subset, analog_1_subset = zip(*pairs)
+T_subset = list(T_subset)
+analog_1_subset = list(analog_1_subset)
+
+sampling_rate = 1000
+highpass_freq = 0.001
+lowpass_freq = range(10, 50, 5)
+for L in lowpass_freq:
+    b, a = get_filt_coefs(low_pass=L, 
+                        high_pass=highpass_freq, 
+                        sampling_rate=sampling_rate)
+    #TODO may be filter is not stable or something? I don't see an effect of low-pass 
+    analog_1_subset_filt = filtfilt(b, a, analog_1_subset, padtype='even')
+
+    plt.plot([t/1000 for t in T_subset], 
+             analog_1_subset_filt, label=f'{L:d}',
+             linewidth=0.3)
+
+plt.legend(loc='upper right')
+plt.xlim(2000, 2010)
+plt.show()
+
+
+# In[62]:
+
+
+lowpass_freq = 33.3
+highpass_freq = 0.001 # 10 s cycle
+sampling_rate = 1000
+
+# trialexp\process\pyphotometry\utils.py
+# see https://vscode.dev/github/juliencarponcy/trialexp/blob/fd1e0dcc857275cafa7f809a104fd60e73ce1458/trialexp/process/pyphotometry/utils.py#L51
+b, a = get_filt_coefs(low_pass=lowpass_freq, 
+                      high_pass=highpass_freq, 
+                      sampling_rate=sampling_rate)
+analog_1_filt = filtfilt(b, a, photometry_dict['analog_1'], padtype='even')
+analog_2_filt = filtfilt(b, a, photometry_dict['analog_2'], padtype='even')
+
+
+# In[63]:
+
+
+plt.plot(T/1000, analog_1_filt, linewidth=0.5, label='1: dLight', color='g')
+plt.plot(T/1000, analog_2_filt, linewidth=0.5, alpha=0.3, label='2: tdTomato', color = 'r')
+plt.legend(loc='upper right')
+plt.show()
+
+plt.plot(T/1000, analog_1_filt, linewidth=0.5, label='1: dLight', color='g')
+plt.plot(T/1000, analog_2_filt, linewidth=0.5, alpha=0.3, label='2: tdTomato', color = 'r')
+plt.legend(loc='upper right')
+plt.xlim(2000, 2100)
+plt.show()
+
+
+# # Linear regression after band-pass filtering
+
+# In[42]:
+
+
+# https://vscode.dev/github/juliencarponcy/trialexp/blob/fd1e0dcc857275cafa7f809a104fd60e73ce1458/trialexp/process/pyphotometry/utils.py#L63
+# def motion_correction()
+slope, intercept, r_value, p_value, std_err = linregress(x=analog_2_filt, y=analog_1_filt)
+analog_1_est_motion = intercept + slope * analog_2_filt
+analog_1_corrected = analog_1_filt - analog_1_est_motion
+
+
+# In[68]:
+
+
+fig, ax = plt.subplots(4,1, sharey=True, sharex= True)
+
+ax[0].plot(T/1000, analog_1_filt, linewidth=0.5, label='bandpass filtered')
+ax[1].plot(T/1000, analog_1_est_motion, linewidth=0.5,  label='estimate')
+ax[2].plot(T/1000, analog_1_corrected, linewidth=0.5, label='corrected (new)')
+ax[3].plot(T/1000, photometry_dict['analog_1_corrected'], linewidth=0.5, label='corrected (old)')
+
+plt.xlim(2000, 2010)
+plt.ylim(-0.04, 0.04)
+
+for i in range(0,3):
+    leg = ax[i].legend(loc='upper right')
+    leg.get_frame().set_edgecolor('none')
+
+plt.show()
+
+
 # In[ ]:
 
 
-# window approach
+#TODO window approach
 
 
-
-
-# In[ ]:
-
-
-#  Applying highpass filter to remove ultraslow compnents
 
 
 # I thought that using average waveforms, it would be easier to fit the red and green channels, but this comes with an assumption that the vast majority of data points in average waveform does not have dopamine signals.
