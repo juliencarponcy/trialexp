@@ -78,8 +78,19 @@ rule ephys_sync:
     script:
         "scripts/s04_ephys_sync.py"
 
+rule cell_metrics_processing:
+    input:
+        rec_properties = rec_properties_input,
+        ephys_sync_complete = '{sessions}/{task_path}/{session_id}/processed/ephys_sync.done'
+
+    output:
+        cell_metrics_processing_complete = touch('{sessions}/{task_path}/{session_id}/processed/cell_metrics_processing.done')
+
+    script:
+        "scripts/s05_cell_metrics_processing.py"
+
 rule final:
     input:
-        ephys_sync_complete = '{session_path}/{task_path}/{session_id}/processed/ephys_sync.done'
+        ephys_sync_complete = '{session_path}/{task_path}/{session_id}/processed/cell_metrics_processing.done'
     output:
         done = touch('{session_path}/{task_path}/{session_id}/processed/spike_workflow.done')
