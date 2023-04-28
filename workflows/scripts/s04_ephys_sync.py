@@ -64,17 +64,19 @@ for idx_rec in  idx_to_sort:
         raise Exception(f'Cannot find the spike_times.npy file at: {ks3_path}')
 
 
-
+   
     rsync = create_ephys_rsync(str(pycontrol_path), sync_path, tstart)
+    if rsync:
+        spike_times = np.load(ks3_path)
+        # print(np.nanmin(spike_times), np.nanmax(spike_times))
 
-    spike_times = np.load(ks3_path)
-    # print(np.nanmin(spike_times), np.nanmax(spike_times))
+        # Careful with the forced 30 value, sampling rate slightly diverging from 30kHz
+        # should be dealt-with by open-ephys/ks3, but need to be checked
+        spike_times_converted = spike_times/(rec_properties.sample_rate.iloc[idx_rec]/1000) # /1000 to be in ms
+        synced_spike_times = rsync.B_to_A(spike_times_converted)
+        # print(np.nanmin(synced_spike_times), np.nanmax(synced_spike_times))
 
-    # Careful with the forced 30 value, sampling rate slightly diverging from 30kHz
-    # should be dealt-with by open-ephys/ks3, but need to be checked
-    spike_times_converted = spike_times/30
-    synced_spike_times = rsync.B_to_A(spike_times_converted)
-    # print(np.nanmin(synced_spike_times), np.nanmax(synced_spike_times))
-
-    np.save(ks3_path.parent / 'rsync_corrected_spike_times.npy', synced_spike_times)
+        np.save(ks3_path.parent / 'rsync_corrected_spike_times.npy', synced_spike_times)
+    else:
+        raise Warning(f'{pycontrol_path} and {sync_path} with tstart = {tstart}sec could not be synchronized, no corrected spike times saved')
     # %%

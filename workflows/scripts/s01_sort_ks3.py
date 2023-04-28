@@ -65,7 +65,9 @@ for idx_rec in idx_to_sort:
     ephys_path = Path(rec_properties.full_path.iloc[idx_rec]).parent.parent.parent.parent.parent
     
     # Maybe not the best method to get it
-    relative_ephys_path = os.path.join(*ephys_path.parts[6:])
+    # has introduced some bugs for forgotten reason related to folder changes
+    # TODO improve to join just before relative_ephys_path and root_data_path overlap
+    relative_ephys_path = os.path.join(*ephys_path.parts[5:])
     ephys_path = os.path.join(root_data_path, relative_ephys_path)
     
     experiments_nb = rec_properties.exp_nb.unique()

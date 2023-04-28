@@ -30,7 +30,7 @@ tasks = tasks_params_df.task.values.tolist()
 for task_id, task in enumerate(tasks):
 
     print(f'task {task_id+1}/{len(tasks)}: {task}')
-    export_base_path = Path(f'/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/by_sessions_new/{task}')
+    export_base_path = Path(f'/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/by_sessions/{task}')
 
     pycontrol_folder = Path(f'/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/pycontrol/{task}')
     pyphoto_folder = Path(f'/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/pyphotometry/data/{task}')
@@ -155,6 +155,7 @@ for task_id, task in enumerate(tasks):
 
         #write information about ephys recrodings in the ephys folder
         if row.ephys_folder_name:
+
             recordings_properties = get_recordings_properties(ephys_base_path, row.ephys_folder_name)
             # try to sync ephys recordings
             recordings_properties['syncable'] = False
