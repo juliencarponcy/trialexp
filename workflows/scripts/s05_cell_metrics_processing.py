@@ -27,7 +27,7 @@ cell_metrics_processing_done_path = str(Path(settings.debug_folder) / 'processed
 # %% Define path of processed probes
 
 verbose = True
-ks3_path = Path(cell_metrics_processing_done_path).parent / 'kilosort3'
+ks3_path = Path(sinput.ephys_sync_complete).parent / 'kilosort3'
 session_ID = ks3_path.parent.parent.stem
 
 probes = os.listdir(ks3_path)
@@ -44,13 +44,13 @@ for probe in probes:
     cell_metrics_path = [mat_file for mat_file in mat_files if ('cell_metrics.cellinfo' in str(mat_file))][0]
     spikes_path = [mat_file for mat_file in mat_files if ('spikes.cellinfo' in str(mat_file))][0]
 
-    # %% Load .mat files of CellExplorer outputs
+    # Load .mat files of CellExplorer outputs
     cell_metrics_dict = loadmat(cell_metrics_path)
     cell_metrics = cell_metrics_dict['cell_metrics']
     spikes_dict = loadmat(spikes_path)
     spikes = spikes_dict['spikes']
 
-    # %% Get name and shapes of variables
+    # Get name and shapes of variables
 
     spikes_var_names = np.array(spikes.dtype.names)
     cell_var_names = np.array(cell_metrics.dtype.names)
@@ -59,7 +59,7 @@ for probe in probes:
     spikes_var_shapes = [spikes[spikes_var_name][0][0][0].shape for spikes_var_name in spikes_var_names]
     cell_metrics_shapes = [cell_metrics[cell_var_name][0][0][0].shape for cell_var_name in cell_var_names]
 
-    # %% A lot of reformatting is needed to get from matlab structure to tabular DataFrame
+    # A lot of reformatting is needed to get from matlab structure to tabular DataFrame
     # Here we only take varables which have a single value by cluster
 
     uni_dim_vars_idx = [idx for idx, shape in enumerate(cell_metrics_shapes) if shape == (nb_clusters,)]
@@ -108,3 +108,10 @@ for probe in probes:
     # Save a full version of the cell-metrics dataframe  
     cell_metrics_df.to_pickle(cell_metrics_folder / 'cell_metrics_df_full.pkl')
 
+    # Storing raw waveforms of all channels, dim  N channels x M timestamps x L clusters
+    all_raw_wf = np.ndarray((spikes['rawWaveform_all'][0][0][0][0].shape[0], spikes['rawWaveform_all'][0][0][0][0].shape[1], spikes['rawWaveform_all'][0][0][0].shape[0]))
+    for clu_idx, rawWaveforms in enumerate(spikes['rawWaveform_all'][0][0][0]):
+        all_raw_wf[:,:, clu_idx] = rawWaveforms
+    
+    np.save(cell_metrics_folder / 'all_raw_waveforms.npy', all_raw_wf)
+# %%
