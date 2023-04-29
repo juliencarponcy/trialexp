@@ -1,5 +1,8 @@
 '''
 Functions for exporting event data to spike2
+
+cf. plot_session in
+https://github.com/juliencarponcy/trialexp/blob/master/trialexp/process/data_import.py#L1403
 '''
 
 from sonpy import lib as sp
@@ -136,7 +139,7 @@ class Spike2Exporter:
             print(f'{y_index}, {title}:')
             print(self.MyFile.ReadMarkers(int(y_index), nEvents, self.tFrom, self.tUpto)) #TODO failed Tick = -1
 
-    def write_textmark(self, X_ms, title, y_index, txt, EventRate, time_vec_ms, verbose=False):
+    def write_textmark(self, X_ms, title, y_index, txt, verbose=False):
         """Writes text marks to file.
 
         Parameters
@@ -151,10 +154,7 @@ class Spike2Exporter:
                 Index in y coordinate
         txt : list 
             List of strings for TextMarkers
-        EventRate : int
-                    Event Rate
-        time_vec_ms : array-like, shape (n_bins, n_features)
-                    Array of time in ms
+
         verbose : bool, optional (default=False)
                 If true, print messages when writing or reading TextMarks.
 
@@ -168,7 +168,7 @@ class Spike2Exporter:
                 Array of TextMarker values
         """
             
-        (hist, ___) = np.histogram(X_ms, bins=time_vec_ms) # time is 1000 too small
+        (hist, ___) = np.histogram(X_ms, bins=self.time_vec_ms) # time is 1000 too small
 
         eventfalldata = np.where(hist)
 
@@ -187,7 +187,7 @@ class Spike2Exporter:
                 raise Exception('oh no')
             TMrkData[i] = sp.TextMarker(txt[i], MarkData[i]) #TODO
             
-        self.MyFile.SetTextMarkChannel(y_index, EventRate, max(len(s) for s in txt)+1)
+        self.MyFile.SetTextMarkChannel(y_index, self.EventRate, max(len(s) for s in txt)+1)
         self.MyFile.SetChannelTitle(y_index, title)
         if eventfalldata[0] is not []:
             self.MyFile.WriteTextMarks(y_index, TMrkData)

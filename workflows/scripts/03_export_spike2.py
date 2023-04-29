@@ -6,7 +6,7 @@ import pandas as pd
 from trialexp.process.pycontrol.utils import export_session
 from snakehelper.SnakeIOHelper import getSnake
 from workflows.scripts import settings
-from glob import glob
+from re import match
 from pathlib import Path
 from trialexp.process.pyphotometry.utils import *
 
@@ -14,21 +14,21 @@ from trialexp.process.pyphotometry.utils import *
 
 (sinput, soutput) = getSnake(locals(), 'workflows/spout_bar_nov22.smk',
     [settings.debug_folder +'\processed\spike2.smrx'],
-  'export_spike2')
+    'export_spike2')
 
 #%% Photometry dict
 
 #fn = glob(sinput.photometry_folder+'\*.ppd')[0]
 fn = list(Path(sinput.photometry_folder).glob('*.ppd'))
 if fn == []:
-  data_photometry = None    
+    data_photometry = None    
 else:
-  fn = fn[0]
-  data_photometry = import_ppd(fn)
+    fn = fn[0]
+    data_photometry = import_ppd(fn)
 
-  data_photometry = denoise_filter(data_photometry)
-  data_photometry = motion_correction(data_photometry)
-  data_photometry = compute_df_over_f(data_photometry, low_pass_cutoff=0.001)
+    data_photometry = denoise_filter(data_photometry)
+    data_photometry = motion_correction(data_photometry)
+    data_photometry = compute_df_over_f(data_photometry, low_pass_cutoff=0.001)
 
 
 # no down-sampling here
@@ -38,17 +38,41 @@ df_pycontrol = pd.read_pickle(sinput.pycontrol_dataframe)
 
 pycontrol_time = df_pycontrol[df_pycontrol.name == 'rsync'].time
 
+# assuming just one txt file
+pycontrol_txt = list(Path(sinput.pycontrol_folder).glob('*.txt'))
+
+with open(pycontrol_txt[0], 'r') as f:
+    all_lines = [line.strip() for line in f.readlines() if line.strip()]
+
+count = 0
+print_lines = []
+while count < len(all_lines):
+    # all_lines[count][0] == 'P'
+    if bool(match('P\s\d+\s', all_lines[count])):
+        print_lines.append(all_lines[count][2:])
+        count += 1
+        while (count < len(all_lines)) and not (bool(match('[PVD]\s\d+\s', all_lines[count]))):
+            print_lines[-1] = print_lines[-1] + \
+                "\n" + all_lines[count]
+            count += 1
+    else:
+        count += 1
+
+v_lines = [line[2:] for line in all_lines if line[0] == 'V']
+
 
 #%%
 if fn == []:
-  photometry_times_pyc = None
+    photometry_times_pyc = None
 else:
-  photometry_aligner = Rsync_aligner(pycontrol_time, data_photometry['pulse_times_2'])
-  photometry_times_pyc = photometry_aligner.B_to_A(data_photometry['time'])
+    photometry_aligner = Rsync_aligner(pycontrol_time, data_photometry['pulse_times_2'])
+    photometry_times_pyc = photometry_aligner.B_to_A(data_photometry['time'])
 
 #remove all state change event
 df_pycontrol = df_pycontrol.dropna(subset='name')
-df2plot = df_pycontrol[df_pycontrol.type != 'state']
+df2plot = df_pycontrol[df_pycontrol.type == 'event']
+# state is handled separately with export_state, whereas parameters are handled vchange_to_text
+
 keys = df2plot.name.unique()
 
 photometry_keys =  ['analog_1', 'analog_2',  'analog_1_filt', 'analog_2_filt',
@@ -57,7 +81,9 @@ photometry_keys =  ['analog_1', 'analog_2',  'analog_1_filt', 'analog_2_filt',
 
 #%%
 export_session(df_pycontrol, keys, 
-             data_photometry = data_photometry,
-             photometry_times_pyc = photometry_times_pyc,
-             photometry_keys = photometry_keys,
-             smrx_filename=soutput.spike2_file)
+    data_photometry = data_photometry,
+    photometry_times_pyc = photometry_times_pyc,
+    photometry_keys = photometry_keys,
+    print_lines = print_lines,
+    v_lines = v_lines,
+    smrx_filename=soutput.spike2_file)

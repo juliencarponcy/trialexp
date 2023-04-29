@@ -34,6 +34,7 @@ rule pycontrol_figures:
 
 rule export_spike2:
     input:
+        pycontrol_folder = '{session_path}/{session_id}/pycontrol',
         pycontrol_dataframe = '{session_path}/{session_id}/processed/df_pycontrol.pkl',
         photometry_folder = '{session_path}/{session_id}/pyphotometry'
     output:
