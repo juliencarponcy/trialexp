@@ -71,6 +71,7 @@ for idx_rec in idx_to_sort:
     ephys_path = os.path.join(root_data_path, relative_ephys_path)
     
     experiments_nb = rec_properties.exp_nb.unique()
+    # The indices of experiments seems to differ depending on whether they are a single or multiple experiments
     if len(experiments_nb) == 1:
         recordings = se.read_openephys(ephys_path, block_index=exp_nb-1, stream_name=AP_stream) # nb-based
     else:
@@ -88,6 +89,8 @@ for idx_rec in idx_to_sort:
         'chunk_duration': '10s', 
         'progress_bar': False}
 
+    # TODO: Add try / catch with warnings and logging of the failed sorting (in rec_properties.csv for instance)
+    # In order to cleanly skip dodgy recordings and keep the pipeline running
     sorting = ss.run_sorter(
             sorter_name = sorter_name,
             recording = recording, 

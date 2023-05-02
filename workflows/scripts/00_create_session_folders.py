@@ -30,12 +30,15 @@ tasks = tasks_params_df.task.values.tolist()
 for task_id, task in enumerate(tasks):
 
     print(f'task {task_id+1}/{len(tasks)}: {task}')
-    export_base_path = Path(f'/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/by_sessions/{task}')
+    # Folder to be created where data by sessions will be stored 
+    export_base_path = Path(os.environ['SESSION_ROOT_DIR']) / task
+    
+    # Paths to raw data folders
+    pycontrol_folder = Path(os.environ['RAW_DATA_ROOT_DIR']) / 'pycontrol' / task
+    pyphoto_folder = Path(os.environ['RAW_DATA_ROOT_DIR']) / 'pyphotometry' / 'data' / task
+    ephys_base_path = Path(os.environ['RAW_DATA_ROOT_DIR']) / 'openephys'
 
-    pycontrol_folder = Path(f'/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/pycontrol/{task}')
-    pyphoto_folder = Path(f'/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/pyphotometry/data/{task}')
-    ephys_base_path = Path(f'/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/openephys')
-
+    # Gather all pycontrol, photometry, and ephys files/folders 
     pycontrol_files = list(pycontrol_folder.glob('*.txt'))
     pyphoto_files = list(pyphoto_folder.glob('*.ppd'))
     open_ephys_folders = os.listdir(ephys_base_path)
