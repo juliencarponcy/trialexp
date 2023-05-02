@@ -24,11 +24,13 @@ rule spike_sorting:
     output:
         sorting_complete = touch('{sessions}/{task_path}/{session_id}/processed/spike_sorting.done'),       
     
-    threads: 64
+    threads: 32
 
     script:
         "scripts/s01_sort_ks3.py"
 
+# TODO Inverse spike_metrics_ks3 and move_to_server, running cell metrics from ettin,
+# and not locally, in order to make the pipeline more resilient in case of sorting failure.
 rule spike_metrics_ks3:
     input:
         sorting_complete = '{sessions}/{task_path}/{session_id}/processed/spike_sorting.done',
@@ -36,7 +38,7 @@ rule spike_metrics_ks3:
     output:
         metrics_complete = touch('{sessions}/{task_path}/{session_id}/processed/spike_metrics.done')
     
-    threads: 64
+    threads: 32
     
     priority: 10
 
@@ -53,17 +55,13 @@ rule move_to_server:
     output:
         move_complete = touch('{sessions}/{task_path}/{session_id}/processed/move_to_server.done')
 
-    threads: 64
+    threads: 32
 
     priority: 30
 
     run:
-        # shell('mkdir -p {wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed')
-        #modify to avoid double nesting of processed/kilosort3/kilosort3 not done as pipeline would take so much time to run again
         shell('mv {params.local_root_sorting_folder}/kilosort3 {wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed')
-        # shell('mkdir -p {wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed/si')
         shell('mv {params.local_root_sorting_folder}/si {wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed/si')
-        # The following should not be necessary but did not worked properly, maybe because of filesystem on ettin
         shell('rm -rf {params.local_root_sorting_folder}/kilosort3')
         shell('rm -rf {params.local_root_sorting_folder}/si')
 
@@ -74,6 +72,10 @@ rule ephys_sync:
 
     output:
         ephys_sync_complete = touch('{sessions}/{task_path}/{session_id}/processed/ephys_sync.done')
+    
+    threads: 32
+
+    priority: 40
 
     script:
         "scripts/s04_ephys_sync.py"
@@ -85,6 +87,10 @@ rule cell_metrics_processing:
 
     output:
         cell_metrics_processing_complete = touch('{sessions}/{task_path}/{session_id}/processed/cell_metrics_processing.done')
+
+    threads: 32
+
+    priority: 50
 
     script:
         "scripts/s05_cell_metrics_processing.py"
