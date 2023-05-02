@@ -18,8 +18,6 @@ import spikeinterface.sorters as ss
 from spikeinterface.core import select_segment_recording
 
 from workflows.scripts import settings
-from trialexp.process.ephys.spikesort import sort
-
 
 #%% Load inputs
 spike_sorting_done_path = str(Path(settings.debug_folder) / 'processed' / 'spike_sorting.done')
@@ -33,8 +31,9 @@ spike_sorting_done_path = str(Path(settings.debug_folder) / 'processed' / 'spike
 sorter_name = 'kilosort3'
 verbose = True
 rec_properties_path = Path(sinput.rec_properties)
-rec_properties = pd.read_csv(rec_properties_path, index_col= None)
+rec_properties = pd.read_csv(rec_properties_path, index_col = 0)
 
+rec_properties['sorting_error'] = False
 # Only select longest syncable recordings to sort
 idx_to_sort = rec_properties[rec_properties.longest == True].index.values
 
@@ -91,25 +90,31 @@ for idx_rec in idx_to_sort:
 
     # TODO: Add try / catch with warnings and logging of the failed sorting (in rec_properties.csv for instance)
     # In order to cleanly skip dodgy recordings and keep the pipeline running
-    sorting = ss.run_sorter(
-            sorter_name = sorter_name,
-            recording = recording, 
-            output_folder = temp_output_sorter_specific_folder,
-            remove_existing_folder = True, 
-            delete_output_folder = False, 
-            verbose = True,
-            **sorter_specific_params)
+    try:
+        sorting = ss.run_sorter(
+                sorter_name = sorter_name,
+                recording = recording, 
+                output_folder = temp_output_sorter_specific_folder,
+                remove_existing_folder = True, 
+                delete_output_folder = False, 
+                verbose = True,
+                **sorter_specific_params)
+        
+        # delete previous output_sorting_folder and its contents if it exists,
+        # this prevent the save method to crash.
+        if output_si_sorted_folder.exists():
+            shutil.rmtree(output_si_sorted_folder)
+        
+        sorting.save(folder = output_si_sorted_folder)
 
+    except:
+        Warning(f'Sorting failed: {Path(ephys_path).parts[-1]}, {probe_name}, exp_nb:{exp_nb}, rec_nb:{rec_nb}. recording duration: {recording.get_total_duration()}s')
+        # Flag the recording as sorted
+        rec_properties['sorting_error'].iloc[idx_rec] = True
+        
 
-    
-    # delete previous output_sorting_folder and its contents if it exists,
-    # this prevent the save method to crash.
-    if output_si_sorted_folder.exists():
-        shutil.rmtree(output_si_sorted_folder)
-    
-    sorting.save(folder = output_si_sorted_folder)
-
-# %%
+# %% Save the updated rec_properties.csv file
+rec_properties.to_csv(rec_properties_path)
 
     # # skip sorting if results already present
     # # Warning: this is temp fix, as it could alter version control from snakemake

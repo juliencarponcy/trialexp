@@ -29,22 +29,6 @@ rule spike_sorting:
     script:
         "scripts/s01_sort_ks3.py"
 
-# TODO Inverse spike_metrics_ks3 and move_to_server, running cell metrics from ettin,
-# and not locally, in order to make the pipeline more resilient in case of sorting failure.
-rule spike_metrics_ks3:
-    input:
-        sorting_complete = '{sessions}/{task_path}/{session_id}/processed/spike_sorting.done',
-
-    output:
-        metrics_complete = touch('{sessions}/{task_path}/{session_id}/processed/spike_metrics.done')
-    
-    threads: 32
-    
-    priority: 10
-
-    script:
-        "scripts/s02_cluster_metrics_ks3.py"
-
 rule move_to_server:
     input: 
         metrics_complete = '{sessions}/{task_path}/{session_id}/processed/spike_metrics.done'
@@ -65,10 +49,26 @@ rule move_to_server:
         shell('rm -rf {params.local_root_sorting_folder}/kilosort3')
         shell('rm -rf {params.local_root_sorting_folder}/si')
 
+# TODO Inverse spike_metrics_ks3 and move_to_server, running cell metrics from ettin,
+# and not locally, in order to make the pipeline more resilient in case of sorting failure.
+rule spike_metrics_ks3:
+    input:
+        move_complete = '{sessions}/{task_path}/{session_id}/processed/move_to_server.done',
+
+    output:
+        metrics_complete = touch('{sessions}/{task_path}/{session_id}/processed/spike_metrics.done')
+    
+    threads: 32
+    
+    priority: 10
+
+    script:
+        "scripts/s02_cluster_metrics_ks3.py"
+
 rule ephys_sync:
     input:
         rec_properties = rec_properties_input,
-        move_complete = '{sessions}/{task_path}/{session_id}/processed/move_to_server.done'
+        metrics_complete = '{sessions}/{task_path}/{session_id}/processed/spike_metrics.done'
 
     output:
         ephys_sync_complete = touch('{sessions}/{task_path}/{session_id}/processed/ephys_sync.done')

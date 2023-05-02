@@ -5,6 +5,7 @@ Script to create the session folder structure
 import os
 from pathlib import Path
 
+import pandas as pd
 import matlab.engine
 from snakehelper.SnakeIOHelper import getSnake
 
@@ -27,6 +28,13 @@ temp_ks3_folder = Path(os.environ['TEMP_DATA_PATH']) / sorter_name
 
 probe_folders = [str(temp_ks3_folder / probe_folder / 'sorter_output') for probe_folder in os.listdir(temp_ks3_folder)]
 
+rec_properties_path = Path(sinput.rec_properties)
+rec_properties = pd.read_csv(rec_properties_path, index_col = 0)
+
+# Only select longest syncable recordings which have not failed at sorting stage.
+idx_to_sort = rec_properties[(rec_properties.longest == True) & (rec_properties.sorting_error == False)].index.values
+
+probe_folders = rec_properties_path.parent
 # %% Start Matlab engine and add paths
 eng = matlab.engine.start_matlab()
 
