@@ -90,28 +90,27 @@ def add_trial_nb(df_events, trigger_time, trial_window):
     # add trial number into the event dataframe
     df = df_events.copy()
     df['trial_nb'] = np.nan
-    #TODO: can time window be overalpping?
-    # overlapping trial will cause some trial number to be overwritten
-    # also will make later analysis more confusing, 
-    # try avoid overlapping trials
+    
 
     trial_nb = 1
     last_idx = [False]*len(df_events)
     valid_trigger_time = []
     
-    for t in trigger_time: #skip the last trial because it can be incomplete
-        td = df.time - t
-        start = (trial_window[0]<=td)
-        end = (td<trial_window[1])
-        if any(end):
-            # only continue when trial is complete
-            idx = start & end
-
-            if not any(last_idx&idx):         #check for overlapping
-                df.loc[idx, ['trial_nb']] = trial_nb
-                valid_trigger_time.append(t)
-                last_idx = idx 
-                trial_nb += 1
+    for i in range(len(trigger_time)-1): #skip the last trial because it can be incomplete
+        # The definition of a trial is the trigger_time[i]- trial_window[0] up to the next
+        # trigger_time[i+1] - trial_window[0]
+        start = trigger_time[i] + trial_window[0]
+        end = trigger_time[i+1] + trial_window[0]
+        idx = (df.time>=start) & (df.time<end)
+        df.loc[idx, ['trial_nb']] = trial_nb
+        valid_trigger_time.append(trigger_time[i])
+        
+        trial_nb += 1
+        
+        if any(last_idx&idx):
+            logging.warn('Overlapping trials detected.')
+            
+        last_idx = idx
 
     assert len(df.trial_nb.unique()) == len(valid_trigger_time)+1, f'Error: trigger number mismatch {df.trial_nb.unique()} {len(trigger_time)}'
     return df, np.array(valid_trigger_time)
