@@ -18,7 +18,7 @@ from math import ceil
 from scipy.signal import butter, filtfilt, decimate
 from scipy.stats import linregress, zscore
 from trialexp.process.pycontrol.utils import find_if_event_within_timelim, find_last_time_before_list
-
+import logging
     
 def add_time_rel_trigger(df_events, trigger_time, trigger_name, col_name, trial_window):
     #Add new time column to the event data, aligned to the trigger time
@@ -146,7 +146,13 @@ def get_task_specs(tasks_trig_and_events, task_name):
     # define trial_window parameter for extraction around triggers
     # self.trial_window = trial_window        
     return conditions, triggers, events_to_process
-    
+
+def get_rel_time(df, trigger_name):
+    # get the relative time to the trigger within a trial
+    t0 = df[df['name']==trigger_name].time.values
+    assert len(t0) == 1, 'Error: not exactly 1 trigger found'
+    df['trial_time'] = df.time - t0
+    return df
     
 def extract_trial_by_trigger(df_pycontrol, trigger, event2analysis, trial_window, subject_ID, datetime_obj):
     
@@ -154,7 +160,7 @@ def extract_trial_by_trigger(df_pycontrol, trigger, event2analysis, trial_window
     # add trial number and calculate the time from trigger
     trigger_time = df_events[(df_events.name==trigger)].time.values
     df_events, trigger_time = add_trial_nb(df_events, trigger_time,trial_window) #add trial number according to the trigger
-    df_events = add_time_rel_trigger(df_events, trigger_time, trigger, 'trial_time', trial_window) #calculate time relative to trigger
+    df_events = df_events.groupby('trial_nb', group_keys=False).apply(get_rel_time, trigger_name=trigger)
     df_events.dropna(subset=['trial_time'],inplace=True)
     
     
