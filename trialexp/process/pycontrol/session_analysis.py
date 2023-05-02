@@ -199,6 +199,7 @@ def extract_trial_by_trigger(df_pycontrol, trigger, event2analysis, trial_window
     return df_events_trials,df_events
 
 def compute_conditions_by_trial(df_events_trials, conditions):
+    # if a condition (usually some event) is found in a particular trial, then it is marked as true
 
     df_conditions = df_events_trials[['uid','trigger','valid']].copy()
     for con in conditions:
