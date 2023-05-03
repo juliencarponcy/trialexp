@@ -5,15 +5,15 @@ Export event data to spike2
 import pandas as pd 
 from trialexp.process.pycontrol.utils import export_session
 from snakehelper.SnakeIOHelper import getSnake
-from workflows.scripts import settings
+from workflow.scripts import settings
 from re import match
 from pathlib import Path
 from trialexp.process.pyphotometry.utils import *
 
 #%%
 
-(sinput, soutput) = getSnake(locals(), 'workflows/spout_bar_nov22.smk',
-    [settings.debug_folder +'\processed\spike2.smrx'],
+(sinput, soutput) = getSnake(locals(), 'workflow/pycontrol.smk',
+    [settings.debug_folder +'/processed/spike2.smrx'],
     'export_spike2')
 
 #%% Photometry dict
