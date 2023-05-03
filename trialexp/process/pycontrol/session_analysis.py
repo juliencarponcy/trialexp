@@ -95,23 +95,37 @@ def add_trial_nb(df_events, trigger_time, trial_window):
     trial_nb = 1
     last_idx = [False]*len(df_events)
     valid_trigger_time = []
-    
+    skip_trials = 0
+
     for i in range(len(trigger_time)-1): #skip the last trial because it can be incomplete
         # The definition of a trial is the trigger_time[i]- trial_window[0] up to the next
         # trigger_time[i+1] - trial_window[0]
         start = trigger_time[i] + trial_window[0]
         end = trigger_time[i+1] + trial_window[0]
-        idx = (df.time>=start) & (df.time<end)
-        df.loc[idx, ['trial_nb']] = trial_nb
-        valid_trigger_time.append(trigger_time[i])
         
+        assert end>start, 'Error: trial shorter than trial_window'
+        assert end>trigger_time[i], 'Error: trial end earlier than trigger'
+        
+        idx = (df.time>=start) & (df.time<end)
+        
+        
+        if np.sum(idx)>0:
+            df.loc[idx, ['trial_nb']] = trial_nb
+            valid_trigger_time.append(trigger_time[i])
+        else:
+            skip_trials += 1
+
         trial_nb += 1
         
         if any(last_idx&idx):
             logging.warn('Overlapping trials detected.')
             
         last_idx = idx
-
+        
+                
+    if skip_trials>0:
+        logging.warn(f'{skip_trials} have been skipped because no event is found')
+    
     assert len(df.trial_nb.unique()) == len(valid_trigger_time)+1, f'Error: trigger number mismatch {df.trial_nb.unique()} {len(trigger_time)}'
     return df, np.array(valid_trigger_time)
 
@@ -150,7 +164,7 @@ def get_task_specs(tasks_trig_and_events, task_name):
 def get_rel_time(df, trigger_name):
     # get the relative time to the trigger within a trial
     t0 = df[df['name']==trigger_name].time.values
-    assert len(t0) == 1, 'Error: not exactly 1 trigger found'
+    assert len(t0) == 1, f'Error: not exactly 1 trigger found {df}'
     df['trial_time'] = df.time - t0
     return df
     
