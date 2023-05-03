@@ -1,1 +1,0 @@
-This is a graph about the event histogram for {{snakemake.wildcards['session_ID']}}
