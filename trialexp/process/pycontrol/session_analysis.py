@@ -144,22 +144,26 @@ def get_task_specs(tasks_trig_and_events, task_name):
     """
 
     # match triggers (events/state used for t0)
-    triggers = np.array2string(tasks_trig_and_events['triggers'][tasks_trig_and_events['task'] == task_name].values).strip("'[]").split('; ')
+    task_idx = (tasks_trig_and_events['task'] == task_name)
+    
+    triggers = np.array2string(tasks_trig_and_events['triggers'][task_idx].values).strip("'[]").split('; ')
     if triggers[0] =='':
         raise ValueError(f'Cannot found the task  {task_name} in tasks_params!')
     
            
     # events to extract
-    events_to_process = np.array2string(tasks_trig_and_events['events'][tasks_trig_and_events['task'] == task_name].values).strip("'[]").split('; ')
+    events_to_process = np.array2string(tasks_trig_and_events['events'][task_idx].values).strip("'[]").split('; ')
     # printed line in task file indicating
     # the type of optogenetic stimulation
     # used to group_by trials with same stim/sham
-    conditions = np.array2string(tasks_trig_and_events['conditions'][tasks_trig_and_events['task'] == task_name].values).strip("'[]").split('; ')
+    conditions = np.array2string(tasks_trig_and_events['conditions'][task_idx].values).strip("'[]").split('; ')
     
+    trial_window = tasks_trig_and_events['trial_window'][task_idx].iloc[0].split(';')
+    trial_window = list(map(float, trial_window))
     # REMOVED, now only at Experiment level to avoid inconsistencies
     # define trial_window parameter for extraction around triggers
     # self.trial_window = trial_window        
-    return conditions, triggers, events_to_process
+    return conditions, triggers, events_to_process, trial_window
 
 def get_rel_time(df, trigger_name):
     # get the relative time to the trigger within a trial
