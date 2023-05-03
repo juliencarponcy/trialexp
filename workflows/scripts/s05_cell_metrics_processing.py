@@ -29,19 +29,29 @@ cell_metrics_processing_done_path = str(Path(settings.debug_folder) / 'processed
 # %% Define path of processed probes
 
 verbose = True
-ks3_path = Path(sinput.ephys_sync_complete).parent / 'kilosort3'
+sorter_name = 'kilosort3'
+ks3_path = Path(sinput.ephys_sync_complete).parent / sorter_name
+rec_properties_path = Path(sinput.rec_properties)
+
 session_ID = ks3_path.parent.parent.stem
 
-probes = os.listdir(ks3_path)
+processed_folder = rec_properties_path.parent.parent / 'processed' 
+# Only select probe folders where the results of the sorting can be found.
+probe_folders = [processed_folder / sorter_name / probe_folder / 'sorter_output'
+                  for probe_folder in os.listdir(processed_folder / sorter_name)
+                  if 'spike_clusters.npy' in os.listdir(processed_folder / sorter_name / probe_folder / 'sorter_output')]
+
 
 # %% little helper to make IDs of clusters session and probe specific
 def session_and_probe_specific_uid(session_ID: str, probe_name: str, uid: int):
     return session_ID + '_' + probe_name + '_' + str(uid)
 
+
 # %% Get the path of CellExplorer outputs
-for probe in probes:
-    cell_metrics_folder = ks3_path / probe / 'sorter_output'
-    mat_files = list(cell_metrics_folder.glob('*.mat'))
+for probe_folder in probe_folders:
+    probe_name = probe_folder.parent.stem
+
+    mat_files = list(probe_folder.glob('*.mat'))
 
     cell_metrics_path = [mat_file for mat_file in mat_files if ('cell_metrics.cellinfo' in str(mat_file))][0]
     spikes_path = [mat_file for mat_file in mat_files if ('spikes.cellinfo' in str(mat_file))][0]
@@ -90,7 +100,8 @@ for probe in probes:
     cell_metrics_df['datetime'] = datetime.strptime(session_ID.split('-', maxsplit=1)[1],'%Y-%m-%d-%H%M%S')
 
     # Turn UID into real UID with session name and date and cellID and set as index
-    cell_metrics_df['UID'] = cell_metrics_df['UID'].apply(lambda x: session_and_probe_specific_uid(session_ID, probe, x))
+    
+    cell_metrics_df['UID'] = cell_metrics_df['UID'].apply(lambda x: session_and_probe_specific_uid(session_ID, probe_name, x))
     cell_metrics_df.set_index(keys = 'UID', drop = True, inplace = True)
 
     # Define variables meaningless for clustering
@@ -105,15 +116,15 @@ for probe in probes:
     clustering_cols = [col for col in cell_metrics_df.columns if col not in invalid_cols_for_clustering]
 
     # Save a dataframe with partial information specifically for later clustering
-    cell_metrics_df[clustering_cols].to_pickle(cell_metrics_folder / 'cell_metrics_df_clustering.pkl')
+    cell_metrics_df[clustering_cols].to_pickle(probe_folder / 'cell_metrics_df_clustering.pkl')
     
     # Save a full version of the cell-metrics dataframe  
-    cell_metrics_df.to_pickle(cell_metrics_folder / 'cell_metrics_df_full.pkl')
+    cell_metrics_df.to_pickle(probe_folder / 'cell_metrics_df_full.pkl')
 
     # Storing raw waveforms of all channels, dim  N channels x M timestamps x L clusters
     all_raw_wf = np.ndarray((spikes['rawWaveform_all'][0][0][0][0].shape[0], spikes['rawWaveform_all'][0][0][0][0].shape[1], spikes['rawWaveform_all'][0][0][0].shape[0]))
     for clu_idx, rawWaveforms in enumerate(spikes['rawWaveform_all'][0][0][0]):
         all_raw_wf[:,:, clu_idx] = rawWaveforms
     
-    np.save(cell_metrics_folder / 'all_raw_waveforms.npy', all_raw_wf)
+    np.save(probe_folder / 'all_raw_waveforms.npy', all_raw_wf)
 # %%

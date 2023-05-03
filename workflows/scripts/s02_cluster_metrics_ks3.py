@@ -26,15 +26,17 @@ verbose = True
 
 temp_ks3_folder = Path(os.environ['TEMP_DATA_PATH']) / sorter_name
 
-probe_folders = [str(temp_ks3_folder / probe_folder / 'sorter_output') for probe_folder in os.listdir(temp_ks3_folder)]
+# probe_folders = [str(temp_ks3_folder / probe_folder / 'sorter_output') for probe_folder in os.listdir(temp_ks3_folder)]
 
 rec_properties_path = Path(sinput.rec_properties)
-rec_properties = pd.read_csv(rec_properties_path, index_col = 0)
 
-# Only select longest syncable recordings which have not failed at sorting stage.
-idx_to_sort = rec_properties[(rec_properties.longest == True) & (rec_properties.sorting_error == False)].index.values
+processed_folder = rec_properties_path.parent.parent / 'processed' 
+# Only select probe folders where the results of the sorting can be found.
+probe_folders = [str(processed_folder / sorter_name / probe_folder / 'sorter_output') 
+                  for probe_folder in os.listdir(processed_folder / sorter_name)
+                  if 'spike_clusters.npy' in os.listdir(processed_folder / sorter_name / probe_folder / 'sorter_output')]
 
-probe_folders = rec_properties_path.parent
+
 # %% Start Matlab engine and add paths
 eng = matlab.engine.start_matlab()
 

@@ -114,6 +114,7 @@ for idx_rec in idx_to_sort:
         
 
 # %% Save the updated rec_properties.csv file
+# disabled after as it changes input files of all rules ;( need to log on table differently
 rec_properties.to_csv(rec_properties_path)
 
     # # skip sorting if results already present
