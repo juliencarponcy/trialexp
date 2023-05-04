@@ -29,6 +29,8 @@ tasks_params_path = PROJECT_ROOT / 'params' / 'tasks_params.csv'
 tasks_params_df = pd.read_csv(tasks_params_path)
 tasks = tasks_params_df.task.values.tolist()
 
+
+skip_existing = True #whether to skip existing folders
 # %%
 
 for task_id, task in enumerate(tasks):
@@ -63,7 +65,18 @@ for task_id, task in enumerate(tasks):
     matched_photo_fn  = []
     matched_ephys_path = []
     matched_ephys_fn  = []
-
+    
+    df_pycontrol['do_copy'] = True
+    
+    if skip_existing:
+        
+        for i in range(len(df_pycontrol)):
+            # filter out folders that are already there
+            session_id = df_pycontrol.iloc[i].filename
+            if Path(export_base_path, session_id).exists():
+                df_pycontrol.loc[i, 'do_copy'] = False
+                    
+    df_pycontrol = df_pycontrol.loc[df_pycontrol.do_copy==True]
     for _, row in df_pycontrol.iterrows():
         
         # Photometry matching
