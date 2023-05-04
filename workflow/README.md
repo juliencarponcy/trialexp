@@ -50,6 +50,10 @@ or
 
 Since the workflow is based on snakemake, you can also use any of the advanced option supported by snakemake. For detail please consult the snakemake [documentations](https://snakemake.readthedocs.io/en/stable/executing/cli.html)
 
+Sometimes you will encounter error in running the pipeline in some of the recordings. The default behaviour of snakemake is to stop when it encounters an error. You can ask snakemake to skip that problemetic session and continue by adding the `-k` (keep going) option:
+
+`snakemake --cores --snakefile workflow/pycontrol.smk -k` 
+
 ## Development
 The best way to start developing new script is by using the interactive Python session in VS Code. 
 1. Open any scripts in the `workflow/scripts` folder
