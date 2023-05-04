@@ -30,11 +30,14 @@ rule pycontrol_figures:
     script:
         'scripts/02_plot_pycontrol_data.py'
 
+
 rule export_spike2:
     input:
-        pycontrol_dataframe = '{session_path}/{task}/{session_id}/processed/df_pycontrol.pkl',
+        pycontrol_folder = '{session_path}/{session_id}/pycontrol',
+        pycontrol_dataframe = '{session_path}/{session_id}/processed/df_pycontrol.pkl',
+        photometry_folder = '{session_path}/{session_id}/pyphotometry'
     output:
-        spike2_file = '{session_path}/{task}/{session_id}/processed/spike2.smrx',
+        spike2_file = '{session_path}/{session_id}/processed/spike2.smrx',
     script:
         'scripts/03_export_spike2.py'
 
