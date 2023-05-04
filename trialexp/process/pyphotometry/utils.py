@@ -69,11 +69,12 @@ def motion_correction(photometry_dict: dict) -> dict:
         slope, intercept, r_value, p_value, std_err = linregress(x=photometry_dict['analog_2_filt'], y=photometry_dict['analog_1_filt'])
         photometry_dict['analog_1_est_motion'] = intercept + slope * photometry_dict['analog_2_filt']
         photometry_dict['analog_1_corrected'] = photometry_dict['analog_1_filt'] - photometry_dict['analog_1_est_motion']
+        photometry_dict['motion_corrected'] = 1
     except ValueError:
         print('Motion correction failed. Skipping motion correction')
         # probably due to saturation , do not do motion correction
         photometry_dict['analog_1_corrected'] = photometry_dict['analog_1_filt']
-
+        photometry_dict['motion_corrected'] = 0
 
     return photometry_dict
 
