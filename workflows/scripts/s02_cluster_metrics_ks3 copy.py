@@ -78,3 +78,16 @@ for probe_folder in probe_folders:
 # %% Stop Matlab engine
 eng.quit()
 # %%
+
+def compute_PCA(
+        data: np.ndarray
+    ):
+    
+    scaler = StandardScaler()
+    pca = PCA(0.7, random_state=33)
+    pca.fit(scaler.fit_transform(data))
+    
+    Xt = pca.inverse_transform(
+        pca.transform(
+            scaler.transform(data)
+        ))

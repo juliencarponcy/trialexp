@@ -98,6 +98,8 @@ for probe_folder in probe_folders:
     # Prepare the DataFrame so it can be aggregated with other animals, sessions, or probes
     cell_metrics_df['subject_ID'] = session_ID.split('-')[0]
     cell_metrics_df['datetime'] = datetime.strptime(session_ID.split('-', maxsplit=1)[1],'%Y-%m-%d-%H%M%S')
+    cell_metrics_df['task_folder'] = rec_properties_path.parent.parent.parent.stem
+    cell_metrics_df['probe_name'] = probe_folder.parent.stem
 
     # Turn UID into real UID with session name and date and cellID and set as index
     

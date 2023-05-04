@@ -427,11 +427,11 @@ def compute_PCA(
     
     scaler = StandardScaler()
     pca = PCA(0.7, random_state=33)
-    pca.fit(scaler.fit_transform(X.iloc[past_id]))
+    pca.fit(scaler.fit_transform(data))
     
     Xt = pca.inverse_transform(
         pca.transform(
-            scaler.transform(X.iloc[future_id])
+            scaler.transform(data)
         ))
 
 
