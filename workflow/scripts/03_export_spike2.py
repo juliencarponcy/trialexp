@@ -88,18 +88,17 @@ the exception ourselves here
 
 spike2_path = Path(soutput.spike2_export_done).parent/'spike2.smrx'
 
-if spike2_path.exists():
-    try:
+try:
+    if spike2_path.exists():
         os.remove(spike2_path)
-        export_session(df_pycontrol, keys, 
-            data_photometry = data_photometry,
-            photometry_times_pyc = photometry_times_pyc,
-            photometry_keys = photometry_keys,
-            print_lines = print_lines,
-            v_lines = v_lines,
-            smrx_filename=str(spike2_path))
-    except OSError:
-        logging.warning(f'Warning: smrx file is busy. Skipping {spike2_path}')
-
-
-# %%
+except OSError:
+    logging.warning(f'Warning: smrx file is busy. Skipping {spike2_path}')
+else:
+    export_session(df_pycontrol, keys, 
+        data_photometry = data_photometry,
+        photometry_times_pyc = photometry_times_pyc,
+        photometry_keys = photometry_keys,
+        print_lines = print_lines,
+        v_lines = v_lines,
+        smrx_filename=str(spike2_path))
+    
