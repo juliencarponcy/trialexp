@@ -1,6 +1,8 @@
 ' display_style.s2s |
 var vh% := View();
 FrontView(vh%);
+var list%[400];
+
 
 if ViewKind(vh%) = 0 then
     
@@ -8,7 +10,6 @@ if ViewKind(vh%) = 0 then
     XAxisMode(4);
     FontSet("Arial",9, 0); 'set view font
 
-    var list%[400];
 
     ChanList(list%[], 8+2048);
 
@@ -31,7 +32,16 @@ if ViewKind(vh%) = 0 then
     XAxisStyle(2, 0, 0);
     XAxisAttrib(0);
     XRange(0, MaxTime());
-
+    
+    'Waveform channel color
+    ChanList(list%[], 1+2048);
+    for i% := 1 to list%[0] do
+        chan% := list%[i%];
+        if InStr(ChanTitle$(chan%), "analog_2") then
+            ChanColourSet(chan%, 1,1,0,0);  'Set channel colour
+        endif
+                
+    next
     
 else
     if ViewKind(vh%) = 4 then
@@ -43,6 +53,18 @@ else
         XAxisStyle(1, 0, 0.5);
         XAxisAttrib(0);        
         
+        ChanList(list%[], 127+2048);
+        for i% := 1 to list%[0] do
+            chan% := list%[i%];
+            if InStr(ChanTitle$(chan%), "analog_2") then
+                ChanColourSet(chan%, 1,1,0,0);  'Set channel colour
+            endif
+            if InStr(ChanTitle$(chan%), "analog_1") then
+                ChanColourSet(chan%, 1,0,0.501961,0);   'Set channel colour
+            endif
+            
+                    
+        next
      endif
 endif
 
