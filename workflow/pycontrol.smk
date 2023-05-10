@@ -1,6 +1,9 @@
 from glob import glob
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+
+load_dotenv() 
 
 rule pycontrol_all:
     input: expand('{sessions}/processed/pycontrol_workflow.done', sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob('*/*'))

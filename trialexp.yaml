@@ -17,6 +17,7 @@ name: trialexp
 channels:
   - conda-forge
   - defaults
+  - bioconda
 dependencies:
   - python=3.9
   - pip
@@ -33,12 +34,13 @@ dependencies:
   - papermill
   - plotly
   - xarray
-  - neo
-  - spikeinterface
   - python-dotenv
+  - snakemake
   - pip:
     - git+https://github.com/teristam/snakehelper.git
     - sonpy
     - h5netcdf
-    - snakemake
+    - spikeinterface
+    - neo
+    - matlabengine
 
