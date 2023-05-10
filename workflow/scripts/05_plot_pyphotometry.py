@@ -43,4 +43,3 @@ for k in xr_session.data_vars.keys():
           fig.savefig(os.path.join(figure_dir, f'{k}.png'), dpi=300, bbox_inches='tight')
 
 xr_session.close()
-# %%
