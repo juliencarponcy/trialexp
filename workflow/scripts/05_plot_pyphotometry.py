@@ -35,7 +35,7 @@ for k in xr_session.data_vars.keys():
         
         if not all(df2plot[k].isna()): #make sure data are correct
           
-          fig, ax = plt.subplots(1,1,dpi=300, figsize=(6,6))
+          fig, ax = plt.subplots(1,1,dpi=300, figsize=(5,5))
 
           ax = sns.lineplot(x='event_time',hue='success', y=k, data=df2plot)
           ax.set(ylabel=k, xlabel='Delta F/F')

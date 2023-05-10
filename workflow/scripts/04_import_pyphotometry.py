@@ -79,6 +79,10 @@ add_event_data(df_event, event_filters.get_first_spout, trial_window,
                'analog_1_df_over_f', 'first_spout', dataset.attrs['sampling_rate'])
 
 #%%
+add_event_data(df_event, event_filters.get_us_timer_delay, trial_window,
+               pyphoto_aligner, dataset, event_time_coord, 
+               'analog_1_df_over_f', 'timer_delay', dataset.attrs['sampling_rate'])
+#%%
 dataset = dataset.sel(time = dataset.trial>=0) #remove data outside of task
 
 # add in all metadata

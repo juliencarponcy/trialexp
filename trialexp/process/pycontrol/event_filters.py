@@ -31,15 +31,11 @@ def get_us_timer_delay(df_trial):
 def extract_event_time(df_event, filter_func, filter_func_kwargs, groupby_col='trial_nb'):
     #extract event on a trial based on a filter function
     df_event_filtered = df_event.groupby(groupby_col,group_keys=True).apply(filter_func, **filter_func_kwargs)
-<<<<<<< HEAD
     if len(df_event_filtered)>0:
         return df_event_filtered.time
     else:
         #No event found, but still need to return the trial nb info
         return df_event.groupby(groupby_col,group_keys=True)['time'].apply(lambda x: None)
-=======
-    return df_event_filtered.time
->>>>>>> 3ac5219acb8854166d61ea76302052bbda6ac0fc
 
 def extract_trial_time(df_event, filter_func, filter_func_kwargs, groupby_col='trial_nb'):
     #extract event on a trial based on a filter function
