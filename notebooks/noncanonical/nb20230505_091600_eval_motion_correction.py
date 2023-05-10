@@ -326,6 +326,8 @@ is_stable = check_stability(b, a)
 print(f"The filter is {'stable' if is_stable else 'unstable'}.")
 
 
+# # Figure fig
+
 # In[14]:
 
 
@@ -347,7 +349,7 @@ plt.interactive(True)
 cm = 1/2.54  # centimeters in inches
 A4 = (21*cm, 29.7*cm)
 
-fig, ax = plt.subplots(2,2, figsize=A4)
+fig, ax = plt.subplots(3,2, figsize=A4)
 for i in range(ax.shape[0]):
     for j in range((ax.shape[1])):
         plt.tick_params(direction='out')
@@ -537,12 +539,6 @@ plt.plot(X_test, y_pred, ':', color='yellow', linewidth=2)
 # 
 # >L In summary, if `linregress()` and `PLSRegression(n_components=1)` yield similar results, it suggests that a linear relationship between the predictor variables and the response variable is sufficient to explain the variation in the data. However, it is always a good idea to check the assumptions of the regression models and to evaluate the performance of the models using appropriate metrics such as R-squared, mean squared error, etc., before drawing conclusions about the relationship between the variables. Additionally, you may want to experiment with different values of `n_components` in `PLSRegression()` to find the optimal level of complexity for your data.
 
-# In[19]:
-
-
-plt.show()
-
-
 # # Cross-correlation
 # 
 # Without specific triggers for motion artefacts, this mey be the best option.
@@ -558,7 +554,7 @@ plt.show()
 # - filtered and motion estimates
 # 
 
-# In[20]:
+# In[19]:
 
 
 # xcorr
@@ -576,7 +572,7 @@ cross_correlation = scipy.signal.correlate(analog_1_filt, analog_2_filt, mode='f
 
 
 
-# In[21]:
+# In[20]:
 
 
 # Calculate the lags
@@ -591,7 +587,7 @@ full_lags = [l * 1/1000 for l in full_lags] # in seconds
 # selected_cross_correlation = cross_correlation[selected_indices]
 
 
-# In[22]:
+# In[21]:
 
 
 # Plot the cross-correlation
@@ -603,7 +599,7 @@ plt.title('Cross-correlation between A and B')
 plt.show()
 
 
-# In[23]:
+# In[22]:
 
 
 # Plot the cross-correlation
@@ -617,6 +613,14 @@ plt.xlim(-3*1000, 3*1000) # -3 s to + 3 s for 1 kHz data
 plt.show()
 
 # very odd result
+
+
+# In[23]:
+
+
+#TODO plt.xcorr()?
+
+
 
 
 # # Triggered average anaylsis
@@ -656,6 +660,7 @@ trig_ms = photometry_times_pyc[trig_ind]
 # In[26]:
 
 
+plt.figure()
 plt.plot([t/1000 for t in trig_ms], [0 for _ in range(len(trig_ms))],'.')
 plt.plot([t/1000 for t in photometry_times_pyc], [v - mn for v in analog_2_bp],'-')
 plt.plot([np.nanmin(photometry_times_pyc)/1000, np.nanmax(photometry_times_pyc)/1000], [2*sd, 2*sd],'-')
@@ -809,7 +814,8 @@ plt.show()
 # In[33]:
 
 
-plt.figure()
+plt.sca(ax[2,0])
+plt.cla()
 
 plt.plot([t/1000 for t in trig_ms], [0 for _ in range(len(trig_ms))],'.')
 plt.plot([t/1000 for t in photometry_times_pyc], [v - mn for v in analog_1_filt],'-', label='analog_1_filt', color='#2ca02c', linewidth=0.75)
@@ -818,7 +824,7 @@ plt.plot([t/1000 for t in photometry_times_pyc], [v - mn for v in analog_1_bp],'
 plt.plot([t/1000 for t in photometry_times_pyc], [v - mn for v in analog_2_bp],'--', label='analog_2_bp', color='#d62728',linewidth=0.75, alpha=0.5)
 
 plt.xlim(np.nanmin(photometry_times_pyc)/1000, np.nanmax(photometry_times_pyc)/1000)
-plt.legend(loc='upper right')
+plt.legend(loc='upper right', frameon=False, fontsize=7)
 plt.ylabel('Fluorescence (V)')
 plt.xlabel('Time (s)')
 plt.show()
@@ -829,7 +835,7 @@ plt.show()
 
 data = [analog_1_filt, analog_1_est_motion, analog_1_corrected, analog_2_filt , analog_1_bp, analog_1_est_motion_bp, analog_1_corrected_bp, analog_2_bp]
 
-plt.figure()
+plt.sca(ax[2,1])
 
 bx = plt.boxplot(data, showfliers=False) # too many outliers
 
