@@ -9,20 +9,15 @@ from itertools import cycle, islice
 import numpy as np
 import pandas as pd
 
-from snakehelper.SnakeIOHelper import getSnake
-
-from workflows.scripts import settings
-
-from sklearn.decomposition import PCA
-from sklearn import manifold
-from sklearn.metrics import pairwise_distances
-from sklearn.preprocessing import StandardScaler
 from sklearn import cluster, mixture
 
 from matplotlib import pyplot as plt
-import plotly.express as px
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
+
+from snakehelper.SnakeIOHelper import getSnake
+from workflows.scripts import settings
+
 #%% Load inputs
 
 
@@ -75,131 +70,13 @@ for path_idx, cell_metrics_path in enumerate(cell_metrics_paths):
       # concatenate along cluster 3rd dimension in a 3D array
       aggregate_raw_waveforms = np.dstack((aggregate_raw_waveforms, np.load(raw_waveforms_paths[path_idx])))
     
-# %%
-min_spike_count = 100
-# Remove clusters with too few spikes
-aggregate_cell_metrics_df = aggregate_cell_metrics_df[aggregate_cell_metrics_df.spikeCount > min_spike_count]
-
-# Define variables meaningless for clustering
-invalid_cols_for_clustering = ['UID','animal', 'brainRegion','cellID', 'cluID',
-                                'electrodeGroup', 'labels', 'maxWaveformCh', 'maxWaveformCh1', 
-                                'maxWaveformChannelOrder', 'putativeCellType', 'sessionName', 
-                                'shankID', 'synapticConnectionsIn', 'synapticConnectionsOut', 
-                                'synapticEffect', 'thetaModulationIndex', 'total', 'trilat_x', 
-                                'trilat_y', 'deepSuperficial', 'deepSuperficialDistance',
-                                'spikeCount',
-                                'subject_ID',	'datetime', 'task_folder', 'probe_name']
-
-
-clustering_cols = [col for col in aggregate_cell_metrics_df.columns if col not in invalid_cols_for_clustering]
-
-# turn aggregate_cell_metrics_df into np.ndarray with only columns useful for clustering
-aggregate_cell_metrics_array = aggregate_cell_metrics_df[clustering_cols].values
-
-aggregate_cell_metrics_df_clustering = aggregate_cell_metrics_df[clustering_cols]
-
-cell_metrics_stats = aggregate_cell_metrics_df_clustering.describe().T
-non_full_cols = cell_metrics_stats[
-   (cell_metrics_stats['count'].values != cell_metrics_stats['count'].values.max())
-   ].index.tolist()
-
-# remove non-full columns
-aggregate_cell_metrics_df_clustering = aggregate_cell_metrics_df_clustering[
-   [col for col in aggregate_cell_metrics_df_clustering.columns if col not in non_full_cols]
-  ]
-# %%
-
-pd.set_option('display.max_columns', None)
-
-# %% Params definition cell
-color_column = 'peak_average_all_wf'
-size_column = 'std_std_waveform'
-# choose 2 raw values for scatter plot
-raw_scatter_dims = ('peak_average_all_wf', 'std_std_waveform')
-
-# Params for dimensionality reduction
-dim_reduc_params = {
-  'n_components' : 2,
-  'perplexity' : 50,
-  'random_state' : 33
-}
-
-# Params for clustering
+# %% Params for clustering
 cluster_params= {
   "n_clusters": 2,
   "eps": 0.3,
   "n_init": 10
 }
 
-# print cluster_UID as data point label
-text_datapoints = aggregate_cell_metrics_df_clustering.index.values
-
-
-# %% Dimensionality reduction functions definition
-
-def compute_PCA(
-        data: np.ndarray,
-        n_components: int = 2,
-        random_state: int = 3,
-        standardize: bool = True
-    ):
-    pca = PCA(n_components, random_state=random_state)
-    
-    if standardize:
-      scaler = StandardScaler()
-      scaled_data = scaler.fit_transform(data)
-      eigen_values = pca.fit_transform(scaled_data)
-
-    else:
-      eigen_values = pca.fit_transform(data)
-    
-    
-    return eigen_values
-    
-
-def compute_tSNE(
-      data: np.ndarray,
-      n_components: int = 2,
-      perplexity: int = 30,
-      random_state: int = 33,
-      standardize: bool = True
-    ):
-    scaler = StandardScaler()
-
-    tsne = manifold.TSNE(
-        n_components=n_components,
-        init="random",
-        random_state=random_state,
-        perplexity=perplexity,
-        n_iter=300,
-    )
-    if standardize:
-      scaler = StandardScaler()
-      scaled_data = scaler.fit_transform(data)
-      Y = tsne.fit_transform(scaled_data)
-    else:
-      Y = tsne.fit_transform(data)
-
-    return Y
-
-# %% Dimensionality reduction computation
-pca =  compute_PCA(aggregate_cell_metrics_df_clustering.values, 
-                    dim_reduc_params['n_components'], 
-                    dim_reduc_params['random_state'],
-                    standardize = True)
-
-
-tSNE = compute_tSNE(aggregate_cell_metrics_df_clustering.values, 
-                    dim_reduc_params['n_components'],
-                    dim_reduc_params['perplexity'],
-                    dim_reduc_params['random_state'],
-                    standardize = True)
- 
-tSNE_of_PCA = compute_tSNE(pca, 
-                    dim_reduc_params['n_components'],
-                    dim_reduc_params['perplexity'],
-                    dim_reduc_params['random_state'],
-                    standardize = False)
  
 # %% Create cluster objects
 
@@ -234,24 +111,26 @@ datasets = (
   tSNE_of_PCA,
   tSNE
 )
-#(aggregate_cell_metrics_df_clustering[[raw_scatter_dims[0],raw_scatter_dims[1]]].values, cluster_params)
-plot_num = len(datasets)+1
+
+## IMPORTANT: Define which dataset or dimensionality reduction will be used for clustering
+dataset_to_cluster_on = pca
+
 
 # %% Dimensionality reduction display
 
-fig = make_subplots(len(datasets), cols=2,
+fig_reduc = make_subplots(len(datasets), cols=2,
                     shared_xaxes='rows', shared_yaxes='rows')
 
 for i_dataset, dataset in enumerate(datasets):
    
 
-  fig.add_trace(
+  fig_reduc.add_trace(
         go.Histogram2d(x= dataset[:,0],
                     y= dataset[:,1]),
                     row = i_dataset+1, col=1
   )
 
-  fig.add_trace(
+  fig_reduc.add_trace(
         go.Scatter(x= dataset[:,0],
                     y= dataset[:,1], 
                     mode='markers',
@@ -262,8 +141,28 @@ for i_dataset, dataset in enumerate(datasets):
                     row = i_dataset+1, col=2
   )
 
-fig.update_layout(height=1000, width=1500, title_text="Scatter plots")
-fig.show()
+# %% Add info and save interactive figure to HTML file
+
+fig_reduc.update_xaxes(title='1st Dimension', title_font_family="Arial")
+fig_reduc.update_yaxes(title='2nd Dimension', title_font_family="Arial")
+
+fig_reduc.update_layout(height=1000, width=1500,
+                   title_text=f"Density and scatter plots \
+                    of different embeddings for {aggregate_cell_metrics_df_clustering.shape[0]} \
+                    clusters and {aggregate_cell_metrics_df_clustering.shape[1]} cells metrics")
+
+# Examples to improve formatting of figure
+# fig_reduc.update_layout(
+#     font_family="Courier New",
+#     font_color="blue",
+#     title_font_family="Times New Roman",
+#     title_font_color="red",
+#     legend_title_font_color="green"
+# )
+fig_reduc.show()
+
+fig_reduc.write_html(clusters_figure_path / 'cell_metrics_dim_reduc.html')
+fig_reduc.show()
 
 # %% Clustering display
 titles = [algo[0] for algo in clustering_algorithms]
@@ -274,17 +173,17 @@ for row in datasets:
   for title in titles:
      title_list.append('')
 
-fig = make_subplots(len(datasets), cols=len(clustering_algorithms),
+fig_cluster = make_subplots(len(datasets), cols=len(clustering_algorithms),
                     shared_xaxes='rows', shared_yaxes='rows',
                     subplot_titles=title_list)
 
 for i_cluster, (name, algorithm) in enumerate(clustering_algorithms):
-  # datasets[1] is pca so clustering all on PCA and display on othe dim reduction
-  algorithm.fit(tSNE_of_PCA) 
+
+  algorithm.fit(dataset_to_cluster_on) 
   if hasattr(algorithm, "labels_"):
       y_pred = algorithm.labels_.astype(int)
   else:
-      y_pred = algorithm.predict(datasets[1])
+      y_pred = algorithm.predict(dataset_to_cluster_on)
 
   for i_dataset, dataset in enumerate(datasets):
     #   subplots[i_dataset, i_cluster].set_title(name, size=18)
@@ -295,8 +194,6 @@ for i_cluster, (name, algorithm) in enumerate(clustering_algorithms):
           islice(
               cycle(
                   [
-                      "#377eb8",
-                      "#ff7f00",
                       "#4daf4a",
                       "#f781bf",
                       "#a65628",
@@ -313,7 +210,7 @@ for i_cluster, (name, algorithm) in enumerate(clustering_algorithms):
     # add black color for outliers (if any)
     colors = np.append(colors, ["#000000"])
 
-    fig.add_trace(
+    fig_cluster.add_trace(
             go.Scatter(x=dataset[:,0],
                           y=dataset[:,1],
                           mode='markers',
@@ -324,91 +221,105 @@ for i_cluster, (name, algorithm) in enumerate(clustering_algorithms):
                     ), row=i_dataset+1, col=i_cluster+1
     )
 
-    plot_num += 1
+# %% Add info and save interactive figure to HTML file
 
-fig.update_layout(height=1000, width=1500, title_text="Scatter plots")
-fig.show()
+fig_cluster.update_xaxes(title='1st Dimension', title_font_family="Arial")
+fig_cluster.update_yaxes(title='2nd Dimension', title_font_family="Arial")
+
+fig_cluster.update_layout(height=1000, width=1500,
+  title_text=f"Cell/Artifacts clustering for {aggregate_cell_metrics_df_clustering.shape[0]} clusters and {aggregate_cell_metrics_df_clustering.shape[1]} cells metrics")
+
+# Formatting examples
+# fig_cluster.update_layout(
+#     font_family="Courier New",
+#     font_color="blue",
+#     title_font_family="Times New Roman",
+#     title_font_color="red",
+#     legend_title_font_color="green"
+# )
+fig_cluster.show()
+
+fig_cluster.write_html(clusters_figure_path / 'cell_metrics_clustering.html')
 
 
+
+# %% Save global cell_metrics DataFrame
+  # np.save(probe_folder / 'all_raw_waveforms.npy', all_raw_wf)
+      # Save a full version of the cell-metrics dataframe  
+aggregate_cell_metrics_df.to_pickle(clusters_data_path / 'aggregate_cell_metrics_df.pkl')
+aggregate_cell_metrics_df.to_pickle(clusters_data_path / 'aggregate_cell_metrics_df.pkl')
+
+
+# %%
 
 
 
 # %% 
 
+gmm.fit(pca)
+# clusters_labels = pd.DataFrame([gmm.predict(pca).T, pca[:,0], pca[:,1]], columns=['cluster_label', 'pca_x', 'pca_y'])
+aggregate_cell_metrics_df['pca_label'] = gmm.predict(pca)
+aggregate_cell_metrics_df['pca_pos_x'] = pca[:,0]
+aggregate_cell_metrics_df['pca_pos_y'] = pca[:,1]
 
-fig = px.scatter(x=tSNE[:,0], y=tSNE[:,1], 
-                 color = aggregate_cell_metrics_df_clustering[color_column],
-                 size = aggregate_cell_metrics_df_clustering[size_column])
-fig.show()
+# %% Plot random waveforms from both clusters
 
-fig = px.scatter(x=pca[:,0], y=pca[:,1],
-                 color = aggregate_cell_metrics_df_clustering[color_column],
-                 size = aggregate_cell_metrics_df_clustering[size_column])
-fig.show()
-
-fig = px.scatter(x = aggregate_cell_metrics_df_clustering[raw_scatter_dims[0]], 
-                  y = aggregate_cell_metrics_df_clustering[raw_scatter_dims[1]],
-                  color = aggregate_cell_metrics_df_clustering[color_column],
-                  size = aggregate_cell_metrics_df_clustering[size_column])
-fig.show()
-
-# %% ChatGPT plot:
+side_channels = 4
+nb_examples = 4
 
 
 
-fig = make_subplots(rows=3, cols=2, shared_xaxes='rows', shared_yaxes='rows')
+labels = aggregate_cell_metrics_df['pca_label'].unique()
+random_ids = np.ndarray((nb_examples,len(labels)))
 
-fig.add_trace(
-    go.Histogram2d(x=aggregate_cell_metrics_df_clustering[raw_scatter_dims[0]], 
-               y=aggregate_cell_metrics_df_clustering[raw_scatter_dims[1]],
-               ),
-    row=1, col=1
-)
+colors = plt.cm.jet(np.linspace(0,1,side_channels*2+1))
 
+for label_id, label in enumerate(labels):
 
-fig.add_trace(
-    go.Histogram2d(x=pca[:,0], y=pca[:,1],
-               ),
-    row=2, col=1
-)
+  fig, axes = plt.subplots(nrows=nb_examples, ncols=3, figsize=(12,nb_examples*3))
+  fig.suptitle(f'cluster nb {str(label)}')
+  random_ids[:, label_id] = np.random.choice(
+     aggregate_cell_metrics_df[aggregate_cell_metrics_df['pca_label'] == label].index.values, nb_examples)
 
-fig.add_trace(
-    go.Histogram2d(x=tSNE[:,0], y=tSNE[:,1],
-               ),
-    row=3, col=1
-)
+  random_ids = random_ids.astype(int)
 
+  
+  # select max waveform trace and neighboring channels
+  for i_plot, i_cell in enumerate(random_ids[:,label_id]):
+    if i_plot == 0:
+      axes[0, 0].set_title(f'{side_channels*2+1} waveforms')
+      axes[0, 1].set_title(f'{aggregate_raw_waveforms.shape[0]} waveforms')
+      axes[0, 2].set_title(f'PCA location')
 
-fig.add_trace(
-    go.Scatter(x=aggregate_cell_metrics_df_clustering[raw_scatter_dims[0]], 
-               y=aggregate_cell_metrics_df_clustering[raw_scatter_dims[1]],
-               mode='markers',
-               marker=dict(color=aggregate_cell_metrics_df_clustering[color_column],
-                           size=aggregate_cell_metrics_df_clustering[size_column]/100)),
-    row=1, col=2
-)
-fig.add_trace(
-    go.Scatter(x=tSNE[:,0], y=tSNE[:,1], 
-               mode='markers',
-               marker=dict(color=aggregate_cell_metrics_df_clustering[color_column],
-                           size=aggregate_cell_metrics_df_clustering[size_column]/100)),
-    row=2, col=2
-)
+    if aggregate_cell_metrics_df.maxWaveformCh.iloc[i_cell] - side_channels > 0 & aggregate_cell_metrics_df.maxWaveformCh.iloc[i_cell] + side_channels < aggregate_raw_waveforms.shape[0]: 
+      waveforms = aggregate_raw_waveforms[
+        aggregate_cell_metrics_df.maxWaveformCh.iloc[i_cell] - side_channels : aggregate_cell_metrics_df.maxWaveformCh.iloc[i_cell] + side_channels,:,i_cell]
+    elif aggregate_cell_metrics_df.maxWaveformCh.iloc[i_cell] - side_channels < 0:
+      waveforms = aggregate_raw_waveforms[
+        0 : aggregate_cell_metrics_df.maxWaveformCh.iloc[i_cell] + side_channels,:,i_cell]
+    elif aggregate_cell_metrics_df.maxWaveformCh.iloc[i_cell] + side_channels >=  aggregate_raw_waveforms.shape[0]:
+      waveforms = aggregate_raw_waveforms[
+        aggregate_cell_metrics_df.maxWaveformCh.iloc[i_cell] - side_channels : ,:,i_cell] 
+   
+    for ch in range(side_channels*2):
+      axes[i_plot, 0].plot(waveforms[ch,:], color=colors[ch])
 
-fig.add_trace(
-    go.Scatter(x=pca[:,0], y=pca[:,1],
-               mode='markers',
-               marker=dict(color=aggregate_cell_metrics_df_clustering[color_column],
-                           size=aggregate_cell_metrics_df_clustering[size_column]/100)),
-    row=3, col=2
-)
+    axes[i_plot, 1].pcolor(aggregate_raw_waveforms[:,:,i_cell].squeeze())
+    axes[i_plot, 2].scatter(aggregate_cell_metrics_df.pca_pos_x, aggregate_cell_metrics_df.pca_pos_y,  s=1, marker='.', c='k', alpha=0.2)
+    axes[i_plot, 2].scatter(aggregate_cell_metrics_df.pca_pos_x.iloc[i_cell], aggregate_cell_metrics_df.pca_pos_y.iloc[i_cell],  s=30, marker='o', c='r')
 
-
-
-fig.update_layout(height=600, width=900, title_text="Scatter plots")
-fig.show()
-# %% Save global cell_metrics DataFrame
-  # np.save(probe_folder / 'all_raw_waveforms.npy', all_raw_wf)
-      # Save a full version of the cell-metrics dataframe  
-aggregate_cell_metrics_df.to_pickle(probe_folder / 'aggregate_cell_metrics_df.pkl')
+# for label in :
+   
 # %%
+display_cols = [ 'cv2',
+                'firingRate',
+                'acg_refrac',
+                'troughToPeak',
+                'std_std_waveform',
+                'peak_average_all_wf',
+                ]
+for col in display_cols:
+  fig = plt.figure(figsize=(5,5))
+  sns.violinplot(data = aggregate_cell_metrics_df, x ='pca_label', y=col, hue='pca_label')
+  # sns.swarmplot(x = aggregate_cell_metrics_df.pca_label, y = aggregate_cell_metrics_df[col], color="white")
+  plt.show()

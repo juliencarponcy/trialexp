@@ -114,13 +114,41 @@ rule cell_metrics_aggregation:
 
     threads: 32
 
-    priority: 100
+    priority: 60
 
     script:
-        print('aggregation script')
+        "scripts/s06_cell_metrics_aggregation.py"
+
+rule cell_metrics_dim_reduction:
+    input:
+        cell_metrics_aggregation_complete = '{sessions}/{task_path}/{session_id}/processed/cell_metrics_aggregation.done'
+
+    output:
+        cell_metrics_dim_reduction_complete =  touch('{sessions}/{task_path}/{session_id}/processed/cell_metrics_dim_reduction.done')
+
+    threads: 32
+
+    priority: 70
+
+    script:
+        "scripts/s07_cell_metrics_dim_reduction.py"
+
+rule cell_metrics_clustering:
+    input:
+        cell_metrics_dim_reduction_complete = '{sessions}/{task_path}/{session_id}/processed/cell_metrics_dim_reduction.done'
+
+    output:
+        cell_metrics_clustering_complete =  touch('{sessions}/{task_path}/{session_id}/processed/cell_metrics_clustering.done')
+
+    threads: 32
+
+    priority: 70
+
+    script:
+        "scripts/s07_cell_metrics_dim_reduction.py"
 
 rule final:
     input:
-        ephys_sync_complete = '{session_path}/{task_path}/{session_id}/processed/cell_metrics_processing.done'
+        cell_metrics_clustering_complete = '{session_path}/{task_path}/{session_id}/processed/cell_metrics_clustering.done'
     output:
         done = touch('{session_path}/{task_path}/{session_id}/processed/spike_workflow.done')

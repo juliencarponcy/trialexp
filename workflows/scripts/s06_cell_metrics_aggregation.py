@@ -4,7 +4,6 @@ Script to create the session folder structure
 #%%
 import os
 from pathlib import Path
-from itertools import cycle, islice
 
 import numpy as np
 import pandas as pd
@@ -13,18 +12,9 @@ from snakehelper.SnakeIOHelper import getSnake
 
 from workflows.scripts import settings
 
-from sklearn.decomposition import PCA
-from sklearn import manifold
-from sklearn.metrics import pairwise_distances
-from sklearn.preprocessing import StandardScaler
-from sklearn import cluster, mixture
 
 from matplotlib import pyplot as plt
-from matplotlib.colors import LogNorm
 import seaborn as sns
-import plotly.express as px
-from plotly.subplots import make_subplots
-import plotly.graph_objects as go
 #%% Load inputs
 
 
@@ -53,13 +43,15 @@ raw_waveforms_paths = list(root_path.glob(f'*/*/processed/{sorter_name}/*/sorter
 # TODO potentially identify culprit file(s) by disimilarity of cell_metrics_paths and raw_waveforms_paths
 assert len(cell_metrics_paths) == len(raw_waveforms_paths), f"cell_metrics_paths and raw_waveforms_paths dont have the same length are: {len(cell_metrics_paths)}, {len(raw_waveforms_paths)}"
 
+if len(cell_metrics_paths) == 0:
+   raise FileNotFoundError('There were no results of cell metrics found, check your paths / or data')
 # %% Aggregate CellExplorer Cell metrics
 
 # Define empty DataFrame for global cell_metrics aggreation (all recordings)  
 aggregate_cell_metrics_df = pd.DataFrame()
 # delete potential previous global waveforms np.array (debugging)
 if 'aggregate_raw_waveforms' in locals():
-   del aggregate_raw_waveforms # for debugging sake
+   del aggregate_raw_waveforms # for debugging purpose
 
 # Define empty np.ndarray for global raw_waveforms aggregation (all recordings)
 for path_idx, cell_metrics_path in enumerate(cell_metrics_paths):
