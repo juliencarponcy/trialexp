@@ -103,8 +103,14 @@ def add_trial_nb(df_events, trigger_time, trial_window):
         start = trigger_time[i] + trial_window[0]
         end = trigger_time[i+1] + trial_window[0]
         
-        assert end>start, 'Error: trial shorter than trial_window'
-        assert end>trigger_time[i], 'Error: trial end earlier than trigger'
+        if end<start:
+            logging.warn(f'Error: trial shorter than trial_window for Trial {i}')
+            trial_nb += 1
+            continue
+        elif end<trigger_time[i]:
+            logging.warn(f'Error: trial end earlier than trigger end:{end} trigger_time{trigger_time[i]} for Trial {i}')
+            trial_nb += 1
+            continue
         
         idx = (df.time>=start) & (df.time<end)
         
@@ -168,7 +174,9 @@ def get_task_specs(tasks_trig_and_events, task_name):
 def get_rel_time(df, trigger_name):
     # get the relative time to the trigger within a trial
     t0 = df[df['name']==trigger_name].time.values
-    assert len(t0) == 1, f'Error: not exactly 1 trigger found {df}'
+    if len(t0)>1:
+        logging.warn(f'Warning: not exactly 1 trigger found. I will only take the first trigger')
+        t0 = t0[0]
     df['trial_time'] = df.time - t0
     return df
     
