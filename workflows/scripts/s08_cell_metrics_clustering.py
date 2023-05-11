@@ -45,6 +45,9 @@ clusters_data_path = Path(os.environ['PROCCESSED_CLUSTERS_PATH'])
 dim_reduc_aggregate = pd.read_pickle(clusters_data_path / 'aggregate_cell_metrics_dim_reduc.pkl')
 # Loading dataframe containing whole dataset for cell metrics
 aggregate_cell_metrics_df = pd.read_pickle(clusters_data_path/ 'aggregate_cell_metrics_df_full.pkl')
+# Loading dataframe containing clustering data for cell metrics
+aggregate_cell_metrics_df_clustering = pd.read_pickle(clusters_data_path/ 'aggregate_cell_metrics_df_clustering.pkl')
+
 # Loading numpy array of raw waveforms across all channels
 aggregate_raw_waveforms = np.load(clusters_data_path / 'all_raw_waveforms.npy')
 
@@ -254,7 +257,9 @@ for label_id, label in enumerate(labels):
 
 # for label in :
    
-# %%
+# %% Plot a few cell_metrics of choice (just modify the display cols) 
+# in the different clusters detected
+# allow to get an idea of the 
 display_cols = [ 'cv2',
                 'firingRate',
                 'acg_refrac',
@@ -263,8 +268,13 @@ display_cols = [ 'cv2',
                 'peak_average_all_wf',
                 ]
 for col in display_cols:
-  fig = plt.figure(figsize=(5,5))
-  sns.violinplot(data = aggregate_cell_metrics_df, x = dim_reduc_aggregate['cluster_label'], y=col, hue=dim_reduc_aggregate['cluster_label'])
+  distrib_cluster_fig = plt.figure(figsize=(5,5))
+  log_distrib = sns.kdeplot(aggregate_cell_metrics_df, x=col,  hue=dim_reduc_aggregate['cluster_label'], levels=4, color=".2", log_scale=True)
+
+  # sns.violinplot(data = aggregate_cell_metrics_df, x = dim_reduc_aggregate['cluster_label'], y=col, hue=dim_reduc_aggregate['cluster_label'])
   # sns.swarmplot(x = aggregate_cell_metrics_df.cluster_label, y = aggregate_cell_metrics_df[col], color="white")
   plt.show()
+  distrib_cluster_fig.savefig(clusters_figure_path / str('cell_metrics_log_clusters_distrib_' + col + '.png'))
+
+
 # %%

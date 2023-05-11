@@ -73,8 +73,6 @@ for path_idx, cell_metrics_path in enumerate(cell_metrics_paths):
       aggregate_raw_waveforms = np.dstack((aggregate_raw_waveforms, np.load(raw_waveforms_paths[path_idx])))
     
 # %%
-min_spike_count = 100
-
 # Reset index to use new index equivalent to raw waveforms np.ndarray index
 aggregate_cell_metrics_df = aggregate_cell_metrics_df.reset_index()
 # # Remove clusters with too few spikes
@@ -109,7 +107,13 @@ non_full_cols = cell_metrics_stats[
 aggregate_cell_metrics_df_clustering = aggregate_cell_metrics_df_clustering[
    [col for col in aggregate_cell_metrics_df_clustering.columns if col not in non_full_cols]
   ]
-# %% filter raw_wavefoms like cell_metrics DataFrame
+
+# %% Visualize log normalized distribution of the different clustering variables
+for col in aggregate_cell_metrics_df_clustering.columns.values:
+  ditrib_fig = plt.figure(figsize=(5,5))
+  log_distrib = sns.kdeplot(aggregate_cell_metrics_df_clustering[col], levels=4, color=".2", log_scale=True)
+  plt.show()
+  ditrib_fig.savefig(clusters_figure_path / str('cell_metrics_log_distrib_' + col + '.png'))
 
 # %% Plot exploratory cross correlation between cell metrics
 sns.set_style("white")
@@ -131,6 +135,7 @@ pair_plot_metrics.fig.suptitle("2D distribution of example cell metrics")
 
 # save the figure
 pair_plot_metrics.savefig(clusters_figure_path / 'cell_metrics_example_pairplot.png', dpi=300)
+
 
 # %% Save global cell_metrics DataFrame
 
