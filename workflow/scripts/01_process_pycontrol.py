@@ -75,4 +75,3 @@ df_events_cond.to_pickle(soutput.event_dataframe)
 df_conditions.to_pickle(soutput.condition_dataframe)
 df_events_trials.to_pickle(soutput.trial_dataframe)
 
-# %%
