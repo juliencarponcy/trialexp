@@ -142,7 +142,7 @@ rule cell_metrics_clustering:
 
     threads: 32
 
-    priority: 70
+    priority: 80
 
     script:
         "scripts/s07_cell_metrics_dim_reduction.py"
