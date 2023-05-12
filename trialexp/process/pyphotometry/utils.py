@@ -48,9 +48,10 @@ Assumptions:
 # and normalization functions. The normalization functions assume that the
 # data has already been filtered.
 
-def denoise_filter(photometry_dict:dict, lowpass_freq = 20) -> dict:
-    # apply a low-pass filter to remove high frequency noise
-    b,a = get_filt_coefs(low_pass=lowpass_freq, sampling_rate=photometry_dict['sampling_rate'])
+def denoise_filter(photometry_dict:dict, highpasss_freq = 0.001,  lowpass_freq = 20) -> dict:
+    # apply a band-pass filter to remove high frequency noise
+    # highpasss_freq will remove ultraslow component from the data, resultinging in flat baseline, which helps linear regression in some cases
+    b,a = get_filt_coefs(high_pass = highpasss_freq, low_pass=lowpass_freq, sampling_rate=photometry_dict['sampling_rate'])
     analog_1_filt = filtfilt(b, a, photometry_dict['analog_1'], padtype='even')
     analog_2_filt = filtfilt(b, a, photometry_dict['analog_2'], padtype='even')
     
@@ -79,7 +80,7 @@ def motion_correction(photometry_dict: dict) -> dict:
     return photometry_dict
 
 def compute_df_over_f(photometry_dict: dict, low_pass_cutoff: float = 0.001) -> dict:
-    
+    #TODO if we use bandpass filtering in denoise_filter, this step seems meaningless; analog_1_baseline_fluo should be flat
     if 'analog_1_corrected' not in photometry_dict:
         raise Exception('Analog 1 must be motion corrected before computing dF/F')
     

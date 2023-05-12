@@ -44,6 +44,16 @@ rule export_spike2:
     script:
         'scripts/03_export_spike2.py'
 
+rule export_spike2B:
+    input:
+        pycontrol_folder = '{session_path}/{session_id}/pycontrol',
+        pycontrol_dataframe = '{session_path}/{session_id}/processed/df_pycontrol.pkl',
+        photometry_folder = '{session_path}/{session_id}/pyphotometry'
+    output:
+        spike2_file = '{session_path}/{session_id}/processed/spike2B.smrx',
+    script:
+        'scripts/03_export_spike2B.py'
+
 rule import_pyphotometry:
     input:
         pycontrol_dataframe = '{session_path}/{task}/{session_id}/processed/df_pycontrol.pkl',
