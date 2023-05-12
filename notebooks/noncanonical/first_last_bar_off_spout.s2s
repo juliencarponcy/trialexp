@@ -1,0 +1,116 @@
+' first&last |$ first bar_off, last_bar_off_before_first_spout, first_spout
+
+var list%[400];
+
+var vh% :=View();
+if ViewKind(vh%) <> 0 then
+    halt;
+endif
+
+var chanmk%;
+var chand%;
+var code% := 1;
+var mask%[256];
+var i%;
+
+ChanList(list%[], 2+4+8+16+32+2048 + 16384);
+
+
+var chan_trial_onset%;
+var chan_bar_off%;
+var chan_spout%;
+var chan_break_after_trial%;
+
+var isfound_chan_trial_onset% :=0;
+var isfound_chan_bar_off% :=0;
+var isfound_chan_spout% :=0;
+var isfound_chan_break_after_trial% :=0;
+
+
+for i% := 0 to list%[0] do
+    docase
+        case ChanTitle$(list%[i%]) = "hold_for_water" then
+            if isfound_chan_trial_onset% then
+                PrintLog("hold_for_water found more than once!");
+            endif
+            chan_trial_onset% := list%[i%];
+            isfound_chan_trial_onset% := 1;
+    case ChanTitle$(list%[i%]) = "bar_off" then
+            if isfound_chan_bar_off% then
+                PrintLog("bar_off found more than once!");
+            endif        
+            chan_bar_off% := list%[i%];
+            isfound_chan_bar_off%:=1;
+    case ChanTitle$(list%[i%]) = "spout" then
+            if isfound_chan_bar_off% then
+                PrintLog("spout found more than once!");
+            endif          
+            chan_spout% := list%[i%];
+        isfound_chan_spout% :=1;
+    case ChanTitle$(list%[i%]) = "break_after_trial" then
+            if isfound_chan_break_after_trial% then
+                PrintLog("spout found more than once!");
+            endif          
+            isfound_chan_break_after_trial% :=1;
+        
+            chan_break_after_trial% := ChanDuplicate(list%[i%]); 'Create a duplicate
+            ChanShow(chan_break_after_trial%);
+            ' just keep 01
+            MarkMask(chan_break_after_trial%, -1, 1, -1); 'Set filter to all pass
+            MarkMask(chan_break_after_trial%, 0, -1, -1); 'Invert all code
+            MarkMask(chan_break_after_trial%, 0, 1, 1);
+            MarkShow(chan_break_after_trial%, 0, 0); 'Set marker to display and mode
+            DrawMode(chan_break_after_trial%,2,1, 0,0); 'Set Lines
+    endcase;
+next;
+
+var this_trial :=0;
+var first_spout;
+var trial_end;
+var first_bar_off;
+var last_bar_off_before_first_spout;
+
+var chan_first_bar_off% := MemChan(2); 'Add new Event- channel
+ChanTitle$(chan_first_bar_off%, "first_bar_off");
+Chanshow(chan_first_bar_off%);
+
+var chan_first_spout% := MemChan(2); 'Add new Event- channel
+ChanTitle$(chan_first_spout%, "first_spout");
+Chanshow(chan_first_spout%);
+
+var chan_last_bar_off_before_first_spout% := MemChan(2); 'Add new Event- channel
+ChanTitle$(chan_last_bar_off_before_first_spout%, "last_bar_off");
+Chanshow(chan_last_bar_off_before_first_spout%);
+
+
+while NextTime(chan_trial_onset%, this_trial) > 0 do
+    ' start from hold_for_water to another
+    this_trial := NextTime(chan_trial_onset%, this_trial);
+    trial_end := NextTime(chan_break_after_trial%, this_trial);
+    if trial_end < 0 then
+        break
+    endif
+    
+    first_bar_off := ChanSearch(chan_bar_off%, 14, this_trial, trial_end);
+    if first_bar_off = -1 then
+        ' hoge
+    else
+        MemSetItem(chan_first_bar_off%, 0, first_bar_off);
+    endif
+    
+    first_spout := ChanSearch(chan_spout%, 14, this_trial, trial_end);
+    if first_spout = -1 then
+        ' hoge
+    else
+        MemSetItem(chan_first_spout%, 0, first_spout);
+        
+            last_bar_off_before_first_spout := ChanSearch(chan_bar_off%, 14, first_spout, this_trial);
+            if first_spout = -1 then
+                ' hoge
+            else
+                MemSetItem(chan_last_bar_off_before_first_spout%, 0, last_bar_off_before_first_spout);
+            endif 
+    endif
+
+wend
+
