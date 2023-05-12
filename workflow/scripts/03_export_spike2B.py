@@ -39,15 +39,15 @@ task2 = join_task_session('reaching_go_spout_bar_dual_dec22', [
 
 debug_folders = task1 + task2
 
+#%% Loop
+
 for debug_folder in debug_folders:
-
-    #%%
-
+    
     (sinput, soutput) = getSnake(locals(), 'workflow/pycontrol.smk',
         [debug_folder +'/processed/spike2B.smrx'],
         'export_spike2B')
 
-    #%% Photometry dict
+    # Photometry dict
 
     #fn = glob(sinput.photometry_folder+'\*.ppd')[0]
     fn = list(Path(sinput.photometry_folder).glob('*.ppd'))
@@ -64,7 +64,7 @@ for debug_folder in debug_folders:
 
     # no down-sampling here
 
-    #%% Load data
+    # Load data
     df_pycontrol = pd.read_pickle(sinput.pycontrol_dataframe)
 
     pycontrol_time = df_pycontrol[df_pycontrol.name == 'rsync'].time
@@ -92,7 +92,7 @@ for debug_folder in debug_folders:
     v_lines = [line[2:] for line in all_lines if line[0] == 'V']
 
 
-    #%%
+    #
     if fn == []:
         photometry_times_pyc = None
     else:
@@ -110,7 +110,7 @@ for debug_folder in debug_folders:
                     'analog_1_est_motion', 'analog_1_corrected', 'analog_1_baseline_fluo', 
                     'analog_1_df_over_f']
 
-    #%%
+    #
     export_session(df_pycontrol, keys, 
         data_photometry = data_photometry,
         photometry_times_pyc = photometry_times_pyc,
