@@ -16,13 +16,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from snakehelper.SnakeIOHelper import getSnake
-from workflows.scripts import settings
+from workflow.scripts import settings
 
 
 #%% Load inputs
 cell_metrics_processing_done_path = str(Path(settings.debug_folder) / 'processed' / 'cell_metrics_processing.done')
 
-(sinput, soutput) = getSnake(locals(), 'workflows/spikesort.smk',
+(sinput, soutput) = getSnake(locals(), 'workflow/spikesort.smk',
  [cell_metrics_processing_done_path], 'cell_metrics_processing')
 
 

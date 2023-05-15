@@ -9,12 +9,12 @@ import pandas as pd
 import matlab.engine
 from snakehelper.SnakeIOHelper import getSnake
 
-from workflows.scripts import settings
+from workflow.scripts import settings
 
 #%% Load inputs
 
 
-(sinput, soutput) = getSnake(locals(), 'workflows/spikesort.smk',
+(sinput, soutput) = getSnake(locals(), 'workflow/spikesort.smk',
   [settings.debug_folder + r'/processed/spike_metrics.done'],
   'spike_metrics_ks3')
 
