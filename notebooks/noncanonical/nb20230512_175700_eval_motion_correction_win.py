@@ -177,26 +177,6 @@ analog_1 = df_data.loc[0,'data_photometry']['analog_1']
 analog_2 = df_data.loc[0,'data_photometry']['analog_2']
 
 
-# In[15]:
-
-
-print(range(0, len(analog_1) - n_win_size + 1, step_size))
-print(len(analog_1))
-
-
-
-# In[16]:
-
-
-3575951 + 15000 > 3605950
-
-
-# In[17]:
-
-
-3575951 + 15000 < 3605950
-
-
 # In[6]:
 
 
@@ -212,8 +192,13 @@ def overlapping_chunks(data1, data2, n_win_size: int, n_overlap: int):
         pass
 
     step_size = n_win_size - int(n_win_size) // int(x)
-    for i in range(0, len(data1) - n_win_size + 1, step_size): #TODO this will skip the last iteration
-        yield i, data1[i:i + n_win_size], data2[i:i + n_win_size]
+    # for i in range(0, len(data1) - n_win_size + 1, step_size): #TODO this will skip the last iteration
+    #     yield i, data1[i:i + n_win_size], data2[i:i + n_win_size]
+    for i in range(0, len(data1), step_size):
+        if i + n_win_size <= len(data1):  # If a full-sized chunk can be taken
+            yield i, data1[i:i + n_win_size], data2[i:i + n_win_size]
+        else:  # If only a truncated chunk can be taken
+            yield i, data1[i:], data2[i:]
 
 
 start_index_chunks = []
@@ -261,29 +246,23 @@ for i in range(0, len(start_index_chunks)):
 
     if i == 0:
         analog_1_est_motion_joined[0:step_size] = ch[0:step_size]
-    elif i > 0:
+
+    elif i > 0 and i < len(start_index_chunks) -1:
         ch_prev = analog_1_est_motion_chunks[i-1]
         ind_this =  start_index_chunks[i]
-                
-        analog_1_est_motion_joined[ind_this:ind_this + step_size] = (ch[0:step_size] + ch_prev[-1 - step_size:-1])/2
-    
-    if i == len(start_index_chunks) -1 :
-        #TODO the length is wrong padded, maybe?
-        analog_1_est_motion_joined[ind_this + step_size:-1] = ch[step_size:-1]
+        
+        # average two chunks
+        analog_1_est_motion_joined[ind_this:ind_this + step_size] \
+            = (ch[0:step_size] + ch_prev[step_size-1:-1])/2
 
+    elif i == len(start_index_chunks) -1 :
+        ind_this =  start_index_chunks[i]
 
+        # copy one chunk
+        analog_1_est_motion_joined[ind_this:ind_this + step_size] = ch
 
-# In[11]:
-
-
-len(start_index_chunks)
-
-
-# In[10]:
-
-
-for i in range(0, len(start_index_chunks)):
-    print(i)
+    elif i == len(start_index_chunks):
+        print('should not happen')
 
 
 # In[9]:
