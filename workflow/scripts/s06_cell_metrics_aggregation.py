@@ -10,7 +10,7 @@ import pandas as pd
 
 from snakehelper.SnakeIOHelper import getSnake
 
-from workflows.scripts import settings
+from workflow.scripts import settings
 
 
 from matplotlib import pyplot as plt
@@ -18,7 +18,7 @@ import seaborn as sns
 #%% Load inputs
 
 
-(sinput, soutput) = getSnake(locals(), 'workflows/spikesort.smk',
+(sinput, soutput) = getSnake(locals(), 'workflow/spikesort.smk',
   [settings.debug_folder + r'/processed/cell_metrics_aggregation.done'],
   'cell_metrics_aggregation')
 

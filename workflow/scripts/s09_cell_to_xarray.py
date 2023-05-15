@@ -8,7 +8,7 @@ from itertools import cycle, islice
 
 import numpy as np
 import pandas as pd
-
+import xarray as xr
 from sklearn import cluster, mixture
 
 from matplotlib import pyplot as plt
@@ -23,8 +23,8 @@ from workflow.scripts import settings
 
 
 (sinput, soutput) = getSnake(locals(), 'workflow/spikesort.smk',
-  [settings.debug_folder + r'/processed/cell_metrics_clustering.done'],
-  'cell_metrics_clustering')
+  [settings.debug_folder + r'/processed/xr_cells.nc'],
+  'cells_to_xarray')
 
 
 # %% Path definitions
@@ -40,6 +40,12 @@ clusters_data_path = Path(os.environ['PROCCESSED_CLUSTERS_PATH'])
 
 
 # %% Loading data
+
+# Opening session xarray
+xr_session = xr.open_dataset(sinput.xr_session)
+
+# Loading synced timestamps
+synced_np_ts_files = sinput.synced_clusters_timestamps_files
 
 # Loading dataframe containing whole dataset dimensionality reductions for cell metrics
 dim_reduc_aggregate = pd.read_pickle(clusters_data_path / 'aggregate_cell_metrics_dim_reduc.pkl')
