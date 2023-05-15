@@ -1,6 +1,6 @@
 ' first&last |$ first bar_off, last_bar_off_before_first_spout, first_spout
 
-var list%[400];
+var list%[401];
 
 var vh% :=View();
 if ViewKind(vh%) <> 0 then
@@ -113,4 +113,93 @@ while NextTime(chan_trial_onset%, this_trial) > 0 do
     endif
 
 wend
+
+
+
+'### create waveform average
+
+var list$[400];
+var chosen%[12];
+for i% := 0 to 11 do;
+     chosen%[i%] := 0;
+next
+
+' reset
+for i% := 0 to 400 do;
+    list%[i%] := 0;
+next
+
+ChanList(list%[], 1+2048);
+for i% := 0 to list%[0] do;
+    list$[i%] := ChanTitle$(list%[i%+1]);
+    chosen%[i%] := 1;
+next
+
+
+DlgCreate("Choose channels to plot");
+DlgAllow(1+2+4+8+16+32+128);
+
+for i% := 0 to 11 do;
+    DlgCheck(i%, list$[i%+1]);
+next
+'TODO not all the waveform channels are shown
+var ok% := DlgShow(chosen%[0], chosen%[1],chosen%[2], chosen%[3], chosen%[4],chosen%[5],chosen%[6],chosen%[7],chosen%[8],chosen%[9], chosen%[10],chosen%[11]);
+
+if ok% =0 then
+    halt
+endif
+
+var selected_chans$ := "";
+var wfchan1% := list%[1];
+for i% := 0 to 11 do;
+    if chosen%[i%] then
+        if selected_chans$ <> "" then
+            wfchan1% := list%[i%+1];
+            selected_chans$ := selected_chans$ + ",";
+        endif
+
+        selected_chans$ := selected_chans$ + Str$(list%[i%+1]);
+        
+    endif
+next
+
+var res_win%;
+
+var trig;
+var win := 4;
+var offset := 2;
+
+
+DlgCreate("Choose a trigger channel");
+DlgAllow(1+2+4+8+16+32+128);
+DlgChan(1, "Trigger", 2+4+8+16+32+64+2048);
+DlgReal(2, "Window (s)", 0, 15);
+DlgReal(3, "Offset (s)", 0, 15);
+DlgButton(1, "&Close");
+DlgButton(2, "&Plot||plot Waveform Average", wave_ave%);
+
+ok% := DlgShow(trig, win, offset);
+'default value of win and offset are not working
+
+
+
+func wave_ave%()
+
+var bins% := Round(DlgValue(2) / Binsize(wfchan1%));
+
+if bins% =0 then
+    PrintLog("Error: bins% is 0. Shoule be greater than 0.");
+    Halt
+endif
+
+'TODO trig must be an integer
+var trig% := DlgValue(1);
+
+res_win% := SetAverage(selected_chans$, bins%, DlgValue(3), trig%, 1, 1);
+WindowVisible(1);
+Process(0.0, MaxTime(), 1, 1);
+
+return 1;
+end
+
 
