@@ -30,6 +30,11 @@ The snakemake file (*.smk) that define the workflow is in the `workflow` folder,
 
 ## Usage
 
+### copying file to `by_session` folder
+We first need to copy files to the `by_session` folder. You can do that by
+`python workflow/scripts/00_create_session_folders.py`
+
+### Executing snakemake
 If no target is specified, snakemake will execute the first rule in the snakemake file by default. By default, it will search for a `Snakefile` under the `workflow` folder. The `Snakefile` is the master workflow file. The master Snakefile contains both the pycontrol and spike sorting workflow.
 
 Execute the following command to run the workflow. It is strongely recommend to dry-run (simulate without actually executing anything) the first time you use a workflow with the `-n` command. The `--cores` command tells snakemake to use all avaiable cores, you can specify the exact number of core with the `-c` option, e.g. `-c 4`.
@@ -41,10 +46,18 @@ To actually execute the workflow, remove the `-n` option.
 `snakemake --cores`
 
 If you want to just run a subset of the workflow, e.g. only pycontrol or spike sorting, specify the workflow file directly:
+Note: using all available cores may cause problem to ettin, it is suggested that we only use a small number (e.g. 10). 
+`snakemake -c10 --snakefile workflow/pycontrol.smk` 
+If you want to just analyze a particular task, change the following line in the `pycontrol.smk` file:
 
-`snakemake --cores --snakefile workflow/pycontrol.smk` 
+`sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob('*/*')`
 
-or 
+to 
+
+`sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob('pavlovian_spontanous_reaching_march23/*')`
+
+
+To do spike sorting, you can execute
 
 `snakemake --cores --snakefile workflow/spikesort.smk` 
 
