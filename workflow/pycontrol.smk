@@ -40,7 +40,7 @@ rule export_spike2:
         pycontrol_dataframe = '{session_path}/{session_id}/processed/df_pycontrol.pkl',
         photometry_folder = '{session_path}/{session_id}/pyphotometry'
     output:
-        spike2_file = '{session_path}/{session_id}/processed/spike2.smrx',
+        spike2_export_done = touch('{session_path}/{session_id}/processed/spike2_export.done'),
     script:
         'scripts/03_export_spike2.py'
 
@@ -78,6 +78,6 @@ rule pycontrol_final:
     input:
         photometry_done = photometry_input,
         pycontrol_done = '{session_path}/{task}/{session_id}/processed/log/pycontrol.done',
-        spike2='{session_path}/{task}/{session_id}/processed/spike2.smrx'
+        spike2='{session_path}/{task}/{session_id}/processed/spike2_export.done'
     output:
         done = touch('{session_path}/{task}/{session_id}/processed/pycontrol_workflow.done')
