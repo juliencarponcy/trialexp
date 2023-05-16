@@ -1,4 +1,9 @@
 ' display_style.s2s |
+
+
+
+proc display_style()
+
 var vh% := View();
 FrontView(vh%);
 var list%[400];
@@ -47,25 +52,20 @@ else
     if ViewKind(vh%) = 4 then
         
         FontSet("Arial",9, 0); 'set view font
-
-        YAxisMode(4+8192, 1, 20, 0);                
+        
+        YAxisMode(8196, 1,20, 0);
         XAxisMode(4);
         XAxisStyle(1, 0, 0.5);
-        XAxisAttrib(0);
+        XAxisAttrib(0);        
         
-        ChanList(list%[], 1+2048);
+        ChanList(list%[], 127+2048);
         for i% := 1 to list%[0] do
             chan% := list%[i%];
             if InStr(ChanTitle$(chan%), "analog_2") then
                 ChanColourSet(chan%, 1,1,0,0);  'Set channel colour
             endif
-
             if InStr(ChanTitle$(chan%), "analog_1") then
                 ChanColourSet(chan%, 1,0,0.501961,0);   'Set channel colour
-            endif
-            
-            if InStr(ChanTitle$(chan%), "analog_1_est_motion") then
-                ChanColourSet(chan%, 1,1,0,0);  'Set channel colour
             endif
             
                     
@@ -73,3 +73,7 @@ else
      endif
 endif
 
+end
+
+
+display_style();
