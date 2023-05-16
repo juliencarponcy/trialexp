@@ -66,6 +66,13 @@ cluster_params= {
 # Raw variables to plot for comparison / visualisation
 raw_scatter_dims = ('peak_average_all_wf', 'std_std_waveform')
  
+# Plotting params
+plt.rcParams['axes.spines.top'] = False
+plt.rcParams['axes.spines.right'] = False
+plt.rcParams['xtick.direction'] = 'out'
+plt.rcParams['ytick.direction'] = 'out'
+plt.rcParams["legend.frameon"] = False
+plt.rcParams['font.family'] = ['Arial']
 # %% Create cluster objects
 
 # Initialize clustering algorithms with cluster_params

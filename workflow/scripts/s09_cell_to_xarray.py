@@ -4,13 +4,14 @@ Script to create the session folder structure
 #%%
 import os
 from pathlib import Path
-from itertools import cycle, islice
 
 import numpy as np
 import pandas as pd
 import xarray as xr
-from sklearn import cluster, mixture
 
+from sklearn.preprocessing import StandardScaler
+
+import seaborn as sns
 from matplotlib import pyplot as plt
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
@@ -19,41 +20,13 @@ import seaborn as sns
 from snakehelper.SnakeIOHelper import getSnake
 from workflow.scripts import settings
 
+from trialexp.process.ephys.spikes_preprocessing import bin_spikes_from_all_probes, halfgaussian_filter1d
 #%% Load inputs
 
 
 (sinput, soutput) = getSnake(locals(), 'workflow/spikesort.smk',
   [settings.debug_folder + r'/processed/xr_cells.nc'],
   'cells_to_xarray')
-
-
-#%% Half gaussian kernel convolution functions
-# from https://stackoverflow.com/questions/71003634/applying-a-half-gaussian-filter-to-binned-time-series-data-in-python
-
-import scipy.ndimage
-
-def halfgaussian_kernel1d(sigma, radius):
-    """
-    Computes a 1-D Half-Gaussian convolution kernel.
-    """
-    sigma2 = sigma * sigma
-    x = np.arange(0, radius+1)
-    phi_x = np.exp(-0.5 / sigma2 * x ** 2)
-    phi_x = phi_x / phi_x.sum()
-
-    return phi_x
-
-def halfgaussian_filter1d(input, sigma, axis=-1, output=None,
-                      mode="constant", cval=0.0, truncate=4.0):
-    """
-    Convolves a 1-D Half-Gaussian convolution kernel.
-    """
-    sd = float(sigma)
-    # make the radius of the filter equal to truncate standard deviations
-    lw = int(truncate * sd + 0.5)
-    weights = halfgaussian_kernel1d(sigma, lw)
-    origin = -lw // 2
-    return scipy.ndimage.convolve1d(input, weights, axis, output, mode, cval, origin)
 
 # %% Path definitions
 
@@ -72,118 +45,52 @@ spike_clusters_files = list(Path(sinput.sorting_path).glob('*/sorter_output/spik
 # Get probe names from folder path
 probe_names = [folder.stem for folder in list(Path(sinput.sorting_path).glob('*'))]
 
-idx_probe = 0
-# %% # Loading synced spike timestamps
+# %% bin all the clusters from all probes continuously, return nb_of_spikes per bin * (1000[ms]/bin_duratiion[ms])
+# so if 1 spike in 20ms bin -> inst. FR = 1 * (1000/20) = 50Hz
+bin_duration = 50 #bin_duration in ms
 
-synced_ts = np.load(synced_timestamp_files[idx_probe]).squeeze()
+all_probes_binned_array, spike_time_bins, all_clusters_UIDs = bin_spikes_from_all_probes(
+                                                                synced_timestamp_files = synced_timestamp_files, 
+                                                                spike_clusters_files = spike_clusters_files, 
+                                                                bin_duration = bin_duration)
+# %% Applying Kernel to binned firing rate
+# if we want the gaussian to have sigma = 0.5s
+time_for_1SD = 0.5 # sec
+sigma = time_for_1SD * (1000/bin_duration)
 
-spike_clusters = np.load(spike_clusters_files[idx_probe]).squeeze()
+# Return the binned spike array convoluted by half-gaussian window (so FR do not increases before spike!)
+convoluted_binned_array = halfgaussian_filter1d(all_probes_binned_array.astype(float), sigma = sigma, axis=-1, output=None,
+                      mode="constant", cval=0.0, truncate=4.0) # truncate the window at 4SD
 
-unique_clusters = np.unique(spike_clusters)
+scaler = StandardScaler()
+# z-scored firing rate
+z_conv_FR = scaler.fit_transform(convoluted_binned_array.T).T
 
-# Build a list where each item is a np.array containing spike times for a single cluster
-ts_list = [synced_ts[np.where(spike_clusters==cluster_nb)] for cluster_nb in unique_clusters]
-          
-assert len(unique_clusters) == len(ts_list)
+# %% Combining spikes rates and scored
 
+spike_fr_xr = xr.DataArray(
+    convoluted_binned_array,
+    name = 'spikes_FR',
+    coords={'cluster_UID':all_clusters_UIDs, 'time':spike_time_bins[1:]},
+    dims=('cluster_UID', 'time')
+)
+
+spike_zscored_xr = xr.DataArray(
+    z_conv_FR,
+    name = 'spikes_Zscore',
+    coords={'cluster_UID':all_clusters_UIDs, 'time':spike_time_bins[1:]},
+    dims=('cluster_UID', 'time')
+)
+
+xr_dict = {'spikes_FR': spike_fr_xr, 'spikes_Zscore': spike_zscored_xr}
+xr_spikes = xr.Dataset(xr_dict)
+
+# %% Preview
+sns.heatmap(spike_fr_xr[:,-10000:], vmin=0, vmax=10)
 # %%
-
-def get_max_bin_edge_all_probes(timestamp_files: list):
-  """
-  return up rounded timestamp of the latest spike over all probes
-  """
-  max_ts = []
-  for ts_file in timestamp_files:
-    synced_ts = np.load(ts_file)
-    max_ts.append(int(np.ceil(np.nanmax(synced_ts))))
-
-  # return up rounded timestamp of the latest spike over all probes
-  return max(max_ts)
-
-def get_cluster_UIDs_from_path(cluster_file: Path):
-  # take Path or str
-  cluster_file = Path(cluster_file)
-  # extract session and probe name from folder structure
-  session_id = cluster_file.parts[-6]
-  probe_name = cluster_file.parts[-3]
-
-  # unique cluster nb
-  cluster_nbs = np.unique(np.load(cluster_file))
-  
-  # return list of unique cluster IDs strings format <session_ID>_<probe_name>_<cluster_nb>
-  cluster_UIDs = [session_id + '_' + probe_name + '_' + str(cluster_nb) for cluster_nb in cluster_nbs]
-
-  return cluster_UIDs
-
-# define 1ms bins for discretizing in bool at 1000Hz 
-def bin_millisecond_spikes_from_probes(synced_timestamp_files: list, spike_clusters_files: list, verbose: bool = True):
-  
-  # maximum spike bin end at upper rounding of latest spike : int(np.ceil(np.nanmax(synced_ts)))
-  # bins = np.array([t for t in range(int(np.ceil(np.nanmax(synced_ts))))][:])
-  bin_max = get_max_bin_edge_all_probes(synced_timestamp_files)
-
-  # n clusters x m timebin
-  # all_probes_binned_array = np.ndarray()
-  # initialize UIDs list
-  all_clusters_UIDs = list()
-  
-
-  for idx_probe, synced_file in enumerate(synced_timestamp_files):
-    if idx_probe == 0:
-      all_clusters_UIDs = get_cluster_UIDs_from_path(spike_clusters_files[idx_probe])
-    else:
-      cluster_UIDs = get_cluster_UIDs_from_path(spike_clusters_files[idx_probe])
-      all_clusters_UIDs = all_clusters_UIDs + cluster_UIDs
-      # extend list of cluster UIDs 
-      
-    synced_ts = np.load(synced_file).squeeze()
-    spike_clusters = np.load(spike_clusters_files[idx_probe]).squeeze()
-    
-
-    unique_clusters = np.unique(spike_clusters)
-
-    # Build a list where each item is a np.array containing spike times for a single cluster
-    ts_list = [synced_ts[np.where(spike_clusters==cluster_nb)] for cluster_nb in unique_clusters]
-    # change to a dict with clu_ID
-    # iterate over the list of array to discretize (histogram / binning)
-    cluster_idx_all = 0
-    for cluster_idx, cluster_ts in enumerate(ts_list): # change to a dict?
-      # establisn index is the ndarray for all the probes
-      cluster_idx_all = cluster_idx_all + cluster_idx
-      if verbose:
-        print(f'probe nb {idx_probe+1}/{len(synced_timestamp_files)} cluster nb {cluster_idx+1}/{len(ts_list)}')
-      
-      # perform binning for the cluster
-      binned_spike, bins = np.histogram(cluster_ts, bins = bin_max, range = (0, bin_max))
-      binned_spike = binned_spike.astype(bool)
-
-      # first creation of the array
-      if cluster_idx == 0 and idx_probe == 0:
-        all_probes_binned_array = np.ndarray(shape = (len(unique_clusters), binned_spike.shape[0]))
-        all_probes_binned_array = all_probes_binned_array.astype(bool)
-        all_probes_binned_array[cluster_idx,:] = binned_spike
-      
-      # concacatenate empty bool array for next probe
-      elif cluster_idx == 0 and idx_probe != 0:
-        probe_empty_binned_array = np.ndarray(shape = (len(unique_clusters), binned_spike.shape[0]), dtype=bool)
-        all_probes_binned_array = np.concatenate([all_probes_binned_array, probe_empty_binned_array], axis=0)
-        # all_probes_binned_array = all_probes_binned_array.astype(bool)
-
-      else:
-        # concat the next neurons bool binning
-        all_probes_binned_array[cluster_idx,:] = binned_spike
-
-    cluster_idx_all = cluster_idx_all + cluster_idx
-    # convert bins to int
-    bins = bins.astype(int)
-
-  return all_probes_binned_array, bins, all_clusters_UIDs
-
-# %%
-# get_cluster_UIDs_from_path(spike_clusters_files[0])
-all_probes_binned_array, spike_time_bins, all_clusters_UIDs = bin_millisecond_spikes_from_probes(synced_timestamp_files= synced_timestamp_files, spike_clusters_files = spike_clusters_files)# %% Opening session xarray
 xr_session = xr.open_dataset(sinput.xr_session)
-# %%
+
+# %% Opening session xarray
 # Loading dataframe containing whole dataset dimensionality reductions for cell metrics
 dim_reduc_aggregate = pd.read_pickle(clusters_data_path / 'aggregate_cell_metrics_dim_reduc.pkl')
 # Loading dataframe containing whole dataset for cell metrics
