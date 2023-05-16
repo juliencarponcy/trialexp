@@ -1,5 +1,23 @@
-# %% [markdown]
+'''
 # This script will provide summary for the parameters used in a session and their changes, as well as session duration and sumary data from the last trial (the last line starting with #) for experiment notes
+
+You can compile this into standalone application
+1. install auto-py-to-exe
+2. Execute auto-py-to-exe by directly typing `auto-py-to-exe` into terminal
+3. In the launched window, click 'Browse' and choose this script file
+4. Choose 'One File'
+5. Choose 'Console Based'
+6. Click 'Convert .py to .exe', 
+7. The exe file should be in the `output` folder
+
+Usage
+
+1. Execute this script or the compiled exe
+2. Click the button 'choose a list of pycontrol file` to select the pycontrol file you want to extract.
+The extracted variables should be inserted into the textbox
+3. Click `copy to clipboard` to copy content to clipboard
+
+'''
 
 # %%
 import re
@@ -30,9 +48,6 @@ scrollbar.config(command=text_box.yview)
 
 scrollbar.grid(row=0, column=2,sticky='ns')
 text_box.grid(row=0, column=1, sticky='nsew')
-
-
-# root.withdraw()
 
 def get_variable_info(event):
     file_path = filedialog.askopenfilenames(initialdir=r"\\ettin\Magill_Lab\Julien\Data\head-fixed\pycontrol",
