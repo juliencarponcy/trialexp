@@ -39,7 +39,13 @@ def get_cluster_UIDs_from_path(cluster_file: Path):
 
 # define 1ms bins for discretizing at 1000Hz 
 def bin_spikes_from_all_probes(synced_timestamp_files: list, spike_clusters_files: list, bin_duration: int = 10, verbose: bool = True):
-
+    '''
+    Bin all clusters from all probes for the session
+    
+    return bin spikes array with dimensions (cluster, time)
+    # Important:
+    if bin_duration is 1 ms, the resulting array will be a boolean ndarray
+    '''
     # maximum spike bin end at upper rounding of latest spike : int(np.ceil(np.nanmax(synced_ts)))
     # bins = np.array([t for t in range(int(np.ceil(np.nanmax(synced_ts))))][:])
     bins_nb, bin_max = get_max_bin_edge_all_probes(synced_timestamp_files, bin_duration)
@@ -79,19 +85,28 @@ def bin_spikes_from_all_probes(synced_timestamp_files: list, spike_clusters_file
             binned_spike, bins = np.histogram(cluster_ts, bins = bins_nb, range = (0, bin_max))
             # Convert in Hz (spikes/s)
             binned_spike = binned_spike * (1000 / bin_duration)
-            binned_spike = binned_spike.astype(int)
+            
+            # if binned at 1ms turn into bool, otherwise int
+            if bin_duration == 1:
+                binned_spike = binned_spike.astype(bool)
+            else:
+                binned_spike = binned_spike.astype(int)
 
             # first creation of the array
             if cluster_idx == 0 and idx_probe == 0:
                 all_probes_binned_array = np.ndarray(shape=(len(all_clusters_UIDs), binned_spike.shape[0]))
-                all_probes_binned_array = all_probes_binned_array.astype(int)
+                if bin_duration == 1:
+                    all_probes_binned_array = all_probes_binned_array.astype(bool)                
+                else:    
+                    all_probes_binned_array = all_probes_binned_array.astype(int)
                 all_probes_binned_array[cluster_idx_all,:] = binned_spike
             else:
                 # concat the next neurons bool binning
                 all_probes_binned_array[cluster_idx_all,:] = binned_spike
 
             cluster_idx_all = cluster_idx_all +1
-    # convert bins to int
+    
+    # convert time bins to int (ms)
     bins = bins.astype(int)
 
     return all_probes_binned_array, bins, all_clusters_UIDs

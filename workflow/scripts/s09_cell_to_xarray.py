@@ -30,7 +30,6 @@ from trialexp.process.ephys.spikes_preprocessing import bin_spikes_from_all_prob
 
 # %% Path definitions
 
-sorter_name = 'kilosort3'
 verbose = True
 
 root_path = Path(os.environ['SESSION_ROOT_DIR'])
@@ -39,15 +38,20 @@ clusters_figure_path = Path(os.environ['CLUSTERS_FIGURES_PATH'])
 # where to store global processed data
 clusters_data_path = Path(os.environ['PROCCESSED_CLUSTERS_PATH'])
 
-synced_timestamp_files = list(Path(sinput.sorting_path).glob('*/sorter_output/rsync_corrected_spike_times.npy'))
-spike_clusters_files = list(Path(sinput.sorting_path).glob('*/sorter_output/spike_clusters.npy'))
-
 # Get probe names from folder path
 probe_names = [folder.stem for folder in list(Path(sinput.sorting_path).glob('*'))]
 
+# Fetch file paths from all probes
+synced_timestamp_files = list(Path(sinput.sorting_path).glob('*/sorter_output/rsync_corrected_spike_times.npy'))
+spike_clusters_files = list(Path(sinput.sorting_path).glob('*/sorter_output/spike_clusters.npy'))
+cell_metrics_files = list(Path(sinput.sorting_path).glob('*/sorter_output/cell_metrics_df_full.pkl'))
+
+
 # %% bin all the clusters from all probes continuously, return nb_of_spikes per bin * (1000[ms]/bin_duratiion[ms])
 # so if 1 spike in 20ms bin -> inst. FR = 1 * (1000/20) = 50Hz
-bin_duration = 50 #bin_duration in ms
+
+# if bin duration == 1ms, we will have a BOOL arary (@1000Hz)
+bin_duration = 20 #bin_duration in ms
 
 all_probes_binned_array, spike_time_bins, all_clusters_UIDs = bin_spikes_from_all_probes(
                                                                 synced_timestamp_files = synced_timestamp_files, 
@@ -58,7 +62,7 @@ all_probes_binned_array, spike_time_bins, all_clusters_UIDs = bin_spikes_from_al
 time_for_1SD = 0.5 # sec
 sigma = time_for_1SD * (1000/bin_duration)
 
-# Return the binned spike array convoluted by half-gaussian window (so FR do not increases before spike!)
+# Return the binned spike array convoluted by half-gaussian window (so FR do not increases before spike [but binning])
 convoluted_binned_array = halfgaussian_filter1d(all_probes_binned_array.astype(float), sigma = sigma, axis=-1, output=None,
                       mode="constant", cval=0.0, truncate=4.0) # truncate the window at 4SD
 
@@ -86,7 +90,7 @@ xr_dict = {'spikes_FR': spike_fr_xr, 'spikes_Zscore': spike_zscored_xr}
 xr_spikes = xr.Dataset(xr_dict)
 
 # %% Preview
-sns.heatmap(spike_fr_xr[:,-10000:], vmin=0, vmax=10)
+sns.heatmap(spike_zscored_xr[:,-10000:], vmin=-2, vmax=2)
 # %%
 xr_session = xr.open_dataset(sinput.xr_session)
 
