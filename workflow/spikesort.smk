@@ -139,6 +139,7 @@ rule cell_metrics_dim_reduction:
 rule cell_metrics_clustering:
     input:
         cell_metrics_dim_reduction_complete = '{sessions}/{task_path}/{session_id}/processed/cell_metrics_dim_reduction.done'
+    
     output:
         cell_metrics_clustering_complete =  touch('{sessions}/{task_path}/{session_id}/processed/cell_metrics_clustering.done')
 
@@ -147,24 +148,24 @@ rule cell_metrics_clustering:
     priority: 80
 
     script:
-        "scripts/s07_cell_metrics_dim_reduction.py"
+        "scripts/s08_cell_metrics_clustering.py"
 
 
 rule cells_to_xarray:
-
     input:
-        ephys_sync_complete = '{sessions}/{task_path}/{session_id}/processed/ephys_sync.done'
-        xr_session = '{sessions}/{task_path}/{session_id}/processed/xr_session.nc'
-        synced_clusters_timestamps_files = Path(os.environ.get('SESSION_ROOT_DIR')).glob(f'*/*/processed/{sorter_name}/*/rsync_corrected_spike_times.npy')
+        ephys_sync_complete = '{sessions}/{task_path}/{session_id}/processed/ephys_sync.done',
+        xr_session = '{sessions}/{task_path}/{session_id}/processed/xr_session.nc',
+        sorting_path = Path('{sessions}/{task_path}/{session_id}/processed/kilosort3/')
+    
     output:
         xr_cells = '{sessions}/{task_path}/{session_id}/processed/xr_cells.nc'
 
-        threads: 32
+    threads: 32
 
     priority: 85
 
     script:
-        "scripts/s08_cell_to_xarray.py"
+        "scripts/s09_cell_to_xarray.py"
 
 rule final:
     input:
