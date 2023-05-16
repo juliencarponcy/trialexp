@@ -145,18 +145,19 @@ def get_variable_info(event):
 
         output_text+='\n```'
         output_text+='\n\n\n'
-        
+    
+    text_box.delete(1.0, tk.END)
     text_box.insert(tk.END, output_text)
 
 def copy2clipboard(event):
-    print('test')
     root.clipboard_clear()
-    root.clipboard_append('test')
+    root.clipboard_append(text_box.get(1.0, tk.END))
+    print('Content copied to clipboard')
     
 
 
 button.bind('<Button-1>', get_variable_info)
-copy_button.bind('<Button-2>', copy2clipboard)
+copy_button.bind('<Button-1>', copy2clipboard)
 root.mainloop()
 
 
