@@ -54,8 +54,8 @@ If you want to just analyze a particular task, change the following line in the 
 
 to 
 
-`sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob('pavlovian_spontanous_reaching_march23/*')`
-
+`sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob('<task_name>/*')`
+Replace `task_name` with the task you want to run.
 
 To do spike sorting, you can execute
 
