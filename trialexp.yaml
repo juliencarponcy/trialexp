@@ -40,7 +40,9 @@ dependencies:
     - git+https://github.com/teristam/snakehelper.git
     - sonpy
     - h5netcdf
-    - spikeinterface
-    - neo
+    - python-dotenv
     - matlabengine
+    - neo
+    
+
 
