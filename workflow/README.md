@@ -30,7 +30,7 @@ The snakemake file (*.smk) that define the workflow is in the `workflow` folder,
 
 ## Usage
 
-### copying file to `by_session` folder
+### Copying file to `by_session` folder
 We first need to copy files to the `by_session` folder. You can do that by
 `python workflow/scripts/00_create_session_folders.py`
 
