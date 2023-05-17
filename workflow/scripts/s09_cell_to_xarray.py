@@ -95,6 +95,7 @@ convoluted_binned_array = halfgaussian_filter1d(all_probes_binned_array_by_trial
 
 scaler = StandardScaler()
 # z-scored firing rate
+# .T).T to z-score along time dimension
 z_conv_FR = scaler.fit_transform(convoluted_binned_array.T).T
 
 # %% Combining spikes rates and scored
@@ -102,38 +103,49 @@ z_conv_FR = scaler.fit_transform(convoluted_binned_array.T).T
 spike_fr_xr = xr.DataArray(
     convoluted_binned_array,
     name = 'spikes_FR',
-    coords={'cluster_UID': all_clusters_UIDs, 'time':spike_time_bins[1:]},
-    dims=('cluster_UID', 'time')
+    coords={'UID': all_clusters_UIDs, 'time':spike_time_bins[1:]},
+    dims=('UID', 'time')
 )
 
 spike_zscored_xr = xr.DataArray(
     z_conv_FR,
     name = 'spikes_Zscore',
-    coords={'cluster_UID': all_clusters_UIDs, 'time':spike_time_bins[1:]},
-    dims=('cluster_UID', 'time')
+    coords={'UID': all_clusters_UIDs, 'time':spike_time_bins[1:]},
+    dims=('UID', 'time')
 )
 
-xr_dict = {'spikes_FR': spike_fr_xr, 'spikes_Zscore': spike_zscored_xr}
-xr_spikes = xr.Dataset(xr_dict)
-
-# %%
+# %% Combine cell metrics and spike rates
 
 session_cell_metrics = pd.DataFrame(data={'UID':all_clusters_UIDs})
 session_cell_metrics.set_index('UID', inplace=True)
+uids = list()
 for f_idx, cell_metrics_file in enumerate(cell_metrics_files):
-
-  cell_metrics_df = pd.read_pickle(cell_metrics_file)
   if f_idx == 0:
-    for col in cell_metrics_df.columns:
-      session_cell_metrics.loc[(session_cell_metrics.index.get_level_values(0)), col] = np.nan
+    session_cell_metrics = pd.read_pickle(cell_metrics_file)
+  else:
+    cell_metrics_df = pd.read_pickle(cell_metrics_file)
+    session_cell_metrics = pd.concat([session_cell_metrics,cell_metrics_df])
+  uids = uids + cell_metrics_df.index.tolist()
 
-  # session_cell_metrics.loc[(cell_metrics_df.index), :] = cell_metrics_df.values
+# add clusters_UIDs from spike_clusters.npy + those of cell metrics and merge
+uids = list(set(uids+all_clusters_UIDs))
 
-  session_cell_metrics = session_cell_metrics.join(cell_metrics_df, how='left')
+cluster_cell_IDs = pd.DataFrame(data={'UID':all_clusters_UIDs})
+# Add sorted UIDs without cell metrics :  To investigate maybe some units not only present before / after 1st rsync?
+session_cell_metrics = session_cell_metrics.merge(cluster_cell_IDs, on='UID', how='outer')
 
-# %%
+session_cell_metrics.set_index('UID', inplace=True)
+xr_cell_metrics = session_cell_metrics.to_xarray()
+
+# Create the xr dataset
+xr_spikes = xr.merge([spike_fr_xr, spike_zscored_xr, xr_cell_metrics])
+
+# %% Save
 
 xr_spikes.to_netcdf(Path(sinput.xr_session).parent / 'xr_spikes.nc', engine='h5netcdf')
+
+
+
 # %% Preview of cluster responses to 
 
 
