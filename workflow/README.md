@@ -83,7 +83,7 @@ Sometimes you will encounter errors in running the pipeline in some of the recor
 The best way to start developing new script is by using the interactive Python session in VS Code. 
 1. Open any scripts in the `workflow/scripts` folder
 2. The scripts are marked with [cell mode](https://code.visualstudio.com/docs/python/jupyter-support-py) `#%%`. Run the current cell by <kbd>shift</kbd>+<kbd>enter</kbd>. This will open the Python interactive window in the same folder as the script file
-3. Change the working directory of the Python session to the root folder of the project.
+3. Change the working directory of the Python session to the root folder of the project (this step is no longer needed if you have specified your `SNAKEMAKE_DEBUG_ROOT` in the `.env` file correctly).
 
     ```
     import os;
