@@ -1,0 +1,311 @@
+' first&last | events will be added for first bar_off, last_bar_off_before_first_spout, first_spout
+' and Average Waveform plots will be made.
+' To reset, do View > Standard Display and close the window and reopen the file to delete all the memory channels
+
+#include "display_style.s2s"
+
+var list%[401];
+
+var vh% :=View();
+if ViewKind(vh%) <> 0 then
+    halt;
+endif
+
+
+
+var chanmk%;
+var chand%;
+var code% := 1;
+var mask%[256];
+var i%;
+var this_trial :=0;
+
+
+ChanList(list%[], 2+4+8+16+32+2048 + 16384);
+
+
+var chan_trial_onset%;
+var chan_bar_off%;
+var chan_spout%;
+var chan_break_after_trial%;
+var chan_break_after_abort%;
+
+
+var isfound_chan_trial_onset% :=0;
+var isfound_chan_bar_off% :=0;
+var isfound_chan_spout% :=0;
+var isfound_chan_break_after_trial% :=0;
+var isfound_chan_break_after_abort% :=0;
+
+var wfchan1%;
+var selected_chans$ := "";
+
+
+ToolbarSet(1, "&1. Prep", prep_channels%);
+ToolbarSet(2, "&2. Waveform Ave", plot_wave_ave%);
+ToolbarSet(3, "&3. Reset", reset%);
+
+ToolbarSet(5, "&Quit|0x1b|Escape");
+Toolbar("Quick analysis for reaching_go_spout_bar_nov22.spy", 1+2+4+8+16+32+64+128+256);
+
+
+func reset%()
+'TODO remove all the memory channels and apply starndard view
+
+DlgCreate("Reset");
+DlgText("This will delete all the memory event-like channels and go back to Standard Display.", 0, 0);
+var ok%:= DlgShow();
+if ok% = 0 then
+    return 1;
+endif
+
+
+for i% := 0 to 400 do
+    list%[i%] := 0;
+next;
+
+ChanList(list%[], 2+4+8+16+8+16+32+4096); ' Memory channels only
+
+for i% := 1 to list%[0] do
+    ChanDelete(list%[i%]); 
+next
+
+ViewStandard();
+
+
+return 1
+end
+
+
+func prep_channels%()
+
+for i% := 0 to 400 do
+    list%[i%] := 0;
+next;
+ChanList(list%[], 2+4+8+16+32+2048 + 16384);
+
+
+for i% := 0 to list%[0] do
+    docase
+        case ChanTitle$(list%[i%]) = "hold_for_water" then
+            if isfound_chan_trial_onset% then
+                PrintLog("hold_for_water is found more than once!");
+            endif
+            isfound_chan_trial_onset% := 1;
+        
+            chan_trial_onset% := ChanDuplicate(list%[i%]); 'Create a duplicate' TODO
+            ChanShow(chan_trial_onset%);
+            ' just keep 01
+            MarkMask(chan_trial_onset%, -1, 1, -1); 'Set filter to all pass
+            MarkMask(chan_trial_onset%, 0, -1, -1); 'Invert all code
+            MarkMask(chan_trial_onset%, 0, 1, 1);
+            MarkShow(chan_trial_onset%, 0, 0); 'Set marker to display and mode
+            DrawMode(chan_trial_onset%,2,1, 0,0); 'Set Lines        
+        
+        case ChanTitle$(list%[i%]) = "bar_off" then
+            if isfound_chan_bar_off% then
+                PrintLog("bar_off is found more than once!");
+            endif        
+            chan_bar_off% := list%[i%];
+            isfound_chan_bar_off%:=1;
+        case ChanTitle$(list%[i%]) = "spout" then
+            if isfound_chan_bar_off% then
+                PrintLog("spout is found more than once!");
+            endif          
+            chan_spout% := list%[i%];
+        isfound_chan_spout% :=1;
+        case ChanTitle$(list%[i%]) = "break_after_trial" then
+            if isfound_chan_break_after_trial% then
+                PrintLog("break_after_trial is found more than once!");
+            endif          
+            isfound_chan_break_after_trial% :=1;
+        
+            chan_break_after_trial% := ChanDuplicate(list%[i%]); 'Create a duplicate
+            ChanShow(chan_break_after_trial%);
+            ' just keep 01
+            MarkMask(chan_break_after_trial%, -1, 1, -1); 'Set filter to all pass
+            MarkMask(chan_break_after_trial%, 0, -1, -1); 'Invert all code
+            MarkMask(chan_break_after_trial%, 0, 1, 1);
+            MarkShow(chan_break_after_trial%, 0, 0); 'Set marker to display and mode
+            DrawMode(chan_break_after_trial%,2,1, 0,0); 'Set Lines
+         case ChanTitle$(list%[i%]) = "break_after_abort" then
+            if isfound_chan_break_after_trial% then
+                PrintLog("break_after_abort is found more than once!");
+            endif          
+            isfound_chan_break_after_abort% :=1;
+        
+            chan_break_after_abort% := ChanDuplicate(list%[i%]); 'Create a duplicate
+            ChanShow(chan_break_after_abort%);
+            ' just keep 01
+            MarkMask(chan_break_after_abort%, -1, 1, -1); 'Set filter to all pass
+            MarkMask(chan_break_after_abort%, 0, -1, -1); 'Invert all code
+            MarkMask(chan_break_after_abort%, 0, 1, 1);
+            MarkShow(chan_break_after_abort%, 0, 0); 'Set marker to display and mode
+        DrawMode(chan_break_after_abort%,2,1, 0,0); 'Set Lines       
+        
+    endcase;
+next;
+
+var first_spout;
+var trial_end;
+var first_bar_off;
+var last_bar_off_before_first_spout;
+
+var chan_first_bar_off% := MemChan(2); 'Add new Event- channel
+ChanTitle$(chan_first_bar_off%, "first_bar_off");
+Chanshow(chan_first_bar_off%);
+
+var chan_first_spout% := MemChan(2); 'Add new Event- channel
+ChanTitle$(chan_first_spout%, "first_spout");
+Chanshow(chan_first_spout%);
+
+var chan_last_bar_off_before_first_spout% := MemChan(2); 'Add new Event- channel
+ChanTitle$(chan_last_bar_off_before_first_spout%, "last_bar_off");
+Chanshow(chan_last_bar_off_before_first_spout%);
+
+
+while NextTime(chan_trial_onset%, this_trial) > 0 do
+    ' start from hold_for_water to another
+    this_trial := NextTime(chan_trial_onset%, this_trial);
+    trial_end := NextTime(chan_break_after_trial%, this_trial);
+    if trial_end < 0 then
+        break
+    endif
+    
+    first_bar_off := ChanSearch(chan_bar_off%, 14, this_trial, trial_end);
+    if first_bar_off = -1 then
+        ' hoge
+    else
+        MemSetItem(chan_first_bar_off%, 0, first_bar_off);
+    endif
+    
+    first_spout := ChanSearch(chan_spout%, 14, this_trial, trial_end);
+    if first_spout = -1 then
+        ' hoge
+    else
+        MemSetItem(chan_first_spout%, 0, first_spout);
+        
+            last_bar_off_before_first_spout := ChanSearch(chan_bar_off%, 14, first_spout, this_trial);
+            if first_spout = -1 then
+                ' hoge
+            else
+                MemSetItem(chan_last_bar_off_before_first_spout%, 0, last_bar_off_before_first_spout);
+            endif 
+    endif
+
+wend
+this_trial:=0; ' reset
+
+display_style();
+return 1;
+end
+
+'#############################################################
+
+func plot_wave_ave%()
+
+
+vh% := View(); 'TODO does't work in the second run
+if ViewKind(vh%) <> 0 then
+    Message("Choose a Time View");
+    return 1;
+endif
+
+
+'### create waveform average
+
+var list$[401]; 'NOTE list$[0] is confusing and not used.
+var chosen%[12];
+for i% := 0 to 11 do;
+     chosen%[i%] := 0;
+next
+
+' reset
+for i% := 0 to 400 do;
+    list%[i%] := 0;
+next
+
+ChanList(list%[], 1+2048);
+for i% := 1 to list%[0] do;
+    list$[i%] := ChanTitle$(list%[i%]);
+    chosen%[i%-1] := 1;
+next
+
+
+DlgCreate("Choose channels to plot");
+DlgAllow(1+2+4+8+16+32+128);
+
+for i% := 1 to 12 do;
+    DlgCheck(i%, list$[i%]);
+next
+'TODO unfiltered two raw data channels are missing , possibly missmatch with the names?
+
+var ok% := DlgShow(chosen%[0], chosen%[1], chosen%[2], chosen%[3], chosen%[4] ,chosen%[5], chosen%[6], chosen%[7], chosen%[8], chosen%[9], chosen%[10], chosen%[11]);
+
+if ok% =0 then
+    halt
+endif
+
+wfchan1% := list%[1];
+for i% := 0 to 11 do;
+    if chosen%[i%] then
+        if selected_chans$ <> "" then
+            wfchan1% := list%[i%+1];
+            selected_chans$ := selected_chans$ + ",";
+        endif
+
+        selected_chans$ := selected_chans$ + Str$(list%[i%+1]);
+        
+    endif
+next
+
+
+var trig;
+var win := 4;
+var offset := 2;
+
+
+DlgCreate("Choose a trigger channel");
+DlgAllow(1+2+4+8+16+32+128);
+DlgChan(1, "Trigger", 2+4+8+16+32+64+2048);
+DlgReal(2, "Window (s)", 0, 15);
+DlgReal(3, "Offset (s)", 0, 15);
+DlgButton(1, "&Close");
+DlgButton(2, "&Plot||plot Waveform Average", wave_ave%);
+
+ok% := DlgShow(trig, win, offset);
+'default value of win and offset are not working
+
+
+return 1;
+end
+
+'#############################################################
+
+func wave_ave%()
+
+var bins% := Round(DlgValue(2) / Binsize(wfchan1%)); 'TODO wfchan1% is 0 somehow
+
+if bins% =0 then
+    PrintLog("Error: bins% is 0. Shoule be greater than 0.");
+    Halt
+endif
+
+'TODO trig must be an integer
+var trig% := DlgValue(1);
+
+var res_win%;
+res_win% := SetAverage(selected_chans$, bins%, DlgValue(3), trig%, 1, 1);
+View(res_win%).WindowVisible(1);
+Process(0.0, View(vh%).MaxTime(), 1, 1);
+FrontView(res_win%);
+
+display_style();
+
+PrintLog("Time relative to " + View(vh%).ChanTitle$(trig%));
+XTitle$("Time relative to " + View(vh%).ChanTitle$(trig%));
+
+return 1;
+end
+
+
