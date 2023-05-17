@@ -85,9 +85,11 @@ def compute_df_over_f(photometry_dict: dict, low_pass_cutoff: float = 0.001) -> 
     
     b,a = butter(2, low_pass_cutoff, btype='low', fs=photometry_dict['sampling_rate'])
     photometry_dict['analog_1_baseline_fluo'] = filtfilt(b,a, photometry_dict['analog_1_filt'], padtype='even')
+    photometry_dict['analog_2_baseline_fluo'] = filtfilt(b,a, photometry_dict['analog_2_filt'], padtype='even')
 
     # Now calculate the dF/F by dividing the motion corrected signal by the time varying baseline fluorescence.
     photometry_dict['analog_1_df_over_f'] = photometry_dict['analog_1_corrected'] / photometry_dict['analog_1_baseline_fluo'] 
+    photometry_dict['analog_2_df_over_f'] = photometry_dict['analog_2_filt'] / photometry_dict['analog_2_baseline_fluo']
     
     return photometry_dict
 
