@@ -9,13 +9,36 @@ def get_first_bar_off(df_trial):
     if len(bar_off) >0:
         return bar_off.iloc[0]
     
+    
 def get_first_spout(df_trial):
     #Find spout touch
     spout =  df_trial[df_trial['name']=='spout']
     
     if len(spout) >0:
         return spout.iloc[0]
-    
+
+def get_last_bar_off_before_first_spout(df_trial):
+    # Find the last bar_off before the first spout in trial
+    # You can prepare df_trial for debugging/development as below:
+    #
+    # for i in range(1, np.max(df_event['trial_nb'])):
+	#     df_trial = df_event[df_event['trial_nb'] == i]
+    # df_trial = the row for event of interest
+
+    bar_off =  df_trial[df_trial['name']=='bar_off']
+
+    spout =  df_trial[df_trial['name']=='spout']
+    if spout.shape[0] > 0 and bar_off.shape[0] > 0:
+        spout1 = spout.iloc[0]
+
+        filtered_df = bar_off[bar_off['trial_time'] < spout1['trial_time']]
+        max_time = filtered_df['trial_time'].max()
+        result = filtered_df[filtered_df['trial_time'] == max_time]
+
+        if len(result) >0:
+            return result.iloc[0]
+
+
 def get_first_event_from_name(df_trial, evt_name):
     event =  df_trial[df_trial['name']==evt_name]
     return event.iloc[0]
