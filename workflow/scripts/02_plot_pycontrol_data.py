@@ -2,7 +2,7 @@
 import pandas as pd 
 from trialexp.process.pycontrol.plot_utils import *
 from snakehelper.SnakeIOHelper import getSnake
-from workflows.scripts import settings
+from workflow.scripts import settings
 
 #%%
 

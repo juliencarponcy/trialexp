@@ -11,7 +11,7 @@ import pandas as pd
 import numpy as np
 from trialexp.process.pycontrol import event_filters
 from trialexp.process.pycontrol.event_filters import extract_event_time
-from workflows.scripts import settings
+from workflow.scripts import settings
 #%% Load inputs
 
 (sinput, soutput) = getSnake(locals(), 'workflows/spout_bar_nov22.smk',

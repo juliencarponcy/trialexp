@@ -75,14 +75,14 @@ z_conv_FR = scaler.fit_transform(convoluted_binned_array.T).T
 spike_fr_xr = xr.DataArray(
     convoluted_binned_array,
     name = 'spikes_FR',
-    coords={'cluster_UID':all_clusters_UIDs, 'time':spike_time_bins[1:]},
+    coords={'cluster_UID': all_clusters_UIDs, 'time':spike_time_bins[1:]},
     dims=('cluster_UID', 'time')
 )
 
 spike_zscored_xr = xr.DataArray(
     z_conv_FR,
     name = 'spikes_Zscore',
-    coords={'cluster_UID':all_clusters_UIDs, 'time':spike_time_bins[1:]},
+    coords={'cluster_UID': all_clusters_UIDs, 'time':spike_time_bins[1:]},
     dims=('cluster_UID', 'time')
 )
 

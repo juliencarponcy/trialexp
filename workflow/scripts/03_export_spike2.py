@@ -5,7 +5,7 @@ Export event data to spike2
 import pandas as pd 
 from trialexp.process.pycontrol.utils import export_session
 from snakehelper.SnakeIOHelper import getSnake
-from workflows.scripts import settings
+from workflow.scripts import settings
 
 #%%
 
