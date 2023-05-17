@@ -14,7 +14,7 @@ from trialexp.process.pycontrol.event_filters import extract_event_time
 from workflow.scripts import settings
 #%% Load inputs
 
-(sinput, soutput) = getSnake(locals(), 'workflows/spout_bar_nov22.smk',
+(sinput, soutput) = getSnake(locals(), 'workflow/spout_bar_nov22.smk',
    [settings.debug_folder + 'processed/xr_photometry.nc'],
   'import_pyphotometry')
 
