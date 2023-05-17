@@ -1,4 +1,5 @@
 from pathlib import Path
+from pathlib import Path
 
 import numpy as np
 
@@ -36,6 +37,80 @@ def get_cluster_UIDs_from_path(cluster_file: Path):
     cluster_UIDs = [session_id + '_' + probe_name + '_' + str(cluster_nb) for cluster_nb in cluster_nbs]
 
     return cluster_UIDs
+
+# define 1ms bins for discretizing at 1000Hz 
+def bin_spikes_from_all_probes_by_trials(
+        synced_timestamp_files: list, 
+        spike_clusters_files: list, 
+        trial_times: list, 
+        trial_window: list, 
+        bin_duration: int = 10, 
+        verbose: bool = True):
+    '''
+    Bin all clusters from all probes for the session
+    
+    return bin spikes array with dimensions (cluster, time)
+    # Important:
+    if bin_duration is 1 ms, the resulting array will be a boolean ndarray
+    '''
+    # maximum spike bin end at upper rounding of latest spike : int(np.ceil(np.nanmax(synced_ts)))
+    # bins = np.array([t for t in range(int(np.ceil(np.nanmax(synced_ts))))][:])
+    bins_nb, bin_max = get_max_bin_edge_all_probes(synced_timestamp_files, bin_duration)
+
+    # n clusters x m timebin
+    # all_probes_binned_array = np.ndarray()
+    # initialize UIDs list
+    all_clusters_UIDs = list()
+    cluster_idx_all = 0
+
+    for idx_probe, synced_file in enumerate(synced_timestamp_files):
+        if idx_probe == 0:
+            all_clusters_UIDs = get_cluster_UIDs_from_path(spike_clusters_files[idx_probe])
+        else:
+            cluster_UIDs = get_cluster_UIDs_from_path(spike_clusters_files[idx_probe])
+            all_clusters_UIDs = all_clusters_UIDs + cluster_UIDs
+            # extend list of cluster UIDs 
+
+    for idx_probe, synced_file in enumerate(synced_timestamp_files):
+        
+        synced_ts = np.load(synced_file).squeeze()
+        spike_clusters = np.load(spike_clusters_files[idx_probe]).squeeze()
+
+        unique_clusters = np.unique(spike_clusters)
+
+        # Build a list where each item is a np.array containing spike times for a single cluster
+        ts_list = [synced_ts[np.where(spike_clusters==cluster_nb)] for cluster_nb in unique_clusters]
+        # change to a dict with clu_ID
+        # iterate over the list of array to discretize (histogram / binning)
+        
+        for cluster_idx, cluster_ts in enumerate(ts_list): # change to a dict?
+            
+            cluster_trial_times = np.empty((0))
+            for t in trial_times:
+                spikes_filter = np.logical_and(cluster_ts >= t+trial_window[0], cluster_ts <= t+trial_window[1])
+                cluster_trial_times = np.hstack([cluster_trial_times, cluster_ts[np.where(spikes_filter)] - t])
+
+            if verbose:
+                print(f'probe nb {idx_probe+1}/{len(synced_timestamp_files)} cluster nb {cluster_idx+1}/{len(ts_list)}')
+            
+            # perform binning for the cluster
+            binned_spike, bins = np.histogram(cluster_trial_times, bins = list(range(trial_window[0],trial_window[1]+bin_duration, bin_duration)))
+            # Convert in Hz (spikes/s) - > normalize by bin_duration and number of trials
+            binned_spike = binned_spike * (1000 / bin_duration) / len(trial_times)
+
+            # first creation of the array
+            if cluster_idx == 0 and idx_probe == 0:
+                all_probes_binned_array = np.ndarray(shape=(len(all_clusters_UIDs), binned_spike.shape[0]))
+
+            all_probes_binned_array[cluster_idx_all,:] = binned_spike
+
+            cluster_idx_all = cluster_idx_all +1
+    
+    # convert time bins to int (ms)
+    bins = bins.astype(int)
+
+    return all_probes_binned_array, bins, all_clusters_UIDs
+
 
 # define 1ms bins for discretizing at 1000Hz 
 def bin_spikes_from_all_probes(synced_timestamp_files: list, spike_clusters_files: list, bin_duration: int = 10, verbose: bool = True):
