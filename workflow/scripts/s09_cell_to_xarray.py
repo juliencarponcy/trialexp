@@ -57,6 +57,7 @@ cell_metrics_files = list(Path(sinput.sorting_path).glob('*/sorter_output/cell_m
 
 bin_duration = 20 # in ms
 xr_session = xr.open_dataset(sinput.xr_session)
+xr_photometry = xr.open_dataset(Path(sinput.xr_session).parent / 'xr_photometry.nc')
 
 df_events_cond_path = Path(sinput.xr_session).parent / 'df_events_cond.pkl'
 df_events_cond = pd.read_pickle(df_events_cond_path)
@@ -67,18 +68,17 @@ df_pycontrol = pd.read_pickle(df_pycontrol_path)
 trigger = df_events_cond.attrs['triggers'][0]
 trial_window = xr_session.attrs['trial_window']
 
+# At the moment, this is the time we used to trigger extraction around trials
+# This may be adapted to different triggering like first bar_off or first spout
 trial_times = df_pycontrol[df_pycontrol.name == trigger].time.values.astype(int)
-# event_time_coord= np.linspace(trial_window[0], trial_window[1], int(event_period*spikes_sampling_rate)) #TODO
 
-# %% Bin spikes from all probes iand aggegate over trials around trial_times
+# %% Bin spikes from all probes and aggegate over trials around trial_times
 all_probes_binned_array_averaged, spike_time_bins, all_clusters_UIDs = bin_spikes_from_all_probes_averaged(
     synced_timestamp_files = synced_timestamp_files, 
     spike_clusters_files = spike_clusters_files,
     trial_times = trial_times, 
     trial_window = trial_window,
     bin_duration = bin_duration)
-
-
 
 
 # %% Applying Kernel to binned firing rate
@@ -128,13 +128,19 @@ uids = list(set(uids+all_clusters_UIDs))
 
 cluster_cell_IDs = pd.DataFrame(data={'UID':all_clusters_UIDs})
 # Add sorted UIDs without cell metrics :  To investigate maybe some units not only present before / after 1st rsync?
-session_cell_metrics = cell_metrics_df.merge(cluster_cell_IDs, on='UID', how='outer')
+session_cell_metrics = cell_metrics_df.merge(cluster_cell_IDs, on='UID', how='outer',)
 
 session_cell_metrics.set_index('UID', inplace=True)
+# A bit of tidy up is needed after merging so str columns can be str and not objects due to merge
+types_dict = dict(zip(session_cell_metrics.columns,session_cell_metrics.dtypes))
+for (col, dtype) in types_dict.items():
+    if dtype == "dtype('O')":
+        session_cell_metrics.loc[:,col] = session_cell_metrics.loc[:,col].astype('|S')
+
 xr_cell_metrics = session_cell_metrics.to_xarray()
 
 # Create the xr dataset
-xr_spikes = xr.merge([spike_fr_xr, spike_zscored_xr, xr_cell_metrics])
+xr_spikes_averaged = xr.merge([spike_fr_xr, spike_zscored_xr, xr_cell_metrics])
 
 # %% Save
 # Do not work
@@ -147,25 +153,65 @@ cluster_ID_sorted = np.argsort(idx_max_FR)
 
 sns.heatmap(spike_zscored_xr[np.flip(cluster_ID_sorted),:], vmin=-3, vmax=3)
 
-# %% All session long binning
+# %% Continuous All session long binning
 
 # bin all the clusters from all probes continuously, return nb_of_spikes per bin * (1000[ms]/bin_duratiion[ms])
-
-
 # so if 1 spike in 20ms bin -> inst. FR = 1 * (1000/20) = 50Hz
 
 # if bin duration == 1ms, we will have a BOOL arary (@1000Hz)
 bin_duration = 20 #bin_duration in ms
 
+# bin_spikes_from_all_probes : All session. Dimensions cluster x time [long]
 all_probes_binned_array, spike_time_bins, all_clusters_UIDs = bin_spikes_from_all_probes(
-                                                                synced_timestamp_files = synced_timestamp_files, 
-                                                                spike_clusters_files = spike_clusters_files, 
-                                                                bin_duration = bin_duration)
+    synced_timestamp_files = synced_timestamp_files, 
+    spike_clusters_files = spike_clusters_files, 
+    bin_duration = bin_duration)
+
+# %% Applying Kernel to binned firing rate (Continuous long session)
+# if we want the gaussian to have sigma = 0.5s
+time_for_1SD = 0.2 # sec
+sigma = time_for_1SD * (1000/bin_duration)
+
+# May not be applied until bins are aggregated by trials
+# Return the binned spike array convoluted by half-gaussian window (so FR do not increases before spike [but binning])
+convoluted_binned_array = halfgaussian_filter1d(all_probes_binned_array, sigma = sigma, axis=-1, output=None,
+                      mode="constant", cval=0.0, truncate=4.0) # truncate the window at 4SD
+
+# %%
+scaler = StandardScaler()
+# z-scored firing rate
+# .T).T to z-score along time dimension
+z_conv_FR = scaler.fit_transform(convoluted_binned_array.T).T
 
 
+spike_fr_xr = xr.DataArray(
+    all_probes_binned_array,
+    name = 'spikes_FR',
+    coords={'time':spike_time_bins[1:] - (bin_duration/2), 'UID': all_clusters_UIDs},
+    dims=('UID', 'time')
+)
+
+spike_zscored_xr = xr.DataArray(
+    z_conv_FR,
+    name = 'spikes_Zscore',
+    coords={'UID': all_clusters_UIDs, 'time':spike_time_bins[1:] - (bin_duration/2)},
+    dims=('UID', 'time')
+)
+
+# Create the xr dataset
+xr_spikes_session = xr.merge([spike_fr_xr, spike_zscored_xr, xr_cell_metrics, xr_session],
+    fill_value={
+        'subject_ID': 'ND', 
+        'synapticEffect': 'ND', 
+        'sessionName': 'ND', 
+        'putativeCellType': 'ND',
+        'labels': 'ND',
+        'UID' : 'ND'
+        })
 
 
-# %% by trial conserved, 3D output (trial, time, cluster)
+# Create the xr dataset
+# %% Binning by trials, 3D output (trial, time, cluster)
 all_probes_binned_array_by_trials, spike_time_bins, all_clusters_UIDs = bin_spikes_from_all_probes_by_trials(
     synced_timestamp_files = synced_timestamp_files, 
     spike_clusters_files = spike_clusters_files,
@@ -184,5 +230,5 @@ spike_fr_xr = xr.DataArray(
 )
 
 # Create the xr dataset
-xr_spikes = xr.merge([spike_fr_xr, xr_cell_metrics])
+xr_spikes_trials = xr.merge([spike_fr_xr, xr_cell_metrics])
 # %%
