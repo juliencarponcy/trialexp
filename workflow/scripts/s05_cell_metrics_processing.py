@@ -76,8 +76,21 @@ for probe_folder in probe_folders:
 
     uni_dim_vars_idx = [idx for idx, shape in enumerate(cell_metrics_shapes) if shape == (nb_clusters,)]
     cell_metrics_df = pd.DataFrame(index = cell_metrics['UID'][0][0][0], columns = cell_var_names[uni_dim_vars_idx])
+    
+    def denest_string_cell(cell):
+        if len(cell) == 0: 
+            return 'ND'
+        else:
+            return str(cell[0])
+    
     for col in cell_var_names[uni_dim_vars_idx]:
+
         cell_metrics_df[col] = cell_metrics[col][0][0][0]
+
+        # correct for string columns which are in 1 element arrays (e.g. labels)
+        if type(cell_metrics[col][0][0][0][0]) == np.ndarray:
+            cell_metrics_df[col] = cell_metrics_df[col].apply(denest_string_cell)
+
 
     # Adding peakVoltage_expFitLengthConstant as a cell metric
     cell_metrics_df['peakVoltage_expFitLengthConstant'] = spikes['peakVoltage_expFitLengthConstant'][0][0][0]
@@ -97,6 +110,12 @@ for probe_folder in probe_folders:
 
     # Prepare the DataFrame so it can be aggregated with other animals, sessions, or probes
     cell_metrics_df['subject_ID'] = session_ID.split('-')[0]
+    
+    # Drop useless or badly automatically filled column for DataFrame cleaning
+
+    # subject_ID replace animal columns as it is random bad auto extraction from cellExplorer, deleting animal
+    cell_metrics_df.drop(columns='animal', inplace=True)
+    
     cell_metrics_df['datetime'] = datetime.strptime(session_ID.split('-', maxsplit=1)[1],'%Y-%m-%d-%H%M%S')
     cell_metrics_df['task_folder'] = rec_properties_path.parent.parent.parent.stem
     cell_metrics_df['probe_name'] = probe_folder.parent.stem

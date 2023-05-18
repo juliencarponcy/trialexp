@@ -147,6 +147,8 @@ def bin_spikes_from_all_probes_by_trials(
             # extend list of cluster UIDs 
 
     all_probes_binned_array = np.nan * np.ones(shape=(len(trial_times), len(time_bins)-1, len(all_clusters_UIDs)))
+    if bin_duration == 1:
+        all_probes_binned_array = all_probes_binned_array.astype(bool)
 
     for idx_probe, synced_file in enumerate(synced_timestamp_files):
         
@@ -169,7 +171,8 @@ def bin_spikes_from_all_probes_by_trials(
                 # Convert in Hz (spikes/s) - > normalize by bin_duration and number of trials
                 if normalize:
                     binned_trials = binned_trials * (1000 / bin_duration)
-
+                if bin_duration == 1:
+                    binned_trials = binned_trials.astype(bool)
                 # stack current trial
                 all_probes_binned_array[t_idx,:,cluster_idx_all] = binned_trials.T
                 # print(binned_trials.shape, cluster_trial_binned.shape)
@@ -194,7 +197,7 @@ def bin_spikes_from_all_probes(
     '''
     Bin all clusters from all probes for the session
     
-    return bin spikes array with dimensions (cluster, time)
+    return bin spikes array with dimensions (time, cluster)
     # Important:
     if bin_duration is 1 ms, the resulting array will be a boolean ndarray
     '''
@@ -215,6 +218,8 @@ def bin_spikes_from_all_probes(
             cluster_UIDs = get_cluster_UIDs_from_path(spike_clusters_files[idx_probe])
             all_clusters_UIDs = all_clusters_UIDs + cluster_UIDs
             # extend list of cluster UIDs 
+
+    all_probes_binned_array = np.ndarray(shape=(bins_nb, len(all_clusters_UIDs)))
 
     for idx_probe, synced_file in enumerate(synced_timestamp_files):
         
@@ -244,17 +249,9 @@ def bin_spikes_from_all_probes(
             else:
                 binned_spike = binned_spike.astype(int)
 
-            # first creation of the array
-            if cluster_idx == 0 and idx_probe == 0:
-                all_probes_binned_array = np.ndarray(shape=(len(all_clusters_UIDs), binned_spike.shape[0]))
-                if bin_duration == 1:
-                    all_probes_binned_array = all_probes_binned_array.astype(bool)                
-                else:    
-                    all_probes_binned_array = all_probes_binned_array.astype(int)
-                all_probes_binned_array[cluster_idx_all,:] = binned_spike
-            else:
-                # concat the next neurons bool binning
-                all_probes_binned_array[cluster_idx_all,:] = binned_spike
+
+            all_probes_binned_array[:, cluster_idx_all] = binned_spike
+
 
             cluster_idx_all = cluster_idx_all +1
     
