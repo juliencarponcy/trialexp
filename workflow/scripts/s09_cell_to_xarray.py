@@ -31,7 +31,7 @@ from trialexp.process.ephys.spikes_preprocessing import bin_spikes_from_all_prob
 
 
 (sinput, soutput) = getSnake(locals(), 'workflow/spikesort.smk',
-  [settings.debug_folder + r'/processed/xr_cells.nc'],
+  [settings.debug_folder + r'/processed/xr_spikes_trials.nc'],
   'cells_to_xarray')
 
 # %% Path definitions
@@ -148,6 +148,8 @@ xr_cell_metrics = session_cell_metrics.to_xarray()
 
 # Create the xr dataset
 xr_spikes_averaged = xr.merge([spike_fr_xr, spike_zscored_xr, xr_cell_metrics])
+xr_spikes_averaged.attrs['bin_duration'] = bin_duration
+
 # Save
 xr_spikes_averaged.to_netcdf(Path(sinput.xr_session).parent / 'xr_spikes_averaged.nc', engine='h5netcdf')
 
@@ -188,7 +190,6 @@ scaler = StandardScaler()
 # .T).T to z-score along time dimension
 z_conv_FR = scaler.fit_transform(convoluted_binned_array.T).T
 
-
 spike_fr_xr = xr.DataArray(
     all_probes_binned_array,
     name = 'spikes_FR',
@@ -202,9 +203,9 @@ spike_zscored_xr = xr.DataArray(
     coords={'time':spike_time_bins[1:] - (bin_duration/2), 'UID': all_clusters_UIDs},
     dims=('time', 'UID')
 )
-
 # Create the xr dataset
 xr_spikes_session = xr.merge([spike_fr_xr, spike_zscored_xr, xr_cell_metrics, xr_session])
+xr_spikes_session.attrs['bin_duration'] = bin_duration
 
 # Save it
 xr_spikes_session.to_netcdf(Path(sinput.xr_session).parent / 'xr_spikes_session.nc', engine='h5netcdf')
@@ -230,6 +231,7 @@ spike_fr_xr = xr.DataArray(
 
 # Create the xr dataset
 xr_spikes_trials = xr.merge([spike_fr_xr, xr_cell_metrics, xr_photometry])
+xr_spikes_trials.attrs['bin_duration'] = bin_duration
 # Save it
 xr_spikes_trials.to_netcdf(Path(sinput.xr_session).parent / 'xr_spikes_trials.nc', engine='h5netcdf')
 

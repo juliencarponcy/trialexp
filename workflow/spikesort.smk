@@ -158,7 +158,8 @@ rule cells_to_xarray:
         sorting_path = Path('{sessions}/{task_path}/{session_id}/processed/kilosort3/')
     
     output:
-        xr_cells = '{sessions}/{task_path}/{session_id}/processed/xr_cells.nc'
+        xr_spikes_trials = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials.nc',
+        xr_spikes_session = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_session.nc'
 
     threads: 32
 
@@ -166,6 +167,20 @@ rule cells_to_xarray:
 
     script:
         "scripts/s09_cell_to_xarray.py"
+
+rule session_correlations:
+    input:
+        xr_spikes_session = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_session.nc'
+
+    output:
+        xr_session_correlations = '{sessions}/{task_path}/{session_id}/processed/xr_session_correlations.nc'
+    
+    threads: 32
+
+    priority: 90
+
+    script:
+        "scripts/s10_session_correlations.py"
 
 rule final:
     input:
