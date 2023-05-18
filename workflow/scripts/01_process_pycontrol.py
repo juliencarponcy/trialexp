@@ -17,6 +17,7 @@ from workflow.scripts import settings
 
 (sinput, soutput) = getSnake(locals(), 'workflow/spout_bar_nov22.smk',
   [settings.debug_folder + 'processed/df_events_cond.pkl'],
+
   'process_pycontrol')
 
 #%% Read pycontrol file
@@ -36,12 +37,12 @@ df_pycontrol.attrs['session_id'] = session_id
 df_pycontrol.to_pickle(soutput.pycontrol_dataframe)
 
 #%% Read task definition
-tasks = pd.read_csv('params/tasks_params.csv', usecols=[1, 2, 3, 4], index_col=False)
 
-trial_window = [-2000, 4000]
+tasks = pd.read_csv('params/tasks_params.csv', usecols=[1, 2, 3, 4,5], index_col=False)
+
 timelim = [1000, 4000] # in ms
 
-conditions, triggers, events_to_process = get_task_specs(tasks,  task_name)
+conditions, triggers, events_to_process, trial_window = get_task_specs(tasks,  task_name)
 
 #%% Extract trial-related information from events
 df_pycontrol = df_pycontrol[~(df_pycontrol.name=='rsync')] #remove the sync pulse
@@ -53,7 +54,10 @@ df_events_trials, df_events = extract_trial_by_trigger(df_pycontrol, triggers[0]
 
 df_conditions = compute_conditions_by_trial(df_events_trials, conditions)
 
-df_conditions = compute_success(df_events_trials, df_conditions, task_name)
+
+#%%
+df_conditions = compute_success(df_events_trials, df_conditions,
+                                  task_name, triggers, timelim)
 
 #%%  Merge condition back with event dataframe
 
@@ -74,4 +78,3 @@ df_events_cond.to_pickle(soutput.event_dataframe)
 df_conditions.to_pickle(soutput.condition_dataframe)
 df_events_trials.to_pickle(soutput.trial_dataframe)
 
-# %%

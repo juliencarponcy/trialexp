@@ -25,6 +25,7 @@ tasks_params_path = Path(os.getcwd()).parent.parent / 'params' / 'tasks_params.c
 tasks_params_df = pd.read_csv(tasks_params_path)
 tasks = tasks_params_df.task.values.tolist()
 
+
 # %%
 
 for task_id, task in enumerate(tasks):
@@ -39,6 +40,7 @@ for task_id, task in enumerate(tasks):
     ephys_base_path = Path(os.environ['RAW_DATA_ROOT_DIR']) / 'openephys'
 
     # Gather all pycontrol, photometry, and ephys files/folders 
+
     pycontrol_files = list(pycontrol_folder.glob('*.txt'))
     pyphoto_files = list(pyphoto_folder.glob('*.ppd'))
     open_ephys_folders = os.listdir(ephys_base_path)
@@ -48,6 +50,7 @@ for task_id, task in enumerate(tasks):
         df_pycontrol = df_pycontrol[df_pycontrol.session_length>1000*60*5] #remove sessions that are too short
     except AttributeError:
         print('no session length for task {task}, skipping folder')
+
         continue
 
     df_pyphoto = pd.DataFrame(list(map(parse_pyhoto_fn, pyphoto_files)))
@@ -67,12 +70,14 @@ for task_id, task in enumerate(tasks):
         
         # Photometry matching
         # will only compute time diff on matching subject_id
+
         if not df_pyphoto.empty:
             df_pyphoto_subject = df_pyphoto[df_pyphoto.subject_id == row.subject_id]
         else:
             matched_photo_path.append(None)
             matched_photo_fn.append(None)
 
+        # find the closet match in time
         if not df_pyphoto_subject.empty:
             min_td = np.min(abs(row.timestamp - df_pyphoto_subject.timestamp))
             idx = np.argmin(abs(row.timestamp - df_pyphoto_subject.timestamp))
@@ -118,6 +123,8 @@ for task_id, task in enumerate(tasks):
     df_pycontrol['ephys_folder_name'] = matched_ephys_fn
     
     df_pycontrol = df_pycontrol[(df_pycontrol.subject_id!='00') & (df_pycontrol.subject_id!='01')] # do not copy the test data
+
+    #TODO need to consider the case where there is only pycontrol data but no photometry
     df_pycontrol = df_pycontrol.dropna(subset='pyphoto_path')
 
     for i in tqdm(range(len(df_pycontrol))):
@@ -188,7 +195,3 @@ for task_id, task in enumerate(tasks):
                 ...
 
             recordings_properties.to_csv(target_ephys_folder / 'rec_properties.csv')
-
-            
-
-# %%

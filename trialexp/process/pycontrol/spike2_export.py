@@ -1,5 +1,8 @@
 '''
 Functions for exporting event data to spike2
+
+cf. plot_session in
+https://github.com/juliencarponcy/trialexp/blob/master/trialexp/process/data_import.py#L1403
 '''
 
 from sonpy import lib as sp
@@ -19,14 +22,14 @@ class Spike2Exporter:
         if mtc is None:
             raise Exception('smrx_filename has to end with .smrx')
 
-        self.MyFile = sp.SonFile(smrx_filename)
+        self.MyFile = sp.SonFile(smrx_filename, nChans = int(400)) # Allow up to 400 channels
         self.smrx_filename = smrx_filename
         self.CurChan = 0
         self.UsedChans = 0
-        self.Scale = 65535/20
-        self.Offset = 0
-        self.ChanLow = 0
-        self.ChanHigh = 5
+        # self.Scale = 65535/20
+        # self.Offset = 0
+        # self.ChanLow = 0
+        # self.ChanHigh = 5
         self.tFrom = 0
         self.tUpto = sp.MaxTime64()         # The maximum allowed time in a 64-bit SON file
         self.dTimeBase = 1e-6               # s = microseconds
@@ -136,7 +139,7 @@ class Spike2Exporter:
             print(f'{y_index}, {title}:')
             print(self.MyFile.ReadMarkers(int(y_index), nEvents, self.tFrom, self.tUpto)) #TODO failed Tick = -1
 
-    def write_textmark(self, X_ms, title, y_index, txt, EventRate, time_vec_ms, verbose=False):
+    def write_textmark(self, X_ms, title, y_index, txt, verbose=False):
         """Writes text marks to file.
 
         Parameters
@@ -151,10 +154,7 @@ class Spike2Exporter:
                 Index in y coordinate
         txt : list 
             List of strings for TextMarkers
-        EventRate : int
-                    Event Rate
-        time_vec_ms : array-like, shape (n_bins, n_features)
-                    Array of time in ms
+
         verbose : bool, optional (default=False)
                 If true, print messages when writing or reading TextMarks.
 
@@ -168,7 +168,7 @@ class Spike2Exporter:
                 Array of TextMarker values
         """
             
-        (hist, ___) = np.histogram(X_ms, bins=time_vec_ms) # time is 1000 too small
+        (hist, ___) = np.histogram(X_ms, bins=self.time_vec_ms) # time is 1000 too small
 
         eventfalldata = np.where(hist)
 
@@ -187,7 +187,7 @@ class Spike2Exporter:
                 raise Exception('oh no')
             TMrkData[i] = sp.TextMarker(txt[i], MarkData[i]) #TODO
             
-        self.MyFile.SetTextMarkChannel(y_index, EventRate, max(len(s) for s in txt)+1)
+        self.MyFile.SetTextMarkChannel(y_index, self.EventRate, max(len(s) for s in txt)+1)
         self.MyFile.SetChannelTitle(y_index, title)
         if eventfalldata[0] is not []:
             self.MyFile.WriteTextMarks(y_index, TMrkData)
@@ -199,7 +199,53 @@ class Spike2Exporter:
                 print(self.yFile.ReadTextMarks(int(y_index), nEvents, self.tFrom, self.tUpto))
             except:
                 print('error in print')
-                
+
+    def write_waveform(self, AdcData, title, y_index, multiplier):
+        """
+        cf. write_waveform() in trialexp\process\data_import.py 
+
+
+        """ 
+
+        self.MyFile.SetWaveChannel(y_index, 1*multiplier, sp.DataType.Adc)
+        self.MyFile.SetChannelTitle(y_index, title)
+        self.MyFile.SetChannelUnits(y_index, 'a.u.')
+
+        def getSpike2ScaleOffset(data):
+            # y axis value = (16-bit ADC value)*scale/6553.6 + offset
+            # https://github.com/kouichi-c-nakamura/Chan_Spike2/blob/main/%40WaveformChan/WaveformChan.m#L688
+            int16_info = np.iinfo(np.int16)
+            scale = ((np.max(data) - np.min(data))*6553.6) / float(int16_info.max - int16_info.min)
+            if scale == 0: # this happens when min == max
+                scale = 1
+            offset = np.max(data) - float(int16_info.max) * scale/6553.6
+
+            return scale, offset
+
+        scale, offset = getSpike2ScaleOffset(AdcData)
+        
+        self.MyFile.SetChannelScale(y_index, scale)
+        self.MyFile.SetChannelOffset(y_index, offset)
+
+        #NOTE Cannot handle float NaN: convert them to zeros
+        # AdcData_nonan = [0 if np.isnan(x) else x for x in AdcData]
+
+        if any([np.isnan(x) for x in AdcData]):
+            raise Exception('found NaN')
+
+        if any([np.isinf(x) for x in AdcData]):
+            raise Exception('Found inf')
+
+        # https://github.com/kouichi-c-nakamura/Chan_Spike2/blob/main/%40WaveformChan/WaveformChan.m#L669
+        AdcData_int = np.int16(
+            [(adc - offset)*6553.6/scale for adc in AdcData])  # np.ndarray
+
+        #AdcData is meant to be in int16 (-32,768 to 32,767) or short in C
+        self.MyFile.SetChannelYRange(y_index, np.max(AdcData_int), np.min(AdcData_int))
+
+        self.MyFile.WriteInts(y_index, AdcData_int, self.tFrom)
+
+
     def __del__(self):
         del self.MyFile
         # check if the file save is successful

@@ -170,5 +170,6 @@ rule cells_to_xarray:
 rule final:
     input:
         cell_metrics_clustering_complete = '{session_path}/{task_path}/{session_id}/processed/cell_metrics_clustering.done'
+        
     output:
         done = touch('{session_path}/{task_path}/{session_id}/processed/spike_workflow.done')
