@@ -28,7 +28,7 @@ def get_last_bar_off_before_first_spout(df_trial):
     bar_off =  df_trial[df_trial['name']=='bar_off']
 
     spout =  df_trial[df_trial['name']=='spout']
-    if spout.shape[0] > 0 and bar_off.shape[0] > 0:
+    if len(spout) > 0 and len(bar_off) > 0:
         spout1 = spout.iloc[0]
 
         filtered_df = bar_off[bar_off['trial_time'] < spout1['trial_time']]
