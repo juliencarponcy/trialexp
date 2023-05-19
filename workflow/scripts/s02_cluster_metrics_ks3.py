@@ -5,7 +5,6 @@ Script to create the session folder structure
 import os
 from pathlib import Path
 
-import pandas as pd
 import matlab.engine
 from snakehelper.SnakeIOHelper import getSnake
 
@@ -14,7 +13,7 @@ from workflow.scripts import settings
 #%% Load inputs
 
 
-(sinput, soutput) = getSnake(locals(), 'workflow/spikesort.smk',
+(sinput, soutput) = getSnake(locals(), 'workflows/spikesort.smk',
   [settings.debug_folder + r'/processed/spike_metrics.done'],
   'spike_metrics_ks3')
 
@@ -24,18 +23,9 @@ from workflow.scripts import settings
 sorter_name = 'kilosort3'
 verbose = True
 
-temp_ks3_folder = Path(os.environ['TEMP_DATA_PATH']) / sorter_name
+sorter_specific_path = Path(sinput.ks_3_spike_templates_A).parent.parent.parent
 
-# probe_folders = [str(temp_ks3_folder / probe_folder / 'sorter_output') for probe_folder in os.listdir(temp_ks3_folder)]
-
-rec_properties_path = Path(sinput.rec_properties)
-
-processed_folder = rec_properties_path.parent.parent / 'processed' 
-# Only select probe folders where the results of the sorting can be found.
-probe_folders = [str(processed_folder / sorter_name / probe_folder / 'sorter_output') 
-                  for probe_folder in os.listdir(processed_folder / sorter_name)
-                  if 'spike_clusters.npy' in os.listdir(processed_folder / sorter_name / probe_folder / 'sorter_output')]
-
+probe_folders = [str(sorter_specific_path / probe_folder / 'sorter_output') for probe_folder in os.listdir(sorter_specific_path)]
 
 # %% Start Matlab engine and add paths
 eng = matlab.engine.start_matlab()
@@ -78,16 +68,3 @@ for probe_folder in probe_folders:
 # %% Stop Matlab engine
 eng.quit()
 # %%
-
-def compute_PCA(
-        data: np.ndarray
-    ):
-    
-    scaler = StandardScaler()
-    pca = PCA(0.7, random_state=33)
-    pca.fit(scaler.fit_transform(data))
-    
-    Xt = pca.inverse_transform(
-        pca.transform(
-            scaler.transform(data)
-        ))

@@ -1,5 +1,6 @@
 '''
-Script to create the session folder structure
+Script to convert raw timestamps to xarray datasets based on sorting and 
+other previous step for behaviour and photometry
 '''
 #%%
 import os
@@ -9,6 +10,8 @@ from timeit import timeit
 import numpy as np
 import pandas as pd
 import xarray as xr
+
+from pandas.api.types import infer_dtype
 
 from sklearn.preprocessing import StandardScaler
 
@@ -24,11 +27,14 @@ from workflow.scripts import settings
 from trialexp.process.pyphotometry.utils import *
 from trialexp.process.pycontrol import event_filters
 from trialexp.process.ephys.spikes_preprocessing import bin_spikes_from_all_probes,bin_spikes_from_all_probes_averaged, bin_spikes_from_all_probes_by_trials, halfgaussian_filter1d 
+from trialexp.process.ephys.utils import dataframe_cleanup
+
+
 #%% Load inputs
 
 
 (sinput, soutput) = getSnake(locals(), 'workflow/spikesort.smk',
-  [settings.debug_folder + r'/processed/xr_cells.nc'],
+  [settings.debug_folder + r'/processed/xr_spikes_trials.nc'],
   'cells_to_xarray')
 
 # %% Path definitions
@@ -56,6 +62,7 @@ cell_metrics_files = list(Path(sinput.sorting_path).glob('*/sorter_output/cell_m
 # if bin duration == 1ms, we will have a BOOL arary (@1000Hz)
 
 bin_duration = 20 # in ms
+
 xr_session = xr.open_dataset(sinput.xr_session)
 xr_photometry = xr.open_dataset(Path(sinput.xr_session).parent / 'xr_photometry.nc')
 
@@ -82,7 +89,7 @@ all_probes_binned_array_averaged, spike_time_bins, all_clusters_UIDs = bin_spike
 
 
 # %% Applying Kernel to binned firing rate
-# if we want the gaussian to have sigma = 0.5s
+# if we want the gaussian to have sigma = 0.2s
 time_for_1SD = 0.2 # sec
 sigma = time_for_1SD * (1000/bin_duration)
 
@@ -131,20 +138,19 @@ cluster_cell_IDs = pd.DataFrame(data={'UID':all_clusters_UIDs})
 session_cell_metrics = cell_metrics_df.merge(cluster_cell_IDs, on='UID', how='outer',)
 
 session_cell_metrics.set_index('UID', inplace=True)
+
 # A bit of tidy up is needed after merging so str columns can be str and not objects due to merge
-types_dict = dict(zip(session_cell_metrics.columns,session_cell_metrics.dtypes))
-for (col, dtype) in types_dict.items():
-    if dtype == "dtype('O')":
-        session_cell_metrics.loc[:,col] = session_cell_metrics.loc[:,col].astype('|S')
+session_cell_metrics = dataframe_cleanup(session_cell_metrics)
 
 xr_cell_metrics = session_cell_metrics.to_xarray()
 
 # Create the xr dataset
 xr_spikes_averaged = xr.merge([spike_fr_xr, spike_zscored_xr, xr_cell_metrics])
+xr_spikes_averaged.attrs['bin_duration'] = bin_duration
 
-# %% Save
-# Do not work
-# xr_spikes.to_netcdf(Path(sinput.xr_session).parent / 'xr_spikes.nc', engine='h5netcdf')
+# Save
+xr_spikes_averaged.to_netcdf(Path(sinput.xr_session).parent / 'xr_spikes_averaged.nc', engine='h5netcdf')
+
 
 # %% Preview of cluster responses to trigger
 # Sort clusters by peak time in the trial
@@ -159,16 +165,15 @@ sns.heatmap(spike_zscored_xr[np.flip(cluster_ID_sorted),:], vmin=-3, vmax=3)
 # so if 1 spike in 20ms bin -> inst. FR = 1 * (1000/20) = 50Hz
 
 # if bin duration == 1ms, we will have a BOOL arary (@1000Hz)
-bin_duration = 20 #bin_duration in ms
 
-# bin_spikes_from_all_probes : All session. Dimensions cluster x time [long]
+# bin_spikes_from_all_probes : All session. Dimensions  time x cluster [long]
 all_probes_binned_array, spike_time_bins, all_clusters_UIDs = bin_spikes_from_all_probes(
     synced_timestamp_files = synced_timestamp_files, 
     spike_clusters_files = spike_clusters_files, 
     bin_duration = bin_duration)
 
 # %% Applying Kernel to binned firing rate (Continuous long session)
-# if we want the gaussian to have sigma = 0.5s
+# if we want the gaussian to have sigma = 0.2s
 time_for_1SD = 0.2 # sec
 sigma = time_for_1SD * (1000/bin_duration)
 
@@ -183,34 +188,27 @@ scaler = StandardScaler()
 # .T).T to z-score along time dimension
 z_conv_FR = scaler.fit_transform(convoluted_binned_array.T).T
 
-
 spike_fr_xr = xr.DataArray(
     all_probes_binned_array,
     name = 'spikes_FR',
     coords={'time':spike_time_bins[1:] - (bin_duration/2), 'UID': all_clusters_UIDs},
-    dims=('UID', 'time')
+    dims=('time', 'UID')
 )
 
 spike_zscored_xr = xr.DataArray(
     z_conv_FR,
     name = 'spikes_Zscore',
-    coords={'UID': all_clusters_UIDs, 'time':spike_time_bins[1:] - (bin_duration/2)},
-    dims=('UID', 'time')
+    coords={'time':spike_time_bins[1:] - (bin_duration/2), 'UID': all_clusters_UIDs},
+    dims=('time', 'UID')
 )
-
 # Create the xr dataset
-xr_spikes_session = xr.merge([spike_fr_xr, spike_zscored_xr, xr_cell_metrics, xr_session],
-    fill_value={
-        'subject_ID': 'ND', 
-        'synapticEffect': 'ND', 
-        'sessionName': 'ND', 
-        'putativeCellType': 'ND',
-        'labels': 'ND',
-        'UID' : 'ND'
-        })
+xr_spikes_session = xr.merge([spike_fr_xr, spike_zscored_xr, xr_cell_metrics, xr_session])
+xr_spikes_session.attrs['bin_duration'] = bin_duration
+
+# Save it
+xr_spikes_session.to_netcdf(Path(sinput.xr_session).parent / 'xr_spikes_session.nc', engine='h5netcdf')
 
 
-# Create the xr dataset
 # %% Binning by trials, 3D output (trial, time, cluster)
 all_probes_binned_array_by_trials, spike_time_bins, all_clusters_UIDs = bin_spikes_from_all_probes_by_trials(
     synced_timestamp_files = synced_timestamp_files, 
@@ -225,10 +223,14 @@ all_probes_binned_array_by_trials, spike_time_bins, all_clusters_UIDs = bin_spik
 spike_fr_xr = xr.DataArray(
     all_probes_binned_array_by_trials,
     name = 'spikes_FR',
-    coords={'trial': list(range(0,len(trial_times))), 'event_time':spike_time_bins[1:] - (bin_duration/2), 'UID': all_clusters_UIDs},
-    dims=('trial', 'event_time', 'UID')
+    coords={'trial_nb': list(range(1,len(trial_times)+1)), 'event_time':spike_time_bins[1:] - (bin_duration/2), 'UID': all_clusters_UIDs},
+    dims=('trial_nb', 'event_time', 'UID')
 )
 
 # Create the xr dataset
-xr_spikes_trials = xr.merge([spike_fr_xr, xr_cell_metrics])
+xr_spikes_trials = xr.merge([spike_fr_xr, xr_cell_metrics, xr_photometry])
+xr_spikes_trials.attrs['bin_duration'] = bin_duration
+# Save it
+xr_spikes_trials.to_netcdf(Path(sinput.xr_session).parent / 'xr_spikes_trials.nc', engine='h5netcdf')
+
 # %%

@@ -1,12 +1,9 @@
 from glob import glob
 from pathlib import Path
 import os
-from dotenv import load_dotenv
 
-load_dotenv() 
-
-rule pycontrol_all:
-    input: expand('{sessions}/processed/pycontrol_workflow.done', sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob('*/*'))
+rule all:
+    input: expand('{sessions}/processed/task.done', sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob('*/*'))
 
 rule process_pycontrol:
     input:
@@ -33,14 +30,12 @@ rule pycontrol_figures:
     script:
         'scripts/02_plot_pycontrol_data.py'
 
-
 rule export_spike2:
     input:
-        pycontrol_folder = '{session_path}/{session_id}/pycontrol',
-        pycontrol_dataframe = '{session_path}/{session_id}/processed/df_pycontrol.pkl',
-        photometry_folder = '{session_path}/{session_id}/pyphotometry'
+        pycontrol_dataframe = '{session_path}/{task}/{session_id}/processed/df_pycontrol.pkl',
+        df_photometry = '{session_path}/{task}/{session_id}/processed/xr_photometry.nc'
     output:
-        spike2_export_done = touch('{session_path}/{session_id}/processed/spike2_export.done'),
+        spike2_file = '{session_path}/{task}/{session_id}/processed/spike2.smrx',
     script:
         'scripts/03_export_spike2.py'
 
@@ -74,10 +69,10 @@ def photometry_input(wildcards):
     else:
         return []
 
-rule pycontrol_final:
+rule final:
     input:
         photometry_done = photometry_input,
         pycontrol_done = '{session_path}/{task}/{session_id}/processed/log/pycontrol.done',
-        spike2='{session_path}/{task}/{session_id}/processed/spike2_export.done'
+        spike2='{session_path}/{task}/{session_id}/processed/spike2.smrx'
     output:
-        done = touch('{session_path}/{task}/{session_id}/processed/pycontrol_workflow.done')
+        done = touch('{session_path}/{task}/{session_id}/processed/task.done')

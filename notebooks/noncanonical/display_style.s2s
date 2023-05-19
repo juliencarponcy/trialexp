@@ -1,4 +1,9 @@
 ' display_style.s2s |
+
+
+
+proc display_style()
+
 var vh% := View();
 FrontView(vh%);
 var list%[400];
@@ -47,8 +52,8 @@ else
     if ViewKind(vh%) = 4 then
         
         FontSet("Arial",9, 0); 'set view font
-
-        YAxisMode(4);
+        
+        YAxisMode(8196, 1,20, 0);
         XAxisMode(4);
         XAxisStyle(1, 0, 0.5);
         XAxisAttrib(0);        
@@ -68,3 +73,7 @@ else
      endif
 endif
 
+end
+
+
+display_style();
