@@ -51,3 +51,8 @@ def extract_event_time(df_event, filter_func, filter_func_kwargs, groupby_col='t
     else:
         #No event found, but still need to return the trial nb info
         return df_event.groupby(groupby_col,group_keys=True)['time'].apply(lambda x: None)
+
+
+def extract_clean_trigger_event(df_trial):
+    # This function will extract clean trigger event with nothing happening 
+    pass

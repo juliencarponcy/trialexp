@@ -13,6 +13,7 @@ from trialexp.process.pycontrol import event_filters
 from trialexp.process.pycontrol.event_filters import extract_event_time
 from workflow.scripts import settings
 from pathlib import Path
+import pickle
 #%% Load inputs
 
 (sinput, soutput) = getSnake(locals(), 'workflow/pycontrol.smk',
@@ -113,4 +114,8 @@ xr_session.attrs.update(dataset_binned.attrs)
 #Save the final dataset
 xr_session.to_netcdf(soutput.xr_session, engine='h5netcdf')
 
+# %%
+#Also save the pyphoto_aligner
+with open(soutput.pyphoto_aligner, 'wb') as f:
+  pickle.dump(pyphoto_aligner, f)
 # %%
