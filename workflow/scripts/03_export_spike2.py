@@ -27,7 +27,8 @@ else:
     data_photometry = import_ppd(fn)
 
     data_photometry = denoise_filter(data_photometry)
-    data_photometry = motion_correction(data_photometry)
+    # data_photometry = motion_correction(data_photometry)
+    data_photometry = motion_correction_win(data_photometry)
     data_photometry = compute_df_over_f(data_photometry, low_pass_cutoff=0.001)
 
 
