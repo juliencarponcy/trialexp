@@ -28,6 +28,15 @@ xr_session = xr.open_dataset(sinput.xr_session)
 figure_dir = soutput.trigger_photo_dir
 
 #%% plot all event-related data
+
+sns.set_style("white", {
+    "axes.spines.top": False,
+    "axes.spines.right": False,
+    "xtick.direction": "out",
+    "ytick.direction": "out",
+    "font.family": ["Arial"]
+    })
+
 for k in xr_session.data_vars.keys():
     da = xr_session[k]
     if 'event_time' in da.coords:
@@ -39,6 +48,7 @@ for k in xr_session.data_vars.keys():
 
           ax = sns.lineplot(x='event_time',hue='success', y=k, data=df2plot)
           ax.set(ylabel=k, xlabel='Time (ms)')
+          ax.legend(frameon=False)
 
           fig.savefig(os.path.join(figure_dir, f'{k}.png'), dpi=300, bbox_inches='tight')
 

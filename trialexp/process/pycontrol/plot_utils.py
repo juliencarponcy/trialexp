@@ -12,6 +12,12 @@ def plot_event_distribution(df2plot, x, y, xbinwidth = 100, ybinwidth=100, xlim=
     #   can be used to configure additional plotting scales
     # # Use joingrid directly because the x and y axis are usually in different units
 
+    plt.rcParams['axes.spines.top'] = False
+    plt.rcParams['axes.spines.right'] = False
+    plt.rcParams['xtick.direction'] = 'out'
+    plt.rcParams['ytick.direction'] = 'out'
+    plt.rcParams["legend.frameon"] = False
+    plt.rcParams['font.family'] = 'Arial'
 
     g = sns.JointGrid()
     ax = sns.scatterplot(y=y, x=x, marker='|' ,

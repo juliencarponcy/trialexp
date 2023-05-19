@@ -30,7 +30,7 @@ The snakemake file (`*.smk`) that defines the workflow is in the `workflow` fold
 
 ## Usage
 
-### Copying file to `by_session` folder
+### Copying files to `by_session` folder
 We first need to copy files to the `by_session` folder. You can do that by
 
 ```
