@@ -36,21 +36,26 @@ sns.set_style("white", {
     "ytick.direction": "out",
     "font.family": ["Arial"]
     })
+sns.set_context('talk')
 
 for k in xr_session.data_vars.keys():
     da = xr_session[k]
     if 'event_time' in da.coords:
-        df2plot = xr_session[[k,'success']].to_dataframe().reset_index()
+        df2plot = xr_session[[k,'trial_outcome']].to_dataframe().reset_index()
         
         if not all(df2plot[k].isna()): #make sure data are correct
           
-          fig, ax = plt.subplots(1,1,dpi=300, figsize=(6,6))
+          # fig, ax = plt.subplots(1,1,dpi=300, figsize=(6,6))
 
-          ax = sns.lineplot(x='event_time',hue='success', y=k, data=df2plot)
-          ax.set(ylabel=k, xlabel='Time (ms)')
-          ax.legend(frameon=False)
-
-          fig.savefig(os.path.join(figure_dir, f'{k}.png'), dpi=300, bbox_inches='tight')
+          g = sns.relplot(x='event_time',col='trial_outcome', y=k, 
+                           hue ='trial_outcome',
+                           kind='line',data=df2plot)
+          g.set_xlabels('Time (ms)')
+          g.set_ylabels(k)
+          
+          g.figure.savefig(os.path.join(figure_dir, f'{k}.png'), dpi=300, bbox_inches='tight')
 
 xr_session.close()
+
+
 # %%
