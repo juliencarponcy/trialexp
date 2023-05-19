@@ -34,6 +34,8 @@ dependencies:
   - papermill
   - plotly
   - xarray
+  - neo
+  - spikeinterface
   - python-dotenv
   - umap-learn
   - snakemake

@@ -6,7 +6,6 @@ import pandas as pd
 from trialexp.process.pycontrol.utils import export_session
 from snakehelper.SnakeIOHelper import getSnake
 from workflow.scripts import settings
-
 from re import match
 from pathlib import Path
 from trialexp.process.pyphotometry.utils import *

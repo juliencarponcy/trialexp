@@ -26,7 +26,6 @@ spike_sorting_done_path = str(Path(settings.debug_folder) / 'processed' / 'spike
  [spike_sorting_done_path], 'spike_sorting')
 
 
-
 # %%
 
 sorter_name = 'kilosort3'
@@ -35,7 +34,6 @@ rec_properties_path = Path(sinput.rec_properties)
 rec_properties = pd.read_csv(rec_properties_path, index_col = 0)
 
 rec_properties['sorting_error'] = False
-
 # Only select longest syncable recordings to sort
 idx_to_sort = rec_properties[rec_properties.longest == True].index.values
 
@@ -68,14 +66,11 @@ for idx_rec in idx_to_sort:
     # Maybe not the best method to get it
     # has introduced some bugs for forgotten reason related to folder changes
     # TODO improve to join just before relative_ephys_path and root_data_path overlap
-
     relative_ephys_path = os.path.join(*ephys_path.parts[5:])
     ephys_path = os.path.join(root_data_path, relative_ephys_path)
     
     experiments_nb = rec_properties.exp_nb.unique()
-
     # The indices of experiments seems to differ depending on whether they are a single or multiple experiments
-
     if len(experiments_nb) == 1:
         recordings = se.read_openephys(ephys_path, block_index=exp_nb-1, stream_name=AP_stream) # nb-based
     else:

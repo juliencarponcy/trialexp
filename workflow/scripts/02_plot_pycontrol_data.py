@@ -6,7 +6,6 @@ from workflow.scripts import settings
 
 #%%
 
-
 (sinput, soutput) = getSnake(locals(), 'workflow/pycontrol.smk',
   [settings.debug_folder+'/processed/log/pycontrol.done'],'pycontrol_figures')
 

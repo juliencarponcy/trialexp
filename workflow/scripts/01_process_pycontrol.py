@@ -15,9 +15,8 @@ from workflow.scripts import settings
 
 #%% Load inputs
 
-(sinput, soutput) = getSnake(locals(), 'workflow/spout_bar_nov22.smk',
-  [settings.debug_folder + 'processed/df_events_cond.pkl'],
-
+(sinput, soutput) = getSnake(locals(), 'workflow/pycontrol.smk',
+  [settings.debug_folder + '/processed/df_events_cond.pkl'],
   'process_pycontrol')
 
 #%% Read pycontrol file
@@ -37,7 +36,6 @@ df_pycontrol.attrs['session_id'] = session_id
 df_pycontrol.to_pickle(soutput.pycontrol_dataframe)
 
 #%% Read task definition
-
 tasks = pd.read_csv('params/tasks_params.csv', usecols=[1, 2, 3, 4,5], index_col=False)
 
 timelim = [1000, 4000] # in ms
@@ -53,7 +51,6 @@ df_events_trials, df_events = extract_trial_by_trigger(df_pycontrol, triggers[0]
                                             trial_window, subjectID, session_time)
 
 df_conditions = compute_conditions_by_trial(df_events_trials, conditions)
-
 
 #%%
 df_conditions = compute_success(df_events_trials, df_conditions,

@@ -17,7 +17,6 @@ from workflow.scripts import settings
 
 #%% Load inputs
 
-
 (sinput, soutput) = getSnake(locals(), 'workflow/pycontrol.smk',
   [settings.debug_folder + '/processed/log/photometry.done'],
   'photometry_figure')
@@ -34,7 +33,6 @@ for k in xr_session.data_vars.keys():
     if 'event_time' in da.coords:
         df2plot = xr_session[[k,'success']].to_dataframe().reset_index()
         
-
         if not all(df2plot[k].isna()): #make sure data are correct
           
           fig, ax = plt.subplots(1,1,dpi=300, figsize=(6,6))

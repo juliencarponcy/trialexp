@@ -12,7 +12,6 @@ import numpy as np
 from trialexp.process.pycontrol import event_filters
 from trialexp.process.pycontrol.event_filters import extract_event_time
 from workflow.scripts import settings
-
 from pathlib import Path
 #%% Load inputs
 
@@ -22,9 +21,7 @@ from pathlib import Path
 
 
 #%% Load pyphotometry file
-
 fn = list(Path(sinput.photometry_folder).glob('*.ppd'))[0]
-                             
 data_photometry = import_ppd(fn)
 data_photometry = denoise_filter(data_photometry)
 data_photometry = motion_correction(data_photometry)
