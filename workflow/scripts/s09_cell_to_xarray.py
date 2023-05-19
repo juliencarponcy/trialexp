@@ -27,6 +27,9 @@ from workflow.scripts import settings
 from trialexp.process.pyphotometry.utils import *
 from trialexp.process.pycontrol import event_filters
 from trialexp.process.ephys.spikes_preprocessing import bin_spikes_from_all_probes,bin_spikes_from_all_probes_averaged, bin_spikes_from_all_probes_by_trials, halfgaussian_filter1d 
+from trialexp.process.ephys.utils import dataframe_cleanup
+
+
 #%% Load inputs
 
 
@@ -135,14 +138,9 @@ cluster_cell_IDs = pd.DataFrame(data={'UID':all_clusters_UIDs})
 session_cell_metrics = cell_metrics_df.merge(cluster_cell_IDs, on='UID', how='outer',)
 
 session_cell_metrics.set_index('UID', inplace=True)
+
 # A bit of tidy up is needed after merging so str columns can be str and not objects due to merge
-types_dict = dict(zip(session_cell_metrics.columns,session_cell_metrics.dtypes))
-for (col, dtype) in types_dict.items():
-    if dtype == np.dtype(object):
-        dtype_inferred = infer_dtype(session_cell_metrics[col])
-        session_cell_metrics[col] = session_cell_metrics[col].fillna('', downcast={np.dtype(object):str}).astype(str)
-        session_cell_metrics[col] = session_cell_metrics[col].astype(dtype_inferred)
-        # session_cell_metrics[col] = session_cell_metrics[col].astype(str)
+session_cell_metrics = dataframe_cleanup(session_cell_metrics)
 
 xr_cell_metrics = session_cell_metrics.to_xarray()
 
