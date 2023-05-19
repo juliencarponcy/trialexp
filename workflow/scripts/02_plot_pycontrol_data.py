@@ -6,8 +6,8 @@ from workflow.scripts import settings
 
 #%%
 
-(sinput, soutput) = getSnake(locals(), 'workflow/spout_bar_nov22.smk',
-  [settings.debug_folder+'/processed/task.done'],'pycontrol_figures')
+(sinput, soutput) = getSnake(locals(), 'workflow/pycontrol.smk',
+  [settings.debug_folder+'/processed/log/pycontrol.done'],'pycontrol_figures')
 
 #%%
 df_events_cond = pd.read_pickle(sinput.event_dataframe)

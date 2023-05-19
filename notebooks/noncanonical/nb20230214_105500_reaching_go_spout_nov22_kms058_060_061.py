@@ -3,9 +3,20 @@
 
 # # nb20230214_105500_reaching_go_spout_nov22_kms058_060_061
 # 
-# ```bash
-# jupyter nbconvert "D:\OneDrive - Nexus365\Private_Dropbox\Projects\trialexp\notebooks\noncanonical\nb20230214_105500_reaching_go_spout_nov22_kms058_060_061.ipynb" --to="python" --output-dir="D:\OneDrive - Nexus365\Private_Dropbox\Projects\trialexp\notebooks\noncanonical" --output="nb20230214_105500_reaching_go_spout_nov22_kms058_060_061"
-# ```
+
+# In[ ]:
+
+
+import os
+
+# TODO change this
+nb_name = "nb20230214_105500_reaching_go_spout_nov22_kms058_060_061.ipynb"
+
+basename, ext = os.path.splitext(nb_name)
+input_path = os.path.join(os.getcwd(), nb_name)
+
+get_ipython().system('jupyter nbconvert "{input_path}" --to="python" --output="{basename}"')
+
 
 # Quick analysis of instrumental reaching
 

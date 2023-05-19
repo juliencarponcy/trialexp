@@ -5,7 +5,7 @@ from collections import defaultdict, namedtuple
 from datetime import datetime
 from os import walk
 from os.path import isfile, join
-from re import search
+from re import search, match, DOTALL
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -28,9 +28,14 @@ def parse_session_dataframe(df_session):
     df_events = df_session[(df_session.type!='info')]
     info = df_session[df_session.type=='info']
     info = dict(zip(info.name, info.value))
-    df_events = df_events.drop(columns='duration')
-    df_events.attrs.update(info)
     
+    #correct for naming error in info
+    if 'Task name' in info and 'pycontrol_share' in info['Task name']:
+        task_name = info['Task name'].split('\\')[-1]
+        info['Task name'] = task_name
+                                            
+    df_events.attrs.update(info)
+
     return df_events
 
 def print2event(df_events, conditions):
@@ -297,9 +302,12 @@ def plot_session(df:pd.DataFrame, keys: list = None, state_def: list = None, pri
 
 def export_session(df:pd.DataFrame, keys: list = None, export_state=True, print_expr: list = None, 
                     event_ms: list = None, smrx_filename: str = None, verbose :bool = False,
-                    print_to_text: bool = True):
+                    print_lines : list = None,
+                    v_lines : list = None,
+                    data_photometry: dict = None, photometry_times_pyc: np.ndarray = None,
+                    photometry_keys: list = None):
         """
-        Visualise a session using Plotly as a scrollable figure
+        Visualise a session using Spike2
 
         keys: list
             subset of self.times.keys() to be plotted as events
@@ -328,6 +336,25 @@ def export_session(df:pd.DataFrame, keys: list = None, export_state=True, print_
 
         state_ms: list of dict #TODO
 
+        smrx_filename: str = None
+            The output filename (*.smrx)
+
+        print_to_text: Bool = True
+            print_lines will be converted to text (and TextMark channel in Spike2)
+
+        vchange_to_text: Bool = True
+            Variable changes during the session, eg. "V 12560 windor_dur_ms 3000", will be converted to text (and TextMark channel in Spike2)
+
+        data_photometry: dict = None
+            Holding photometry data
+            If None, the photometry channels will be skipped
+        
+        photometry_times_pyc: np.ndarray
+            Rsync-ed pyphotometry time stamps in pycontrol time in ms
+        
+        photometry_keys: list = None
+            Specify what channels to export.
+
         verbose :bool = False
 
 
@@ -335,10 +362,6 @@ def export_session(df:pd.DataFrame, keys: list = None, export_state=True, print_
 
         # see  \Users\phar0528\Anaconda3\envs\trialexp\Lib\site-packages\sonpy\MakeFile.py
         #NOTE cannot put file path in the pydoc block
-
-        raw_symbols  = SymbolValidator().values
-        symbols = [raw_symbols[i+2] for i in range(0, len(raw_symbols), 12)]
-        # 40 symbols
 
         if keys is None:
             keys = df.name.unique()
@@ -382,7 +405,11 @@ def export_session(df:pd.DataFrame, keys: list = None, export_state=True, print_
         if event_ms is not None:
             if isinstance(event_ms, dict):
                 event_ms = [event_ms]
-            
+            # allow exporting time stamps into event channels
+            for dct in event_ms:
+                y_index += 1
+                spike2exporter.write_event(dct['time_ms'], dct['name'], y_index)
+
         if export_state:
             # Draw states as gapped lines
             state_dict = extract_states(df)
@@ -390,8 +417,72 @@ def export_session(df:pd.DataFrame, keys: list = None, export_state=True, print_
             for state, time_ms in state_dict.items():
                 y_index += 1
                 spike2exporter.write_marker_for_state(time_ms, state, y_index)
+        
+        #TODO accept custom state defintions?
 
+        if print_lines:
 
+            # NOTE . doesn't capture \n and re.DOTALL is required below
+            EXPR = '^(\d+)\s(.+)'
+            list_of_match = [match(
+                EXPR, L, DOTALL) for L in print_lines if match(EXPR, L) is not None]
+            ts_ms = [int(m.group(1)) for m in list_of_match]
+            txt = [m.group(2) for m in list_of_match]
+
+            # df_print = pd.DataFrame(list(zip(ts_ms, txt)), columns=['ms', 'text'])
+
+            if txt:
+                y_index += 1
+                spike2exporter.write_textmark(ts_ms, 'print lines', y_index, txt) 
+            
+        if v_lines:
+            EXPR = '^([1-9]\d*)\s(.+)' #NOTE Need to ignore the defaults (V 0 ****)
+            list_of_match = [match(EXPR, L) for L in v_lines if match(EXPR, L) is not None]
+            ts_ms = [int(m.group(1)) for m in list_of_match]
+            txt = [m.group(2) for m in list_of_match]
+  
+            # df_print = pd.DataFrame(list(zip(ts_ms, txt)), columns=['ms', 'text'])
+            if txt:
+                y_index += 1
+                spike2exporter.write_textmark(ts_ms, 'V changes', y_index, txt)
+
+        if (data_photometry is not None) and (photometry_times_pyc is not None) \
+            and (photometry_keys is not None) :
+
+            multiplier = int((1/1000) / spike2exporter.dTimeBase) #NOTE sampling_rate was originally 1000, and we assume that it is unchanged
+            T = photometry_times_pyc
+            nan_indices = np.argwhere(np.isnan(T))
+            T_no_nan = np.delete(T, nan_indices)
+
+            new_T = np.arange(0, df.time.max(), 1/1000*1000) #NOTE sampling_rate was originally 1000
+
+            def write_photometry(name):
+                Y = data_photometry[name]
+                Y_no_nan = np.delete(Y, nan_indices)  # []
+
+                if len(Y_no_nan) == len(T_no_nan):
+                    new_Y = np.interp(new_T, T_no_nan, Y_no_nan)
+
+                    spike2exporter.write_waveform(new_Y, name, y_index, multiplier)
+                else:
+                    # the length mismatch, maybe a wrong data type (not a time series?)
+                    #TODO issue a warning or raise an error? 
+                    ...
+
+            for name in photometry_keys:
+                y_index += 1
+                if name in data_photometry:
+                    write_photometry(name)
+                else:
+                    # name is not found in data_photometry
+                    #TODO issue a warning or error or nothing? 
+                    ...
+
+        elif (data_photometry is None) :
+            ...
+            # skip exporting photometry
+            
+ 
 
 
 #----------------------------------------------------------------------------------

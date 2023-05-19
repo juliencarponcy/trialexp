@@ -30,22 +30,29 @@ The snakemake file (*.smk) that define the workflow is in the `workflow` folder,
 
 ## Usage
 
-If no target is specified, snakemake will execute the first rule in the snakemake file by default.
+If no target is specified, snakemake will execute the first rule in the snakemake file by default. By default, it will search for a `Snakefile` under the `workflow` folder. The `Snakefile` is the master workflow file. The master Snakefile contains both the pycontrol and spike sorting workflow.
 
 Execute the following command to run the workflow. It is strongely recommend to dry-run (simulate without actually executing anything) the first time you use a workflow with the `-n` command. The `--cores` command tells snakemake to use all avaiable cores, you can specify the exact number of core with the `-c` option, e.g. `-c 4`.
 
-`snakemake --cores -n --snakefile workflows/spout_bar_nov22.smk`
+`snakemake --cores -n`
 
 To actually execute the workflow, remove the `-n` option.
 
-`snakemake --cores --snakefile workflows/spout_bar_nov22.smk`
+`snakemake --cores`
 
-It is possible that some session folder does not have the photometry data, in this case the analysis will fail. You can ask the workflow to continue with other session folder in case of failure with the `-k` option. By default, it will wait for 5s for the missing file. You can make it shorter by using the `--latency-wait` option
+If you want to just run a subset of the workflow, e.g. only pycontrol or spike sorting, specify the workflow file directly:
 
-`snakemake --cores --snakefile workflows/spout_bar_nov22.smk -k --latency-wait 1`
+`snakemake --cores --snakefile workflow/pycontrol.smk` 
 
+or 
+
+`snakemake --cores --snakefile workflow/spikesort.smk` 
 
 Since the workflow is based on snakemake, you can also use any of the advanced option supported by snakemake. For detail please consult the snakemake [documentations](https://snakemake.readthedocs.io/en/stable/executing/cli.html)
+
+Sometimes you will encounter error in running the pipeline in some of the recordings. The default behaviour of snakemake is to stop when it encounters an error. You can ask snakemake to skip that problemetic session and continue by adding the `-k` (keep going) option:
+
+`snakemake --cores --snakefile workflow/pycontrol.smk -k` 
 
 ## Development
 The best way to start developing new script is by using the interactive Python session in VS Code. 

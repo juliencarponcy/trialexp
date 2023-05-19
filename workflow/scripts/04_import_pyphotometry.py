@@ -12,15 +12,16 @@ import numpy as np
 from trialexp.process.pycontrol import event_filters
 from trialexp.process.pycontrol.event_filters import extract_event_time
 from workflow.scripts import settings
+from pathlib import Path
 #%% Load inputs
 
-(sinput, soutput) = getSnake(locals(), 'workflow/spout_bar_nov22.smk',
-   [settings.debug_folder + 'processed/xr_photometry.nc'],
+(sinput, soutput) = getSnake(locals(), 'workflow/pycontrol.smk',
+   [settings.debug_folder + '/processed/xr_photometry.nc'],
   'import_pyphotometry')
 
 
 #%% Load pyphotometry file
-fn = glob(sinput.photometry_folder+'\*.ppd')[0]
+fn = list(Path(sinput.photometry_folder).glob('*.ppd'))[0]
 data_photometry = import_ppd(fn)
 data_photometry = denoise_filter(data_photometry)
 data_photometry = motion_correction(data_photometry)
