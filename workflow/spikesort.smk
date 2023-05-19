@@ -25,7 +25,7 @@ def gather_metrics_to_aggregate(wildcards):
     #     return []
     ...
 
-rule all:
+rule spike_all:
     input: expand('{sessions_root}/processed/spike_workflow.done', sessions_root = Path(os.environ.get('SESSION_ROOT_DIR')).glob('*/*'))
 
 rule spike_sorting:
@@ -182,7 +182,7 @@ rule session_correlations:
     script:
         "scripts/s10_session_correlations.py"
 
-rule final:
+rule spike_final:
     input:
         cell_metrics_clustering_complete = '{session_path}/{task_path}/{session_id}/processed/cell_metrics_clustering.done'
         
