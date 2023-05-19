@@ -14,10 +14,15 @@ from tqdm import tqdm
 from trialexp.utils.pycontrol_utilities import parse_pycontrol_fn
 from trialexp.utils.pyphotometry_utilities import parse_pyhoto_fn, create_photo_sync
 from trialexp.utils.ephys_utilities import parse_openephys_folder, get_recordings_properties, create_ephys_rsync
-        
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
 def copy_if_not_exist(src, dest):
     if not (dest/src.name).exists():
         shutil.copy(src, dest)
+
 
 
 #%% Retrieve all task names from the tasks_params.csv
