@@ -1,8 +1,9 @@
 from pathlib import Path
-from pathlib import Path
 
 import numpy as np
+import pandas as pd
 
+from trialexp.process.ephys.utils import dataframe_cleanup
 
 # %% Extract and bin spikes by cluster_ID 
 
@@ -37,6 +38,41 @@ def get_cluster_UIDs_from_path(cluster_file: Path):
     cluster_UIDs = [session_id + '_' + probe_name + '_' + str(cluster_nb) for cluster_nb in cluster_nbs]
 
     return cluster_UIDs
+
+def merge_cell_metrics_and_spikes(
+        cell_metrics_files: list,
+        cluster_UIDs: list) -> pd.DataFrame:
+    '''
+    Merge spikes from spike_clusters.npy
+    and cell_metrics_df (DataFrame with CellExplorer metrics)
+
+    cell_metrics_files is a list of cell_metrics_df_full.pkl files path
+    return a DataFrame with grouped CellExplorer cell metrics and spike
+    clusters extracted from spike_clusters.npy files from both probes.
+    '''
+    session_cell_metrics = pd.DataFrame(data={'UID': cluster_UIDs})
+    session_cell_metrics.set_index('UID', inplace=True)
+    uids = list()
+    for f_idx, cell_metrics_file in enumerate(cell_metrics_files):
+        cell_metrics_df = pd.read_pickle(cell_metrics_file)
+        session_cell_metrics = pd.concat([session_cell_metrics,cell_metrics_df])
+        uids = uids + cell_metrics_df.index.tolist()
+
+    # add clusters_UIDs from spike_clusters.npy + those of cell metrics and merge
+    uids = list(set(uids + cluster_UIDs))
+
+    cluster_cell_IDs = pd.DataFrame(data={'UID': cluster_UIDs})
+    # Add sorted UIDs without cell metrics :  To investigate maybe some units not only present before / after 1st rsync?
+    session_cell_metrics = cell_metrics_df.merge(cluster_cell_IDs, on='UID', how='outer',)
+
+    session_cell_metrics.set_index('UID', inplace=True)
+
+    # A bit of tidy up is needed after merging so str columns can be str and not objects due to merge
+    session_cell_metrics = dataframe_cleanup(session_cell_metrics)
+
+    return session_cell_metrics
+
+## TODO: ALL BIN_SPIKES FUNCTION TO BE REFACTORED
 
 # define 1ms bins for discretizing at 1000Hz 
 def bin_spikes_from_all_probes_averaged(
@@ -202,7 +238,6 @@ def bin_spikes_from_all_probes(
     if bin_duration is 1 ms, the resulting array will be a boolean ndarray
     '''
     # maximum spike bin end at upper rounding of latest spike : int(np.ceil(np.nanmax(synced_ts)))
-    # bins = np.array([t for t in range(int(np.ceil(np.nanmax(synced_ts))))][:])
     bins_nb, bin_max = get_max_bin_edge_all_probes(synced_timestamp_files, bin_duration)
 
     # n clusters x m timebin
@@ -279,14 +314,25 @@ def halfgaussian_kernel1d(sigma, radius):
 
     return phi_x
 
-def halfgaussian_filter1d(input, sigma, axis=-1, output=None,
-                      mode="constant", cval=0.0, truncate=4.0):
+def halfgaussian_filter1d(
+        input: np.ndarray,
+        bin_duration: int, # en ms
+        sigma_ms: int, # en ms
+        axis=-1, 
+        output=None,
+        mode="constant", 
+        cval=0.0, 
+        truncate=4.0):
     """
     Convolves a 1-D Half-Gaussian convolution kernel.
     """
+    sigma = sigma_ms / bin_duration
     sd = float(sigma)
     # make the radius of the filter equal to truncate standard deviations
     lw = int(truncate * sd + 0.5)
     weights = halfgaussian_kernel1d(sigma, lw)
     origin = -lw // 2
-    return scipy.ndimage.convolve1d(input, weights, axis, output, mode, cval, origin)
+    
+    convoluted_array = scipy.ndimage.convolve1d(input, weights, axis, output, mode, cval, origin)
+    
+    return convoluted_array
