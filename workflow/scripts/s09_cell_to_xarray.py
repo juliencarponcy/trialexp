@@ -56,12 +56,20 @@ cell_metrics_files = list(Path(sinput.sorting_path).glob('*/sorter_output/cell_m
 
 # session outputs
 session_figure_path = Path(sinput.xr_session).parent / 'figures'
+session_waveform_path = Path(sinput.xr_session).parent / 'waveforms'
+
 #%% Variables definition
 
 bin_duration = 20 # ms for binning spike timestamps
 sigma_ms = 200 # ms for half-gaussian kernel size (1SD duration)
 
 #%% File loading
+cell_metrics_df_full = pd.DataFrame()
+for cell_metrics_df_file in cell_metrics_files:
+    cell_metrics_df_full = pd.concat([cell_metrics_df_full, pd.read_pickle(cell_metrics_df_file)])
+
+cluster_position_df = pd.read_pickle(session_waveform_path / 'si_waveform_positions_df.pkl')
+
 xr_session = xr.open_dataset(sinput.xr_session)
 xr_photometry = xr.open_dataset(Path(sinput.xr_session).parent / 'xr_photometry.nc')
 

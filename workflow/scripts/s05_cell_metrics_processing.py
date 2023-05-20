@@ -1,5 +1,7 @@
 '''
-Script to explore cell metrics from CellExplorer to find artifacts
+Script to explore cell metrics from CellExplorer and SpikeInterface
+
+This measures are then further combined as cluster associated data
 '''
 #%%
 import os
@@ -16,7 +18,7 @@ load_dotenv()
 
 import spikeinterface.full as si
 import spikeinterface.extractors as se
-import spikeinterface.sorters as ss
+
 from spikeinterface.core import select_segment_recording
 
 from snakehelper.SnakeIOHelper import getSnake
@@ -58,7 +60,6 @@ if not waveform_results_folder.exists():
     
 # %% Get the path of CellExplorer outputs
 
-session_si_df = pd.DataFrame()
 
 for probe_folder in probe_folders:
     probe_name = probe_folder.parent.stem
@@ -156,65 +157,9 @@ for probe_folder in probe_folders:
     
     np.save(probe_folder / 'all_raw_waveforms.npy', all_raw_wf)
 
-    # Part dealing with extracting info from SpikeInterface (cluster location and else)
-    AP_stream = [AP_stream for AP_stream in rec_properties.AP_stream if probe_name in AP_stream]
-    if len(AP_stream) > 1:
-        raise Exception('More than one Action Potential stream correspond to the current probe') 
-    else:
-        AP_stream = AP_stream[0]
+    session_ce_df = pd.concat([session_ce_df, cell_metrics_df], axis=0)
 
-    rec_path = rec_properties[rec_properties.AP_stream == AP_stream].full_path.values[0]
-
-    rec_path = Path(rec_path).parent.parent.parent.parent.parent
-
-    sorting = si.read_sorter_folder(probe_folder.parent)
-    exp_nb = rec_properties.exp_nb.values[0]
-    rec_nb = int(rec_properties.rec_nb.values[0])
-
-    if len(experiments_nb) == 1:
-        recordings = se.read_openephys(rec_path, block_index=exp_nb-1, stream_name=AP_stream) # nb-based
-    else:
-        recordings = se.read_openephys(rec_path, block_index=exp_nb, stream_name=AP_stream) # nb-based
-
-    recording = select_segment_recording(recordings, segment_indices= rec_nb-1) # index-based
-    recording.annotate(is_filtered=True)
-
-    waveform_folder = Path(probe_folder) / 'waveforms'
-
-    if verbose:
-        print(f'Now extracting waveforms for {session_ID}, {probe_name}')
-
-    we = si.extract_waveforms(recording, 
-                            sorting, 
-                            folder=waveform_folder,
-                            overwrite=True,
-                            sparse=True, 
-                            max_spikes_per_unit=100, 
-                            ms_before=1,
-                            ms_after=3,
-                            allow_unfiltered=True,
-                            chunk_duration = '10s'
-                            )
-    si_noise_levels = si.compute_noise_levels(we)
-    np.save(waveform_results_folder / f'chan_noise_levels_{probe_name}.npy', si_noise_levels)
-
-    si_correlograms, correlo_bins = si.compute_correlograms(we)
-    np.save(waveform_results_folder / f'cluster_correlograms_{probe_name}.npy', si_correlograms)
-    np.save(waveform_results_folder / f'correlo_bins.npy', correlo_bins)
-
-    si_template_similarities = si.compute_template_similarity(we)
-    np.save(waveform_results_folder / f'cluster_template_similarities_{probe_name}.npy', si_template_similarities)
-
-    si_locations = si.compute_unit_locations(we)
-
-    probe_si_df = pd.DataFrame(data=si_locations , columns=['x','y'])
-    probe_si_df['session_ID'] = session_ID
-    probe_si_df['probe_name'] = probe_name
-    probe_si_df['cluster_id'] = probe_si_df.index.values
-    probe_si_df['UID'] = probe_si_df['cluster_id'].apply(lambda i: session_and_probe_specific_uid(session_ID = session_ID, probe_name = probe_name, uid = i))
-
-    session_si_df = pd.concat([session_si_df, probe_si_df], axis=0)
-   
-session_si_df.to_pickle(waveform_results_folder / 'si_waveform_positions_df' )
+# Saving aggregated DataFrame for CellExplorer
+session_ce_df.to_pickle(waveform_results_folder / 'ce_cell_metrics_df.pkl' )
 
 # %%
