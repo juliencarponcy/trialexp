@@ -52,7 +52,7 @@ probe_names = [folder.stem for folder in list(Path(sinput.sorting_path).glob('*'
 # Fetch file paths from all probes
 synced_timestamp_files = list(Path(sinput.sorting_path).glob('*/sorter_output/rsync_corrected_spike_times.npy'))
 spike_clusters_files = list(Path(sinput.sorting_path).glob('*/sorter_output/spike_clusters.npy'))
-cell_metrics_files = list(Path(sinput.sorting_path).glob('*/sorter_output/cell_metrics_df_full.pkl'))
+ce_cell_metrics_files = list(Path(sinput.sorting_path).glob('*/sorter_output/cell_metrics_df_full.pkl'))
 
 # session outputs
 session_figure_path = Path(sinput.xr_session).parent / 'figures'
@@ -64,11 +64,11 @@ bin_duration = 20 # ms for binning spike timestamps
 sigma_ms = 200 # ms for half-gaussian kernel size (1SD duration)
 
 #%% File loading
-cell_metrics_df_full = pd.DataFrame()
-for cell_metrics_df_file in cell_metrics_files:
-    cell_metrics_df_full = pd.concat([cell_metrics_df_full, pd.read_pickle(cell_metrics_df_file)])
+ce_cell_metrics_df_full = pd.DataFrame()
+for cell_metrics_df_file in ce_cell_metrics_files:
+    ce_cell_metrics_df_full = pd.concat([ce_cell_metrics_df_full, pd.read_pickle(cell_metrics_df_file)])
 
-cluster_position_df = pd.read_pickle(session_waveform_path / 'si_waveform_positions_df.pkl')
+si_cell_metrics_df = pd.read_pickle(session_waveform_path / 'si_metrics_df.pkl')
 
 xr_session = xr.open_dataset(sinput.xr_session)
 xr_photometry = xr.open_dataset(Path(sinput.xr_session).parent / 'xr_photometry.nc')
@@ -129,13 +129,14 @@ spike_zscored_xr = xr.DataArray(
     dims=('UID', 'time')
 )
 
-# %% Combine cell metrics and spike bins
+# %% Combine all cell metrics (SpikeInterface + CellExplorer) and spike bins
 
 
-session_cell_metrics = merge_cell_metrics_and_spikes(cell_metrics_files, all_clusters_UIDs)
+session_ce_cell_metrics = merge_cell_metrics_and_spikes(ce_cell_metrics_files, all_clusters_UIDs)
+si_cell_metrics_df = si_cell_metrics_df.set_index('UID')
+all_cell_metrics = pd.merge(si_cell_metrics_df,session_ce_cell_metrics, on='UID', how='outer')
 
-
-xr_cell_metrics = session_cell_metrics.to_xarray()
+xr_cell_metrics = all_cell_metrics.to_xarray()
 
 # Create the xr dataset
 xr_spikes_averaged = xr.merge([spike_fr_xr, spike_zscored_xr, xr_cell_metrics])

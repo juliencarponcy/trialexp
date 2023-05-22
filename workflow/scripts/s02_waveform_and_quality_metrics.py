@@ -41,7 +41,7 @@ import spikeinterface.extractors as se
 
 from spikeinterface.core import select_segment_recording
 from spikeinterface.postprocessing import compute_principal_components
-from spikeinterface.qualitymetrics import get_quality_metric_list, compute_quality_metrics
+from spikeinterface.qualitymetrics import get_quality_metric_list, compute_quality_metrics, get_default_qm_params
 from spikeinterface.curation import remove_excess_spikes
 from snakehelper.SnakeIOHelper import getSnake
 
@@ -144,12 +144,15 @@ for probe_folder in probe_folders:
 
     # run for all spikes in the SortingExtractor
     # pca.run_for_all_spikes(file_path= waveform_results_folder / f'all_pca_projections_{probe_name}.npy')
-
+    metric_names =  get_quality_metric_list()
+    # issue with computing sliding_rp_violation so removing it
+    metric_names = [metric_name for metric_name in metric_names if (metric_name != 'sliding_rp_violation')]
+    # probe_metrics_df = pd.DataFrame()
     metrics = compute_quality_metrics(we, 
         progress_bar = True,                               
-        metric_names = get_quality_metric_list(),
+        metric_names = metric_names)
 
-    )
+        
     si_noise_levels = si.compute_noise_levels(we)
     np.save(waveform_results_folder / f'chan_noise_levels_{probe_name}.npy', si_noise_levels)
 
@@ -174,7 +177,9 @@ for probe_folder in probe_folders:
     session_si_metrics_df = pd.concat([session_si_metrics_df, metrics], axis=0)
 
 
-# Saving aggregated DataFrame for both SI and CE
-session_si_df.to_pickle(waveform_results_folder / 'si_waveform_positions_df.pkl' )
-session_si_metrics_df.to_pickle(waveform_results_folder / 'si_metrics_df.pkl' )
+
+# %% Merge channel locations and SpikeInterface quality metrics
+si_metadata = pd.concat([session_si_df, session_si_metrics_df], axis=1)
+# Save results
+si_metadata.to_pickle(waveform_results_folder / 'si_metrics_df.pkl' )
 # %%

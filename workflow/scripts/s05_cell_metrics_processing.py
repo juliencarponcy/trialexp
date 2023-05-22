@@ -60,7 +60,7 @@ if not waveform_results_folder.exists():
     
 # %% Get the path of CellExplorer outputs
 
-
+session_ce_df = pd.DataFrame()
 for probe_folder in probe_folders:
     probe_name = probe_folder.parent.stem
 
