@@ -240,14 +240,10 @@ def compute_conditions_by_trial(df_events_trials, conditions):
 
 #%% Add in trial outcome definition
 def compute_trial_outcome(row, task_name):
-    # The trial outcome are arranged in an hirerachy
-    #  -- Failure -- abortion (doesn't even enter normal trial)
-    #   |          |- no_reach (enter trial but no response)
-    #   |          |- button_press (water button pressed)
-    #              |- late_reach
-    #   |
-    #   |- Success
-    #
+    '''
+    Define a trial as belonging to one of the trial_outcome based on the task
+    '''
+
     if task_name in ['reaching_go_spout_bar_nov22', 
                      'reaching_go_spout_bar_mar23', 
                      'reaching_go_spout_bar_apr23']:
