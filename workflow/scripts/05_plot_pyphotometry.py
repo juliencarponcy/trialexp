@@ -35,9 +35,9 @@ sns.set_style("white", {
     "axes.spines.right": False,
     "xtick.direction": "out",
     "ytick.direction": "out",
-    "font.family": ["Arial"]
     })
-sns.set_context('talk')
+
+sns.set_context('paper')
 
 
 for k in xr_session.data_vars.keys():
@@ -53,8 +53,7 @@ for k in xr_session.data_vars.keys():
         g.set_titles(col_template='{col_name}')
         g.set_xlabels('Time (ms)')
             
-        #     fig.savefig(os.path.join(figure_dir, f'{k}_{outcome}.png'), dpi=300, bbox_inches='tight')
-        # g.figure.savefig(os.path.join(figure_dir, f'{k}.png'), dpi=300, bbox_inches='tight')
+        g.figure.savefig(os.path.join(figure_dir, f'{k}.png'), dpi=300, bbox_inches='tight')
 
 xr_session.close()
 # %%
