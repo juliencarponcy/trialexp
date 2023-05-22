@@ -8,4 +8,7 @@ def plot_and_handler_error(plot_func, **kwargs):
 def annotate_trial_number(data, **kwargs):
     ax = plt.gca()
     total_trial_nb = len(data['trial_nb'].unique())
-    ax.text(0.1,0.9,f'n_trials={total_trial_nb}', transform=ax.transAxes)
+    ax.text(0.8,0.9,f'n_trials={total_trial_nb}', transform=ax.transAxes)
+    
+    #add vertical line for the trigger
+    ax.axvline(0,ls='--', color='k', alpha=0.5)
