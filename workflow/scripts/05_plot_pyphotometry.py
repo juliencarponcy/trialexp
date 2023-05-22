@@ -4,6 +4,7 @@ Plotting of photometry data
 '''
 #%%
 from snakehelper.SnakeIOHelper import getSnake
+from trialexp.process.pyphotometry.plotting_utils import annotate_trial_number, plot_and_handler_error
 from trialexp.process.pyphotometry.utils import *
 from glob import glob
 import xarray as xr
@@ -38,30 +39,22 @@ sns.set_style("white", {
     })
 sns.set_context('talk')
 
+
 for k in xr_session.data_vars.keys():
+# for k in ['first_spout_analog_1_df_over_f']:
     da = xr_session[k]
     if 'event_time' in da.coords: # choose data varialbes that are event related
         df2plot = xr_session[[k,'trial_outcome']].to_dataframe().reset_index()
         trial_outcome = df2plot['trial_outcome'].unique()
         
-        for outcome in trial_outcome:
-          df_outcome = df2plot[df2plot['trial_outcome']==outcome]
-          
-          if not all(df_outcome[k].isna()): #make sure data are correct
+        g = sns.FacetGrid(df2plot, col='trial_outcome', col_wrap=3, hue='trial_outcome')
+        g.map_dataframe(plot_and_handler_error, sns.lineplot, x='event_time', y=k)
+        g.map_dataframe(annotate_trial_number)
+        g.set_titles(col_template='{col_name}')
+        g.set_xlabels('Time (ms)')
             
-            fig, ax = plt.subplots(1,1,dpi=300, figsize=(6,6))
-
-            sns.lineplot(x='event_time',y=k, 
-                            hue ='trial_outcome',
-                            data=df_outcome)
-            ax.set_xlabel('Time (ms)')
-            ax.set_ylabel(k)
-            ax.set_title(outcome)
-            
-            fig.savefig(os.path.join(figure_dir, f'{k}_{outcome}.png'), dpi=300, bbox_inches='tight')
-            # g.figure.savefig(os.path.join(figure_dir, f'{k}.png'), dpi=300, bbox_inches='tight')
+        #     fig.savefig(os.path.join(figure_dir, f'{k}_{outcome}.png'), dpi=300, bbox_inches='tight')
+        # g.figure.savefig(os.path.join(figure_dir, f'{k}.png'), dpi=300, bbox_inches='tight')
 
 xr_session.close()
-
-
 # %%
