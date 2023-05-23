@@ -14,10 +14,15 @@ from tqdm import tqdm
 from trialexp.utils.pycontrol_utilities import parse_pycontrol_fn
 from trialexp.utils.pyphotometry_utilities import parse_pyhoto_fn, create_photo_sync
 from trialexp.utils.ephys_utilities import parse_openephys_folder, get_recordings_properties, create_ephys_rsync
-        
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
 def copy_if_not_exist(src, dest):
     if not (dest/src.name).exists():
         shutil.copy(src, dest)
+
 
 
 #%% Retrieve all task names from the tasks_params.csv
@@ -29,6 +34,7 @@ tasks_params_path = PROJECT_ROOT / 'params' / 'tasks_params.csv'
 tasks_params_df = pd.read_csv(tasks_params_path)
 tasks = tasks_params_df.task.values.tolist()
 
+skip_existing = True #whether to skip existing folders
 # %%
 
 for task_id, task in enumerate(tasks):
@@ -63,7 +69,18 @@ for task_id, task in enumerate(tasks):
     matched_photo_fn  = []
     matched_ephys_path = []
     matched_ephys_fn  = []
-
+    
+    df_pycontrol['do_copy'] = True
+    
+    if skip_existing:
+        
+        for i in df_pycontrol.index:
+            # filter out folders that are already there
+            session_id = df_pycontrol.loc[i].filename
+            if Path(export_base_path, session_id).exists():
+                df_pycontrol.loc[i, 'do_copy'] = False
+                    
+    df_pycontrol = df_pycontrol[df_pycontrol.do_copy==True]
     for _, row in df_pycontrol.iterrows():
         
         # Photometry matching

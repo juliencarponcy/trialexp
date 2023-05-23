@@ -9,11 +9,11 @@ from workflow.scripts import settings
 from re import match
 from pathlib import Path
 from trialexp.process.pyphotometry.utils import *
-
+import os
 #%%
 
 (sinput, soutput) = getSnake(locals(), 'workflow/pycontrol.smk',
-    [settings.debug_folder +'/processed/spike2.smrx'],
+    [settings.debug_folder +'/processed/spike2_export.done'],
     'export_spike2')
 
 #%% Photometry dict
@@ -27,7 +27,8 @@ else:
     data_photometry = import_ppd(fn)
 
     data_photometry = denoise_filter(data_photometry)
-    data_photometry = motion_correction(data_photometry)
+    # data_photometry = motion_correction(data_photometry)
+    data_photometry = motion_correction_win(data_photometry)
     data_photometry = compute_df_over_f(data_photometry, low_pass_cutoff=0.001)
 
 
@@ -76,14 +77,29 @@ df2plot = df_pycontrol[df_pycontrol.type == 'event']
 keys = df2plot.name.unique()
 
 photometry_keys =  ['analog_1', 'analog_2',  'analog_1_filt', 'analog_2_filt',
-                  'analog_1_est_motion', 'analog_1_corrected', 'analog_1_baseline_fluo', 
-                  'analog_1_df_over_f']
+                  'analog_1_est_motion', 'analog_1_corrected', 'analog_1_baseline_fluo',
+                  'analog_1_df_over_f','analog_2_baseline_fluo', 'analog_2_df_over_f']
 
 #%%
-export_session(df_pycontrol, keys, 
-    data_photometry = data_photometry,
-    photometry_times_pyc = photometry_times_pyc,
-    photometry_keys = photometry_keys,
-    print_lines = print_lines,
-    v_lines = v_lines,
-    smrx_filename=soutput.spike2_file)
+'''
+sonpy holds a reference of the smrx file in memory, this will result in resource busy error
+when it is currently opened by someone else, this will result in snakemake error which cannot be skpped. We need to handle 
+the exception ourselves here
+'''
+
+spike2_path = Path(soutput.spike2_export_done).parent/'spike2.smrx'
+
+try:
+    if spike2_path.exists():
+        os.remove(spike2_path)
+except OSError:
+    logging.warning(f'Warning: smrx file is busy. Skipping {spike2_path}')
+else:
+    export_session(df_pycontrol, keys, 
+        data_photometry = data_photometry,
+        photometry_times_pyc = photometry_times_pyc,
+        photometry_keys = photometry_keys,
+        print_lines = print_lines,
+        v_lines = v_lines,
+        smrx_filename=str(spike2_path))
+    

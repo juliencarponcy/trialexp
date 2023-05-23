@@ -18,7 +18,7 @@ from math import ceil
 from scipy.signal import butter, filtfilt, decimate
 from scipy.stats import linregress, zscore
 from trialexp.process.pycontrol.utils import find_if_event_within_timelim, find_last_time_before_list
-
+import logging
     
 def add_time_rel_trigger(df_events, trigger_time, trigger_name, col_name, trial_window):
     #Add new time column to the event data, aligned to the trigger time
@@ -29,10 +29,23 @@ def add_time_rel_trigger(df_events, trigger_time, trigger_name, col_name, trial_
     df['trigger'] = trigger_name
 
     #TODO: can this be overalpping?
+    # note: this trial window acctually depends on how long we wait for the spout
+    # we probably need a better way to search for the event rather than just looking around it 
+    # within a fixed time window
+    # TODO: we need to filter it based on the next trigger time
 
-    for t in trigger_time:
+    for i, t in enumerate(trigger_time):
         td = df.time - t
-        idx = (trial_window[0]<=td) & (td<trial_window[1])
+        
+        if i<(len(trigger_time)-1):
+            #include all event until the next trial
+            time2next_trigger = trigger_time[i+1] - t
+            print(time2next_trigger)
+            idx = (trial_window[0]<=td) & (td<(time2next_trigger+trial_window[0]))
+        else:
+            # No need to put an end to the last trial
+            idx = (trial_window[0]<=td)
+            
         assert sum(idx)>0, 'Error: no event detected around trigger'
         df.loc[idx, col_name] =  df[idx].time - t
 
@@ -77,29 +90,48 @@ def add_trial_nb(df_events, trigger_time, trial_window):
     # add trial number into the event dataframe
     df = df_events.copy()
     df['trial_nb'] = np.nan
-    #TODO: can time window be overalpping?
-    # overlapping trial will cause some trial number to be overwritten
-    # also will make later analysis more confusing, 
-    # try avoid overlapping trials
+    
 
     trial_nb = 1
     last_idx = [False]*len(df_events)
     valid_trigger_time = []
+    skip_trials = 0
+
+    for i in range(len(trigger_time)-1): #skip the last trial because it can be incomplete
+        # The definition of a trial is the trigger_time[i]- trial_window[0] up to the next
+        # trigger_time[i+1] - trial_window[0]
+        start = trigger_time[i] + trial_window[0]
+        end = trigger_time[i+1] + trial_window[0]
+        
+        if end<start:
+            logging.warn(f'Error: trial shorter than trial_window for Trial {i}')
+            trial_nb += 1
+            continue
+        elif end<trigger_time[i]:
+            logging.warn(f'Error: trial end earlier than trigger end:{end} trigger_time{trigger_time[i]} for Trial {i}')
+            trial_nb += 1
+            continue
+        
+        idx = (df.time>=start) & (df.time<end)
+        
+        
+        if np.sum(idx)>0:
+            df.loc[idx, ['trial_nb']] = trial_nb
+            valid_trigger_time.append(trigger_time[i])
+        else:
+            skip_trials += 1
+
+        trial_nb += 1
+        
+        if any(last_idx&idx):
+            logging.warn('Overlapping trials detected.')
+            
+        last_idx = idx
+        
+                
+    if skip_trials>0:
+        logging.warn(f'{skip_trials} have been skipped because no event is found')
     
-    for t in trigger_time: #skip the last trial because it can be incomplete
-        td = df.time - t
-        start = (trial_window[0]<=td)
-        end = (td<trial_window[1])
-        if any(end):
-            # only continue when trial is complete
-            idx = start & end
-
-            if not any(last_idx&idx):         #check for overlapping
-                df.loc[idx, ['trial_nb']] = trial_nb
-                valid_trigger_time.append(t)
-                last_idx = idx 
-                trial_nb += 1
-
     assert len(df.trial_nb.unique()) == len(valid_trigger_time)+1, f'Error: trigger number mismatch {df.trial_nb.unique()} {len(trigger_time)}'
     return df, np.array(valid_trigger_time)
 
@@ -118,23 +150,35 @@ def get_task_specs(tasks_trig_and_events, task_name):
     """
 
     # match triggers (events/state used for t0)
-    triggers = np.array2string(tasks_trig_and_events['triggers'][tasks_trig_and_events['task'] == task_name].values).strip("'[]").split('; ')
+    task_idx = (tasks_trig_and_events['task'] == task_name)
+    
+    triggers = np.array2string(tasks_trig_and_events['triggers'][task_idx].values).strip("'[]").split('; ')
     if triggers[0] =='':
         raise ValueError(f'Cannot found the task  {task_name} in tasks_params!')
     
            
     # events to extract
-    events_to_process = np.array2string(tasks_trig_and_events['events'][tasks_trig_and_events['task'] == task_name].values).strip("'[]").split('; ')
+    events_to_process = np.array2string(tasks_trig_and_events['events'][task_idx].values).strip("'[]").split('; ')
     # printed line in task file indicating
     # the type of optogenetic stimulation
     # used to group_by trials with same stim/sham
-    conditions = np.array2string(tasks_trig_and_events['conditions'][tasks_trig_and_events['task'] == task_name].values).strip("'[]").split('; ')
+    conditions = np.array2string(tasks_trig_and_events['conditions'][task_idx].values).strip("'[]").split('; ')
     
+    trial_window = tasks_trig_and_events['trial_window'][task_idx].iloc[0].split(';')
+    trial_window = list(map(float, trial_window))
     # REMOVED, now only at Experiment level to avoid inconsistencies
     # define trial_window parameter for extraction around triggers
     # self.trial_window = trial_window        
-    return conditions, triggers, events_to_process
-    
+    return conditions, triggers, events_to_process, trial_window
+
+def get_rel_time(df, trigger_name):
+    # get the relative time to the trigger within a trial
+    t0 = df[df['name']==trigger_name].time.values
+    if len(t0)>1:
+        logging.warn(f'Warning: not exactly 1 trigger found. I will only take the first trigger')
+        t0 = t0[0]
+    df['trial_time'] = df.time - t0
+    return df
     
 def extract_trial_by_trigger(df_pycontrol, trigger, event2analysis, trial_window, subject_ID, datetime_obj):
     
@@ -142,7 +186,7 @@ def extract_trial_by_trigger(df_pycontrol, trigger, event2analysis, trial_window
     # add trial number and calculate the time from trigger
     trigger_time = df_events[(df_events.name==trigger)].time.values
     df_events, trigger_time = add_trial_nb(df_events, trigger_time,trial_window) #add trial number according to the trigger
-    df_events = add_time_rel_trigger(df_events, trigger_time, trigger, 'trial_time', trial_window) #calculate time relative to trigger
+    df_events = df_events.groupby('trial_nb', group_keys=False).apply(get_rel_time, trigger_name=trigger)
     df_events.dropna(subset=['trial_time'],inplace=True)
     
     
@@ -181,6 +225,7 @@ def extract_trial_by_trigger(df_pycontrol, trigger, event2analysis, trial_window
     return df_events_trials,df_events
 
 def compute_conditions_by_trial(df_events_trials, conditions):
+    # if a condition (usually some event) is found in a particular trial, then it is marked as true
 
     df_conditions = df_events_trials[['uid','trigger','valid']].copy()
     for con in conditions:

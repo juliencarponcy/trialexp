@@ -24,13 +24,14 @@ from pathlib import Path
 fn = list(Path(sinput.photometry_folder).glob('*.ppd'))[0]
 data_photometry = import_ppd(fn)
 data_photometry = denoise_filter(data_photometry)
-data_photometry = motion_correction(data_photometry)
+# data_photometry = motion_correction(data_photometry)
+data_photometry = motion_correction_win(data_photometry)
 data_photometry = compute_df_over_f(data_photometry, low_pass_cutoff=0.001)
 
 #%% Convert to xarray
-skip_var = ['analog_1_est_motion','analog_1_corrected', 'analog_1_baseline_fluo']
+skip_var = ['analog_1_est_motion','analog_1_corrected', 'analog_1_baseline_fluo', 'analog_2_baseline_fluo']
 dataset = photometry2xarray(data_photometry, skip_var = skip_var)
-
+ 
 #%% Load pycontrol file
 df_pycontrol = pd.read_pickle(sinput.pycontrol_dataframe)
 df_event = pd.read_pickle(sinput.event_dataframe)
@@ -77,6 +78,13 @@ add_event_data(df_event, event_filters.get_first_bar_off, trial_window,
 add_event_data(df_event, event_filters.get_first_spout, trial_window,
                pyphoto_aligner, dataset, event_time_coord, 
                'analog_1_df_over_f', 'first_spout', dataset.attrs['sampling_rate'])
+
+#%% Add last bar_off before first spout
+
+add_event_data(df_event, event_filters.get_last_bar_off_before_first_spout, trial_window,
+               pyphoto_aligner, dataset,event_time_coord, 
+               'analog_1_df_over_f', 'last_bar_off', dataset.attrs['sampling_rate'])
+
 
 #%%
 add_event_data(df_event, event_filters.get_us_timer_delay, trial_window,
