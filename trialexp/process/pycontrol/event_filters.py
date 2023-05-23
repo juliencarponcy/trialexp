@@ -53,6 +53,21 @@ def extract_event_time(df_event, filter_func, filter_func_kwargs, groupby_col='t
         return df_event.groupby(groupby_col,group_keys=True)['time'].apply(lambda x: None)
 
 
-def extract_clean_trigger_event(df_trial):
-    # This function will extract clean trigger event with nothing happening 
-    pass
+# %%
+def extract_clean_trigger_event(df_trial, target_event_name, clean_window, ignore_events=None):
+    # This function will extract an event with nothing happening (except those in ignore_events) before and after the clean window
+    
+    # extract all event within the clean_window
+    target_events = df_trial[df_trial['name'] == target_event_name]
+    
+    if len(target_events)>0:
+        target_time = target_events.iloc[0].time
+    
+        idx = (df_trial.time > (target_time+clean_window[0])) & (df_trial.time <(target_time+clean_window[1]))
+        
+        # Disregard the ignored events
+        if ignore_events is not None:
+            idx = idx & ~df_trial['name'].isin(ignore_events)
+
+        if sum(idx) ==1 and df_trial.loc[idx].iloc[0]['name'] == target_event_name:
+            return df_trial.loc[idx].iloc[0] # must return a series

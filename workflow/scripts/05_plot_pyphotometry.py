@@ -41,7 +41,6 @@ sns.set_context('paper')
 
 
 for k in xr_session.data_vars.keys():
-# for k in ['first_spout_analog_1_df_over_f']:
     da = xr_session[k]
     if 'event_time' in da.coords: # choose data varialbes that are event related
         df2plot = xr_session[[k,'trial_outcome']].to_dataframe().reset_index()
