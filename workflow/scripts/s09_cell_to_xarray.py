@@ -86,93 +86,120 @@ df_pycontrol_path = Path(sinput.xr_session).parent / 'df_pycontrol.pkl'
 df_pycontrol = pd.read_pickle(df_pycontrol_path)
 
 trigger = df_events_cond.attrs['triggers'][0]
-trial_window = xr_session.attrs['trial_window']
+# trial_window = xr_session.attrs['trial_window']
+trial_window = [-500, 500]
+
+#%% Defining filters for different triggering time point for behavioral phases
+
+trial_onsets = df_trials[df_trials.valid == True].timestamp
+
+behav_phases_filters = {
+    # 'trial_onset' : None,
+    'first_bar_off' : event_filters.get_first_bar_off,
+    'last_bar_off' : event_filters.get_last_bar_off_before_first_spout,
+    'spout' : event_filters.get_first_spout
+}
+trial_outcomes = df_conditions.trial_outcome
+
+df_aggregated = pd.concat([trial_onsets, trial_outcomes], axis=1)
+
+for ev_name, filter in behav_phases_filters.items():
+    # add timestamp of particuliar behavioral phases
+    print(ev_name)
+    df_aggregated = pd.concat([df_aggregated, event_filters.extract_event_time(df_events_cond, filter, dict())], axis=1)
+
+# rename the columns
+df_aggregated.columns = ['timestamp', 'trial_outcome', *behav_phases_filters.keys()]
 
 # At the moment, this is the time we used to trigger extraction around trials
 # This may be adapted to different triggering like first bar_off or first spout
 trial_times = df_pycontrol[df_pycontrol.name == trigger].time.values.astype(int)
 
 # %% Bin spikes from all probes and aggegate over trials around trial_times
-all_probes_binned_array_averaged, spike_time_bins, all_clusters_UIDs = bin_spikes_from_all_probes_averaged(
-    synced_timestamp_files = synced_timestamp_files, 
-    spike_clusters_files = spike_clusters_files,
-    trial_times = trial_times, 
-    trial_window = trial_window,
-    bin_duration = bin_duration)
+# Loop over all behavioural phases 
 
-# %% Applying Kernel to binned firing rate
+for ev_name in behav_phases_filters.keys():
+    all_probes_binned_array_averaged, spike_time_bins, all_clusters_UIDs = bin_spikes_from_all_probes_averaged(
+        synced_timestamp_files = synced_timestamp_files, 
+        spike_clusters_files = spike_clusters_files,
+        trial_times = df_aggregated[ev_name].values, 
+        trial_window = trial_window,
+        bin_duration = bin_duration)
 
-# May not be applied until bins are aggregated by trials
-# Return the binned spike array convoluted by half-gaussian window (so FR do not increases before spike [but binning])
-convoluted_binned_array = halfgaussian_filter1d(
-    all_probes_binned_array_averaged, 
-    bin_duration=bin_duration, 
-    sigma_ms = sigma_ms, 
-    axis=-1, 
-    output=None,
-    mode="constant", 
-    cval=0.0, 
-    truncate=4.0) # truncate the window at 4SD
+    # Applying Kernel to binned firing rate
 
-scaler = StandardScaler()
-# z-scored firing rate
-# .T).T to z-score along time dimension
-z_conv_FR = scaler.fit_transform(convoluted_binned_array.T).T
+    # May not be applied until bins are aggregated by trials
+    # Return the binned spike array convoluted by half-gaussian window (so FR do not increases before spike [but binning])
+    convoluted_binned_array = halfgaussian_filter1d(
+        all_probes_binned_array_averaged, 
+        bin_duration=bin_duration, 
+        sigma_ms = sigma_ms, 
+        axis=-1, 
+        output=None,
+        mode="constant", 
+        cval=0.0, 
+        truncate=4.0) # truncate the window at 4SD
 
-# %% Combining spikes rates and scored
+    scaler = StandardScaler()
+    # z-scored firing rate
+    # .T).T to z-score along time dimension
+    z_conv_FR = scaler.fit_transform(convoluted_binned_array.T).T
 
-spike_fr_xr = xr.DataArray(
-    convoluted_binned_array,
-    name = 'spikes_FR',
-    coords={'UID': all_clusters_UIDs, 'time':spike_time_bins[1:]},
-    dims=('UID', 'time')
-)
+    # Combining spikes rates and scored
 
-spike_zscored_xr = xr.DataArray(
-    z_conv_FR,
-    name = 'spikes_Zscore',
-    coords={'UID': all_clusters_UIDs, 'time':spike_time_bins[1:]},
-    dims=('UID', 'time')
-)
+    spike_fr_xr = xr.DataArray(
+        convoluted_binned_array,
+        name = 'spikes_FR',
+        coords={'UID': all_clusters_UIDs, 'time':spike_time_bins[1:]},
+        dims=('UID', 'time')
+    )
 
-# %% Combine all cell metrics (SpikeInterface + CellExplorer) and spike bins
+    spike_zscored_xr = xr.DataArray(
+        z_conv_FR,
+        name = 'spikes_Zscore',
+        coords={'UID': all_clusters_UIDs, 'time':spike_time_bins[1:]},
+        dims=('UID', 'time')
+    )
 
-
-session_ce_cell_metrics = merge_cell_metrics_and_spikes(ce_cell_metrics_files, all_clusters_UIDs)
-si_cell_metrics_df = si_cell_metrics_df.set_index('UID')
-all_cell_metrics = pd.merge(si_cell_metrics_df,session_ce_cell_metrics, on='UID', how='outer')
-
-xr_cell_metrics = all_cell_metrics.to_xarray()
-
-# Create the xr dataset
-xr_spikes_averaged = xr.merge([spike_fr_xr, spike_zscored_xr, xr_cell_metrics])
-xr_spikes_averaged.attrs['bin_duration'] = bin_duration
-
-# Save
-xr_spikes_averaged.to_netcdf(Path(sinput.xr_session).parent / 'xr_spikes_averaged.nc', engine='h5netcdf')
+    # Combine all cell metrics (SpikeInterface + CellExplorer) and spike bins
 
 
-# %% Preview of cluster responses to trigger
-# Sort clusters by peak time in the trial
-idx_max_FR = np.argmax(convoluted_binned_array,1)
+    session_ce_cell_metrics = merge_cell_metrics_and_spikes(ce_cell_metrics_files, all_clusters_UIDs)
+    # si_cell_metrics_df = si_cell_metrics_df.set_index('UID')
 
-cluster_ID_sorted_max = np.argsort(idx_max_FR)
+    all_cell_metrics = pd.merge(si_cell_metrics_df,session_ce_cell_metrics, left_index=True, right_index=True, how='outer')
+
+    xr_cell_metrics = all_cell_metrics.to_xarray()
+
+    # Create the xr dataset
+    xr_spikes_averaged = xr.merge([spike_fr_xr, spike_zscored_xr, xr_cell_metrics])
+    xr_spikes_averaged.attrs['bin_duration'] = bin_duration
+
+    # Save
+    xr_spikes_averaged.to_netcdf(Path(sinput.xr_session).parent / f'xr_spikes_averaged_{ev_name}.nc', engine='h5netcdf')
 
 
-figure, axes = plt.subplots(1, 2, sharex=True,
-                            figsize=(15, 5))
-figure.suptitle('Cluster responses to trial sorted by max / min z-scored peak response time')
+    # Preview of cluster responses to trigger
+    # Sort clusters by peak time in the trial
+    idx_max_FR = np.argmax(convoluted_binned_array,1)
 
-sns.heatmap(spike_zscored_xr[np.flip(cluster_ID_sorted_max),:], 
-            vmin=-3, vmax=3, ax=axes[0])
+    cluster_ID_sorted_max = np.argsort(idx_max_FR)
 
-sns.heatmap(spike_fr_xr[np.flip(cluster_ID_sorted_max),:],
-            vmin=0, vmax=30, ax=axes[1])
-# need to specify 
-axes[0].set_title('Firing rate (z-score) around trial')
-axes[1].set_title('Firing rate (spikes/s) around trial')# %% Continuous All session long binning
-axes[1].set_xlabel('Time ')
-figure.savefig(session_figure_path / 'cluster_responses_to_trial.png')
+
+    figure, axes = plt.subplots(1, 2, sharex=True,
+                                figsize=(15, 5))
+    figure.suptitle('Cluster responses to trial sorted by max / min z-scored peak response time')
+
+    sns.heatmap(spike_zscored_xr[np.flip(cluster_ID_sorted_max),:], 
+                vmin=-3, vmax=3, ax=axes[0])
+
+    sns.heatmap(spike_fr_xr[np.flip(cluster_ID_sorted_max),:],
+                vmin=0, vmax=30, ax=axes[1])
+    # need to specify 
+    axes[0].set_title('Firing rate (z-score) around trial')
+    axes[1].set_title('Firing rate (spikes/s) around trial')# %% Continuous All session long binning
+    axes[1].set_xlabel('Time ')
+    figure.savefig(session_figure_path / f'cluster_responses_to_{ev_name}.png')
 
 #%% Continuous session-long binning
 
