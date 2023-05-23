@@ -57,8 +57,8 @@ rule move_to_server:
     priority: 30
 
     run:
-        shell('rsync {params.local_root_sorting_folder}/kilosort3 {wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed --remove-source-files')
-        shell('rsync {params.local_root_sorting_folder}/si {wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed/si --remove-source-files')
+        shell('mv {params.local_root_sorting_folder}/kilosort3 {wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed --remove-source-files')
+        shell('mv {params.local_root_sorting_folder}/si {wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed/si --remove-source-files')
         shell('rm -rf {params.local_root_sorting_folder}/kilosort3')
         shell('rm -rf {params.local_root_sorting_folder}/si')
 

@@ -110,12 +110,12 @@ for idx_rec in idx_to_sort:
     except:
         Warning(f'Sorting failed: {Path(ephys_path).parts[-1]}, {probe_name}, exp_nb:{exp_nb}, rec_nb:{rec_nb}. recording duration: {recording.get_total_duration()}s')
         # Flag the recording as sorted
-        rec_properties['sorting_error'].iloc[idx_rec] = True
+        # rec_properties['sorting_error'].iloc[idx_rec] = True
         
 
 # %% Save the updated rec_properties.csv file
 # disabled after as it changes input files of all rules ;( need to log on table differently
-rec_properties.to_csv(rec_properties_path)
+# rec_properties.to_csv(rec_properties_path)
 
     # # skip sorting if results already present
     # # Warning: this is temp fix, as it could alter version control from snakemake

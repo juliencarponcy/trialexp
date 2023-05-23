@@ -67,7 +67,7 @@ for idx_rec in  idx_to_sort:
     
     tstart = rec_properties.tstart.iloc[idx_rec]
 
-
+    # TODO: extract probe names from folder structure
     ks3_path = rec_properties_path.parent.parent / 'processed' / sorter_name
     if 'ProbeA' in AP_stream:
         ks3_path = ks3_path / 'ProbeA' / 'sorter_output' / 'spike_times.npy'
@@ -76,10 +76,7 @@ for idx_rec in  idx_to_sort:
     else:
         raise Exception(f'There is an issue with the stream name: {AP_stream}')
 
-
-
-
-   
+  
     rsync = create_ephys_rsync(str(pycontrol_path), sync_path, tstart)
     if rsync and ks3_path.exists():
 

@@ -23,7 +23,7 @@ from workflow.scripts import settings
 sorter_name = 'kilosort3'
 verbose = True
 
-sorter_specific_path = Path(sinput.ks_3_spike_templates_A).parent.parent.parent
+sorter_specific_path = Path(sinput.rec_properties).parent.parent / 'processed' / sorter_name
 
 probe_folders = [str(sorter_specific_path / probe_folder / 'sorter_output') for probe_folder in os.listdir(sorter_specific_path)]
 
