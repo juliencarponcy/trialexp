@@ -25,7 +25,7 @@ reaching_go_spout_nov22_timewin
 '''
 
 rule pycontrol_all:
-    input: expand('{sessions}/processed/pycontrol_workflow.done', sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob('reaching_go_spout_incr_break2_nov22/*'))
+    input: expand('{sessions}/processed/pycontrol_workflow.done', sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob('reaching_go_spout_incr_break2_nov22/TT005-2023-05-17-143133'))
 
 rule process_pycontrol:
     input:
@@ -77,6 +77,16 @@ rule import_pyphotometry:
     script:
         'scripts/04_import_pyphotometry.py'
 
+def task_specific_script(wildcards):
+    print('test',wildcards)
+    #return the location of the task-specific script
+    if Path(f'workflow/scripts/task_specific/{task}.py').exists():
+        print('script exist')
+        return f'scripts/task_specific/{task}.py'
+    else:
+        return 'scripts/task_specific/common.py'
+
+
 rule task_specifc_analysis:
     input:
         pyphoto_aligner = '{session_path}/{task}/{session_id}/processed/pyphoto_aligner.pkl',
@@ -85,9 +95,12 @@ rule task_specifc_analysis:
         xr_session = '{session_path}/{task}/{session_id}/processed/xr_session.nc',
     output:
         rule_complete = touch('{session_path}/{task}/{session_id}/processed/log/task_specific_analysis.done')
+    script:
+        'scripts/task_specific/common.py'
 
 rule photometry_figure:
     input:
+        task_specific = '{session_path}/{task}/{session_id}/processed/log/task_specific_analysis.done',
         xr_session = '{session_path}/{task}/{session_id}/processed/xr_session.nc',
     output:
         trigger_photo_dir= directory('{session_path}/{task}/{session_id}/processed/figures/photometry'),
