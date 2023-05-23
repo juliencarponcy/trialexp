@@ -186,6 +186,10 @@ def compute_df_over_f(photometry_dict: dict, low_pass_cutoff: float = 0.001) -> 
 # Filtering 
 #----------------------------------------------------------------------------------
 
+def compute_zscore(photometry_dict):
+    photometry_dict['zscored_df_over_f'] = zscore(photometry_dict['analog_1_df_over_f'])
+    return photometry_dict
+
 def median_filtering(data, medfilt_size: int = 3) -> np.ndarray:
     
     if medfilt_size % 2 == 0:

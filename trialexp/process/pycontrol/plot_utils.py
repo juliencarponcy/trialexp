@@ -17,7 +17,6 @@ def plot_event_distribution(df2plot, x, y, xbinwidth = 100, ybinwidth=100, xlim=
     plt.rcParams['xtick.direction'] = 'out'
     plt.rcParams['ytick.direction'] = 'out'
     plt.rcParams["legend.frameon"] = False
-    plt.rcParams['font.family'] = 'Arial'
 
     g = sns.JointGrid()
     ax = sns.scatterplot(y=y, x=x, marker='|' ,
