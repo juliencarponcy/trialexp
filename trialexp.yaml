@@ -37,12 +37,12 @@ dependencies:
   - python-dotenv
   - snakemake
   - pip:
-    - git+https://github.com/teristam/snakehelper.git
+    - "git+https://github.com/teristam/snakehelper.git"
     - sonpy
     - h5netcdf
     - python-dotenv
-    - matlabengine
     - neo
+    # - matlabengine # causing an error
     
 
 
