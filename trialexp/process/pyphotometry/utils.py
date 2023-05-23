@@ -123,8 +123,13 @@ def motion_correction_win(photometry_dict: dict) -> dict:
                 ind_this =  start_index_chunks[i]
                 
                 # average two chunks
+                
+                #NOTE using linear window function to achieve smooth connection
+                k = np.arange(step_size)
+                p = (k) / (step_size - 1)
                 analog_1_est_motion_joined[ind_this:ind_this + step_size] \
-                    = (ch[0:step_size] + ch_prev[step_size-1:-1])/2
+                    = (ch[0:step_size] * p + ch_prev[step_size-1:-1] * (1 - p))/2
+                   
 
             elif i == len(start_index_chunks) -1 :
                 ind_this =  start_index_chunks[i]
