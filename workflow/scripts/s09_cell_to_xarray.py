@@ -76,6 +76,12 @@ xr_photometry = xr.open_dataset(Path(sinput.xr_session).parent / 'xr_photometry.
 df_events_cond_path = Path(sinput.xr_session).parent / 'df_events_cond.pkl'
 df_events_cond = pd.read_pickle(df_events_cond_path)
 
+df_conditions_path = Path(sinput.xr_session).parent / 'df_conditions.pkl'
+df_conditions = pd.read_pickle(df_conditions_path)
+
+df_trials_path = Path(sinput.xr_session).parent / 'df_trials.pkl'
+df_trials = pd.read_pickle(df_trials_path)
+
 df_pycontrol_path = Path(sinput.xr_session).parent / 'df_pycontrol.pkl'
 df_pycontrol = pd.read_pickle(df_pycontrol_path)
 
