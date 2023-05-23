@@ -13,7 +13,11 @@ The workflows are developed using [**snakemake**](https://snakemake.github.io/).
 ## Dependencies
 The snakemake workflow may contain additional dependency requirement. You will need to update your virtual environment with 
 
-` conda env update -f trialexp.yaml`
+```
+conda env update -f trialexp.yaml
+```
+
+
 
 ## Configuration
 
@@ -26,24 +30,40 @@ The snakemake file (`*.smk`) that defines the workflow is in the `workflow` fold
 
 ## Usage
 
-### Copying file to `by_session` folder
+### Copying files to `by_session` folder
 We first need to copy files to the `by_session` folder. You can do that by
-`python workflow/scripts/00_create_session_folders.py`
+
+```
+python workflow/scripts/00_create_session_folders.py
+```
+
+
 
 ### Executing snakemake
 If no target is specified, snakemake will execute the first rule in the snakemake file by default. By default, it will search for a `Snakefile` under the `workflow` folder. The `Snakefile` is the master workflow file. The master Snakefile contains both the pycontrol and spike sorting workflow.
 
-Execute the following command to run the workflow. It is strongly recommended to **dry-run** (simulate without actually executing anything) the first time you use a workflow with the `-n` command. The `--cores` command tells snakemake to use all available cores, you can specify the exact number of core with the `-c` option, e.g. `-c 4`.
+Execute the following command to run the workflow. It is strongly recommended to **dry-run** (simulate without actually executing anything) the first time you use a workflow with the `-n` command. The `--cores` command tells snakemake to use all available cores, while you can specify the exact number of cores to be used with the `-c` option, e.g. `-c 4`.
 
-`snakemake --cores -n`
+```
+snakemake --cores -n
+```
+
+
 
 To actually execute the workflow, remove the `-n` option.
 
-`snakemake --cores`
+```
+snakemake --cores
+```
+
+
 
 If you want to just run a subset of the workflow, e.g. only pycontrol or spike sorting, specify the workflow file directly:
-Note: using all available cores may cause problem to ettin, it is suggested that we only use a small number (e.g. 10). 
-`snakemake -c10 --snakefile workflow/pycontrol.smk` 
+Note: using all available cores may cause problems to ettin, it is suggested that we only use a small number (e.g. 10). 
+
+```
+snakemake -c10 --snakefile workflow/pycontrol.smk
+```
 
 
 
@@ -69,13 +89,31 @@ Replace `task_name` with the task you want to run.
 
 To do spike sorting, you can execute
 
-`snakemake --cores --snakefile workflow/spikesort.smk` 
+```
+snakemake --cores --snakefile workflow/spikesort.smk
+```
+
+
+
+#### Other options
 
 Since the workflow is based on snakemake, you can also use any of the advanced options supported by snakemake. For detail please consult the snakemake [documentations](https://snakemake.readthedocs.io/en/stable/executing/cli.html)
 
+#### keep-going option `-k`
+
 Sometimes you will encounter errors in running the pipeline in some of the recordings. The default behaviour of snakemake is to stop when it encounters an error. You can ask snakemake to skip that problematic session and continue by adding the `-k` (keep going) option:
 
-`snakemake --cores --snakefile workflow/pycontrol.smk -k` 
+```
+snakemake --cores --snakefile workflow/pycontrol.smk -k
+```
+
+
+
+On other occasions, you may encounter the error`IncompleteFilesException`. In such cases,  you can try the `--rerun-incomplete` flag:
+
+```
+snakemake --cores --snakefile workflow/pycontrol.smk -k --rerun-incomplete
+```
 
 
 ## Development
