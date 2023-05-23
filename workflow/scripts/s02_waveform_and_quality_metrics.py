@@ -108,7 +108,7 @@ for probe_folder in probe_folders:
     rec_nb = int(rec_properties.rec_nb.values[0])
 
     if len(experiments_nb) == 1:
-        recordings = se.read_openephys(rec_path, block_index=exp_nb, stream_name=AP_stream) # nb-based
+        recordings = se.read_openephys(rec_path, block_index=exp_nb-1, stream_name=AP_stream) # nb-based
     else:
         recordings = se.read_openephys(rec_path, block_index=exp_nb, stream_name=AP_stream) # nb-based
 
