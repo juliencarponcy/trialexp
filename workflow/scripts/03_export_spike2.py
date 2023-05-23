@@ -103,3 +103,4 @@ else:
         v_lines = v_lines,
         smrx_filename=str(spike2_path))
     
+# %%

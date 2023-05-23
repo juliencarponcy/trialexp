@@ -41,8 +41,7 @@ dependencies:
     - sonpy
     - h5netcdf
     - python-dotenv
-    - matlabengine
-    - neo
+    #  - matlabengine
     
 
 

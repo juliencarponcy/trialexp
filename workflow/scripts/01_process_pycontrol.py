@@ -13,6 +13,7 @@ from snakehelper.SnakeIOHelper import getSnake
 from pathlib import Path
 from workflow.scripts import settings
 
+
 #%% Load inputs
 
 (sinput, soutput) = getSnake(locals(), 'workflow/pycontrol.smk',
