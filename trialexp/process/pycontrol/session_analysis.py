@@ -238,6 +238,48 @@ def compute_conditions_by_trial(df_events_trials, conditions):
         
     return df_conditions
 
+#%% Add in trial outcome definition
+def compute_trial_outcome(row, task_name):
+    '''
+    Define a trial as belonging to one of the trial_outcome based on the task
+    '''
+
+    if task_name in ['reaching_go_spout_bar_nov22', 
+                     'reaching_go_spout_bar_mar23', 
+                     'reaching_go_spout_bar_apr23']:
+        
+        if row.break_after_abort:
+            return 'aborted'
+        elif not row.spout:
+            return 'no_reach'
+        elif row.button_press:
+            return 'button_press'
+        elif row['water by bar_off']:
+            return 'water_by_bar_off'
+        elif row.spout and not row.water_on:
+            return 'late_reach'
+        elif row['water by spout']:
+            return 'success'
+        else:
+            return 'undefined'
+    elif task_name in ['reaching_go_spout_incr_break2_nov22']:
+        if not row.spout:
+            return 'no_reach'
+        elif row.button_press:
+            return 'button_press'   
+        elif row.spout and not row.US_end_timer:
+            return 'late_reach'
+        elif row.US_end_timer:
+            return 'success'
+        else:
+            return 'undefined'
+
+    else:
+        if row.success:
+            return 'success'
+        else:
+            return 'not success'
+
 def compute_success(df_events_trials, df_cond, task_name, triggers=None, timelim=None):
     """computes success trial numbers
 
