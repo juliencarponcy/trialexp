@@ -254,9 +254,11 @@ def compute_trial_outcome(row, task_name):
             return 'no_reach'
         elif row.button_press:
             return 'button_press'
+        elif row['water by bar_off']:
+            return 'water_by_bar_off'
         elif row.spout and not row.water_on:
             return 'late_reach'
-        elif row.success:
+        elif row['water by spout']:
             return 'success'
         else:
             return 'undefined'
