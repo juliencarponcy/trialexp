@@ -198,7 +198,7 @@ def extract_trial_by_trigger(df_pycontrol, trigger, event2analysis, trial_window
     df_events_trials = df_events_trials.loc[:, ['trial_time']]
     df_events_trials = df_events_trials.unstack('name') #convert the event names to columns
     df_events_trials.columns = df_events_trials.columns.droplevel() # dropping the multiindex of the columns
-    df_events_trials = df_events_trials.reindex(np.arange(1,len(trigger_time)+1)) # make sure we include every trial
+    df_events_trials = df_events_trials.reindex(np.arange(len(trigger_time))) # make sure we include every trial
     assert len(df_events_trials) == len(trigger_time), f'Error: trigger time does not match {df_events_trials.index} {len(trigger_time)}'
 
     # rename the column for compatibility

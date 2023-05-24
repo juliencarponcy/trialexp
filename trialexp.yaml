@@ -40,13 +40,11 @@ dependencies:
   - umap-learn
   - snakemake
   - pip:
-    - "git+https://github.com/teristam/snakehelper.git"
+    - git+https://github.com/teristam/snakehelper.git
     - sonpy
     - h5netcdf
     - python-dotenv
     - neo
-    - -e . # if not working execute "pip install -e ." from the top level of this repo
-    # - matlabengine # causing an error
     
 
 
