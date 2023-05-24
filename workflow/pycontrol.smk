@@ -11,7 +11,7 @@ def task2analyze(tasks:list=None):
 
     if tasks is None:
         tasks=['*']
-        
+
     for t in tasks:
         total_sessions+=expand('{sessions}/processed/pycontrol_workflow.done', sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob(f'{t}/*'))        
 
@@ -69,16 +69,6 @@ rule import_pyphotometry:
         pyphoto_aligner = '{session_path}/{task}/{session_id}/processed/pyphoto_aligner.pkl'
     script:
         'scripts/04_import_pyphotometry.py'
-
-def task_specific_script(wildcards):
-    print('test',wildcards)
-    #return the location of the task-specific script
-    if Path(f'workflow/scripts/task_specific/{task}.py').exists():
-        print('script exist')
-        return f'scripts/task_specific/{task}.py'
-    else:
-        return 'scripts/task_specific/common.py'
-
 
 rule task_specifc_analysis:
     input:
