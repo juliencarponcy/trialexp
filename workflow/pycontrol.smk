@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv() 
 
 rule pycontrol_all:
-    input: expand('{sessions}/processed/pycontrol_workflow.done', sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob('*/*'))
+    input: expand('{sessions}/processed/pycontrol_workflow.done', sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob('reaching_go_spout_inc_break2_nov22'))
 
 rule process_pycontrol:
     input:
