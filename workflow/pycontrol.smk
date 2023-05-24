@@ -5,27 +5,16 @@ from dotenv import load_dotenv
 
 load_dotenv() 
 
-'''
-pavlovian_nobar_nodelay
-cued_uncued_oct22
-go_rewarding_aversive
-lick_go_nogo
-lick_go_nogo_unconditionned
-lick_go_nogo_unconditionned_opto
-pavlovian_spontanous_reaching_march23
-reaching_go_spout_bar_all_reward_dec22
-reaching_go_spout_bar_dual_all_reward_dec22
-reaching_go_spout_bar_dual_dec22
-reaching_go_spout_bar_nov22
-reaching_go_spout_cued_uncued
-reaching_go_spout_feb23
-reaching_go_spout_incr_break2_nov22
-reaching_go_spout_nov22
-reaching_go_spout_nov22_timewin
-'''
+def task2analyze(tasks:list):
+    total_sessions = []
+
+    for t in tasks:
+        total_sessions+=expand('{sessions}/processed/pycontrol_workflow.done', sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob(f'{t}/*'))
+
+    return total_sessions
 
 rule pycontrol_all:
-    input: expand('{sessions}/processed/pycontrol_workflow.done', sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob('reaching_go_spout_incr_break2_nov22/TT005-2023-05-17-143133'))
+    input: task2analyze(['reaching_go_spout_bar_nov22', 'reaching_go_spout_incr_break2_nov22','pavlovian_spontanous_reaching_march23'])
 
 rule process_pycontrol:
     input:
