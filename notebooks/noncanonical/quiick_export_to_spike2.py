@@ -1,5 +1,5 @@
 '''
-# Provides a quick way to export a pycontrol data file into a Spike2 file for debugging / confirmation purposes.
+# Provides a quick way to export a Spike2 file from a pycontrol data file at Desktop for debugging/test purposes.
 
 You can compile this into standalone application
 1. install auto-py-to-exe
@@ -17,12 +17,14 @@ Usage
 The extracted variables should be inserted into the textbox
 3. Click `copy to clipboard` to copy content to clipboard
 
+#TODO to export P and V values
 
 See also
 
 trialexp\process\pycontrol\spike2_export.py
 workflow\scripts\03_export_spike2.py
 trialexp\process\pycontrol\utils.py > export_session()
+notebooks\noncanonical\extract_V.py
 
 '''
 
@@ -78,6 +80,7 @@ def export_pycontrol(smrx_filename, maxtime_ms, event_dict, state_dict ):
         spike2exporter.write_marker_for_state(state_dict[k], k, y_index)
         y_index += 1
 
+    del spike2exporter
 
 def get_variable_info(event):
     file_path = filedialog.askopenfilenames(initialdir=r"\\ettin\Magill_Lab\Julien\Data\head-fixed\pycontrol",
@@ -91,15 +94,15 @@ def get_variable_info(event):
     #TODO sort them in the order of animals and then for datetime
     # Sort them in the order of they happened
 
-    m = [re.search('\-(\d{4}\-\d{2}\-\d{2}\-\d{6}).txt', fp) for fp in file_path]
+    m = re.search('\-(\d{4}\-\d{2}\-\d{2}\-\d{6}).txt', file_path)
         
-    dt_obj = []    
-    ind = []    
-    for i, dt in enumerate([datetime.strptime(m_.group(1), '%Y-%m-%d-%H%M%S') for m_ in m]):#TODO
-        dt_obj.append(dt)
-        ind.append(i)   
+    # dt_obj = []    
+    #ind = []
 
-    sorted_ind = sorted(ind, key=lambda i: dt_obj[i])
+    # dt_obj = datetime.strptime(m.group(1), '%Y-%m-%d-%H%M%S')#TODO
+    #ind.append(i)   
+
+    # sorted_ind = sorted(ind, key=lambda i: dt_obj[i])
 
     # file_path = list(file_path) 
     # file_path = [ file_path[i] for i in sorted_ind]
@@ -221,24 +224,30 @@ def get_variable_info(event):
     events = {value: key for key, value in events_.items()}
     events_ms = {key: [] for key in events_.keys()}
 
-
-    # extract D
     last_state = None
-
+    # extract D
     for string in d_lines:
-        m = re.match('^D\s(\d+)\s(\d+)',string)
+        m = re.match('^D\s(\d+)\s(\d+)',string) 
 
         # if states
-        if m.group(2) in states.keys():
-            states_ms[events[m.group(2)]].append(m.group(1))
+        if int(m.group(2)) in [int(k) for k in states.keys()]:#TODO
+            if last_state != None:
+                states_ms[last_state].append(int(m.group(1))) # end of previous state
+
+            if states[int(m.group(2))] == last_state:
+                raise Exception("States are expected to change")
+            
+            states_ms[states[int(m.group(2))]].append(int(m.group(1)))
+
+            last_state = states[int(m.group(2))]
         else: # events
-            events_ms[events[m.group(2)]].append(m.group(1))
+            events_ms[events[int(m.group(2))]].append(int(m.group(1)))
     
     
     m = re.match('^D\s(\d+)\s\d+', d_lines[-1])
-    maxtime_ms = m.group[1]
+    maxtime_ms = int(m.group(1))
     
-    smrx_filename = re.sub('.txt$', '.smrx', os.path.join(desktop, filename = os.path.basename(fp)))
+    smrx_filename = re.sub('.txt$', '.smrx', os.path.join(desktop, os.path.basename(fp)))
 
     export_pycontrol(smrx_filename, maxtime_ms, events_ms, states_ms)
     #TODO support print and V
