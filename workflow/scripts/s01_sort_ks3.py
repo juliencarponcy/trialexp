@@ -16,13 +16,14 @@ from workflow.scripts import settings
 import spikeinterface.extractors as se
 import spikeinterface.sorters as ss
 from spikeinterface.core import select_segment_recording
-from trialexp.process.ephys.spikesort import sort
 
+from workflow.scripts import settings
 
 #%% Load inputs
-(sinput, soutput) = getSnake(locals(), 'workflows/spikesort.smk',
-  [settings.debug_folder + r'/processed/spike_sorting.done'],
-  'spike_sorting')
+spike_sorting_done_path = str(Path(settings.debug_folder) / 'processed' / 'spike_sorting.done')
+# print(spike_sorting_done_path)
+(sinput, soutput) = getSnake(locals(), 'workflow/spikesort.smk',
+ [spike_sorting_done_path], 'spike_sorting')
 
 
 # %%
@@ -30,17 +31,16 @@ from trialexp.process.ephys.spikesort import sort
 sorter_name = 'kilosort3'
 verbose = True
 rec_properties_path = Path(sinput.rec_properties)
-rec_properties = pd.read_csv(rec_properties_path, index_col= None)
+rec_properties = pd.read_csv(rec_properties_path, index_col = 0)
 
-temp_output_folder = rec_properties_path.parent / 'temp'
-
+rec_properties['sorting_error'] = False
 # Only select longest syncable recordings to sort
 idx_to_sort = rec_properties[rec_properties.longest == True].index.values
 
 root_data_path = os.environ['SORTING_ROOT_DATA_PATH']
 
-si_sorted_folder = Path(soutput.si_sorted_folder)
-sorter_specific_folder = Path(soutput.sorter_specific_folder)
+si_sorted_folder = Path(os.environ['TEMP_DATA_PATH']) / 'si'
+temp_sorter_folder = Path(os.environ['TEMP_DATA_PATH']) 
 
 # %%
 for idx_rec in idx_to_sort:
@@ -57,14 +57,20 @@ for idx_rec in idx_to_sort:
         raise ValueError(f'invalid probe name rec: {rec_properties_path.parent}')
 
     # Define outputs folder, specific for each probe and sorter
-    output_sorter_specific_folder = sorter_specific_folder / sorter_name / probe_name
+    # output_sorter_specific_folder = sorter_specific_folder / sorter_name / probe_name
+    temp_output_sorter_specific_folder = temp_sorter_folder / sorter_name / probe_name
     output_si_sorted_folder = si_sorted_folder / sorter_name / probe_name
 
     ephys_path = Path(rec_properties.full_path.iloc[idx_rec]).parent.parent.parent.parent.parent
+    
+    # Maybe not the best method to get it
+    # has introduced some bugs for forgotten reason related to folder changes
+    # TODO improve to join just before relative_ephys_path and root_data_path overlap
     relative_ephys_path = os.path.join(*ephys_path.parts[5:])
     ephys_path = os.path.join(root_data_path, relative_ephys_path)
     
     experiments_nb = rec_properties.exp_nb.unique()
+    # The indices of experiments seems to differ depending on whether they are a single or multiple experiments
     if len(experiments_nb) == 1:
         recordings = se.read_openephys(ephys_path, block_index=exp_nb-1, stream_name=AP_stream) # nb-based
     else:
@@ -75,28 +81,46 @@ for idx_rec in idx_to_sort:
         print(f'{Path(ephys_path).parts[-1]}, {probe_name}, exp_nb:{exp_nb}, rec_nb:{rec_nb}. recording duration: {recording.get_total_duration()}s')   
 
     sorter_specific_params = {
-        # 'n_jobs': 24, 
+        'n_jobs': 32, 
         # 'total_memory': 512000000000, 
         # 'chunk_size': None, 
         # 'chunk_memory': 12800000000,
         'chunk_duration': '10s', 
-        'progress_bar': True}
+        'progress_bar': False}
 
-    sorting = ss.run_sorter(
-            sorter_name = sorter_name,
-            recording = recording, 
-            output_folder = output_sorter_specific_folder,
-            remove_existing_folder = True, 
-            delete_output_folder = False, 
-            verbose = True,
-            **sorter_specific_params)
+    # TODO: Add try / catch with warnings and logging of the failed sorting (in rec_properties.csv for instance)
+    # In order to cleanly skip dodgy recordings and keep the pipeline running
+    try:
+        sorting = ss.run_sorter(
+                sorter_name = sorter_name,
+                recording = recording, 
+                output_folder = temp_output_sorter_specific_folder,
+                remove_existing_folder = True, 
+                delete_output_folder = False, 
+                verbose = True,
+                **sorter_specific_params)
+        
+        # delete previous output_sorting_folder and its contents if it exists,
+        # this prevent the save method to crash.
+        if output_si_sorted_folder.exists():
+            shutil.rmtree(output_si_sorted_folder)
+        
+        sorting.save(folder = output_si_sorted_folder)
 
+    except:
+        Warning(f'Sorting failed: {Path(ephys_path).parts[-1]}, {probe_name}, exp_nb:{exp_nb}, rec_nb:{rec_nb}. recording duration: {recording.get_total_duration()}s')
+        # Flag the recording as sorted
+        # rec_properties['sorting_error'].iloc[idx_rec] = True
+        
 
-    # delete previous output_sorting_folder and its contents if it exists,
-    # this prevent the save method to crash.
-    if output_si_sorted_folder.exists():
-        shutil.rmtree(output_si_sorted_folder)
-    
-    sorting.save(folder = output_si_sorted_folder)
+# %% Save the updated rec_properties.csv file
+# disabled after as it changes input files of all rules ;( need to log on table differently
+# rec_properties.to_csv(rec_properties_path)
 
-# %%
+    # # skip sorting if results already present
+    # # Warning: this is temp fix, as it could alter version control from snakemake
+    # if (output_sorter_specific_folder / 'sorter_output'/ 'spike_templates.npy').exists():
+    #     print(f'folder: {output_sorter_specific_folder} has previously been sorted, skipping it')
+    #     continue
+    # else:
+    #     print(f'processing folder: {output_sorter_specific_folder}')

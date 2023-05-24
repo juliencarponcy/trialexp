@@ -46,6 +46,7 @@ for task_id, task in enumerate(tasks):
     pyphoto_folder = ETTIN_DATA_FOLDER/'head-fixed'/'pyphotometry'/'data'/f'{task}'
     ephys_base_path = ETTIN_DATA_FOLDER/'head-fixed'/'openephys'
 
+    # Gather all pycontrol, photometry, and ephys files/folders 
     pycontrol_files = list(pycontrol_folder.glob('*.txt'))
     pyphoto_files = list(pyphoto_folder.glob('*.ppd'))
     open_ephys_folders = os.listdir(ephys_base_path)
@@ -180,6 +181,7 @@ for task_id, task in enumerate(tasks):
 
         #write information about ephys recrodings in the ephys folder
         if row.ephys_folder_name:
+
             recordings_properties = get_recordings_properties(ephys_base_path, row.ephys_folder_name)
             # try to sync ephys recordings
             recordings_properties['syncable'] = False
