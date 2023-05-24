@@ -39,7 +39,7 @@ sns.set_style("white", {
 
 sns.set_context('paper')
 
-skip_outcome = ['button_press'] #outcome variable to keep
+skip_outcome = ['button_press'] #outcome variable to skip plotting (e.g. due to having too large variance)
 
 for k in xr_session.data_vars.keys():
     
