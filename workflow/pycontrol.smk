@@ -5,11 +5,15 @@ from dotenv import load_dotenv
 
 load_dotenv() 
 
-def task2analyze(tasks:list):
+def task2analyze(tasks:list=None):
+    #specify the list of task to analyze to save time.
     total_sessions = []
 
+    if tasks is None:
+        tasks=['*']
+        
     for t in tasks:
-        total_sessions+=expand('{sessions}/processed/pycontrol_workflow.done', sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob(f'{t}/*'))
+        total_sessions+=expand('{sessions}/processed/pycontrol_workflow.done', sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob(f'{t}/*'))        
 
     return total_sessions
 
