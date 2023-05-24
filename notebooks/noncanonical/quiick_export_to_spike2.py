@@ -21,10 +21,10 @@ The extracted variables should be inserted into the textbox
 
 See also
 
-trialexp\process\pycontrol\spike2_export.py
-workflow\scripts\03_export_spike2.py
-trialexp\process\pycontrol\utils.py > export_session()
-notebooks\noncanonical\extract_V.py
+trialexp/process/pycontrol/spike2_export.py
+workflow/scripts/03_export_spike2.py
+trialexp/process/pycontrol/utils.py > export_session()
+notebooks/noncanonical/extract_V.py
 
 '''
 
@@ -39,7 +39,7 @@ import os
 desktop = os.path.join(os.environ['USERPROFILE'], 'Desktop')
 
 #Build the GUI
-root = tk.Tk(screenName='Extract V')
+root = tk.Tk(screenName='Quick Export to Spike2')
 
 root.rowconfigure(0, minsize=800, weight=1)
 root.columnconfigure(1, minsize=1000, weight=1)
