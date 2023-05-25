@@ -39,14 +39,14 @@ import os
 desktop = os.path.join(os.environ['USERPROFILE'], 'Desktop')
 
 #Build the GUI
-root = tk.Tk(screenName='Quick Export to Spike2')
+root = tk.Tk(screenName='pyControl to Spike2')
 
 root.rowconfigure(0, minsize=800, weight=1)
 root.columnconfigure(1, minsize=1000, weight=1)
 
 control_frame = tk.Frame(root, relief=tk.RAISED, bd=2)
 
-button = tk.Button(control_frame, text='Choose a list of pycontrol files')
+button = tk.Button(control_frame, text='Choose a pycontrol file') #TODO support list
 copy_button = tk.Button(control_frame, text='Copy to clipboard')
 
 
