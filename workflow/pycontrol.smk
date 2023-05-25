@@ -5,8 +5,20 @@ from dotenv import load_dotenv
 
 load_dotenv() 
 
+def task2analyze(tasks:list=None):
+    #specify the list of task to analyze to save time.
+    total_sessions = []
+
+    if tasks is None:
+        tasks=['*']
+
+    for t in tasks:
+        total_sessions+=expand('{sessions}/processed/pycontrol_workflow.done', sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob(f'{t}/*'))        
+
+    return total_sessions
+
 rule pycontrol_all:
-    input: expand('{sessions}/processed/pycontrol_workflow.done', sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob('*/*'))
+    input: task2analyze(['reaching_go_spout_bar_nov22', 'reaching_go_spout_incr_break2_nov22','pavlovian_spontanous_reaching_march23'])
 
 rule process_pycontrol:
     input:
@@ -54,11 +66,24 @@ rule import_pyphotometry:
     output:
         xr_photometry = '{session_path}/{task}/{session_id}/processed/xr_photometry.nc',
         xr_session = '{session_path}/{task}/{session_id}/processed/xr_session.nc',
+        pyphoto_aligner = '{session_path}/{task}/{session_id}/processed/pyphoto_aligner.pkl'
     script:
         'scripts/04_import_pyphotometry.py'
 
+rule task_specifc_analysis:
+    input:
+        pyphoto_aligner = '{session_path}/{task}/{session_id}/processed/pyphoto_aligner.pkl',
+        event_dataframe = '{session_path}/{task}/{session_id}/processed/df_events_cond.pkl',
+        xr_photometry = '{session_path}/{task}/{session_id}/processed/xr_photometry.nc',
+        xr_session = '{session_path}/{task}/{session_id}/processed/xr_session.nc',
+    output:
+        rule_complete = touch('{session_path}/{task}/{session_id}/processed/log/task_specific_analysis.done')
+    script:
+        'scripts/task_specific/common.py'
+
 rule photometry_figure:
     input:
+        task_specific = '{session_path}/{task}/{session_id}/processed/log/task_specific_analysis.done',
         xr_session = '{session_path}/{task}/{session_id}/processed/xr_session.nc',
     output:
         trigger_photo_dir= directory('{session_path}/{task}/{session_id}/processed/figures/photometry'),

@@ -13,6 +13,7 @@ from trialexp.process.pycontrol import event_filters
 from trialexp.process.pycontrol.event_filters import extract_event_time
 from workflow.scripts import settings
 from pathlib import Path
+import pickle
 #%% Load inputs
 
 (sinput, soutput) = getSnake(locals(), 'workflow/pycontrol.smk',
@@ -97,7 +98,7 @@ dataset.to_netcdf(soutput.xr_photometry, engine='h5netcdf')
 # %%
 # Bin the data such that we only have 1 data point per time bin
 # bin according to 50ms time bin, original sampling frequency is at 1000Hz
-dataset_binned = dataset.coarsen(time=50, event_time=50, boundary='trim').mean()
+dataset_binned = dataset.coarsen(time=10, event_time=10, boundary='trim').mean()
 dataset_binned.attrs.update(dataset.attrs)
 
 #%% Merge conditions
@@ -113,4 +114,8 @@ xr_session.attrs.update(dataset_binned.attrs)
 #Save the final dataset
 xr_session.to_netcdf(soutput.xr_session, engine='h5netcdf')
 
+# %%
+#Also save the pyphoto_aligner
+with open(soutput.pyphoto_aligner, 'wb') as f:
+  pickle.dump(pyphoto_aligner, f)
 # %%

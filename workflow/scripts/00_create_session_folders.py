@@ -138,9 +138,6 @@ for task_id, task in enumerate(tasks):
     df_pycontrol['ephys_folder_name'] = matched_ephys_fn
     
     df_pycontrol = df_pycontrol[(df_pycontrol.subject_id!='00') & (df_pycontrol.subject_id!='01')] # do not copy the test data
-    
-    #TODO need to consider the case where there is only pycontrol data but no photometry
-    df_pycontrol = df_pycontrol.dropna(subset='pyphoto_path')
 
     for i in tqdm(range(len(df_pycontrol))):
         row = df_pycontrol.iloc[i]
@@ -174,8 +171,9 @@ for task_id, task in enumerate(tasks):
             copy_if_not_exist(f, target_pycontrol_folder) 
             
         #Copy pyphotometry file if they match
-        if create_photo_sync(str(pycontrol_file), str(pyphotometry_file)) is not None:
-            copy_if_not_exist(pyphotometry_file, target_pyphoto_folder)
+        if pyphotometry_file is not None:
+            if create_photo_sync(str(pycontrol_file), str(pyphotometry_file)) is not None:
+                copy_if_not_exist(pyphotometry_file, target_pyphoto_folder)
 
 
         #write information about ephys recrodings in the ephys folder

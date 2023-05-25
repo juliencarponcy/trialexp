@@ -27,7 +27,7 @@ dependencies:
   - jupyter
   - matplotlib
   - nb_conda
-  - pandas
+  - pandas<2.0
   - statsmodels
   - scikit-learn
   - seaborn
