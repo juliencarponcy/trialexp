@@ -9,6 +9,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import xarray as xr
+import quantities as pq
 
 from sklearn.preprocessing import StandardScaler
 
@@ -18,15 +19,16 @@ from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 import seaborn as sns
 
+from elephant import statistics, kernels
+
 from snakehelper.SnakeIOHelper import getSnake
 
 from workflow.scripts import settings
 from trialexp.process.pyphotometry.utils import *
 from trialexp.process.pycontrol import event_filters
 from trialexp.process.ephys.spikes_preprocessing import \
-    merge_cell_metrics_and_spikes, bin_spikes_from_all_probes, \
-    bin_spikes_from_all_probes_averaged, bin_spikes_from_all_probes_by_trials, \
-    halfgaussian_filter1d 
+    merge_cell_metrics_and_spikes, get_spike_trains, \
+    get_max_timestamps_from_probes, extract_trial_data
 
 
 #%% Load inputs
@@ -60,7 +62,7 @@ session_waveform_path = Path(sinput.xr_session).parent / 'waveforms'
 
 #%% Variables definition
 
-bin_duration = 20 # ms for binning spike timestamps
+bin_duration = 10 # ms for binning spike timestamps
 sigma_ms = 200 # ms for half-gaussian kernel size (1SD duration)
 
 #%% File loading
@@ -69,6 +71,7 @@ for cell_metrics_df_file in ce_cell_metrics_files:
     ce_cell_metrics_df_full = pd.concat([ce_cell_metrics_df_full, pd.read_pickle(cell_metrics_df_file)])
 
 si_cell_metrics_df = pd.read_pickle(session_waveform_path / 'si_metrics_df.pkl')
+si_cell_metrics_df = si_cell_metrics_df.set_index('UID')
 
 xr_session = xr.open_dataset(sinput.xr_session)
 xr_photometry = xr.open_dataset(Path(sinput.xr_session).parent / 'xr_photometry.nc')
@@ -87,12 +90,13 @@ df_pycontrol = pd.read_pickle(df_pycontrol_path)
 
 trigger = df_events_cond.attrs['triggers'][0]
 # trial_window = xr_session.attrs['trial_window']
-trial_window = [-500, 500]
+trial_window = (500, 500) # time before and after timestamps to extract
 
-#%% Defining filters for different triggering time point for behavioral phases
+#%% Gathering trial outcomes and timestamps of different phases
 
 trial_onsets = df_trials[df_trials.valid == True].timestamp
 
+# Defining filters for different triggering time point for behavioral phases
 behav_phases_filters = {
     # 'trial_onset' : None,
     'first_bar_off' : event_filters.get_first_bar_off,
@@ -101,7 +105,8 @@ behav_phases_filters = {
 }
 trial_outcomes = df_conditions.trial_outcome
 
-df_aggregated = pd.concat([trial_onsets, trial_outcomes], axis=1)
+
+df_aggregated = pd.concat([trial_outcomes, trial_onsets], axis=1)
 
 for ev_name, filter in behav_phases_filters.items():
     # add timestamp of particuliar behavioral phases
@@ -109,185 +114,146 @@ for ev_name, filter in behav_phases_filters.items():
     df_aggregated = pd.concat([df_aggregated, event_filters.extract_event_time(df_events_cond, filter, dict())], axis=1)
 
 # rename the columns
-df_aggregated.columns = ['timestamp', 'trial_outcome', *behav_phases_filters.keys()]
+df_aggregated.columns = ['trial_outcome', 'trial_onset',  *behav_phases_filters.keys()]
+# Adding reward phase
+df_aggregated['reward'] = df_aggregated.spout + 500 # Hard coded, 500ms delay, perhaps adapt to a parameter?
+# Adding rest phase
+df_aggregated['rest'] = df_aggregated.trial_onset - 2000 # Hard coded, 2000ms resting period, perhaps adapt to a parameter?
 
-# At the moment, this is the time we used to trigger extraction around trials
-# This may be adapted to different triggering like first bar_off or first spout
-trial_times = df_pycontrol[df_pycontrol.name == trigger].time.values.astype(int)
+# %% Extract instantaneous rates (continuous) from spike times (discrete)
+behav_phases = df_aggregated.columns[1:] # exclude trial outcome column
+trial_outcomes = df_conditions.trial_outcome.unique()
 
-# %% Bin spikes from all probes and aggegate over trials around trial_times
-# Loop over all behavioural phases 
+# Use SpikeTrain class from neo.core
+spike_trains, all_clusters_UIDs = get_spike_trains(
+                    synced_timestamp_files = synced_timestamp_files, 
+                    spike_clusters_files = spike_clusters_files)
 
-for ev_name in behav_phases_filters.keys():
-    all_probes_binned_array_averaged, spike_time_bins, all_clusters_UIDs = bin_spikes_from_all_probes_averaged(
-        synced_timestamp_files = synced_timestamp_files, 
-        spike_clusters_files = spike_clusters_files,
-        trial_times = df_aggregated[ev_name].values, 
-        trial_window = trial_window,
-        bin_duration = bin_duration)
+t_stop = get_max_timestamps_from_probes(synced_timestamp_files)
 
-    # Applying Kernel to binned firing rate
+kernel = kernels.ExponentialKernel(sigma=sigma_ms*pq.ms)
 
-    # May not be applied until bins are aggregated by trials
-    # Return the binned spike array convoluted by half-gaussian window (so FR do not increases before spike [but binning])
-    convoluted_binned_array = halfgaussian_filter1d(
-        all_probes_binned_array_averaged, 
-        bin_duration=bin_duration, 
-        sigma_ms = sigma_ms, 
-        axis=-1, 
-        output=None,
-        mode="constant", 
-        cval=0.0, 
-        truncate=4.0) # truncate the window at 4SD
-
-    scaler = StandardScaler()
-    # z-scored firing rate
-    # .T).T to z-score along time dimension
-    z_conv_FR = scaler.fit_transform(convoluted_binned_array.T).T
-
-    # Combining spikes rates and scored
-
-    spike_fr_xr = xr.DataArray(
-        convoluted_binned_array,
-        name = 'spikes_FR',
-        coords={'UID': all_clusters_UIDs, 'time':spike_time_bins[1:]},
-        dims=('UID', 'time')
-    )
-
-    spike_zscored_xr = xr.DataArray(
-        z_conv_FR,
-        name = 'spikes_Zscore',
-        coords={'UID': all_clusters_UIDs, 'time':spike_time_bins[1:]},
-        dims=('UID', 'time')
-    )
-
-    # Combine all cell metrics (SpikeInterface + CellExplorer) and spike bins
-
-
-    session_ce_cell_metrics = merge_cell_metrics_and_spikes(ce_cell_metrics_files, all_clusters_UIDs)
-    # si_cell_metrics_df = si_cell_metrics_df.set_index('UID')
-
-    all_cell_metrics = pd.merge(si_cell_metrics_df,session_ce_cell_metrics, left_index=True, right_index=True, how='outer')
-
-    xr_cell_metrics = all_cell_metrics.to_xarray()
-
-    # Create the xr dataset
-    xr_spikes_averaged = xr.merge([spike_fr_xr, spike_zscored_xr, xr_cell_metrics])
-    xr_spikes_averaged.attrs['bin_duration'] = bin_duration
-
-    # Save
-    xr_spikes_averaged.to_netcdf(Path(sinput.xr_session).parent / f'xr_spikes_averaged_{ev_name}.nc', engine='h5netcdf')
-
-
-    # Preview of cluster responses to trigger
-    # Sort clusters by peak time in the trial
-    idx_max_FR = np.argmax(convoluted_binned_array,1)
-
-    cluster_ID_sorted_max = np.argsort(idx_max_FR)
-
-
-    figure, axes = plt.subplots(1, 2, sharex=True,
-                                figsize=(15, 5))
-    figure.suptitle('Cluster responses to trial sorted by max / min z-scored peak response time')
-
-    sns.heatmap(spike_zscored_xr[np.flip(cluster_ID_sorted_max),:], 
-                vmin=-3, vmax=3, ax=axes[0])
-
-    sns.heatmap(spike_fr_xr[np.flip(cluster_ID_sorted_max),:],
-                vmin=0, vmax=30, ax=axes[1])
-    # need to specify 
-    axes[0].set_title('Firing rate (z-score) around trial')
-    axes[1].set_title('Firing rate (spikes/s) around trial')# %% Continuous All session long binning
-    axes[1].set_xlabel('Time ')
-    figure.savefig(session_figure_path / f'cluster_responses_to_{ev_name}.png')
-
-#%% Continuous session-long binning
-
-# bin all the clusters from all probes continuously, return nb_of_spikes per bin * (1000[ms]/bin_duratiion[ms])
-# so if 1 spike in 20ms bin -> inst. FR = 1 * (1000/20) = 50Hz
-
-# if bin duration == 1ms, we will have a BOOL arary (@1000Hz)
-
-# bin_spikes_from_all_probes : All session. Dimensions  time x cluster [long]
-all_probes_binned_array, spike_time_bins, all_clusters_UIDs = bin_spikes_from_all_probes(
-    synced_timestamp_files = synced_timestamp_files, 
-    spike_clusters_files = spike_clusters_files, 
-    bin_duration = bin_duration)
-
-# %% Applying Kernel to binned firing rate (Continuous long session)
-# if we want the gaussian to have sigma = 0.2s
-
-
-# May not be applied until bins are aggregated by trials
-# Return the binned spike array convoluted by half-gaussian window (so FR do not increases before spike [but binning])
-convoluted_binned_array = halfgaussian_filter1d(
-    all_probes_binned_array, 
-    bin_duration=bin_duration, 
-    sigma_ms = sigma_ms, 
-    axis=-1, 
-    output=None,
-    mode="constant", 
-    cval=0.0, 
-    truncate=4.0) # truncate the window at 4SD
-# %%
+inst_rates = statistics.instantaneous_rate(
+                    spiketrains= spike_trains,
+                    sampling_period = bin_duration * pq.ms, 
+                    kernel=kernel, 
+                    cutoff=5.0, 
+                    t_start=None, 
+                    t_stop=t_stop * pq.ms, 
+                    trim=False, 
+                    center_kernel=True, 
+                    border_correction=False)
+# constructing time vector
+session_time_vector = np.linspace(bin_duration,inst_rates.shape[0]*bin_duration,inst_rates.shape[0]) - bin_duration/2
+# z-scoring firing rate
 scaler = StandardScaler()
-# z-scored firing rate
-# .T).T to z-score along time dimension
-z_conv_FR = scaler.fit_transform(convoluted_binned_array.T).T
+z_inst_rates = scaler.fit_transform(inst_rates)
+#%% Extracting instantaneous rates by trial for all behavioural phases
 
-spike_fr_xr = xr.DataArray(
-    all_probes_binned_array,
-    name = 'spikes_FR',
-    coords={'time':spike_time_bins[1:] - (bin_duration/2), 'UID': all_clusters_UIDs},
-    dims=('time', 'UID')
-)
+trial_rates = dict()
+trial_zrates = dict()
 
-spike_zscored_xr = xr.DataArray(
-    z_conv_FR,
-    name = 'spikes_Zscore',
-    coords={'time':spike_time_bins[1:] - (bin_duration/2), 'UID': all_clusters_UIDs},
-    dims=('time', 'UID')
-)
+for ev_idx, ev_name in enumerate(behav_phases): 
+
+    timestamps = df_aggregated[ev_name]
+    # Binning by trials, 3D output (trial, time, cluster)
+    trial_rates[ev_name], trial_time_vec = extract_trial_data(inst_rates, session_time_vector, timestamps, trial_window, bin_duration)
+
+    trial_zrates[ev_name], trial_time_vec = extract_trial_data(z_inst_rates, session_time_vector, timestamps, trial_window, bin_duration)
+
+
+#%% Convert trial firing rates to DataArrays
+
+# empty dictionaries of DataArrays
+spike_fr_xr = list()
+spike_zfr_xr = list()
+
+for ev_idx, ev_name in enumerate(behav_phases): 
+
+    spike_fr_xr.append(xr.DataArray(
+        trial_rates[ev_name],
+        name = f'spikes_FR.{ev_name}',
+        coords={'trial_nb': df_aggregated.index, 'event_time': trial_time_vec, 'UID': all_clusters_UIDs},
+        dims=('trial_nb', 'event_time', 'UID')
+        )
+    )
+
+    spike_zfr_xr.append(xr.DataArray(
+        trial_zrates[ev_name],
+        name = f'spikes_zFR.{ev_name}',
+        coords={'trial_nb': df_aggregated.index, 'event_time': trial_time_vec, 'UID': all_clusters_UIDs},
+        dims=('trial_nb', 'event_time', 'UID')
+        )
+    )
+
+#%% Adding trials and clusters metadata
+
+# Merge CellExplorer metrics with all clusters in kilosort data
+session_ce_cell_metrics = merge_cell_metrics_and_spikes(ce_cell_metrics_files, all_clusters_UIDs)
+# Combine all cell metrics (SpikeInterface + CellExplorer) 
+all_cell_metrics = pd.merge(si_cell_metrics_df,session_ce_cell_metrics, left_index=True, right_index=True, how='outer')
+# discard cell metrics without 'x' position (trick which give same nb of clusters as binned data)
+all_cell_metrics.dropna(axis=0, subset='x', inplace=True)
 # Create the xr dataset
-xr_spikes_session = xr.merge([spike_fr_xr, spike_zscored_xr, xr_cell_metrics, xr_session])
-xr_spikes_session.attrs['bin_duration'] = bin_duration
+xr_cell_metrics= all_cell_metrics.to_xarray()
 
-# Save it
-xr_spikes_session.to_netcdf(Path(sinput.xr_session).parent / 'xr_spikes_session.nc', engine='h5netcdf')
+# trial outcomes
+trial_out = xr.DataArray(
+    df_aggregated.trial_outcome,
+    name= 'trial_outome',
+    coords= {'trial_nb': df_aggregated.index},
+    dims = ('trial_nb')
 
-
-# %% Binning by trials, 3D output (trial, time, cluster)
-all_probes_binned_array_by_trials, spike_time_bins, all_clusters_UIDs = bin_spikes_from_all_probes_by_trials(
-    synced_timestamp_files = synced_timestamp_files, 
-    spike_clusters_files = spike_clusters_files,
-    trial_times = trial_times,
-    trial_window = trial_window,
-    bin_duration = bin_duration,
-    normalize = False)
-
-#%% Half-Gaussian convolution
-convoluted_binned_array = halfgaussian_filter1d(
-    all_probes_binned_array_by_trials, 
-    bin_duration=bin_duration, 
-    sigma_ms = sigma_ms, 
-    axis=-1, 
-    output=None,
-    mode="constant", 
-    cval=0.0, 
-    truncate=4.0) # truncate the window at 4SD
-# %% Combining spikes rates and scored
-
-spike_fr_xr = xr.DataArray(
-    all_probes_binned_array_by_trials,
-    name = 'spikes_FR',
-    coords={'trial_nb': list(range(1,len(trial_times)+1)), 'event_time':spike_time_bins[1:] - (bin_duration/2), 'UID': all_clusters_UIDs},
-    dims=('trial_nb', 'event_time', 'UID')
 )
 
-# Create the xr dataset
-xr_spikes_trials = xr.merge([spike_fr_xr, xr_cell_metrics, xr_photometry])
+# trial timestamps
+trial_ts = xr.DataArray(
+    df_aggregated.iloc[:,1:],
+    name= 'trial_timestamps',
+    coords= {'trial_nb': df_aggregated.index, 'trial_phase': df_aggregated.columns[1:]},
+    dims = ('trial_nb', 'trial_phase')
+
+)
+
+xr_spikes_trials = xr.merge([*spike_fr_xr, *spike_zfr_xr, xr_cell_metrics, trial_out, trial_ts])
 xr_spikes_trials.attrs['bin_duration'] = bin_duration
-# Save it
-xr_spikes_trials.to_netcdf(Path(sinput.xr_session).parent / 'xr_spikes_trials.nc', engine='h5netcdf')
+xr_spikes_trials.attrs['sigma_ms'] = sigma_ms
 
-# %%
+# Save
+xr_spikes_trials.to_netcdf(Path(sinput.xr_session).parent / f'xr_spikes_trials.nc', engine='h5netcdf')
+
+#%% Saving similar xarray Dataset but this time with the behavioral phase as an extra dimension
+# instead of saving one DataArray per behavioral phase (this to leave implementation choice for future processing)
+
+# stacking the 3D arrays for firing rates (trial_nb x event_time x UID) onto a 4th dimension (trial_phase)
+trial_rates_phases = np.stack([trial_rate_array for trial_rate_array in trial_rates.values()],axis=3)
+trial_zrates_phases = np.stack([trial_zrate_array for trial_zrate_array in trial_zrates.values()],axis=3)
+
+#%%
+spike_fr_xr_phases = xr.DataArray(
+    trial_rates_phases,
+    name = f'spikes_FR',
+    coords={'trial_nb': df_aggregated.index, 'event_time': trial_time_vec, 'UID': all_clusters_UIDs, 'trial_phase': df_aggregated.columns[1:]},
+    dims=('trial_nb', 'event_time', 'UID', 'trial_phase')
+    )
+
+spike_zfr_xr_phases = xr.DataArray(
+    trial_zrates_phases,
+    name = f'spikes_zFR',
+    coords={'trial_nb': df_aggregated.index, 'event_time': trial_time_vec, 'UID': all_clusters_UIDs, 'trial_phase': df_aggregated.columns[1:]},
+    dims=('trial_nb', 'event_time', 'UID', 'trial_phase')
+    )    
+
+xr_spikes_trials_phases = xr.merge([spike_fr_xr_phases, spike_zfr_xr_phases, xr_cell_metrics, trial_out, trial_ts])
+xr_spikes_trials_phases.attrs['bin_duration'] = bin_duration
+xr_spikes_trials_phases.attrs['sigma_ms'] = sigma_ms
+
+# Save
+xr_spikes_trials_phases.to_netcdf(Path(sinput.xr_session).parent / f'xr_spikes_trials_phases.nc', engine='h5netcdf')
+#%%
+
+# Preview of cluster responses to trigger
+# Sort clusters by peak time in the trial
+# idx_max_FR = np.argmax(convoluted_binned_array,1)
+
+# cluster_ID_sorted_max = np.argsort(idx_max_FR)

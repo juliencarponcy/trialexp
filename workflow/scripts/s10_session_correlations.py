@@ -102,3 +102,17 @@ for uid_idx, uid in enumerate(UIDs):
     cross_corr[uid_idx,:] = crosscorr_lag_range(df_over_f, z_scored_firing, lag_limits=lag_limits)
     
 # %%
+    figure, axes = plt.subplots(1, 2, sharex=True,
+                                figsize=(15, 5))
+    figure.suptitle('Cluster responses to trial sorted by max / min z-scored peak response time')
+
+    sns.heatmap(spike_zscored_xr[np.flip(cluster_ID_sorted_max),:], 
+                vmin=-3, vmax=3, ax=axes[0])
+
+    sns.heatmap(spike_fr_xr[np.flip(cluster_ID_sorted_max),:],
+                vmin=0, vmax=30, ax=axes[1])
+    # need to specify 
+    axes[0].set_title('Firing rate (z-score) around trial')
+    axes[1].set_title('Firing rate (spikes/s) around trial')# %% Continuous All session long binning
+    axes[1].set_xlabel('Time ')
+    figure.savefig(session_figure_path / f'cluster_responses_to_{ev_name}.png')
