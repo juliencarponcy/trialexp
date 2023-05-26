@@ -13,12 +13,6 @@ import quantities as pq
 
 from sklearn.preprocessing import StandardScaler
 
-import seaborn as sns
-from matplotlib import pyplot as plt
-from plotly.subplots import make_subplots
-import plotly.graph_objects as go
-import seaborn as sns
-
 from elephant import statistics, kernels
 
 from snakehelper.SnakeIOHelper import getSnake
