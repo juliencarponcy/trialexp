@@ -212,6 +212,7 @@ trial_ts = xr.DataArray(
 xr_spikes_trials = xr.merge([*spike_fr_xr, *spike_zfr_xr, xr_cell_metrics, trial_out, trial_ts])
 xr_spikes_trials.attrs['bin_duration'] = bin_duration
 xr_spikes_trials.attrs['sigma_ms'] = sigma_ms
+xr_spikes_trials.attrs['kernel'] = 'ExponentialKernel'
 
 # Save
 xr_spikes_trials.to_netcdf(Path(sinput.xr_session).parent / f'xr_spikes_trials.nc', engine='h5netcdf')
@@ -241,6 +242,7 @@ spike_zfr_xr_phases = xr.DataArray(
 xr_spikes_trials_phases = xr.merge([spike_fr_xr_phases, spike_zfr_xr_phases, xr_cell_metrics, trial_out, trial_ts])
 xr_spikes_trials_phases.attrs['bin_duration'] = bin_duration
 xr_spikes_trials_phases.attrs['sigma_ms'] = sigma_ms
+xr_spikes_trials_phases.attrs['kernel'] = 'ExponentialKernel'
 
 # Save
 xr_spikes_trials_phases.to_netcdf(Path(sinput.xr_session).parent / f'xr_spikes_trials_phases.nc', engine='h5netcdf')
