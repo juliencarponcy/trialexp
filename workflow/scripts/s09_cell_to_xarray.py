@@ -114,9 +114,9 @@ df_aggregated['reward'] = df_aggregated.spout + 500 # Hard coded, 500ms delay, p
 # Adding rest phase
 df_aggregated['rest'] = df_aggregated.trial_onset - 2000 # Hard coded, 2000ms resting period, perhaps adapt to a parameter?
 
-# %% Extract instantaneous rates (continuous) from spike times (discrete)
 behav_phases = df_aggregated.columns[1:] # exclude trial outcome column
 trial_outcomes = df_conditions.trial_outcome.unique()
+# %% Extract instantaneous rates (continuous) from spike times (discrete)
 
 # Use SpikeTrain class from neo.core
 spike_trains, all_clusters_UIDs = get_spike_trains(
@@ -142,6 +142,40 @@ session_time_vector = np.linspace(bin_duration,inst_rates.shape[0]*bin_duration,
 # z-scoring firing rate
 scaler = StandardScaler()
 z_inst_rates = scaler.fit_transform(inst_rates)
+#%% Aggregating Clusters metadata
+
+# Merge CellExplorer metrics with all clusters in kilosort data
+session_ce_cell_metrics = merge_cell_metrics_and_spikes(ce_cell_metrics_files, all_clusters_UIDs)
+# Combine all cell metrics (SpikeInterface + CellExplorer) 
+all_cell_metrics = pd.merge(si_cell_metrics_df,session_ce_cell_metrics, left_index=True, right_index=True, how='outer')
+# discard cell metrics without 'x' position (trick which give same nb of clusters as binned data)
+all_cell_metrics.dropna(axis=0, subset='x', inplace=True)
+# Create the xr dataset
+xr_cell_metrics= all_cell_metrics.to_xarray()
+
+#%% Building session-wide xarray dataset
+
+spike_fr_xr_session = xr.DataArray(
+    inst_rates,
+    name = f'spikes_FR_session',
+    coords={'time': session_time_vector, 'UID': all_clusters_UIDs},
+    dims=('time', 'UID')
+    )
+
+spike_zfr_xr_session = xr.DataArray(
+    z_inst_rates,
+    name = f'spikes_zFR_session',
+    coords={'time': session_time_vector, 'UID': all_clusters_UIDs},
+    dims=('time', 'UID')
+    )
+
+xr_spikes_session = xr.merge([spike_fr_xr_session, spike_zfr_xr_session, xr_cell_metrics])
+xr_spikes_session.attrs['bin_duration'] = bin_duration
+xr_spikes_session.attrs['sigma_ms'] = sigma_ms
+xr_spikes_session.attrs['kernel'] = 'ExponentialKernel'
+
+xr_spikes_session.to_netcdf(Path(sinput.xr_session).parent / f'xr_spikes_session.nc', engine='h5netcdf')
+
 #%% Extracting instantaneous rates by trial for all behavioural phases
 
 trial_rates = dict()
@@ -180,16 +214,7 @@ for ev_idx, ev_name in enumerate(behav_phases):
         )
     )
 
-#%% Adding trials and clusters metadata
-
-# Merge CellExplorer metrics with all clusters in kilosort data
-session_ce_cell_metrics = merge_cell_metrics_and_spikes(ce_cell_metrics_files, all_clusters_UIDs)
-# Combine all cell metrics (SpikeInterface + CellExplorer) 
-all_cell_metrics = pd.merge(si_cell_metrics_df,session_ce_cell_metrics, left_index=True, right_index=True, how='outer')
-# discard cell metrics without 'x' position (trick which give same nb of clusters as binned data)
-all_cell_metrics.dropna(axis=0, subset='x', inplace=True)
-# Create the xr dataset
-xr_cell_metrics= all_cell_metrics.to_xarray()
+#%% Adding trials metadata
 
 # trial outcomes
 trial_out = xr.DataArray(
