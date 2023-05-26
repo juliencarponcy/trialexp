@@ -13,6 +13,7 @@ from trialexp.process.pycontrol import event_filters
 from trialexp.process.pycontrol.event_filters import extract_event_time
 from workflow.scripts import settings
 from pathlib import Path
+import pickle
 #%% Load inputs
 
 (sinput, soutput) = getSnake(locals(), 'workflow/pycontrol.smk',
@@ -24,9 +25,9 @@ from pathlib import Path
 fn = list(Path(sinput.photometry_folder).glob('*.ppd'))[0]
 data_photometry = import_ppd(fn)
 data_photometry = denoise_filter(data_photometry)
-# data_photometry = motion_correction(data_photometry)
 data_photometry = motion_correction_win(data_photometry)
 data_photometry = compute_df_over_f(data_photometry, low_pass_cutoff=0.001)
+data_photometry = compute_zscore(data_photometry)
 
 #%% Convert to xarray
 skip_var = ['analog_1_est_motion','analog_1_corrected', 'analog_1_baseline_fluo', 'analog_2_baseline_fluo']
@@ -66,24 +67,24 @@ event_time_coord= np.linspace(trial_window[0], trial_window[1], int(event_period
 trigger = df_event.attrs['triggers'][0]
 add_event_data(df_event, event_filters.get_first_event_from_name,
                trial_window, pyphoto_aligner, dataset, event_time_coord, 
-               'analog_1_df_over_f', trigger, dataset.attrs['sampling_rate'],
+               'zscored_df_over_f', trigger, dataset.attrs['sampling_rate'],
                filter_func_kwargs={'evt_name':trigger})
 
 #%% Add first bar off
 add_event_data(df_event, event_filters.get_first_bar_off, trial_window,
                pyphoto_aligner, dataset,event_time_coord, 
-               'analog_1_df_over_f', 'first_bar_off', dataset.attrs['sampling_rate'])
+               'zscored_df_over_f', 'first_bar_off', dataset.attrs['sampling_rate'])
 
 #%% Add first spout
 add_event_data(df_event, event_filters.get_first_spout, trial_window,
                pyphoto_aligner, dataset, event_time_coord, 
-               'analog_1_df_over_f', 'first_spout', dataset.attrs['sampling_rate'])
+               'zscored_df_over_f', 'first_spout', dataset.attrs['sampling_rate'])
 
 #%% Add last bar_off before first spout
 
 add_event_data(df_event, event_filters.get_last_bar_off_before_first_spout, trial_window,
                pyphoto_aligner, dataset,event_time_coord, 
-               'analog_1_df_over_f', 'last_bar_off', dataset.attrs['sampling_rate'])
+               'zscored_df_over_f', 'last_bar_off', dataset.attrs['sampling_rate'])
 
 
 #%%
@@ -97,7 +98,7 @@ dataset.to_netcdf(soutput.xr_photometry, engine='h5netcdf')
 # %%
 # Bin the data such that we only have 1 data point per time bin
 # bin according to 50ms time bin, original sampling frequency is at 1000Hz
-dataset_binned = dataset.coarsen(time=50, event_time=50, boundary='trim').mean()
+dataset_binned = dataset.coarsen(time=10, event_time=10, boundary='trim').mean()
 dataset_binned.attrs.update(dataset.attrs)
 
 #%% Merge conditions
@@ -113,4 +114,8 @@ xr_session.attrs.update(dataset_binned.attrs)
 #Save the final dataset
 xr_session.to_netcdf(soutput.xr_session, engine='h5netcdf')
 
+# %%
+#Also save the pyphoto_aligner
+with open(soutput.pyphoto_aligner, 'wb') as f:
+  pickle.dump(pyphoto_aligner, f)
 # %%

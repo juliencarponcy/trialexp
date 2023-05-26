@@ -56,6 +56,14 @@ df_conditions = compute_conditions_by_trial(df_events_trials, conditions)
 df_conditions = compute_success(df_events_trials, df_conditions,
                                   task_name, triggers, timelim)
 
+
+#%%
+
+df_conditions['trial_outcome'] = df_conditions.apply(compute_trial_outcome, 
+                                                   task_name = df_pycontrol.attrs['Task name'],
+                                                   axis=1)
+
+
 #%%  Merge condition back with event dataframe
 
 df_events_cond = df_events.merge(df_conditions, on='trial_nb')

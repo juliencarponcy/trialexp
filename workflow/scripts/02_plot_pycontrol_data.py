@@ -23,5 +23,3 @@ style_event_distribution(g, 'Time (s)', 'Trial number', trigger_text)
 
 # %% save
 g.savefig(soutput.event_histogram, dpi=300)
-
-# %%

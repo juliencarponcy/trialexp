@@ -1,5 +1,5 @@
 '''
-# This script will provide summary for the parameters used in a session and their changes, as well as session duration and sumary data from the last trial (the last line starting with #) for experiment notes
+# This script will provide summary for the parameters used in a session and their changes, as well as session duration and summary data from the last trial (the last line starting with #) for experiment notes
 
 You can compile this into standalone application
 1. install auto-py-to-exe
