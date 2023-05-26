@@ -4,8 +4,6 @@ import numpy as np
 import pandas as pd
 
 from neo.core import SpikeTrain # %% Extract and bin spikes by cluster_ID 
-import quantities as pq
-from elephant import kernels
 
 from trialexp.process.ephys.utils import dataframe_cleanup
 
