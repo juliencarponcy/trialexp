@@ -27,7 +27,14 @@ else:
     data_photometry = import_ppd(fn)
 
     data_photometry = denoise_filter(data_photometry)
-    # data_photometry = motion_correction(data_photometry)
+
+    #for comparison 
+    data_photometry = motion_correction(data_photometry)
+    data_photometry['analog_1_est_motion_all'] = data_photometry['analog_1_est_motion']
+    data_photometry['analog_1_corrected_all']  = data_photometry['analog_1_corrected']
+    data_photometry['analog_1_est_motion'] = None
+    data_photometry['analog_1_corrected'] = None
+
     data_photometry = motion_correction_win(data_photometry)
     data_photometry = compute_df_over_f(data_photometry, low_pass_cutoff=0.001)
 
@@ -77,8 +84,11 @@ df2plot = df_pycontrol[df_pycontrol.type == 'event']
 keys = df2plot.name.unique()
 
 photometry_keys =  ['analog_1', 'analog_2',  'analog_1_filt', 'analog_2_filt',
-                  'analog_1_est_motion', 'analog_1_corrected', 'analog_1_baseline_fluo',
-                  'analog_1_df_over_f','analog_2_baseline_fluo', 'analog_2_df_over_f']
+                  'analog_1_est_motion', 'analog_1_corrected', 
+                  'analog_1_baseline_fluo','analog_1_df_over_f',
+                  'analog_2_baseline_fluo', 'analog_2_df_over_f',
+                  'analog_1_est_motion_all', 'analog_1_corrected_all', 
+                  'analog_1_baseline_fluo_all','analog_1_df_over_f_all',]
 
 #%%
 '''
