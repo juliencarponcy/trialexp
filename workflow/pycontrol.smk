@@ -66,7 +66,7 @@ rule import_pyphotometry:
     output:
         xr_photometry = '{session_path}/{task}/{session_id}/processed/xr_photometry.nc',
         xr_session = '{session_path}/{task}/{session_id}/processed/xr_session.nc',
-        pyphoto_aligner = '{session_path}/{task}/{session_id}/processed/pyphoto_aligner.pkl'
+        pycontrol_aligner = '{session_path}/{task}/{session_id}/processed/pycontrol_aligner.pkl'
     script:
         'scripts/04_import_pyphotometry.py'
 
