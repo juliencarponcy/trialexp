@@ -57,6 +57,11 @@ for k in xr_session.data_vars.keys():
         g.set_xlabels('Time (ms)')
             
         g.figure.savefig(os.path.join(figure_dir, f'{k}.png'), dpi=300, bbox_inches='tight')
+        
+        # also save the heatmap
+        plt.figure(figsize=(4,4), dpi=3000)
+        xr_session[k].plot()
+        plt.gcf().savefig(os.path.join(figure_dir, f'{k}_heatmap.png'), dpi=300, bbox_inches='tight')
 
 xr_session.close()
 # %%

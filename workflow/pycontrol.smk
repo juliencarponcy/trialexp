@@ -66,13 +66,12 @@ rule import_pyphotometry:
     output:
         xr_photometry = '{session_path}/{task}/{session_id}/processed/xr_photometry.nc',
         xr_session = '{session_path}/{task}/{session_id}/processed/xr_session.nc',
-        pyphoto_aligner = '{session_path}/{task}/{session_id}/processed/pyphoto_aligner.pkl'
+        pycontrol_aligner = '{session_path}/{task}/{session_id}/processed/pycontrol_aligner.pkl'
     script:
         'scripts/04_import_pyphotometry.py'
 
 rule task_specifc_analysis:
     input:
-        pyphoto_aligner = '{session_path}/{task}/{session_id}/processed/pyphoto_aligner.pkl',
         event_dataframe = '{session_path}/{task}/{session_id}/processed/df_events_cond.pkl',
         xr_photometry = '{session_path}/{task}/{session_id}/processed/xr_photometry.nc',
         xr_session = '{session_path}/{task}/{session_id}/processed/xr_session.nc',
