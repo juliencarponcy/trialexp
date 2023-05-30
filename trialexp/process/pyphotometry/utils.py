@@ -595,18 +595,39 @@ def photometry2xarray(data_photometry, skip_var=None):
     
     return dataset
 
-def resample_event(pyphoto_aligner, ref_time, event_time, event_value, fill_value=-1):
+
+def align_photometry_to_pycontrol(xr_photometry, df_event, pycontrol_aligner):
+    # align the time coordinate
+    new_time = pycontrol_aligner.A_to_B(xr_photometry.time)
+    xr_photometry['time'] = new_time
+    xr_photometry = xr_photometry.sel(time=xr_photometry.time.notnull()) #don't know why but dropna doesn't work here
+
+    # interpolate and add in the trial_nb
+    f = interp1d(df_event.time, df_event.trial_nb, kind = 'previous', 
+            bounds_error=False, fill_value=-1)
+
+    trial = f(xr_photometry.time)
+    trial_xr = xr.DataArray(
+        trial.astype(np.int16), coords={'time':xr_photometry.time}, dims=('time')
+    )
+
+    xr_photometry['trial'] = trial_xr
+    
+    return xr_photometry
+        
+
+def resample_event(aligner, ref_time, event_time, event_value, fill_value=-1):
     """
     Resample an event to a reference time.
 
     Parameters
     ----------
-    pyphoto_aligner : object
+    aligner : object
         An instance of the Rsync_aligner class.
     ref_time : array-like
         Reference time points.
     event_time : array-like
-        Event time points.
+        Event time points to align to the ref_time.
     event_value : array-like
         Event values corresponding to the event time points.
     fill_value : float, optional
@@ -619,14 +640,14 @@ def resample_event(pyphoto_aligner, ref_time, event_time, event_value, fill_valu
         can contain NaN value if there is no overlap data
     """
     
-    new_time = pyphoto_aligner.A_to_B(event_time)
+    new_time = aligner.A_to_B(event_time)
     f = interp1d(new_time, event_value, kind = 'previous', 
                 bounds_error=False, fill_value=fill_value)
     
     return f(ref_time)
 
 
-def extract_event_data(trigger_timestamp, window, aligner, dataArray, sampling_rate, data_len =None, time_tolerance=5):
+def extract_event_data(trigger_timestamp, window, dataArray, sampling_rate, data_len =None, time_tolerance=5):
     '''
     Extract continous data around a timestamp. The original timestamp will be
     aligned to the coordinate of the dataArray with aligner
@@ -654,7 +675,7 @@ def extract_event_data(trigger_timestamp, window, aligner, dataArray, sampling_r
     '''
 
     
-    ts = aligner.A_to_B(trigger_timestamp)
+    ts = trigger_timestamp
     ref_time = dataArray.time
     data = []
     event_found = []
@@ -682,7 +703,6 @@ def extract_event_data(trigger_timestamp, window, aligner, dataArray, sampling_r
             event_found.append(False)
         
     # align to the longest element
-    # data =  np.vstack(list(itertools.zip_longest(*data)))
     data  = np.vstack(data)
     
     # if data_len is provide, perform additional check or correct the data length
@@ -789,7 +809,7 @@ def make_rel_time_xr(event_time, windows, pyphoto_aligner, ref_time):
     
     return rel_time
 
-def make_event_xr(event_time, trial_window, pyphoto_aligner,
+def make_event_xr(event_time, trial_window,
                   event_time_coordinate,  dataArray, sampling_rate):
     '''
     Create xarray.DataArray object for the continuous data around provided timestamp. 
@@ -800,12 +820,11 @@ def make_event_xr(event_time, trial_window, pyphoto_aligner,
             it is assumed to have a index corresponds to the trial number
         trial_window : tuple
             Tuple containing minimum and maximum value of time window for which data is to be extracted
-        pyphoto_aligner : Object
-            Object containing A_to_B() method for alignment of timestamp
         event_time_coordinate : array_like
             List of trial numbers corresponding to each event_time
         dataArray : array_like
-            Array containing time and data information
+            Array containing time and data information. note, the time coordinate of the dataArray
+            should be the same as in event_time
             
     Returns:
         da : xarray.DataArray
@@ -817,8 +836,7 @@ def make_event_xr(event_time, trial_window, pyphoto_aligner,
     
    
     assert event_time.index.name =='trial_nb', 'event_time should have a trial_nb index'
-    data, _ = extract_event_data(event_time, trial_window, pyphoto_aligner,
-                                dataArray, sampling_rate)
+    data, _ = extract_event_data(event_time, trial_window, dataArray, sampling_rate)
 
     da = xr.DataArray(
         data, coords={'event_time':event_time_coordinate, 
@@ -827,7 +845,7 @@ def make_event_xr(event_time, trial_window, pyphoto_aligner,
         
     return da
 
-def add_event_data(df_event, filter_func, trial_window, aligner,
+def add_event_data(df_event, filter_func, trial_window,
                    dataset, event_time_coordinate, data_var_name, 
                    event_name, sampling_rate, filter_func_kwargs={}):
     '''
@@ -864,7 +882,7 @@ def add_event_data(df_event, filter_func, trial_window, aligner,
     '''
 
     event_time = extract_event_time(df_event, filter_func, filter_func_kwargs)
-    xr_event_data = make_event_xr(event_time, trial_window, aligner,
+    xr_event_data = make_event_xr(event_time, trial_window,
                                             event_time_coordinate,
                                             dataset[data_var_name], sampling_rate)
     dataset[f'{event_name}_{data_var_name}'] = xr_event_data

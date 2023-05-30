@@ -43,20 +43,13 @@ trial_window = df_event.attrs['trial_window']
 rsync_time = df_pycontrol[df_pycontrol.name=='rsync'].time
 photo_rsync = dataset.attrs['pulse_times_2']
 
-#align pycontrol time to pyphotometry
-pyphoto_aligner = Rsync_aligner(pulse_times_A= rsync_time, 
-                pulse_times_B= photo_rsync, plot=False) #align pycontrol time to pyphotometry time
+#align pyphotometry time to pycontrol
+pycontrol_aligner = Rsync_aligner(pulse_times_A=  photo_rsync,
+                pulse_times_B= rsync_time, plot=False) #align pycontrol time to pyphotometry time
 
 
-#%% Add in trial number
-trial = resample_event(pyphoto_aligner, dataset.time, df_event.time, df_event.trial_nb)
-trial_xr = xr.DataArray(
-    trial.astype(np.int16), coords={'time':dataset.time}, dims=('time')
-)
+dataset = align_photometry_to_pycontrol(dataset, df_event, pycontrol_aligner)
 
-#Note: there will be NaN in trial number because any sample before the first pycontrol event after
-# the start of pyphotometry is undefined
-dataset['trial'] = trial_xr
 
 #%% Add in the relative time to different events
 event_period = (trial_window[1] - trial_window[0])/1000
@@ -66,24 +59,22 @@ event_time_coord= np.linspace(trial_window[0], trial_window[1], int(event_period
 #%% Add trigger
 trigger = df_event.attrs['triggers'][0]
 add_event_data(df_event, event_filters.get_first_event_from_name,
-               trial_window, pyphoto_aligner, dataset, event_time_coord, 
+               trial_window, dataset, event_time_coord, 
                'zscored_df_over_f', trigger, dataset.attrs['sampling_rate'],
                filter_func_kwargs={'evt_name':trigger})
 
 #%% Add first bar off
-add_event_data(df_event, event_filters.get_first_bar_off, trial_window,
-               pyphoto_aligner, dataset,event_time_coord, 
+add_event_data(df_event, event_filters.get_first_bar_off, trial_window, dataset,event_time_coord, 
                'zscored_df_over_f', 'first_bar_off', dataset.attrs['sampling_rate'])
 
 #%% Add first spout
-add_event_data(df_event, event_filters.get_first_spout, trial_window,
-               pyphoto_aligner, dataset, event_time_coord, 
+add_event_data(df_event, event_filters.get_first_spout, trial_window, dataset, event_time_coord, 
                'zscored_df_over_f', 'first_spout', dataset.attrs['sampling_rate'])
 
 #%% Add last bar_off before first spout
 
 add_event_data(df_event, event_filters.get_last_bar_off_before_first_spout, trial_window,
-               pyphoto_aligner, dataset,event_time_coord, 
+               dataset,event_time_coord, 
                'zscored_df_over_f', 'last_bar_off', dataset.attrs['sampling_rate'])
 
 
@@ -116,6 +107,6 @@ xr_session.to_netcdf(soutput.xr_session, engine='h5netcdf')
 
 # %%
 #Also save the pyphoto_aligner
-with open(soutput.pyphoto_aligner, 'wb') as f:
-  pickle.dump(pyphoto_aligner, f)
+with open(soutput.pycontrol_aligner, 'wb') as f:
+  pickle.dump(pycontrol_aligner, f)
 # %%

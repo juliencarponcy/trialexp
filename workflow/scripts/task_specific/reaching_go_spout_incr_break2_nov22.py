@@ -25,21 +25,16 @@ import seaborn as sns
 df_event = pd.read_pickle(sinput.event_dataframe)
 xr_session =  xr.load_dataset(sinput.xr_session) # load for modification
 xr_photometry = xr.load_dataset(sinput.xr_photometry, engine='h5netcdf')
-with open(sinput.pyphoto_aligner, 'rb') as f:
-    pyphoto_aligner = pickle.load(f)
-#%%
 trial_window = xr_session.attrs['trial_window']
 
 #%%
 
-add_event_data(df_event, extract_clean_trigger_event, trial_window,
-               pyphoto_aligner, xr_photometry, xr_photometry.event_time, 
+add_event_data(df_event, extract_clean_trigger_event, trial_window, xr_photometry, xr_photometry.event_time, 
                'zscored_df_over_f', 'clean_busy_win', xr_photometry.attrs['sampling_rate'], 
               filter_func_kwargs = dict(clean_window = [-1000,1000], target_event_name='busy_win'))
 
 #%%
-add_event_data(df_event, extract_clean_trigger_event, trial_window,
-               pyphoto_aligner, xr_photometry, xr_photometry.event_time, 
+add_event_data(df_event, extract_clean_trigger_event, trial_window, xr_photometry, xr_photometry.event_time, 
                'zscored_df_over_f', 'clean_spout', xr_photometry.attrs['sampling_rate'], 
               filter_func_kwargs = dict(clean_window = [-1000,1000], target_event_name='spout', ignore_events=['spout_off','bar_off']))
 
