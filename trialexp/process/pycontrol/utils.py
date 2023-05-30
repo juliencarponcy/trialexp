@@ -357,6 +357,8 @@ def export_session(df:pd.DataFrame, keys: list = None, export_state=True, print_
 
         verbose :bool = False
 
+        file_comment: str = None
+            Add File Comment 0
 
         """
 
@@ -375,6 +377,8 @@ def export_session(df:pd.DataFrame, keys: list = None, export_state=True, print_
         else:
             spike2exporter = Spike2Exporter(smrx_filename, df.time.max(), verbose)
             
+        if file_comment != None:
+            spike2exporter.MyFile.SetFileComment(0, file_comment)
         
         def extract_states(df_pycontrol):
             # extract the onset and offset of state automatically
