@@ -304,8 +304,10 @@ def export_session(df:pd.DataFrame, keys: list = None, export_state=True, print_
                     event_ms: list = None, smrx_filename: str = None, verbose :bool = False,
                     print_lines : list = None,
                     v_lines : list = None,
-                    data_photometry: dict = None, photometry_times_pyc: np.ndarray = None,
-                    photometry_keys: list = None):
+                    data_photometry: dict = None, 
+                    photometry_times_pyc: np.ndarray = None,
+                    photometry_keys: list = None,
+                    file_comment: str = None):
         """
         Visualise a session using Spike2
 
@@ -376,7 +378,7 @@ def export_session(df:pd.DataFrame, keys: list = None, export_state=True, print_
             raise ValueError('You must specify the smrx_filename filename if you want to export file')
         else:
             spike2exporter = Spike2Exporter(smrx_filename, df.time.max(), verbose)
-            
+        
         if file_comment != None:
             spike2exporter.MyFile.SetFileComment(0, file_comment)
         

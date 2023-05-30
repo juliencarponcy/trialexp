@@ -90,6 +90,8 @@ photometry_keys =  ['analog_1', 'analog_2',  'analog_1_filt', 'analog_2_filt',
                   'analog_1_est_motion_all', 'analog_1_corrected_all', 
                   'analog_1_baseline_fluo_all','analog_1_df_over_f_all',]
 
+session_name = os.path.basename(os.path.dirname(sinput.pycontrol_folder))
+
 #%%
 '''
 sonpy holds a reference of the smrx file in memory, this will result in resource busy error
@@ -111,5 +113,6 @@ else:
         photometry_keys = photometry_keys,
         print_lines = print_lines,
         v_lines = v_lines,
-        smrx_filename=str(spike2_path))
+        smrx_filename=str(spike2_path),
+        file_comment = session_name)
     
