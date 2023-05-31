@@ -186,6 +186,10 @@ def extract_trial_by_trigger(df_pycontrol, trigger, event2analysis, trial_window
     # add trial number and calculate the time from trigger
     trigger_time = df_events[(df_events.name==trigger)].time.values
     df_events, trigger_time = add_trial_nb(df_events, trigger_time,trial_window) #add trial number according to the trigger
+    
+    if len(trigger_time) == 0:
+        raise ValueError('Error: No trial can be found')
+    
     df_events = df_events.groupby('trial_nb', group_keys=False).apply(get_rel_time, trigger_name=trigger)
     df_events.dropna(subset=['trial_time'],inplace=True)
     
