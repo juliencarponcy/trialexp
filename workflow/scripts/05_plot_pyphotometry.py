@@ -41,7 +41,7 @@ sns.set_context('paper')
 
 skip_outcome = ['button_press'] #outcome variable to skip plotting (e.g. due to having too large variance)
 
-for k in xr_session.data_vars.keys():
+for k in sorted(xr_session.data_vars.keys()):
     da = xr_session[k]
     
     if 'event_time' in da.coords: # choose data varialbes that are event related
@@ -50,7 +50,7 @@ for k in xr_session.data_vars.keys():
         trial_outcome = df2plot['trial_outcome'].unique()
         
         g = sns.FacetGrid(df2plot, col='trial_outcome', col_wrap=3, hue='trial_outcome')
-        g.map_dataframe(plot_and_handler_error, sns.lineplot, x='event_time', y=k)
+        g.map_dataframe(plot_and_handler_error, sns.lineplot, x='event_time', y=k, n_boot=5)
         g.map_dataframe(annotate_trial_number)
         g.set_titles(col_template='{col_name}')
         g.set_xlabels('Time (ms)')

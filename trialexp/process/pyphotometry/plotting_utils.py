@@ -1,9 +1,12 @@
 import matplotlib.pylab as plt
 import numpy as np 
+from trialexp.process.pycontrol.plot_utils import trial_outcome_palette
 
 def plot_and_handler_error(plot_func, **kwargs):
     # helper function to handle the error when a certain facet is nil
     if len(kwargs['data'].dropna())>0:
+        trial_outcome = kwargs['data']['trial_outcome'].iloc[0]
+        kwargs['color'] = trial_outcome_palette[trial_outcome]
         plot_func(**kwargs)
   
 def annotate_trial_number(data, **kwargs):
