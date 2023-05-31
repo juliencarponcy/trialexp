@@ -50,7 +50,7 @@ for k in sorted(xr_session.data_vars.keys()):
         trial_outcome = df2plot['trial_outcome'].unique()
         
         g = sns.FacetGrid(df2plot, col='trial_outcome', col_wrap=3, hue='trial_outcome')
-        g.map_dataframe(plot_and_handler_error, sns.lineplot, x='event_time', y=k, n_boot=5)
+        g.map_dataframe(plot_and_handler_error, sns.lineplot, x='event_time', y=k)
         g.map_dataframe(annotate_trial_number)
         g.set_titles(col_template='{col_name}')
         g.set_xlabels('Time (ms)')
