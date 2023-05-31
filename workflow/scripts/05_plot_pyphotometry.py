@@ -4,7 +4,7 @@ Plotting of photometry data
 '''
 #%%
 from snakehelper.SnakeIOHelper import getSnake
-from trialexp.process.pyphotometry.plotting_utils import annotate_trial_number, plot_and_handler_error
+from trialexp.process.pyphotometry.plotting_utils import annotate_trial_number, plot_and_handler_error, plot_pyphoto_heatmap
 from trialexp.process.pyphotometry.utils import *
 from glob import glob
 import xarray as xr
@@ -42,7 +42,6 @@ sns.set_context('paper')
 skip_outcome = ['button_press'] #outcome variable to skip plotting (e.g. due to having too large variance)
 
 for k in xr_session.data_vars.keys():
-    
     da = xr_session[k]
     
     if 'event_time' in da.coords: # choose data varialbes that are event related
@@ -58,10 +57,10 @@ for k in xr_session.data_vars.keys():
             
         g.figure.savefig(os.path.join(figure_dir, f'{k}.png'), dpi=300, bbox_inches='tight')
         
-        # also save the heatmap
-        plt.figure(figsize=(4,4), dpi=3000)
-        xr_session[k].plot()
-        plt.gcf().savefig(os.path.join(figure_dir, f'{k}_heatmap.png'), dpi=300, bbox_inches='tight')
+        # plot heatmap
+        fig = plot_pyphoto_heatmap(xr_session[k])
+        fig.savefig(os.path.join(figure_dir, f'{k}_heatmap.png'), dpi=300, bbox_inches='tight')
 
 xr_session.close()
+
 # %%
