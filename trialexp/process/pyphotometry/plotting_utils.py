@@ -20,12 +20,16 @@ def annotate_trial_number(data, **kwargs):
     
 def plot_pyphoto_heatmap(dataArray):
     # calculate the proper color scale
-    plt.figure(figsize=(4,4), dpi=300)
+    fig = plt.figure(figsize=(4,4), dpi=300)
     x = dataArray.data
     x = x[~np.isnan(x)]
-    vmax = np.percentile(x,99)
-    vmin = np.percentile(x,1)
     
-    quadMesh = dataArray.plot(vmax=vmax, vmin=-vmax, cmap='vlag')
-    
-    return quadMesh.figure
+    if len(x)>0:
+        vmax = np.percentile(x,99)
+        vmin = np.percentile(x,1)
+        
+        quadMesh = dataArray.plot(vmax=vmax, vmin=-vmax, cmap='vlag')
+        
+        return quadMesh.figure
+    else:
+        return fig
