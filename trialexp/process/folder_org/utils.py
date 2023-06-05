@@ -10,7 +10,9 @@ import pandas as pd
 from tqdm.auto import tqdm
 import xarray as xr
 
-def build_session_info(root_path):
+def build_session_info(root_path, load_pycontrol=False, 
+                       pycontrol_parameters=None,
+                       param_extract_method='tail'):
     """
     This function takes a root path as input and creates a session info from the folders at that path.
     It parses the folder name with a regular expression to extract information about the animal id,
@@ -18,8 +20,10 @@ def build_session_info(root_path):
     as well as a calculated session number for each animal based on the experiment date/time.
 
     Args:
-    - root_path: A string representing the root path where the session folders are located.
-
+    - root_path (Path): A string representing the root path where the session folders are located.
+    - load_pycontrol (bool): whether to load the pycontrol data to extract variable parameters
+    - param_extract_method (str): how to extract the parameters from each pycontrol file, can be tail or head
+    
     Returns:
     - df_session_info: A Pandas dataframe containing the session information.
     """
@@ -46,13 +50,48 @@ def build_session_info(root_path):
                     'session_id':session_id,
                     'task_name':task_name,
                     'path':session_path}
+            
+    def load_pycontrol_variables(session_path, parameters, param_extract_method='tail'):
+        session_id = session_path.name
+
+        try:
+            df_pycontrol = pd.read_pickle(session_path/'processed'/'df_pycontrol.pkl')
+            # extract the parameter change, reshape them, and get the first/last value
+            df_parameters = df_pycontrol[df_pycontrol.type=='parameters']
+            df_parameters= df_parameters[df_parameters['name'].isin(parameters)]
+            df_parameters = df_parameters.pivot(columns=['name'], values='value')
+            df_parameters = df_parameters.fillna(method='ffill')
+            df_parameters = df_parameters.dropna()
+            df_parameters['session_id'] = session_id
+            
+            if not df_parameters.empty:
+                if param_extract_method=='tail':
+                    return df_parameters.tail(1)
+                else:
+                    return df_parameters.head(1)
+        except FileNotFoundError:
+            pass
+
+        
 
     session_info = [parse_session_path(p) for p in paths]
     df_session_info = pd.DataFrame(session_info)
     
+
+    
     # Calculate the session number
     df_session_info['session_no'] = df_session_info.groupby(['animal_id','task_name'])['expt_datetime'].rank()
 
+    
+    if load_pycontrol:
+        if pycontrol_parameters is None:
+            raise ValueError('You need to set the parameters to extract')
+        
+        df_parameters = pd.concat([load_pycontrol_variables(p,pycontrol_parameters,param_extract_method) for p in paths])
+
+        #merge the paramteres to df_session_info
+        df_session_info = df_session_info.merge(df_parameters, on='session_id')
+    
     return df_session_info
 
 def load_datasets(session_paths):
