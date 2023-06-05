@@ -9,6 +9,7 @@ import re
 import pandas as pd 
 from tqdm.auto import tqdm
 import xarray as xr
+import numpy as np 
 
 def build_session_info(root_path, load_pycontrol=False, 
                        pycontrol_parameters=None,
@@ -142,9 +143,12 @@ def filter_sessions(df_session_info, animal_id=None,
     
     if animal_id is not None:
         if type(animal_id) is str:
-            df = df[df_session_info.animal_id.str.contains(animal_id)]
+            df = df[df.animal_id.str.contains(animal_id)]
         else:
-            df = df[df_session_info.animal_id.isin(animal_id)]
+            mask = np.zeros((len(df),)).astype(bool)
+            for id in animal_id:
+                mask = mask | df.animal_id.str.contains(id)
+            df = df[mask]
 
         
     if session_no is not None:
