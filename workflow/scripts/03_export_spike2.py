@@ -9,7 +9,9 @@ from workflow.scripts import settings
 from re import match
 from pathlib import Path
 from trialexp.process.pyphotometry.utils import *
+from scipy.stats import zscore
 import os
+
 #%%
 
 (sinput, soutput) = getSnake(locals(), 'workflow/pycontrol.smk',
@@ -17,6 +19,7 @@ import os
     'export_spike2')
 
 #%% Photometry dict
+# no down-sampling here
 
 #fn = glob(sinput.photometry_folder+'\*.ppd')[0]
 fn = list(Path(sinput.photometry_folder).glob('*.ppd'))
@@ -27,19 +30,19 @@ else:
     data_photometry = import_ppd(fn)
 
     data_photometry = denoise_filter(data_photometry)
-
-    #for comparison 
     data_photometry = motion_correction(data_photometry)
-    data_photometry['analog_1_est_motion_all'] = data_photometry['analog_1_est_motion']
-    data_photometry['analog_1_corrected_all']  = data_photometry['analog_1_corrected']
-    data_photometry['analog_1_est_motion'] = None
-    data_photometry['analog_1_corrected'] = None
-
-    data_photometry = motion_correction_win(data_photometry)
     data_photometry = compute_df_over_f(data_photometry, low_pass_cutoff=0.001)
+    data_photometry = compute_zscore(data_photometry)
 
 
-# no down-sampling here
+    data_photometry = compute_df_over_f2(data_photometry, low_pass_cutoff=0.001)
+    data_photometry = motion_correction_win(data_photometry)
+    data_photometry['zscored_df_over_f_win'] = zscore(data_photometry['analog_1_corrected_win'])
+
+    data_photometry = motion_correction_smooth_with_previous(data_photometry)
+    data_photometry['zscored_df_over_f_smt'] = zscore(data_photometry['analog_1_corrected_smt'])
+
+
 
 #%% Load data
 df_pycontrol = pd.read_pickle(sinput.pycontrol_dataframe)
@@ -83,12 +86,18 @@ df2plot = df_pycontrol[df_pycontrol.type == 'event']
 
 keys = df2plot.name.unique()
 
-photometry_keys =  ['analog_1', 'analog_2',  'analog_1_filt', 'analog_2_filt',
-                  'analog_1_est_motion', 'analog_1_corrected', 
-                  'analog_1_baseline_fluo','analog_1_df_over_f',
-                  'analog_2_baseline_fluo', 'analog_2_df_over_f',
-                  'analog_1_est_motion_all', 'analog_1_corrected_all', 
-                  'analog_1_baseline_fluo_all','analog_1_df_over_f_all',]
+photometry_keys =  ['analog_1', 'analog_2',  
+                  'analog_1_filt', 'analog_2_filt',
+                  'analog_1_baseline_fluo',
+                  'analog_1_est_motion', 'analog_1_corrected',
+                  'analog_1_df_over_f', 'analog_2_df_over_f',
+                  'zscored_df_over_f,', 
+                  'analog_1_baseline_fluo_win', 'analog_2_baseline_fluo_win', 
+                  'analog_1_df_over_f_win', 'analog_2_df_over_f_win',
+                  'analog_1_est_motion_win','analog_1_corrected_win',
+                  'zscored_df_over_f_win',
+                  'analog_1_est_motion_smt', 'analog_1_corrected_smt',
+                  'zscored_df_over_f_smt']
 
 session_name = os.path.basename(os.path.dirname(sinput.pycontrol_folder))
 
@@ -116,3 +125,4 @@ else:
         smrx_filename=str(spike2_path),
         file_comment = session_name)
     
+# %%

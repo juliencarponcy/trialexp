@@ -61,13 +61,14 @@ def denoise_filter(photometry_dict:dict, lowpass_freq = 20) -> dict:
     
 def motion_correction_win(photometry_dict: dict) -> dict:
 
-    if any(['analog_1_filt' not in photometry_dict, 'analog_2_filt' not in photometry_dict]):
-        raise Exception('Analog 1 and Analog 2 must be filtered before motion correction')
-
+    # if any(['analog_1_filt' not in photometry_dict, 'analog_2_filt' not in photometry_dict]):
+    #     raise Exception('Analog 1 and Analog 2 must be filtered before motion correction')
+    if any(['analog_1_df_over_f_win' not in photometry_dict, 'analog_2_df_over_f_win' not in photometry_dict]):
+        raise Exception('analog_1_df_over_f_win and analog_2_df_over_f_win are expected before motion correction')
 
     try:
 
-        win_size_s = 30
+        win_size_s = 120 #NOTE 30 may be too small
 
         n_win_size = int(win_size_s * photometry_dict['sampling_rate'])
         n_overlap = int(n_win_size/2)  # 50% overlap
@@ -98,7 +99,7 @@ def motion_correction_win(photometry_dict: dict) -> dict:
         p_vals = []
         r_vals = []
         for start_ind, chunk1, chunk2 in overlapping_chunks(
-                photometry_dict['analog_1_filt'], photometry_dict['analog_2_filt'], 
+                photometry_dict['analog_1_df_over_f_win'], photometry_dict['analog_2_df_over_f_win'], 
                 n_win_size, n_overlap):
             slope, intercept, r_value, p_value, std_err = linregress(chunk2, chunk1)
 
@@ -108,7 +109,8 @@ def motion_correction_win(photometry_dict: dict) -> dict:
             p_vals.append(p_value)
             r_vals.append(r_value)
 
-        analog_1_est_motion_joined = np.zeros(np.size(photometry_dict['analog_1_filt']))
+        analog_1_est_motion_joined = np.zeros(
+            np.size(photometry_dict['analog_1_df_over_f_win']))
 
         step_size = n_win_size - int(n_win_size) // int(n_win_size/n_overlap)
 
@@ -140,15 +142,83 @@ def motion_correction_win(photometry_dict: dict) -> dict:
             elif i == len(start_index_chunks):
                 print('should not happen')
 
-        photometry_dict['analog_1_est_motion'] = analog_1_est_motion_joined
-        photometry_dict['analog_1_corrected'] = photometry_dict['analog_1_filt'] - analog_1_est_motion_joined
-        photometry_dict['motion_corrected'] = 1
+        photometry_dict['analog_1_est_motion_win'] = analog_1_est_motion_joined
+        photometry_dict['analog_1_corrected_win'] = photometry_dict['analog_1_filt'] - analog_1_est_motion_joined
+        photometry_dict['motion_corrected_win'] = 1
 
     except ValueError:
         print('Motion correction failed. Skipping motion correction')
         # probably due to saturation , do not do motion correction
-        photometry_dict['analog_1_corrected'] = photometry_dict['analog_1_filt']
-        photometry_dict['motion_corrected'] = 0
+        photometry_dict['analog_1_corrected_win'] = photometry_dict['analog_1_filt']
+        photometry_dict['motion_corrected_win'] = 0
+
+    return photometry_dict
+
+
+def motion_correction_smooth_with_previous(photometry_dict: dict) -> dict:
+
+    # if any(['analog_1_filt' not in photometry_dict, 'analog_2_filt' not in photometry_dict]):
+    #     raise Exception('Analog 1 and Analog 2 must be filtered before motion correction')
+    if any(['analog_1_df_over_f_win' not in photometry_dict, 'analog_2_df_over_f_win' not in photometry_dict]):
+        raise Exception('analog_1_df_over_f_win and analog_2_df_over_f_win are expected before motion correction')
+
+    try:
+
+        win_size_s = 120
+        alpha = 0.7 # the weight for the current slope and intercept; (1- alpha) for the previous
+
+        n_win_size = int(win_size_s * photometry_dict['sampling_rate'])
+
+        def overlapping_chunks(data1, data2, n_win_size: int):
+
+            step_size = n_win_size
+            for i in range(0, len(data1), step_size):
+                if i + n_win_size <= len(data1): # If a full-sized chunk can be taken
+                    yield i, data1[i:i + n_win_size], data2[i:i + n_win_size]
+                else:  # If only a truncated chunk can be taken
+                    yield i, data1[i:], data2[i:]
+
+        start_index_chunks = []
+        analog_1_est_motion_chunks = []
+        p_vals = []
+        r_vals = []
+        slopes = []
+        intercepts = []
+        k = 0
+        for start_ind, chunk1, chunk2 in overlapping_chunks(
+                photometry_dict['analog_1_df_over_f_win'], photometry_dict['analog_2_df_over_f_win'], 
+                n_win_size):
+            slope, intercept, r_value, p_value, std_err = linregress(chunk2, chunk1)
+            slopes.append(slope)
+            intercepts.append(intercept)
+
+            start_index_chunks.append(start_ind)
+
+            if k == 0:
+                analog_1_est_motion_chunks.append(slope * chunk2 + intercept) #TODO
+            else:
+                #NOTE use alpha to mix the parameters with the previous chunk
+                analog_1_est_motion_chunks.append( \
+                    (alpha * slope + (1 -alpha)  * slopes[-2])  * chunk2 \
+                    + alpha * intercept + (1 - alpha) * intercepts[-2]) #TODO
+                pass
+            p_vals.append(p_value)
+            r_vals.append(r_value)
+
+            k += 1
+
+        analog_1_est_motion_joined = np.concatenate(analog_1_est_motion_chunks)
+
+        photometry_dict['analog_1_est_motion_smt'] = analog_1_est_motion_joined
+        photometry_dict['analog_1_corrected_smt'] = photometry_dict['analog_1_df_over_f_win'] - analog_1_est_motion_joined
+        photometry_dict['motion_corrected_smt'] = 1
+        # smt stands for smoothing
+
+    except ValueError:
+        print('Motion correction failed. Skipping motion correction')
+        # probably due to saturation , do not do motion correction
+        photometry_dict['analog_1_corrected_smt'] = photometry_dict['analog_1_df_over_f_win']
+        photometry_dict['motion_corrected_smt'] = 0
 
     return photometry_dict
 
@@ -184,6 +254,21 @@ def compute_df_over_f(photometry_dict: dict, low_pass_cutoff: float = 0.001) -> 
     # Now calculate the dF/F by dividing the motion corrected signal by the time varying baseline fluorescence.
     photometry_dict['analog_1_df_over_f'] = photometry_dict['analog_1_corrected'] / photometry_dict['analog_1_baseline_fluo'] 
     photometry_dict['analog_2_df_over_f'] = photometry_dict['analog_2_filt'] / photometry_dict['analog_2_baseline_fluo']
+    
+    return photometry_dict
+
+def compute_df_over_f2(photometry_dict: dict, low_pass_cutoff: float = 0.001) -> dict:
+    
+    if 'analog_1_corrected' not in photometry_dict:
+        raise Exception('Analog 1 must be motion corrected before computing dF/F')
+    
+    b,a = butter(2, low_pass_cutoff, btype='low', fs=photometry_dict['sampling_rate'])
+    photometry_dict['analog_1_baseline_fluo_win'] = filtfilt(b,a, photometry_dict['analog_1_filt'], padtype='even')
+    photometry_dict['analog_2_baseline_fluo_win'] = filtfilt(b,a, photometry_dict['analog_2_filt'], padtype='even')
+
+    # Now calculate the dF/F by dividing the motion corrected signal by the time varying baseline fluorescence.
+    photometry_dict['analog_1_df_over_f_win'] = (photometry_dict['analog_1_corrected'] - photometry_dict['analog_1_baseline_fluo']) / photometry_dict['analog_1_baseline_fluo'] 
+    photometry_dict['analog_2_df_over_f_win'] = (photometry_dict['analog_2_filt'] -  photometry_dict['analog_2_baseline_fluo']) / photometry_dict['analog_2_baseline_fluo']
     
     return photometry_dict
 

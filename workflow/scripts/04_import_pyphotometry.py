@@ -14,6 +14,7 @@ from trialexp.process.pycontrol.event_filters import extract_event_time
 from workflow.scripts import settings
 from pathlib import Path
 import pickle
+
 #%% Load inputs
 
 (sinput, soutput) = getSnake(locals(), 'workflow/pycontrol.smk',
@@ -25,12 +26,20 @@ import pickle
 fn = list(Path(sinput.photometry_folder).glob('*.ppd'))[0]
 data_photometry = import_ppd(fn)
 data_photometry = denoise_filter(data_photometry)
-data_photometry = motion_correction_win(data_photometry)
+
+data_photometry = motion_correction(data_photometry)
 data_photometry = compute_df_over_f(data_photometry, low_pass_cutoff=0.001)
 data_photometry = compute_zscore(data_photometry)
 
+data_photometry = compute_df_over_f2(data_photometry, low_pass_cutoff=0.001)
+data_photometry = motion_correction_win(data_photometry)
+data_photometry = compute_zscore(data_photometry)
+
+
+
 #%% Convert to xarray
-skip_var = ['analog_1_est_motion','analog_1_corrected', 'analog_1_baseline_fluo', 'analog_2_baseline_fluo']
+skip_var = ['analog_1_est_motion','analog_1_corrected', 'analog_1_baseline_fluo',
+             'analog_2_baseline_fluo']
 dataset = photometry2xarray(data_photometry, skip_var = skip_var)
  
 #%% Load pycontrol file
