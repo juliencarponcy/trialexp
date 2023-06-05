@@ -11,7 +11,7 @@ var list%[400];
 
 if ViewKind(vh%) = 0 then
     
-    YAxisMode(8196, 1, 12, 0);
+    YAxisMode(8196, 1, 25, 0);
     XAxisMode(4);
     FontSet("Arial",9, 0); 'set view font
 
@@ -34,7 +34,9 @@ if ViewKind(vh%) = 0 then
         MarkShow(chan%, 0, 0); 'Set marker to display and modenext;
     next;
 
-    XAxisStyle(2, 0, 0);
+    XAxisStyle(1, 0, 0); ' in seconds
+    ' XAxisStyle(2, 0, 0); ' in hh:mm:ss
+    
     XAxisAttrib(0);
     XRange(0, MaxTime());
     
@@ -53,7 +55,7 @@ else
         
         FontSet("Arial",9, 0); 'set view font
         
-        YAxisMode(8196, 1,20, 0);
+        YAxisMode(8196, 1,25, 0);
         XAxisMode(4);
         XAxisStyle(1, 0, 0.5);
         XAxisAttrib(0);        
