@@ -35,9 +35,16 @@ tasks_params_df = pd.read_csv(tasks_params_path)
 tasks = tasks_params_df.task.values.tolist()
 
 skip_existing = True #whether to skip existing folders
+task_to_copy = ['reaching_go_spout_bar_nov22', 
+                'reaching_go_spout_incr_break2_nov22',
+                'pavlovian_spontanous_reaching_march23'] #task name to copy, if empty then search for all tasks
 # %%
 
 for task_id, task in enumerate(tasks):
+    
+    if len(task_to_copy)>0:
+        if not task in task_to_copy:
+            continue
 
     print(f'task {task_id+1}/{len(tasks)}: {task}')
     export_base_path = SESSION_ROOT_DIR/f'{task}'
