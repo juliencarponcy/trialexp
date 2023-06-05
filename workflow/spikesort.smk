@@ -186,6 +186,13 @@ rule cells_to_xarray:
     script:
         "scripts/s09_cell_to_xarray.py"
 
+rule cell_anatomy:
+    input:
+        xr_spikes_trials = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials.nc',
+        xr_spikes_trials_phases = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials_phases.nc',
+        xr_spikes_session = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_session.nc'
+    output:
+        anatomy_complete = touch('{sessions}/{task_path}/{session_id}/processed/anatomy.done')
 # rule session_correlations:
 #     input:
 #         xr_spikes_session = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_session.nc'
