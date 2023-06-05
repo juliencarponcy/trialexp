@@ -89,6 +89,7 @@ def build_session_info(root_path, load_pycontrol=False,
         
         df_parameters = pd.concat([load_pycontrol_variables(p,pycontrol_parameters,param_extract_method) for p in paths])
 
+        
         #merge the paramteres to df_session_info
         df_session_info = df_session_info.merge(df_parameters, on='session_id')
     
@@ -114,7 +115,9 @@ def load_and_concat_dataset(session_paths):
     print('Concating datasets...')
     return xr.combine_nested(ds_list,'session_id')
 
-def filter_sessions(df_session_info, animal_id=None, session_no=None, session_method='exact', task_name=None):
+def filter_sessions(df_session_info, animal_id=None, 
+                    session_no=None, session_method='exact', task_name=None,
+                    query=None):
     """
     Filter a dataframe of session information based on various criteria
     
@@ -129,7 +132,7 @@ def filter_sessions(df_session_info, animal_id=None, session_no=None, session_me
         'head' will choose the first n of sessions
         'between' will choose the session between two specified number
     task_name (str or list of str, optional): Filter by task name(s)
-    
+    query (str): additional query for the pandas query function
     Returns:
     pd.DataFrame: A filtered version of the input dataframe
     """
@@ -163,5 +166,8 @@ def filter_sessions(df_session_info, animal_id=None, session_no=None, session_me
         if type(task_name) is not list:
             task_name = [task_name]
         df = df[df.task_name.isin(task_name)]
+        
+    if query is not None:
+        df = df.query(query)
         
     return df
