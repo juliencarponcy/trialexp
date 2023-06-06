@@ -102,6 +102,7 @@ def load_datasets(session_paths):
         fn = p/'processed'/'xr_session.nc'
         try:
             ds = xr.open_dataset(fn) 
+            # print(np.unique(np.diff(ds.event_time.data)), ds.event_time.data[-1], p)
             ds = ds.drop_dims('time') # for performance reason
             ds_list.append(ds)
             ds.close()

@@ -1,5 +1,52 @@
 import matplotlib.pylab as plt
 import seaborn as sns
+import numpy as np 
+import pandas as pd
+
+def calculate_grand_trial_nb(df):
+    # calcualte the grand trial nubmer across sessions
+
+    df = df.sort_values('expt_datetime')
+    
+    # sort by expt date time and then cumsum over trial
+    df = df.dropna()
+    df = df[['animal_id','expt_datetime','trial_nb']]
+    df_trial_nb = df.groupby(['animal_id','expt_datetime','trial_nb']).first().reset_index()
+    df_trial_nb = df_trial_nb.sort_values(['expt_datetime','trial_nb']) # to be safe
+    df_trial_nb['grand_trial_nb'] = 1
+    df_trial_nb['grand_trial_nb'] = df_trial_nb.groupby('animal_id')['grand_trial_nb'].transform(pd.Series.cumsum)
+    return df_trial_nb
+
+def sample_trials(df_subject, n_sample):
+    # randomly sample the trial of each subject
+    
+    if not 'grand_trial_nb' in df_subject:
+        raise ValueError('grand_trial_nb must be in dataframe')
+    
+    max_trial_nb = df_subject.grand_trial_nb.max()
+    sel_trials = np.random.choice(np.arange(max_trial_nb)+1, n_sample, replace=False)
+    return df_subject[df_subject.grand_trial_nb.isin(sel_trials)]
+
+def equal_subsample_trials(df2plot):
+    # Randomly sample a fix number of trial for each subjects
+    
+    # calcualte the grand trial number across sessions
+    df_trial_nb = calculate_grand_trial_nb(df2plot)
+    
+    # merge the grand trial number back to the original dataframe
+    df2plot = df2plot.merge(df_trial_nb, on=['expt_datetime','trial_nb','animal_id'])
+
+    # Use the max no. trial of all animals as the sample
+    n_sample = df2plot.groupby('animal_id').grand_trial_nb.max().min()
+    
+    print(f'Using {n_sample} trials for each subjects')
+    
+    # sample
+    df2plot = df2plot.groupby('animal_id').apply(sample_trials, n_sample=n_sample).droplevel(0).reset_index()
+    #drop the animal_id level so that we can reset back to the normal dataframe
+    
+    return df2plot
+    
 
 def plot_subject_average(ds_combined, animal_id, var_name):
 
@@ -22,7 +69,9 @@ def plot_subject_average(ds_combined, animal_id, var_name):
     
     return g.figure
 
-def plot_group_average(ds_combined, animal_id, var_name):
+def plot_group_average(ds_combined, animal_id, var_name, average_method='trial'):
+    # average_method = mean_of_mean, equal_subsample, trial 
+    
     fig, ax = plt.subplots(1,1,dpi=90, figsize=(6,6))
     df2plot = ds_combined[[var_name, 'trial_outcome','session_id']].to_dataframe().reset_index()
 
@@ -33,6 +82,13 @@ def plot_group_average(ds_combined, animal_id, var_name):
 
     #merge the animal_id back to the data frame
     df2plot = df2plot.merge(animal_id, on='session_id')
+    
+    # Use different ways to average the data
+    if average_method =='mean_of_mean':
+        df2plot = df2plot.groupby(['animal_id','event_time','trial_outcome']).mean().reset_index()
+    elif average_method == 'equal_subsample':
+        df2plot = equal_subsample_trials(df2plot)
+        
 
     ax = sns.lineplot(x='event_time',y=var_name, hue='trial_outcome', n_boot=100, data=df2plot, ax=ax)
     ax.axvline(0,ls='--',color='gray')
@@ -60,4 +116,3 @@ def plot_subject_comparison(ds_combined, animal_id, var_name):
     sns.move_legend(g, "upper right", bbox_to_anchor=[1,1])
     
     return g.figure
-    
