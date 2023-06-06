@@ -90,6 +90,7 @@ dataset.to_netcdf(soutput.xr_photometry, engine='h5netcdf')
 # Bin the data such that we only have 1 data point per time bin
 # bin according to 50ms time bin, original sampling frequency is at 1000Hz
 dataset_binned = dataset.coarsen(time=10, event_time=10, boundary='trim').mean()
+dataset_binned['event_time'] = dataset_binned.event_time.astype(int) #cast to int to avoid floating point error later
 dataset_binned.attrs.update(dataset.attrs)
 
 #%% Merge conditions
