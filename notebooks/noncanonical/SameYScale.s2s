@@ -1,0 +1,44 @@
+' SameYScale | Allows you to set the same Y scale for all or selected channels
+
+var vh%:= View();
+
+var list%[400];
+var yHighVals[400];
+var yLowVals[400];
+var yRangeVals[400];
+var i%;
+var midval;
+var maxYRange;
+
+ChanList(list%[],1+65536); 'selected
+
+if list%[0] = 0 then
+   ChanList(list%[],1); 'all 
+endif
+
+
+if ViewKind(vh%) = 0 or ViewKind(vh%) = 4 then
+    
+    for i% := 1 to list%[0] do
+        
+        yLowVals[i%] := YLow(list%[i%]);
+        yHighVals[i%] := YHigh(list%[i%]);
+        yRangeVals[i%] := yHighVals[i%] - yLowVals[i%];
+        
+    next
+    
+    maxYRange := yRangeVals[Max(yRangeVals[])];
+
+    for i% := 1 to list%[0] do
+        
+        midval := (yHighVals[i%] + yLowVals[i%])/2;
+        
+        YRange(list%[i%], midval - maxYRange/2, midval + maxYRange/2);
+        
+        PrintLog("%d\n", list%[i%]);
+    next  
+else
+   Halt;
+endif
+
+
