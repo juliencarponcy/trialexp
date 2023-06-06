@@ -143,13 +143,13 @@ def motion_correction_win(photometry_dict: dict) -> dict:
                 print('should not happen')
 
         photometry_dict['analog_1_est_motion_win'] = analog_1_est_motion_joined
-        photometry_dict['analog_1_corrected_win'] = photometry_dict['analog_1_filt'] - analog_1_est_motion_joined
+        photometry_dict['analog_1_corrected_win'] = photometry_dict['analog_1_df_over_f_win'] - analog_1_est_motion_joined
         photometry_dict['motion_corrected_win'] = 1
 
     except ValueError:
         print('Motion correction failed. Skipping motion correction')
         # probably due to saturation , do not do motion correction
-        photometry_dict['analog_1_corrected_win'] = photometry_dict['analog_1_filt']
+        photometry_dict['analog_1_corrected_win'] = photometry_dict['analog_1_df_over_f_win']
         photometry_dict['motion_corrected_win'] = 0
 
     return photometry_dict
@@ -259,16 +259,16 @@ def compute_df_over_f(photometry_dict: dict, low_pass_cutoff: float = 0.001) -> 
 
 def compute_df_over_f2(photometry_dict: dict, low_pass_cutoff: float = 0.001) -> dict:
     
-    if 'analog_1_corrected' not in photometry_dict:
-        raise Exception('Analog 1 must be motion corrected before computing dF/F')
+    # if 'analog_1_corrected' not in photometry_dict:
+    #     raise Exception('Analog 1 must be motion corrected before computing dF/F')
     
     b,a = butter(2, low_pass_cutoff, btype='low', fs=photometry_dict['sampling_rate'])
     photometry_dict['analog_1_baseline_fluo_win'] = filtfilt(b,a, photometry_dict['analog_1_filt'], padtype='even')
     photometry_dict['analog_2_baseline_fluo_win'] = filtfilt(b,a, photometry_dict['analog_2_filt'], padtype='even')
 
     # Now calculate the dF/F by dividing the motion corrected signal by the time varying baseline fluorescence.
-    photometry_dict['analog_1_df_over_f_win'] = (photometry_dict['analog_1_corrected'] - photometry_dict['analog_1_baseline_fluo']) / photometry_dict['analog_1_baseline_fluo'] 
-    photometry_dict['analog_2_df_over_f_win'] = (photometry_dict['analog_2_filt'] -  photometry_dict['analog_2_baseline_fluo']) / photometry_dict['analog_2_baseline_fluo']
+    photometry_dict['analog_1_df_over_f_win'] = (photometry_dict['analog_1_filt'] - photometry_dict['analog_1_baseline_fluo_win']) / photometry_dict['analog_1_baseline_fluo_win'] 
+    photometry_dict['analog_2_df_over_f_win'] = (photometry_dict['analog_2_filt'] -  photometry_dict['analog_2_baseline_fluo_win']) / photometry_dict['analog_2_baseline_fluo_win']
     
     return photometry_dict
 
