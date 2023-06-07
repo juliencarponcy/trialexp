@@ -49,7 +49,7 @@ def equal_subsample_trials(df2plot):
     return df2plot
     
 
-def plot_subject_average(ds_combined, animal_id, var_name):
+def plot_subject_average(ds_combined, animal_id, var_name, n_boot=1000):
 
     df2plot = ds_combined[[var_name, 'trial_outcome','session_id']].to_dataframe().reset_index()
 
@@ -62,7 +62,7 @@ def plot_subject_average(ds_combined, animal_id, var_name):
     df2plot = df2plot.merge(animal_id, on='session_id')
 
     g = sns.relplot(x='event_time',y=var_name, hue='animal_id',
-                col='trial_outcome', col_wrap=3, kind='line', n_boot=100, data=df2plot)
+                col='trial_outcome', col_wrap=3, kind='line', n_boot=n_boot, data=df2plot)
 
 
     
@@ -85,7 +85,7 @@ def plot_subject_average(ds_combined, animal_id, var_name):
     
     return g.figure
 
-def plot_group_average(ds_combined, animal_id, var_name, average_method='trial'):
+def plot_group_average(ds_combined, animal_id, var_name, n_boot=1000, average_method='trial'):
     # average_method = mean_of_mean, equal_subsample, trial 
     
     fig, ax = plt.subplots(1,1,dpi=90, figsize=(6,6))
@@ -107,7 +107,7 @@ def plot_group_average(ds_combined, animal_id, var_name, average_method='trial')
         
 
     ax = sns.lineplot(x='event_time',y=var_name, 
-                      hue='trial_outcome', n_boot=100, palette=trial_outcome_palette,
+                      hue='trial_outcome', n_boot=n_boot, palette=trial_outcome_palette,
                       data=df2plot,ax=ax)
     
     ax.axvline(0,ls='--',color='gray')
