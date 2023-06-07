@@ -49,7 +49,16 @@ def equal_subsample_trials(df2plot):
     return df2plot
     
 
+def style_plot():
+    plt.rcParams['axes.spines.top'] = False
+    plt.rcParams['axes.spines.right'] = False
+    plt.rcParams['xtick.direction'] = 'out'
+    plt.rcParams['ytick.direction'] = 'out'
+    plt.rcParams['legend.frameon'] = False
+
 def plot_subject_average(ds_combined, animal_id, var_name, n_boot=1000):
+    
+    style_plot()
 
     df2plot = ds_combined[[var_name, 'trial_outcome','session_id']].to_dataframe().reset_index()
 
@@ -87,6 +96,8 @@ def plot_subject_average(ds_combined, animal_id, var_name, n_boot=1000):
 
 def plot_group_average(ds_combined, animal_id, var_name, n_boot=1000, average_method='trial'):
     # average_method = mean_of_mean, equal_subsample, trial 
+    
+    style_plot()
     
     fig, ax = plt.subplots(1,1,dpi=300, figsize=(6,6))
     df2plot = ds_combined[[var_name, 'trial_outcome','session_id']].to_dataframe().reset_index()
