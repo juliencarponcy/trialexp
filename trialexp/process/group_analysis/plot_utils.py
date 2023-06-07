@@ -2,6 +2,7 @@ import matplotlib.pylab as plt
 import seaborn as sns
 import numpy as np 
 import pandas as pd
+from trialexp.process.pycontrol.plot_utils import trial_outcome_palette
 
 def calculate_grand_trial_nb(df):
     # calcualte the grand trial nubmer across sessions
@@ -62,10 +63,25 @@ def plot_subject_average(ds_combined, animal_id, var_name):
 
     g = sns.relplot(x='event_time',y=var_name, hue='animal_id',
                 col='trial_outcome', col_wrap=3, kind='line', n_boot=100, data=df2plot)
+
+
     
+    for ax in g.axes:
+        ax.axvline(0,ls='--',color='gray')
+
+    sns.move_legend(g, "upper right", bbox_to_anchor=[0.75,1])
+    
+        
     g.set(xlim=[-1000, 1500])
     g.fig.tight_layout()
-    sns.move_legend(g, "upper right", bbox_to_anchor=[0.75,1])
+        
+    label = var_name.replace('_zscored_df_over_f', '')
+    label = label.upper().replace('_', ' ')
+    
+    g.set_xlabels(f'Relative time (ms)\n{label}')
+
+    g.set_ylabels(f'z-scored dF/F')
+    g.set_titles(col_template='{col_name}')
     
     return g.figure
 
@@ -90,9 +106,17 @@ def plot_group_average(ds_combined, animal_id, var_name, average_method='trial')
         df2plot = equal_subsample_trials(df2plot)
         
 
-    ax = sns.lineplot(x='event_time',y=var_name, hue='trial_outcome', n_boot=100, data=df2plot, ax=ax)
+    ax = sns.lineplot(x='event_time',y=var_name, 
+                      hue='trial_outcome', n_boot=100, palette=trial_outcome_palette,
+                      data=df2plot,ax=ax)
+    
     ax.axvline(0,ls='--',color='gray')
     ax.set_xlim([-1000,1500])
+    label = var_name.replace('_zscored_df_over_f', '')
+    label = label.upper().replace('_', ' ')
+    ax.set_ylabel(f'z-scored dF/F')
+    ax.set_xlabel(f'Relative time (ms)\n{label}')
+    sns.move_legend(ax, title='', loc='upper right', bbox_to_anchor=[1.4,1])
     
     return fig,ax
 
