@@ -11,6 +11,32 @@ from tqdm.auto import tqdm
 import xarray as xr
 import numpy as np 
 
+def load_pycontrol_variables(session_path, parameters, param_extract_method='tail'):
+    session_id = session_path.name
+
+    try:
+        df_pycontrol = pd.read_pickle(session_path/'processed'/'df_pycontrol.pkl')
+        # extract the parameter change, reshape them, and get the first/last value
+        df_parameters = df_pycontrol[df_pycontrol.type=='parameters']
+        df_parameters= df_parameters[df_parameters['name'].isin(parameters)]
+        df_parameters = df_parameters.pivot(columns=['name'], values='value')
+        df_parameters = df_parameters.fillna(method='ffill')
+        df_parameters = df_parameters.dropna()
+        
+        if df_parameters.empty:
+            # if no parameter is found, return a dataframe filled with NaN
+            df_parameters = pd.DataFrame([{p:pd.NA for p in parameters}])
+        
+        df_parameters['session_id'] = session_id
+
+        if not df_parameters.empty:
+            if param_extract_method=='tail':
+                return df_parameters.tail(1)
+            else:
+                return df_parameters.head(1)
+    except FileNotFoundError:
+        pass
+
 def build_session_info(root_path, load_pycontrol=False, 
                        pycontrol_parameters=None,
                        param_extract_method='tail'):
@@ -51,29 +77,6 @@ def build_session_info(root_path, load_pycontrol=False,
                     'session_id':session_id,
                     'task_name':task_name,
                     'path':session_path}
-            
-    def load_pycontrol_variables(session_path, parameters, param_extract_method='tail'):
-        session_id = session_path.name
-
-        try:
-            df_pycontrol = pd.read_pickle(session_path/'processed'/'df_pycontrol.pkl')
-            # extract the parameter change, reshape them, and get the first/last value
-            df_parameters = df_pycontrol[df_pycontrol.type=='parameters']
-            df_parameters= df_parameters[df_parameters['name'].isin(parameters)]
-            df_parameters = df_parameters.pivot(columns=['name'], values='value')
-            df_parameters = df_parameters.fillna(method='ffill')
-            df_parameters = df_parameters.dropna()
-            df_parameters['session_id'] = session_id
-            
-            if not df_parameters.empty:
-                if param_extract_method=='tail':
-                    return df_parameters.tail(1)
-                else:
-                    return df_parameters.head(1)
-        except FileNotFoundError:
-            pass
-
-        
 
     session_info = [parse_session_path(p) for p in paths]
     df_session_info = pd.DataFrame(session_info)
