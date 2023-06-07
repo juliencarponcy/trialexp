@@ -1,6 +1,7 @@
 ' SameYScale | Allows you to set the same Y scale for all or selected channels
 
 var vh%:= View();
+FrontView(vh%);
 
 var list%[400];
 var yHighVals[400];
@@ -10,10 +11,10 @@ var i%;
 var midval;
 var maxYRange;
 
-ChanList(list%[],1+65536); 'selected
+ChanList(list%[],1+2048+65536); 'selected visible
 
 if list%[0] = 0 then
-   ChanList(list%[],1); 'all 
+   ChanList(list%[],1+2048); 'all visible
 endif
 
 
