@@ -66,7 +66,7 @@ def style_plot():
     plt.rcParams['ytick.direction'] = 'out'
     plt.rcParams['legend.frameon'] = False
 
-def plot_subject_average(ds_combined, animal_id, var_name, n_boot=1000):
+def plot_subject_average(ds_combined, animal_id, var_name, errorbar='ci', n_boot=1000):
     
     style_plot()
 
@@ -81,18 +81,19 @@ def plot_subject_average(ds_combined, animal_id, var_name, n_boot=1000):
     df2plot = df2plot.merge(animal_id, on='session_id')
     
     g = sns.relplot(x='event_time',y=var_name, hue='animal_id',
-                col='trial_outcome', col_wrap=3, kind='line', n_boot=n_boot, data=df2plot, height=6)
+                col='trial_outcome', col_wrap=3, kind='line', n_boot=n_boot, data=df2plot, height=6, errorbar=errorbar)
 
 
+    
+    #Styling
     
     for ax in g.axes:
         ax.axvline(0,ls='--',color='gray')
 
-    sns.move_legend(g, "upper right", bbox_to_anchor=[0.75,1])
+    # sns.move_legend(g, "upper right", bbox_to_anchor=[0.75,1])
     
         
     g.set(xlim=[-1000, 1500])
-    g.fig.tight_layout()
         
     label = var_name.replace('_zscored_df_over_f', '')
     label = label.upper().replace('_', ' ')
@@ -102,7 +103,69 @@ def plot_subject_average(ds_combined, animal_id, var_name, n_boot=1000):
     g.set_ylabels(f'z-scored dF/F')
     g.set_titles(col_template='{col_name}')
     
-    return g.figure
+    # g.fig.tight_layout()
+    
+    #calculate the number of trial for each animal
+    df = df2plot.groupby(['animal_id','trial_nb']).first().reset_index()
+    trial_count = df.groupby('animal_id')['trial_nb'].count()
+    
+    # set the legend with number of trials
+    handles, labels = ax.get_legend_handles_labels()
+    print(labels)
+    
+    return g, g.figure,df2plot
+
+
+
+def plot_subject_average_by_outcome(ds_combined, animal_id, var_name, trial_outcome, ax=None, errorbar='ci', n_boot=1000):
+    # use subplots for each trial_outcome so that we can have the clear indication of trials
+    
+    style_plot()
+    
+    if ax is None:
+        fig, ax = plt.subplots(1,1,dpi=300, figsize=(6,6))
+
+    df2plot = ds_combined[[var_name, 'trial_outcome','session_id']].to_dataframe().reset_index()
+
+    #only plot several outcomes
+    df2plot = df2plot[df2plot.trial_outcome==trial_outcome]
+
+
+    #merge the animal_id back to the data frame
+    df2plot = df2plot.merge(animal_id, on='session_id')
+    
+    sns.lineplot(x='event_time',y=var_name, hue='animal_id', n_boot=n_boot, data=df2plot, errorbar=errorbar, ax = ax)
+
+
+    
+    #Styling
+    ax.axvline(0,ls='--',color='gray')
+
+    # sns.move_legend(g, "upper right", bbox_to_anchor=[0.75,1])
+    
+        
+    ax.set(xlim=[-1000, 1500])
+        
+    label = var_name.replace('_zscored_df_over_f', '')
+    label = label.upper().replace('_', ' ')
+    
+    ax.set_xlabel(f'Relative time (ms)\n{label}')
+    ax.set_ylabel(f'z-scored dF/F')
+    ax.set_title(trial_outcome)
+    
+    # g.fig.tight_layout()
+    
+    #calculate the number of trial for each animal
+    df = df2plot.groupby(['animal_id','trial_nb']).first().reset_index()
+    trial_count = df.groupby('animal_id')['trial_nb'].count()
+    
+    # set the legend with number of trials
+    handles, labels = ax.get_legend_handles_labels()
+    new_labels = [f'{lbl} ($n_t$={trial_count[lbl]})' for lbl in labels]
+    ax.legend(handles, new_labels,loc='upper right', bbox_to_anchor=[1,1], fontsize="10")
+    
+    return ax
+
 
 def compute_num_trials_by_outcome(df2plot):
     # compute the number of trials in each trial_outcome
