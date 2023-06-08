@@ -4,6 +4,8 @@ import numpy as np
 import pandas as pd
 from trialexp.process.pycontrol.plot_utils import trial_outcome_palette
 
+np.random.seed(0) #for reproducibility
+
 def calculate_grand_trial_nb(df):
     # calcualte the grand trial nubmer across sessions
 
@@ -11,11 +13,11 @@ def calculate_grand_trial_nb(df):
     
     # sort by expt date time and then cumsum over trial
     df = df.dropna()
-    df = df[['animal_id','expt_datetime','trial_nb']]
-    df_trial_nb = df.groupby(['animal_id','expt_datetime','trial_nb']).first().reset_index()
+    df = df[['animal_id','expt_datetime','trial_nb','trial_outcome']]
+    df_trial_nb = df.groupby(['animal_id','expt_datetime','trial_nb','trial_outcome']).first().reset_index()
     df_trial_nb = df_trial_nb.sort_values(['expt_datetime','trial_nb']) # to be safe
     df_trial_nb['grand_trial_nb'] = 1
-    df_trial_nb['grand_trial_nb'] = df_trial_nb.groupby('animal_id')['grand_trial_nb'].transform(pd.Series.cumsum)
+    df_trial_nb['grand_trial_nb'] = df_trial_nb.groupby(['animal_id','trial_outcome'])['grand_trial_nb'].transform(pd.Series.cumsum)
     return df_trial_nb
 
 def sample_trials(df_subject, n_sample):
@@ -24,8 +26,16 @@ def sample_trials(df_subject, n_sample):
     if not 'grand_trial_nb' in df_subject:
         raise ValueError('grand_trial_nb must be in dataframe')
     
-    max_trial_nb = df_subject.grand_trial_nb.max()
-    sel_trials = np.random.choice(np.arange(max_trial_nb)+1, n_sample, replace=False)
+    max_trial_nb = df_subject.grand_trial_nb.max() #note: the meaning of this max may be different depending on whether grand trial nb is counted for each trial outcome respectively
+    
+    if type(n_sample) is int:
+        sel_trials = np.random.choice(np.arange(max_trial_nb)+1, n_sample, replace=False)
+    elif type(n_sample) is pd.Series:
+        # we assume that the data is already grouped by trial_outcome
+        trial_outcome = df_subject.iloc[0].trial_outcome
+        n = n_sample[trial_outcome]
+        sel_trials = np.random.choice(np.arange(max_trial_nb)+1, n, replace=False)
+        
     return df_subject[df_subject.grand_trial_nb.isin(sel_trials)]
 
 def equal_subsample_trials(df2plot):
@@ -35,18 +45,18 @@ def equal_subsample_trials(df2plot):
     df_trial_nb = calculate_grand_trial_nb(df2plot)
     
     # merge the grand trial number back to the original dataframe
-    df2plot = df2plot.merge(df_trial_nb, on=['expt_datetime','trial_nb','animal_id'])
+    df2plot = df2plot.merge(df_trial_nb, on=['expt_datetime','trial_nb','animal_id','trial_outcome'])
 
-    # Use the max no. trial of all animals as the sample
-    n_sample = df2plot.groupby('animal_id').grand_trial_nb.max().min()
-    
-    print(f'Using {n_sample} trials for each subjects')
-    
+    # Use the min no. trial of all animals as the sample, separate sampling according to trial_outcome
+    n_sample_outcome = df2plot.groupby(['animal_id','trial_outcome']).grand_trial_nb.max()
+    n_sample_outcome = n_sample_outcome.groupby('trial_outcome').min()
+    # print(n_sample_outcome)
+        
     # sample
-    df2plot = df2plot.groupby('animal_id').apply(sample_trials, n_sample=n_sample).droplevel(0).reset_index()
+    df2plot = df2plot.groupby(['animal_id','trial_outcome'], group_keys=False).apply(sample_trials, n_sample=n_sample_outcome).reset_index()
     #drop the animal_id level so that we can reset back to the normal dataframe
     
-    return df2plot, n_sample
+    return df2plot
     
 
 def style_plot():
@@ -94,6 +104,14 @@ def plot_subject_average(ds_combined, animal_id, var_name, n_boot=1000):
     
     return g.figure
 
+def compute_num_trials_by_outcome(df2plot):
+    # compute the number of trials in each trial_outcome
+    if not 'grand_trial_nb' in df2plot.columns:
+        raise ValueError('grand_trial_nb must be calculated first')
+        
+    df = df2plot.groupby(['trial_outcome','animal_id','grand_trial_nb']).first().reset_index()
+    return df.groupby('trial_outcome').index.count()
+
 def plot_group_average(ds_combined, animal_id, var_name, title='None',
                        ax=None, n_boot=1000, errorbar='ci', average_method='trial'):
     # average_method = mean_of_mean, equal_subsample, trial 
@@ -118,7 +136,8 @@ def plot_group_average(ds_combined, animal_id, var_name, title='None',
         df2plot = df2plot.groupby(['animal_id','event_time','trial_outcome']).mean().reset_index()
         n_sample = len(animal_id.animal_id.unique())
     elif average_method == 'equal_subsample':
-        df2plot, n_sample= equal_subsample_trials(df2plot)
+        df2plot= equal_subsample_trials(df2plot)
+        n_sample_outcome = compute_num_trials_by_outcome(df2plot)
     
     ax = sns.lineplot(x='event_time',y=var_name, hue_order=sel_trial_outcome,
                     hue='trial_outcome', n_boot=n_boot, errorbar=errorbar, palette=trial_outcome_palette,
@@ -132,10 +151,16 @@ def plot_group_average(ds_combined, animal_id, var_name, title='None',
     ax.set_ylabel(f'z-scored dF/F')
     ax.set_xlabel(f'Relative time (ms)\n{label}')
     
+    # determine the proper legend labels to use
     handles, labels = ax.get_legend_handles_labels()
-    new_labels = [f'{s} ($n_t$={n_sample})' for s in labels]
-    ax.legend(handles, new_labels)
-    
+    if average_method == 'equal_subsample':
+        new_labels = [f'{s} ($n_t$={n_sample_outcome[s]})' for s in labels]
+        ax.legend(handles, new_labels)
+    elif average_method =='mean_of_mean':
+        handles, labels = ax.get_legend_handles_labels()
+        new_labels = [f'{s} ($n_s$={n_sample})' for s in labels]
+        ax.legend(handles, new_labels)
+        
     if title is not None:
         ax.set_title(title)
     sns.move_legend(ax, title='', loc='upper right', bbox_to_anchor=[1.4,1])
