@@ -46,7 +46,7 @@ def equal_subsample_trials(df2plot):
     df2plot = df2plot.groupby('animal_id').apply(sample_trials, n_sample=n_sample).droplevel(0).reset_index()
     #drop the animal_id level so that we can reset back to the normal dataframe
     
-    return df2plot
+    return df2plot, n_sample
     
 
 def style_plot():
@@ -94,12 +94,15 @@ def plot_subject_average(ds_combined, animal_id, var_name, n_boot=1000):
     
     return g.figure
 
-def plot_group_average(ds_combined, animal_id, var_name, n_boot=1000, average_method='trial'):
+def plot_group_average(ds_combined, animal_id, var_name, title='None',
+                       ax=None, n_boot=1000, errorbar='ci', average_method='trial'):
     # average_method = mean_of_mean, equal_subsample, trial 
     
     style_plot()
     
-    fig, ax = plt.subplots(1,1,dpi=300, figsize=(6,6))
+    if ax is None:
+        fig, ax = plt.subplots(1,1,dpi=300, figsize=(6,6))
+    
     df2plot = ds_combined[[var_name, 'trial_outcome','session_id']].to_dataframe().reset_index()
 
     #only plot several outcomes
@@ -113,23 +116,31 @@ def plot_group_average(ds_combined, animal_id, var_name, n_boot=1000, average_me
     # Use different ways to average the data
     if average_method =='mean_of_mean':
         df2plot = df2plot.groupby(['animal_id','event_time','trial_outcome']).mean().reset_index()
+        n_sample = len(animal_id.animal_id.unique())
     elif average_method == 'equal_subsample':
-        df2plot = equal_subsample_trials(df2plot)
-        
-
-    ax = sns.lineplot(x='event_time',y=var_name, hue_order=sel_trial_outcome,
-                      hue='trial_outcome', n_boot=n_boot, palette=trial_outcome_palette,
-                      data=df2plot,ax=ax)
+        df2plot, n_sample= equal_subsample_trials(df2plot)
     
+    ax = sns.lineplot(x='event_time',y=var_name, hue_order=sel_trial_outcome,
+                    hue='trial_outcome', n_boot=n_boot, errorbar=errorbar, palette=trial_outcome_palette,
+                    data=df2plot,ax=ax)
+    
+    # styling
     ax.axvline(0,ls='--',color='gray')
     ax.set_xlim([-1000,1500])
     label = var_name.replace('_zscored_df_over_f', '')
     label = label.upper().replace('_', ' ')
     ax.set_ylabel(f'z-scored dF/F')
     ax.set_xlabel(f'Relative time (ms)\n{label}')
+    
+    handles, labels = ax.get_legend_handles_labels()
+    new_labels = [f'{s} ($n_t$={n_sample})' for s in labels]
+    ax.legend(handles, new_labels)
+    
+    if title is not None:
+        ax.set_title(title)
     sns.move_legend(ax, title='', loc='upper right', bbox_to_anchor=[1.4,1])
     
-    return fig,ax
+    return ax, df2plot
 
 
 def plot_subject_comparison(ds_combined, animal_id, var_name):
