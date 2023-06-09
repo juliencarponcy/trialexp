@@ -339,3 +339,35 @@ def plot_peak_analysis_comparison(ds_combined, animal_id, var_name, outcome, tit
     dfmean = get_average_curve(ds_combined, animal_id, var_name)
     
     plot_peak_curves(dfmean, outcome,var_name, title, ax, xlabel=xlabel)
+    
+def get_session_time(df):
+    p25 = np.percentile(df.success_trial_no, 25)
+    p75 = np.percentile(df.success_trial_no, 75)    
+    df.loc[df.success_trial_no<p25, 'session_time'] = 'early'
+    df.loc[df.success_trial_no>p75, 'session_time'] = 'late'
+    return df
+
+def add_session_time(df2plot, outcome):
+    df2plot = df2plot[df2plot.trial_outcome==outcome]
+    
+    df_session_time = df2plot.groupby(['session_id','trial_nb']).first().reset_index()
+    df_session_time['success_trial_no'] = df_session_time.groupby('session_id').trial_nb.rank()
+    df_session_time['session_time'] = 'middle'
+    df_session_time = df_session_time.groupby('session_id').apply(get_session_time)
+    df_session_time = df_session_time[['session_id','trial_nb','session_time']]
+    df2plot = df2plot.merge(df_session_time, on=['session_id','trial_nb'])
+    
+    return df2plot
+
+
+def plot_session_time_effect(ds_combined, v, outcome, title,xlabel, ax):
+    df2plot = ds_combined[[v, 'trial_outcome','session_id']].to_dataframe().reset_index()
+    df2plot = df2plot.dropna()
+    df2plot = add_session_time(df2plot, outcome)
+    
+    ax.set_xlim([-1000,1500])
+    
+    sns.lineplot(df2plot, hue='session_time', errorbar='se', x='event_time', y=v, ax=ax)
+    ax.set_title(title)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(f'z-scored dF/F')
