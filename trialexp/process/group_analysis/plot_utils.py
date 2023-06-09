@@ -117,7 +117,7 @@ def plot_subject_average(ds_combined, animal_id, var_name, errorbar='ci', n_boot
 
 
 
-def plot_subject_average_by_outcome(ds_combined, animal_id, var_name, trial_outcome, ax=None, errorbar='ci', n_boot=1000):
+def plot_subject_average_by_outcome(ds_combined, animal_id, var_name, trial_outcome, xlabel=None, ax=None, errorbar='ci', n_boot=1000):
     # use subplots for each trial_outcome so that we can have the clear indication of trials
     
     style_plot()
@@ -149,7 +149,11 @@ def plot_subject_average_by_outcome(ds_combined, animal_id, var_name, trial_outc
     label = var_name.replace('_zscored_df_over_f', '')
     label = label.upper().replace('_', ' ')
     
-    ax.set_xlabel(f'Relative time (ms)\n{label}')
+    if xlabel is not None:
+        ax.set_xlabel(xlabel)
+    else:
+        ax.set_xlabel(f'Relative time (ms)\n{label}')
+    
     ax.set_ylabel(f'z-scored dF/F')
     ax.set_title(trial_outcome)
     
@@ -175,7 +179,7 @@ def compute_num_trials_by_outcome(df2plot):
     df = df2plot.groupby(['trial_outcome','animal_id','grand_trial_nb']).first().reset_index()
     return df.groupby('trial_outcome').index.count()
 
-def plot_group_average(ds_combined, animal_id, var_name, title='None',
+def plot_group_average(ds_combined, animal_id, var_name, title='None', xlabel=None,
                        ax=None, n_boot=1000, errorbar='ci', average_method='trial'):
     # average_method = mean_of_mean, equal_subsample, trial 
     # animal_id: dataframe containing the correspondence between 
@@ -213,7 +217,11 @@ def plot_group_average(ds_combined, animal_id, var_name, title='None',
     label = var_name.replace('_zscored_df_over_f', '')
     label = label.upper().replace('_', ' ')
     ax.set_ylabel(f'z-scored dF/F')
-    ax.set_xlabel(f'Relative time (ms)\n{label}')
+    
+    if xlabel is not None:
+        ax.set_xlabel(xlabel)
+    else:
+        ax.set_xlabel(f'Relative time (ms)\n{label}')
     
     # determine the proper legend labels to use
     handles, labels = ax.get_legend_handles_labels()
@@ -267,13 +275,22 @@ def get_average_curve(ds_combined, animal_id, var_name, average_method='equal_su
 
     return dfmean
 
+def filter_peaks(peaks, peak_props,max=3):
+    # only select the first few prominent peak
+    idx =  np.argsort(peak_props['prominences'])[::-1][:max]
+    return peaks[idx]
+
 def analyze_peak(curve):
     #smooth curve
-    curve_smooth = signal.savgol_filter(curve,11,1)
+    curve_smooth = signal.savgol_filter(curve,21,2)
     
     #find both positive and negative peaks
-    peaks_neg, props = signal.find_peaks(-curve_smooth, prominence=0.15, height=0.2)
-    peaks_pos, props = signal.find_peaks(curve_smooth, prominence=0.15, height=0.2)
+    peaks_neg, props_neg = signal.find_peaks(-curve_smooth, prominence=0.1)
+    peaks_pos, props_pos = signal.find_peaks(curve_smooth, prominence=0.1)
+    
+    peaks_neg = filter_peaks(peaks_neg, props_neg)
+    peaks_pos = filter_peaks(peaks_pos, props_pos)
+    
     return curve_smooth, peaks_neg, peaks_pos
 
 def plot_peak_curves(dfmean, outcome,var_name, title, ax):
