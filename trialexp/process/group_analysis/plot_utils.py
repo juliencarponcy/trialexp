@@ -3,7 +3,7 @@ import seaborn as sns
 import numpy as np 
 import pandas as pd
 from trialexp.process.pycontrol.plot_utils import trial_outcome_palette
-
+from scipy import signal
 np.random.seed(0) #for reproducibility
 
 def calculate_grand_trial_nb(df):
@@ -178,6 +178,7 @@ def compute_num_trials_by_outcome(df2plot):
 def plot_group_average(ds_combined, animal_id, var_name, title='None',
                        ax=None, n_boot=1000, errorbar='ci', average_method='trial'):
     # average_method = mean_of_mean, equal_subsample, trial 
+    # animal_id: dataframe containing the correspondence between 
     
     style_plot()
     
@@ -250,3 +251,69 @@ def plot_subject_comparison(ds_combined, animal_id, var_name):
     sns.move_legend(g, "upper right", bbox_to_anchor=[1,1])
     
     return g.figure
+
+def get_average_curve(ds_combined, animal_id, var_name, average_method='equal_subsample'):
+    df2plot = ds_combined[[var_name, 'trial_outcome','session_id']].to_dataframe().reset_index()
+    sel_trial_outcome = ['success', 'aborted']
+    df2plot = df2plot[df2plot.trial_outcome.isin(sel_trial_outcome)]
+    df2plot = df2plot.merge(animal_id, on='session_id')
+    
+    if average_method =='mean_of_mean':
+        df2plot = df2plot.groupby(['animal_id','event_time','trial_outcome']).mean().reset_index()
+    elif average_method == 'equal_subsample':
+        df2plot= equal_subsample_trials(df2plot)
+
+    dfmean = df2plot.groupby(['event_time','trial_outcome'])[var_name].mean().reset_index()
+
+    return dfmean
+
+def analyze_peak(curve):
+    #smooth curve
+    curve_smooth = signal.savgol_filter(curve,11,1)
+    
+    #find both positive and negative peaks
+    peaks_neg, props = signal.find_peaks(-curve_smooth, prominence=0.15, height=0.2)
+    peaks_pos, props = signal.find_peaks(curve_smooth, prominence=0.15, height=0.2)
+    return curve_smooth, peaks_neg, peaks_pos
+
+def plot_peak_curves(dfmean, outcome,var_name, title, ax):
+    # plot the smoothed curve and its peak position
+    style_plot()
+    x = dfmean[dfmean.trial_outcome == outcome]
+    x = x.sort_values('event_time')
+    curve = x[var_name].values
+    event_time = x['event_time'].values
+
+    curve_smooth, peaks_neg, peaks_pos = analyze_peak(curve)
+    ax.plot(event_time, curve, alpha=0.4, color=trial_outcome_palette[outcome])
+    ax.plot(event_time, curve_smooth, color=trial_outcome_palette[outcome])
+
+    peaks = np.concatenate([peaks_neg, peaks_pos])
+
+    for p in peaks_pos:
+        ax.annotate(event_time[p], xy=(event_time[p], curve_smooth[p]), xytext=(10, 5),
+                     textcoords='offset pixels')
+        ax.vlines(x=event_time[p], ymin=curve_smooth[p]-0.1, ymax=curve_smooth[p]+0.1, color='gray', ls='--')
+
+    for p in peaks_neg:
+        ax.annotate(event_time[p], xy=(event_time[p], curve_smooth[p]), xytext=(10, -30),
+                     textcoords='offset pixels')
+        ax.vlines(x=event_time[p], ymin=curve_smooth[p]-0.1, ymax=curve_smooth[p]+0.1, color='gray', ls='--')
+
+    ax.axvline(0,ls='--',color='gray')
+
+    #styling
+    
+    ax.set_xlim([-1000,1500])
+    
+    label = var_name.replace('_zscored_df_over_f', '')
+    label = label.upper().replace('_', ' ')
+    ax.set_xlabel(f'Relative time (ms)\n{label}')
+    ax.set_ylabel(f'z-scored dF/F')
+    ax.set_title(f'{title} \n {outcome}')
+
+
+def plot_peak_analysis_comparison(ds_combined, animal_id, var_name, outcome, title,  ax):
+    dfmean = get_average_curve(ds_combined, animal_id, var_name)
+    
+    plot_peak_curves(dfmean, outcome,var_name, title, ax)
