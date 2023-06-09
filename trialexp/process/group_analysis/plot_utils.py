@@ -293,7 +293,7 @@ def analyze_peak(curve):
     
     return curve_smooth, peaks_neg, peaks_pos
 
-def plot_peak_curves(dfmean, outcome,var_name, title, ax):
+def plot_peak_curves(dfmean, outcome,var_name, title, ax, xlabel=None):
     # plot the smoothed curve and its peak position
     style_plot()
     x = dfmean[dfmean.trial_outcome == outcome]
@@ -325,12 +325,17 @@ def plot_peak_curves(dfmean, outcome,var_name, title, ax):
     
     label = var_name.replace('_zscored_df_over_f', '')
     label = label.upper().replace('_', ' ')
-    ax.set_xlabel(f'Relative time (ms)\n{label}')
+    
+    if xlabel is not None:
+        ax.set_xlabel(xlabel)
+    else:
+        ax.set_xlabel(f'Relative time (ms)\n{label}')
+    
     ax.set_ylabel(f'z-scored dF/F')
     ax.set_title(f'{title} \n {outcome}')
 
 
-def plot_peak_analysis_comparison(ds_combined, animal_id, var_name, outcome, title,  ax):
+def plot_peak_analysis_comparison(ds_combined, animal_id, var_name, outcome, title,  ax, xlabel=None):
     dfmean = get_average_curve(ds_combined, animal_id, var_name)
     
-    plot_peak_curves(dfmean, outcome,var_name, title, ax)
+    plot_peak_curves(dfmean, outcome,var_name, title, ax, xlabel=xlabel)
