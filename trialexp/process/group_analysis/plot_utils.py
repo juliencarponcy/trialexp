@@ -360,7 +360,7 @@ def add_session_time(df2plot, outcome):
     return df2plot
 
 
-def plot_session_time_effect(ds_combined, v, outcome, title,xlabel, ax):
+def plot_session_time_effect(ds_combined, v, outcome, title,xlabel, ax, errorbar='ci'):
     style_plot()
     
     df2plot = ds_combined[[v, 'trial_outcome','session_id']].to_dataframe().reset_index()
@@ -369,7 +369,7 @@ def plot_session_time_effect(ds_combined, v, outcome, title,xlabel, ax):
     
     ax.set_xlim([-1000,1500])
     
-    sns.lineplot(df2plot, hue='session_time', errorbar='se', x='event_time', y=v, ax=ax)
+    sns.lineplot(df2plot, hue='session_time', errorbar=errorbar, x='event_time', y=v, ax=ax)
     ax.set_title(title)
     ax.set_xlabel(xlabel)
     ax.set_ylabel(f'z-scored dF/F')
