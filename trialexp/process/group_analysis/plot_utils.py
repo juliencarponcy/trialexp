@@ -361,6 +361,8 @@ def add_session_time(df2plot, outcome):
 
 
 def plot_session_time_effect(ds_combined, v, outcome, title,xlabel, ax):
+    style_plot()
+    
     df2plot = ds_combined[[v, 'trial_outcome','session_id']].to_dataframe().reset_index()
     df2plot = df2plot.dropna()
     df2plot = add_session_time(df2plot, outcome)
