@@ -65,7 +65,8 @@ Note: using all available cores may cause problems to ettin, it is suggested tha
 snakemake -c10 --snakefile workflow/pycontrol.smk
 ```
 
-
+### Executing profiles
+To avoid specifying the number of cores or whether to skip on error every time you run snakemake, you can provide a profile file. Please consult the [official documentation](https://snakemake.readthedocs.io/en/stable/executing/cli.html#profiles) for details. A sample profile is provided in `workflow/profile/config.yaml`.
 
 #### Task-specific execution
 
