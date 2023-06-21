@@ -10,8 +10,8 @@ from matplotlib.axes import Axes
 default_palette = sns.color_palette()
 trial_outcome_palette = {
     'success': default_palette[0],
-    'button_press': default_palette[1],
-    'aborted' : default_palette[2],
+    'aborted' : default_palette[1],
+    'button_press': default_palette[2],
     'late_reach': default_palette[3],
     'no_reach': default_palette[4],
     'water_by_bar_off': default_palette[5],
