@@ -71,3 +71,12 @@ def extract_clean_trigger_event(df_trial, target_event_name, clean_window, ignor
 
         if sum(idx) ==1 and df_trial.loc[idx].iloc[0]['name'] == target_event_name:
             return df_trial.loc[idx].iloc[0] # must return a series
+        
+        
+def get_reach_travel_time(df_trial):
+    # Calculate time between the last bar off and spout touch
+    #' to be used '
+    bar_off =  df_trial[df_trial['name']=='bar_off']
+    
+    if len(bar_off) >0:
+        return bar_off.iloc[0]
