@@ -5,6 +5,7 @@ import seaborn as sns
 from matplotlib import cm, colors
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
+import os
 
 #define the color palette for trial_come
 default_palette = sns.color_palette()
@@ -30,11 +31,10 @@ def plot_event_distribution(df2plot, x, y, xbinwidth = 100, ybinwidth=100, xlim=
     plt.rcParams['xtick.direction'] = 'out'
     plt.rcParams['ytick.direction'] = 'out'
     plt.rcParams["legend.frameon"] = False
-    try:
+    if os.name == 'nt':
         plt.rcParams['font.family'] = ['Arial']
-    except:
+    elif os.name == 'posix':
         plt.rcParams['font.family'] = ['Lato']
-
 
     g = sns.JointGrid()
     ax = sns.scatterplot(y=y, x=x, marker='|' , hue='trial_outcome', palette=trial_outcome_palette,
