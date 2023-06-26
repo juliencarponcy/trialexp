@@ -12,6 +12,7 @@ from trialexp.utils.rsync import *
 import pandas as pd 
 from scipy.interpolate import interp1d
 import seaborn as sns 
+from matplotlib import pyplot as plt 
 import numpy as np
 import os
 from workflow.scripts import settings
@@ -30,12 +31,18 @@ figure_dir = soutput.trigger_photo_dir
 
 #%% plot all event-related data
 
-sns.set_style("white", {
-    "axes.spines.top": False,
-    "axes.spines.right": False,
-    "xtick.direction": "out",
-    "ytick.direction": "out",
-    })
+plt.rcParams['axes.spines.top'] = False
+plt.rcParams['axes.spines.right'] = False
+plt.rcParams['xtick.direction'] = 'out'
+plt.rcParams['ytick.direction'] = 'out'
+plt.rcParams["legend.frameon"] = False
+plt.rcParams['xtick.bottom']=True
+plt.rcParams['ytick.left']=True
+
+if os.name =='nt':
+    plt.rcParams['font.family'] = ['Arial']
+elif os.name =='posix':
+    plt.rcParams['font.family'] = ['Lato']
 
 sns.set_context('paper')
 
@@ -63,4 +70,5 @@ for k in sorted(xr_session.data_vars.keys()):
 
 xr_session.close()
 
-# %%
+# %% 
+#TODO add a vertical strip to show trial outcomes

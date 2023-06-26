@@ -29,7 +29,19 @@ def plot_pyphoto_heatmap(dataArray):
         vmin = np.percentile(x,1)
         
         quadMesh = dataArray.plot(vmax=vmax, vmin=-vmax, cmap='vlag')
-        
+
+        #NOTE xarray's built-in heatmap has pointy color map; replace this to a normal rectangle
+        # Cannot directly change the `extend` attribute of colorbar from DataArray.plot()
+        # So creating another one and removing the original
+
+        cbar = quadMesh.colorbar
+
+        ylabel = cbar.ax.get_ylabel()
+        cbar.remove()
+
+        new_cbar = plt.colorbar(quadMesh, ax=quadMesh.axes, extend='neither')
+        new_cbar.set_label(ylabel)
+
         return quadMesh.figure
     else:
         return fig
