@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# In[45]:
 
 
 import os
@@ -36,7 +36,7 @@ get_ipython().system('jupyter nbconvert "{input_path}" --to="python" --output="{
 # - lots of abortions
 # 
 
-# In[1]:
+# In[46]:
 
 
 import os
@@ -69,7 +69,7 @@ from trialexp.process.pyphotometry.utils import measure_ACh_dip_rebound, measure
 # df_events = pd.read_pickle(os.path.join(data_dir, 'df_events_cond.pkl'))
 
 
-# In[2]:
+# In[47]:
 
 
 by_sessions_dir = r'\\ettina\Magill_Lab\Julien\Data\head-fixed\by_sessions'
@@ -92,9 +92,10 @@ subject_ids = [re.match(r"(\w+)-", ssid).group(1) for ssid in session_ids]
 # subject_ids = ['TT002']
 
 
+# # Compute ACh
 # 3 m 47 s for the folder 'reaching_go_spout_bar_nov22' and the 5 mice
 
-# In[6]:
+# In[48]:
 
 
 subject_ids_ACh = ['TT001','TT002','TT005','RE606', 'RE607']
@@ -102,7 +103,7 @@ subject_ids_ACh = ['TT001','TT002','TT005','RE606', 'RE607']
 ind_ACh = [ind for ind, sbj in enumerate(subject_ids) if sbj in subject_ids_ACh]
 
 
-# In[7]:
+# In[49]:
 
 
 data = []
@@ -127,7 +128,19 @@ df_ACh_cue_onset.columns = ['session_id', 'subject_id', 'df_trials', 'n_trials',
               'is_success', 'msg', 'data_dir']
 
 
-# In[3]:
+# In[50]:
+
+
+mask = (df_ACh_cue_onset['n_trials'].notnull()) & (df_ACh_cue_onset['n_trials'] > 100) & df_ACh_cue_onset['is_success']
+df_ACh_cue_onset_100 = df_ACh_cue_onset.loc[mask]
+
+df_ACh_cue_onset_100['n_trials']
+
+
+# # Compute DA
+# 
+
+# In[55]:
 
 
 subject_ids_DA = ['kms058','kms062','kms063','kms064', 'JC317L']
@@ -135,7 +148,7 @@ subject_ids_DA = ['kms058','kms062','kms063','kms064', 'JC317L']
 ind_DA = [ind for ind, sbj in enumerate(subject_ids) if sbj in subject_ids_DA]
 
 
-# In[4]:
+# In[56]:
 
 
 data = []
@@ -171,26 +184,7 @@ df_DA_cue_onset.columns = ['session_id', 'subject_id', 'df_trials', 'n_trials',
 # Name: dip_rebound_r_value, dtype: float64
 # 
 
-# In[ ]:
-
-
-#'TT002-2023-06-05-154932',
-
-# print(df_ACh_cue_onset.trial_nb_dip_r_value)
-# print(df_ACh_cue_onset.trial_nb_rebound_r_value)
-# print(df_ACh_cue_onset.dip_rebound_r_value)
-
-
-# In[8]:
-
-
-mask = (df_ACh_cue_onset['n_trials'].notnull()) & (df_ACh_cue_onset['n_trials'] > 100) & df_ACh_cue_onset['is_success']
-df_ACh_cue_onset_100 = df_ACh_cue_onset.loc[mask]
-
-df_ACh_cue_onset_100['n_trials']
-
-
-# In[9]:
+# In[57]:
 
 
 mask = (df_DA_cue_onset['n_trials'].notnull()) & (
@@ -200,7 +194,9 @@ df_DA_cue_onset_100 = df_DA_cue_onset.loc[mask]
 df_DA_cue_onset_100['n_trials']
 
 
-# In[10]:
+# ## Plotting style
+
+# In[74]:
 
 
 # Define your list of markers
@@ -214,16 +210,19 @@ plt.rcParams['ytick.direction'] = 'out'
 plt.rcParams["legend.frameon"] = False
 plt.rcParams['xtick.bottom']=True
 plt.rcParams['ytick.left']=True
+plt.rcParams['font.family']= 'Arial'
+
+plt.rcParams['axes.labelsize'] = 12
 
 
 # # ACh
 
-# In[16]:
+# In[75]:
 
 
 fig, ax = plt.subplots()
 
-subject_ids_ = set(df_ACh_cue_onset_100['subject_id'])
+subject_ids_ = sorted(list(set(df_ACh_cue_onset_100['subject_id'])))
 
 for sbj in subject_ids_:
     x = - 1 * df_ACh_cue_onset_100['trial_nb_dip_r_value'][df_ACh_cue_onset_100['subject_id'] == sbj]
@@ -240,16 +239,16 @@ ax.plot([-0.8, 0.4], [0, 0], '--k')
 ax.plot([0, 0], [-0.5, 0.5],  '--k')
 
 ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-plt.xlabel('CC of dip size and trial numbers')
-plt.ylabel('CC of rebound size and trial numbers')
+plt.xlabel('CC of ACh dip size and trial numbers')
+plt.ylabel('CC of ACh rebound size and trial numbers')
 
 # Negative CCs mean the absolute size of dip and rebound is reducing
 
-ax.text(0.4, 0.4, 'Increasing in size', ha = 'right')
-ax.text(-0.7, -0.5, 'Decreasing in size', ha = 'left')
+ax.text(0.4, 0.5, 'Increasing in size', ha = 'right')
+ax.text(-0.8, -0.5, 'Decreasing in size', ha = 'left')
 
 
-# In[38]:
+# In[62]:
 
 
 np.count_nonzero((df_ACh_cue_onset_100['trial_nb_dip_r_value'] * -1 < 0.1) &
@@ -268,6 +267,14 @@ ss_dp
 
 
 
+# In[52]:
+
+
+ss_rdp = df_ACh_cue_onset_100.loc[(df_ACh_cue_onset_100['trial_nb_rebound_r_value'] > 0.2), 'session_id']
+
+ss_rdp
+
+
 # In[43]:
 
 
@@ -276,12 +283,12 @@ ss_dd = df_ACh_cue_onset_100.loc[(df_ACh_cue_onset_100['trial_nb_dip_r_value'] *
 ss_dd
 
 
-# In[17]:
+# In[76]:
 
 
 fig, ax = plt.subplots()
 
-subject_ids_ = set(df_ACh_cue_onset_100['subject_id'])
+subject_ids_ = sorted(list(set(df_ACh_cue_onset_100['subject_id'])))
 
 for sbj in subject_ids_:
     x = -1 * np.mean(df_ACh_cue_onset_100['trial_nb_dip_r_value'][df_ACh_cue_onset_100['subject_id'] == sbj])
@@ -301,12 +308,70 @@ ax.plot(XLIM, [0, 0], '--k')
 ax.plot([0, 0], YLIM,  '--k')
 
 ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-plt.xlabel('CC of dip size and trial_nb')
-plt.ylabel('CC of rebound size and trial_nb')
+plt.xlabel('CC of ACh dip size and trial_nb')
+plt.ylabel('CC of ACh rebound size and trial_nb')
 plt.title('Average per animal')
 
 
-# In[21]:
+# In[66]:
+
+
+subject_ids_
+
+
+# In[77]:
+
+
+fig, ax = plt.subplots()
+
+subject_ids_ = sorted(list(set(df_ACh_cue_onset_100['subject_id'])))
+
+for i, sbj in enumerate(subject_ids_):
+    # minus means moving the other ways
+    y = (df_ACh_cue_onset_100['trial_nb_dip_r_value']
+         [df_ACh_cue_onset_100['subject_id'] == sbj]) * -1
+    # y = np.mean(df_ACh_cue_onset_100['trial_nb_rebound_r_value']
+    #             [df_ACh_cue_onset_100['subject_id'] == sbj])
+
+    sns.swarmplot(x=i, y=y)
+
+    # ax.plot(x, marker=next(markers), linestyle='None',
+    #         fillstyle='none', label=sbj)
+
+
+ax.plot(ax.get_xlim(), [0, 0], '--k')
+
+plt.xticks(range(0,5), subject_ids_)
+plt.ylabel('CC of ACh dip size and trial number')
+
+
+# In[79]:
+
+
+fig, ax = plt.subplots()
+
+subject_ids_ = set(df_ACh_cue_onset_100['subject_id'])
+
+for i, sbj in enumerate(subject_ids_):
+    # minus means moving the other ways
+    y = (df_ACh_cue_onset_100['trial_nb_rebound_r_value']
+         [df_ACh_cue_onset_100['subject_id'] == sbj])
+    # y = np.mean(df_ACh_cue_onset_100['trial_nb_rebound_r_value']
+    #             [df_ACh_cue_onset_100['subject_id'] == sbj])
+
+    sns.swarmplot(x=i, y=y)
+
+    # ax.plot(x, marker=next(markers), linestyle='None',
+    #         fillstyle='none', label=sbj)
+
+
+ax.plot(ax.get_xlim(), [0, 0], '--k')
+
+plt.xticks(range(0,5), subject_ids_)
+plt.ylabel('CC of ACh rebound size and trial number')
+
+
+# In[80]:
 
 
 fig, ax = plt.subplots()
@@ -327,6 +392,7 @@ for i, sbj in enumerate(subject_ids_):
 ax.plot(ax.get_xlim(), [0, 0], '--k')
 
 plt.xticks(range(0,5), subject_ids_)
+plt.ylabel('CC of DA peak size and trial number')
 
 
 # In[ ]:
