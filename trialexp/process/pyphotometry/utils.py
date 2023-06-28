@@ -4,7 +4,9 @@ import itertools
 import json
 import logging
 
+import os
 import numpy as np
+import pandas as pd
 import xarray as xr
 from matplotlib import pyplot as plt
 from scipy.interpolate import interp1d
@@ -391,6 +393,169 @@ def sync_photometry_file(
     # for now return a session with embedded rsync object. 
     # Ouput will change when getting closer to fully functional implementation
     return photometry_rsync
+
+#----------------------------------------------------------------------------------
+# Peak / trough analyses
+#----------------------------------------------------------------------------------
+
+
+def measure_ACh_dip_rebound(data_dir):
+    """
+
+    ## Output arguments
+    df_trials              pd.DataFrame
+    lin_regress_dip        dict
+        dip vs trial_nb
+    lin_regress_rebound    dict
+        rebound vs trial_nb
+    lin_regress_dip_rebound    dict
+        dip vs rebound
+
+        These dictionaries hold the outputs from linregress()
+            'slope', 'intercept', 'r_value', 'p_value', 'std_err'
+    is_success             bool 
+    msg                    str
+    """ 
+
+    dummy_dict = {'slope': np.nan, 'intercept': np.nan, 'r_value': np.nan, 'p_value': np.nan, 'std_err': np.nan}
+    try:
+        xr_photometry = xr.open_dataset(os.path.join(data_dir, 'xr_photometry.nc'))
+    except Exception as e:
+        #print(f"Caught an error: {e}")
+        return [],  dummy_dict, dummy_dict, dummy_dict, False, str(e)
+
+    try:
+        xr_session = xr.open_dataset(os.path.join(data_dir, 'xr_session.nc'))
+    except Exception as e:
+        #print(f"Caught an error: {e}")
+        return [],  dummy_dict, dummy_dict, dummy_dict, False, str(e)
+
+    trial_nb_all = int(max(xr_session.trial_nb))
+
+    dip_values = []
+    reb_values = []
+
+    # Loop over trial numbers from 1 to trial_nb_all
+
+    for k in range(1, trial_nb_all+1):
+            try:
+                # Calculate the mean over the specified event_time interval for dip
+                dip = xr_photometry['hold_for_water_zscored_df_over_f'].sel(
+                    trial_nb=k, event_time=slice(75, 250))
+            except Exception as e:
+                #print(f"Caught an error: {e}")
+                return [],  dummy_dict, dummy_dict, dummy_dict, False, str(e)
+            # Append the value to the list
+            dip_values.append(dip.values.min())
+
+            # Calculate the mean over the specified event_time interval for reb
+            reb = xr_photometry['hold_for_water_zscored_df_over_f'].sel(
+                trial_nb=k, event_time=slice(200, 600)).mean(dim='event_time')
+            # Append the value to the list
+            reb_values.append(reb.values.max())
+
+    # Convert lists to pandas Series
+    dip_series = pd.Series(dip_values)
+    reb_series = pd.Series(reb_values)
+
+    # prepare df_trials for dip, rebound
+    new_index = range(1, trial_nb_all+1)
+    df_trials = pd.DataFrame({
+        'trial_nb': list(range(1,trial_nb_all+1)),
+        'dip': dip_series.reindex(new_index),
+        'rebound': reb_series.reindex(new_index),
+        'outcome': xr_session['trial_outcome'].values.T.flatten(),  # flatten is used to convert (175, 1) to (175,)
+        })
+    df_trials
+
+    df_trials = df_trials.dropna(subset=['dip'])
+    df_trials = df_trials.dropna(subset=['rebound'])
+
+
+    slope, intercept, r_value, p_value, std_err = linregress(df_trials['trial_nb'], df_trials['dip'])
+    lin_regress_dip = {'slope': slope , 'intercept': intercept, 'r_value': r_value, 'p_value': p_value, 'std_err': std_err}
+
+    slope, intercept, r_value, p_value, std_err = linregress(df_trials['trial_nb'], df_trials['rebound'])
+    lin_regress_rebound = {'slope': slope , 'intercept': intercept, 'r_value': r_value, 'p_value': p_value, 'std_err': std_err}
+
+    slope, intercept, r_value, p_value, std_err = linregress(df_trials['dip'], df_trials['rebound'])
+    lin_regress_dip_rebound = {'slope': slope , 'intercept': intercept, 'r_value': r_value, 'p_value': p_value, 'std_err': std_err}
+
+    return df_trials, lin_regress_dip, lin_regress_rebound, lin_regress_dip_rebound, True, 'success'
+
+
+
+def measure_DA_peak(data_dir):
+    """
+    #TODO refactro with measure_ACh_dip_rebound
+    
+    ## Output arguments
+    df_trials              pd.DataFrame
+    lin_regress_dip        dict
+        dip vs trial_nb
+    lin_regress_rebound    dict
+        rebound vs trial_nb
+    lin_regress_dip_rebound    dict
+        dip vs rebound
+
+        These dictionaries hold the outputs from linregress()
+            'slope', 'intercept', 'r_value', 'p_value', 'std_err'
+    is_success             bool 
+    msg                    str
+    """ 
+
+    dummy_dict = {'slope': np.nan, 'intercept': np.nan, 'r_value': np.nan, 'p_value': np.nan, 'std_err': np.nan}
+    try:
+        xr_photometry = xr.open_dataset(os.path.join(data_dir, 'xr_photometry.nc'))
+    except Exception as e:
+        #print(f"Caught an error: {e}")
+        return [],  dummy_dict, False, str(e)
+
+    try:
+        xr_session = xr.open_dataset(os.path.join(data_dir, 'xr_session.nc'))
+    except Exception as e:
+        #print(f"Caught an error: {e}")
+        return [],  dummy_dict, False, str(e)
+
+    trial_nb_all = int(max(xr_session.trial_nb))
+
+    pk_values = []
+
+    # Loop over trial numbers from 1 to trial_nb_all
+
+    for k in range(1, trial_nb_all+1):
+            try:
+            # Calculate the mean over the specified event_time interval for reb
+                pk = xr_photometry['hold_for_water_zscored_df_over_f'].sel(
+                    trial_nb=k, event_time=slice(200, 600)).mean(dim='event_time')
+            except Exception as e:
+                #print(f"Caught an error: {e}")
+                return [],  dummy_dict, False, str(e)
+            # Append the value to the list
+            pk_values.append(pk.values.max())
+
+    # Convert lists to pandas Series
+    pk_series = pd.Series(pk_values)
+
+    # prepare df_trials for dip, rebound
+    new_index = range(1, trial_nb_all+1)
+    df_trials = pd.DataFrame({
+        'trial_nb': list(range(1,trial_nb_all+1)),
+        'peak': pk_series.reindex(new_index),
+        'outcome': xr_session['trial_outcome'].values.T.flatten(),  # flatten is used to convert (175, 1) to (175,)
+        })
+    df_trials
+
+    df_trials = df_trials.dropna(subset=['peak'])
+
+
+    slope, intercept, r_value, p_value, std_err = linregress(df_trials['trial_nb'], df_trials['peak'])
+    lin_regress_pk = {'slope': slope, 'intercept': intercept,
+                      'r_value': r_value, 'p_value': p_value, 'std_err': std_err}
+
+   
+    return df_trials, lin_regress_pk, True, 'success'
+
 
 #----------------------------------------------------------------------------------
 # From here, legacy methods which will be probably deprecated in the future

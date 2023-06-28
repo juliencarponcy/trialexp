@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[ ]:
 
 
 import os
@@ -45,11 +45,17 @@ import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
 from scipy.signal import find_peaks
+import re
+from matplotlib import pyplot as plt
+import itertools
+import seaborn as sns
+
 
 from trialexp.process.pyphotometry.utils import *
 from trialexp.process.pycontrol import event_filters
 from trialexp.process.pycontrol.event_filters import extract_event_time
-from trialexp.process.pyphotometry.utils import measure_ach_dip_rebound
+from trialexp.process.pyphotometry.utils import measure_ACh_dip_rebound, measure_DA_peak
+
 
 
 # by_sessions_dir = r'\\ettina\Magill_Lab\Julien\Data\head-fixed\by_sessions'
@@ -72,88 +78,342 @@ task_dir = os.path.join(by_sessions_dir,  'reaching_go_spout_bar_nov22')
 items = os.listdir(task_dir)
 data_dirs = [os.path.join(task_dir, item, 'processed') for item in items if os.path.isdir(os.path.join(task_dir, item))]
 session_ids = [item for item in items if os.path.isdir(os.path.join(task_dir, item))]
+subject_ids = [re.match(r"(\w+)-", ssid).group(1) for ssid in session_ids]
 
 
-# In[3]:
+# In[ ]:
 
 
 ## Test data
 
-data_dirs = [os.path.join(
-    task_dir, 'TT002-2023-06-05-154932', 'processed')]
-session_ids = [item for item in items if os.path.isdir(os.path.join(task_dir, item))]
+# data_dirs = [os.path.join(
+#     task_dir, 'TT002-2023-06-05-154932', 'processed')]
+# session_ids = [item for item in items if os.path.isdir(os.path.join(task_dir, item))]
+# subject_ids = ['TT002']
 
-print(data_dirs)
+
+# 3 m 47 s for the folder 'reaching_go_spout_bar_nov22' and the 5 mice
+
+# In[6]:
 
 
-# In[10]:
+subject_ids_ACh = ['TT001','TT002','TT005','RE606', 'RE607']
+
+ind_ACh = [ind for ind, sbj in enumerate(subject_ids) if sbj in subject_ids_ACh]
+
+
+# In[7]:
 
 
 data = []
 
-for dd, ss in zip(data_dirs, session_ids):
+for dd, ss, sj in zip([data_dirs[i] for i in ind_ACh], [session_ids[i] for i in ind_ACh], [subject_ids[i] for i in ind_ACh]):
 
     df_trials, lin_regress_dip, lin_regress_rebound, lin_regress_dip_rebound, \
-        is_success, msg = measure_ach_dip_rebound(dd)
-    row_data_list = [ss] + [df_trials] + list(lin_regress_dip.values()) + list(
+        is_success, msg = measure_ACh_dip_rebound(dd)
+    n_trials = np.nan
+    if isinstance(df_trials, pd.DataFrame):
+        n_trials = df_trials.shape[0]
+    row_data_list = [ss] + [sj] + [df_trials] + [n_trials] + list(lin_regress_dip.values()) + list(
         lin_regress_rebound.values()) + list(lin_regress_dip_rebound.values()) + [is_success] + [msg] + [dd]
     data.append(row_data_list)
 
 df_ACh_cue_onset = pd.DataFrame(data)
 
-df_ACh_cue_onset.columns = ['session_id', 'df_trials', 
+df_ACh_cue_onset.columns = ['session_id', 'subject_id', 'df_trials', 'n_trials',
               'trial_nb_dip_slope', 'trial_nb_dip_intercept', 'trial_nb_dip_r_value', 'trial_nb_dip_p_value', 'trial_nb_dip_std_er',
               'trial_nb_rebound_slope', 'trial_nb_rebound_intercept', 'trial_nb_rebound_r_value', 'trial_nb_rebound_p_value', 'trial_nb_rebound_std_er',
               'dip_rebound_slope', 'dip_rebound_intercept', 'dip_rebound_r_value', 'dip_rebound_p_value', 'dip_rebound_std_er',
               'is_success', 'msg', 'data_dir']
 
 
-# In[11]:
+# In[3]:
 
 
-print(df_ACh_cue_onset.trial_nb_dip_r_value)
-print(df_ACh_cue_onset.trial_nb_rebound_r_value)
-print(df_ACh_cue_onset.dip_rebound_r_value)
+subject_ids_DA = ['kms058','kms062','kms063','kms064', 'JC317L']
 
+ind_DA = [ind for ind, sbj in enumerate(subject_ids) if sbj in subject_ids_DA]
+
+
+# In[4]:
+
+
+data = []
+
+for dd, ss, sj in zip([data_dirs[i] for i in ind_DA], [session_ids[i] for i in ind_DA], [subject_ids[i] for i in ind_DA]):
+
+    df_trials, lin_regress_pk, \
+        is_success, msg = measure_DA_peak(dd)
+    n_trials = np.nan
+    if isinstance(df_trials, pd.DataFrame):
+        n_trials = df_trials.shape[0]
+    row_data_list = [ss] + [sj] + [df_trials] + [n_trials] + list(lin_regress_pk.values()) + [is_success] + [msg] + [dd]
+    data.append(row_data_list)
+
+df_DA_cue_onset = pd.DataFrame(data)
+
+df_DA_cue_onset.columns = ['session_id', 'subject_id', 'df_trials', 'n_trials',
+                            'trial_nb_pk_slope', 'trial_nb_pk_intercept', 'trial_nb_pk_r_value', 'trial_nb_pk_p_value', 'trial_nb_pk_std_er',
+                            'is_success', 'msg', 'data_dir']
+
+
+# #'TT002-2023-06-05-154932',
+# 
+# print(df_ACh_cue_onset.trial_nb_dip_r_value)
+# print(df_ACh_cue_onset.trial_nb_rebound_r_value)
+# print(df_ACh_cue_onset.dip_rebound_r_value)
+# 
+# 0    0.525112
+# Name: trial_nb_dip_r_value, dtype: float64
+# 0   -0.29187
+# Name: trial_nb_rebound_r_value, dtype: float64
+# 0    0.001605
+# Name: dip_rebound_r_value, dtype: float64
+# 
 
 # In[ ]:
 
 
-task_dir = os.path.join(by_sessions_dir,  'reaching_go_spout_bar_nov22')
-data_dir = os.path.join(task_dir, 'TT002-2023-06-05-154932', 'processed')
+#'TT002-2023-06-05-154932',
+
+# print(df_ACh_cue_onset.trial_nb_dip_r_value)
+# print(df_ACh_cue_onset.trial_nb_rebound_r_value)
+# print(df_ACh_cue_onset.dip_rebound_r_value)
 
 
-# xr_photometry = xr.open_dataset(os.path.join(data_dir, 'xr_photometry.nc'))
-# xr_session = xr.open_dataset(os.path.join(data_dir, 'xr_session.nc'))
-# df_pycontrol = pd.read_pickle(os.path.join(data_dir, 'df_pycontrol.pkl'))
-# df_events = pd.read_pickle(os.path.join(data_dir, 'df_events_cond.pkl'))
+# In[8]:
 
 
-# In[ ]:
+mask = (df_ACh_cue_onset['n_trials'].notnull()) & (df_ACh_cue_onset['n_trials'] > 100) & df_ACh_cue_onset['is_success']
+df_ACh_cue_onset_100 = df_ACh_cue_onset.loc[mask]
+
+df_ACh_cue_onset_100['n_trials']
 
 
-from trialexp.process.pyphotometry.utils import measure_ach_dip_rebound
-
-df_trials, lin_regress_dip, lin_regress_rebound = measure_ach_dip_rebound(data_dir)
-
-print(lin_regress_dip)
-print(lin_regress_rebound)
+# In[9]:
 
 
-# In[ ]:
+mask = (df_DA_cue_onset['n_trials'].notnull()) & (
+    df_DA_cue_onset['n_trials'] > 100) & df_DA_cue_onset['is_success']
+df_DA_cue_onset_100 = df_DA_cue_onset.loc[mask]
+
+df_DA_cue_onset_100['n_trials']
 
 
-selected_data = xr_photometry['hold_for_water_zscored_df_over_f'].sel(event_time=slice(0, 1000))
-selected_data.dims
+# In[10]:
 
-average_curve = selected_data.mean(dim='trial_nb')
+
+# Define your list of markers
+markers = itertools.cycle(
+    ('o', 'v', '^', '<', '>', 's', 'p', '*', 'h', 'H', 'D', 'd', 'P', 'X'))
+
+plt.rcParams['axes.spines.top'] = False
+plt.rcParams['axes.spines.right'] = False
+plt.rcParams['xtick.direction'] = 'out'
+plt.rcParams['ytick.direction'] = 'out'
+plt.rcParams["legend.frameon"] = False
+plt.rcParams['xtick.bottom']=True
+plt.rcParams['ytick.left']=True
+
+
+# # ACh
+
+# In[16]:
 
 
 fig, ax = plt.subplots()
 
-plt.plot(average_curve)
-ax.grid(True)
-plt.xticks(np.arange(0,1000,100))
+subject_ids_ = set(df_ACh_cue_onset_100['subject_id'])
+
+for sbj in subject_ids_:
+    x = - 1 * df_ACh_cue_onset_100['trial_nb_dip_r_value'][df_ACh_cue_onset_100['subject_id'] == sbj]
+    y = df_ACh_cue_onset_100['trial_nb_rebound_r_value'][df_ACh_cue_onset_100['subject_id'] == sbj]
+
+    ax.plot(x, y, marker=next(markers), linestyle='None', fillstyle='none', label = sbj)
+
+plt.axis('equal')
+
+# ax.set_xlim()
+# ax.set_ylim()
+
+ax.plot([-0.8, 0.4], [0, 0], '--k')
+ax.plot([0, 0], [-0.5, 0.5],  '--k')
+
+ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.xlabel('CC of dip size and trial numbers')
+plt.ylabel('CC of rebound size and trial numbers')
+
+# Negative CCs mean the absolute size of dip and rebound is reducing
+
+ax.text(0.4, 0.4, 'Increasing in size', ha = 'right')
+ax.text(-0.7, -0.5, 'Decreasing in size', ha = 'left')
+
+
+# In[38]:
+
+
+np.count_nonzero((df_ACh_cue_onset_100['trial_nb_dip_r_value'] * -1 < 0.1) &
+                 (df_ACh_cue_onset_100['trial_nb_rebound_r_value'] > 0.1))
+
+
+# In[44]:
+
+
+# find sessions with CC for dip > 0.1, CC for rebound > 0.1
+
+ss_dp = df_ACh_cue_onset_100.loc[(df_ACh_cue_onset_100['trial_nb_dip_r_value'] * -1 < -0.2) & 
+                          (df_ACh_cue_onset_100['trial_nb_rebound_r_value'] > 0.2) , 'session_id']
+
+ss_dp
+
+
+
+# In[43]:
+
+
+ss_dd = df_ACh_cue_onset_100.loc[(df_ACh_cue_onset_100['trial_nb_dip_r_value'] * -1 < -0.2) &
+                                 (df_ACh_cue_onset_100['trial_nb_rebound_r_value'] < -0.2), 'session_id']
+ss_dd
+
+
+# In[17]:
+
+
+fig, ax = plt.subplots()
+
+subject_ids_ = set(df_ACh_cue_onset_100['subject_id'])
+
+for sbj in subject_ids_:
+    x = -1 * np.mean(df_ACh_cue_onset_100['trial_nb_dip_r_value'][df_ACh_cue_onset_100['subject_id'] == sbj])
+    y = np.mean(df_ACh_cue_onset_100['trial_nb_rebound_r_value'][df_ACh_cue_onset_100['subject_id'] == sbj])
+
+    ax.plot(x, y, marker=next(markers), linestyle='None',
+            fillstyle='none', label=sbj)
+
+
+XLIM = ax.get_xlim()
+ax.set_xlim([XLIM[0], 0.1])
+XLIM = ax.get_xlim()
+
+YLIM = ax.get_ylim()
+
+ax.plot(XLIM, [0, 0], '--k')
+ax.plot([0, 0], YLIM,  '--k')
+
+ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.xlabel('CC of dip size and trial_nb')
+plt.ylabel('CC of rebound size and trial_nb')
+plt.title('Average per animal')
+
+
+# In[21]:
+
+
+fig, ax = plt.subplots()
+
+subject_ids_ = set(df_ACh_cue_onset_100['subject_id'])
+
+for i, sbj in enumerate(subject_ids_):
+    y = (df_ACh_cue_onset_100['dip_rebound_r_value'][df_ACh_cue_onset_100['subject_id'] == sbj]) * -1 # minus means moving the other ways
+    # y = np.mean(df_ACh_cue_onset_100['trial_nb_rebound_r_value']
+    #             [df_ACh_cue_onset_100['subject_id'] == sbj])
+
+    sns.swarmplot(x=i, y=y)
+
+    # ax.plot(x, marker=next(markers), linestyle='None',
+    #         fillstyle='none', label=sbj)
+
+
+ax.plot(ax.get_xlim(), [0, 0], '--k')
+
+plt.xticks(range(0,5), subject_ids_)
+
+
+# In[ ]:
+
+
+sbj = 'kms058'
+
+df_ACh_cue_onset_100.loc[df_ACh_cue_onset_100['subject_id'] == sbj].index
+ 
+
+
+# In[19]:
+
+
+subject_ids_ = set(df_ACh_cue_onset_100['subject_id'])
+
+for sbj in subject_ids_:
+
+    fig, ax = plt.subplots()
+
+    df_ACh_cue_onset_100['subject_id'] == sbj
+
+    ax.set_title(sbj)
+
+    ind = df_ACh_cue_onset_100.loc[df_ACh_cue_onset_100['subject_id'] == sbj].index
+
+    for i in ind:
+        
+        ax.plot(df_ACh_cue_onset_100['df_trials'][i]['trial_nb'], 
+                df_ACh_cue_onset_100['df_trials'][i]['dip'], color = '#1f77b4', alpha = 0.2)
+        ax.plot(df_ACh_cue_onset_100['df_trials'][i]['trial_nb'],
+                df_ACh_cue_onset_100['df_trials'][i]['rebound'], color='#ff7f0e', alpha = 0.2)
+        
+        ax.set_xlabel('Trial number')
+        ax.set_ylabel('Dip/rebound size in z-scored delta F/F')
+
+
+# # DA
+
+# In[15]:
+
+
+import seaborn as sns
+
+fig, ax = plt.subplots()
+
+subject_ids_ = set(df_DA_cue_onset_100['subject_id'])
+
+for i, sbj in enumerate(subject_ids_):
+    y = (df_DA_cue_onset_100['trial_nb_pk_r_value']
+         [df_DA_cue_onset_100['subject_id'] == sbj])
+    # y = np.mean(df_DA_cue_onset_100['trial_nb_rebound_r_value']
+    #             [df_DA_cue_onset_100['subject_id'] == sbj])
+
+    sns.swarmplot(x=i, y=y)
+
+    # ax.plot(x, marker=next(markers), linestyle='None',
+    #         fillstyle='none', label=sbj)
+
+
+ax.plot(ax.get_xlim(), [0, 0], '--k')
+
+plt.xticks(range(0,5), subject_ids_)
+
+
+# In[20]:
+
+
+subject_ids_ = set(df_DA_cue_onset_100['subject_id'])
+
+for sbj in subject_ids_:
+
+    fig, ax = plt.subplots()
+
+    df_DA_cue_onset_100['subject_id'] == sbj
+
+    ax.set_title(sbj)
+
+    ind = df_DA_cue_onset_100.loc[df_DA_cue_onset_100['subject_id'] == sbj].index
+
+    for i in ind:
+        
+        ax.plot(df_DA_cue_onset_100['df_trials'][i]['trial_nb'], 
+                df_DA_cue_onset_100['df_trials'][i]['peak'], color = '#1f77b4', alpha = 0.2)
+        
+        ax.set_xlabel('Trial number')
+        ax.set_ylabel('Peak size in z-scored delta F/F')
 
 
 # In[ ]:
