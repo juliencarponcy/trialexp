@@ -34,15 +34,32 @@ def plot_event_distribution(df2plot, x, y, xbinwidth = 100, ybinwidth=100, xlim=
     plt.rcParams["legend.frameon"] = False
 
     g = sns.JointGrid()
+    
+    #plot spout touch
+    df_spout = df2plot[df2plot.name=='spout']
     ax = sns.scatterplot(y=y, x=x, marker='|' , hue='trial_outcome', palette=trial_outcome_palette,
-                       data= df2plot, ax = g.ax_joint, **kwargs)
+                       data= df_spout, ax = g.ax_joint, **kwargs)
+    
+    sns.histplot(x=x, binwidth=xbinwidth, ax=g.ax_marg_x, data=df_spout)
+    if ybinwidth>0 and len(df2plot[y].unique())>1:
+        sns.histplot(y=y, binwidth=ybinwidth, ax=g.ax_marg_y, data=df_spout)
+    
+    #plot aborted bar off
+    df_baroff = df2plot[(df2plot.name=='bar_off') & (df2plot.trial_outcome =='aborted')]
+    ax = sns.scatterplot(y=y, x=x, marker='.' , hue='trial_outcome', palette=trial_outcome_palette,
+                       data= df_baroff, ax = g.ax_joint, legend=False, **kwargs)
 
+    
+    # indicate the no reach condition
+    df_trial = df2plot.groupby('trial_nb').first()
+    df_noreach = df_trial[df_trial.trial_outcome.str.contains('no_reach')]
+    ax = sns.scatterplot(y=y, x=0, marker='x' , hue='trial_outcome', palette=trial_outcome_palette,
+                    data= df_noreach, ax = g.ax_joint, **kwargs)
+    
     if xlim is not None:
         ax.set(xlim=xlim)
 
-    sns.histplot(x=x, binwidth=xbinwidth, ax=g.ax_marg_x, data=df2plot)
-    if ybinwidth>0 and len(df2plot[y].unique())>1:
-        sns.histplot(y=y, binwidth=ybinwidth, ax=g.ax_marg_y, data=df2plot)
+
         
     sns.move_legend(ax, "upper left", bbox_to_anchor=(1.2, 1))
 
