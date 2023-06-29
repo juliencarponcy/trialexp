@@ -16,7 +16,9 @@ trial_outcome_palette = {
     'no_reach': default_palette[4],
     'water_by_bar_off': default_palette[5],
     'undefined': default_palette[6],
-    'not success': default_palette[7]
+    'not success': default_palette[7],
+    'free_reward_reach': default_palette[8],
+    'free_reward_no_reach': default_palette[9],
     
 }
 

@@ -266,7 +266,17 @@ def compute_trial_outcome(row, task_name):
             return 'success'
         else:
             return 'undefined'
-        
+    elif task_name in ['reaching_go_spout_incr_break2_nov22']:
+        if not row.spout:
+            return 'no_reach'
+        elif row.button_press:
+            return 'button_press'   
+        elif row.spout and not row.US_end_timer:
+            return 'late_reach'
+        elif row.US_end_timer:
+            return 'success'
+        else:
+            return 'undefined'
     elif task_name in ['reaching_go_spout_bar_dual_dec22',
                        'reaching_go_spout_bar_dual_all_reward_dec22']:
         if row.break_after_abort:
@@ -283,18 +293,26 @@ def compute_trial_outcome(row, task_name):
             return 'success'
         else:
             return 'undefined'
-    elif task_name in ['reaching_go_spout_incr_break2_nov22']:
-        if not row.spout:
+    elif task_name in ['reaching_go_spout_bar_free_water_june28']:
+        if row.break_after_abort:
+            return 'aborted'
+        elif row['free reward delivered']:
+            if row.spout:
+                return 'free_reward_reach'
+            else:
+                return 'free_reward_no_reach'
+        elif not row.spout:
             return 'no_reach'
         elif row.button_press:
-            return 'button_press'   
-        elif row.spout and not row.US_end_timer:
+            return 'button_press'
+        elif row['water by bar_off']:
+            return 'water_by_bar_off'
+        elif row.spout and not row.water_on:
             return 'late_reach'
-        elif row.US_end_timer:
+        elif row['water by spout']:
             return 'success'
         else:
             return 'undefined'
-
     else:
         if row.success:
             return 'success'
