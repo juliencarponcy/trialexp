@@ -15,7 +15,7 @@ trial_window = df_events_cond.attrs['trial_window']
 triggers = df_events_cond.attrs['triggers']
 
 #%% Plot the event plots
-df2plot = df_events_cond[df_events_cond.name=='spout'].copy()
+df2plot = df_events_cond.copy()
 df2plot['trial_time'] = df2plot['trial_time']/1000
 xlim = [trial_window[0]/1000, np.percentile(df2plot['trial_time'],95)]
 g = plot_event_distribution(df2plot, 'trial_time', 'trial_nb', xbinwidth=0.1, ybinwidth=0, xlim=xlim)
