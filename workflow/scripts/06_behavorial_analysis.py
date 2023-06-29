@@ -18,9 +18,29 @@ from trialexp.process.pycontrol import event_filters
 (sinput, soutput) = getSnake(locals(), 'workflow/pycontrol.smk',
   [settings.debug_folder + '/processed/df_behavoiral.pkl'],
   'behavorial_analysis')
+
+
 # %%
 df_event = pd.read_pickle(sinput.event_dataframe)
+df_conditions = pd.read_pickle(sinput.condition_dataframe)
+
+# %% Time between the bar off and first spout touch
+
+first_reach_travel_time = df_event.groupby('trial_nb').apply(event_filters.get_reach_travel_time)
+xr_first_reach_time = xr.DataArray(first_reach_travel_time)
+#%% trial time of the first siginificant bar off
+
+first_sig_bar_off_time = df_event.groupby('trial_nb').apply(event_filters.get_first_sig_bar_off_time)
+xr_first_sig_bar_off_time = xr.DataArray(first_sig_bar_off_time)
 # %%
-add_event_data(df_event, event_filters.get_first_bar_off, trial_window, dataset,event_time_coord, 
-               'zscored_df_over_f', 'first_bar_off', dataset.attrs['sampling_rate'])
+
+xr_behaviour = xr.Dataset({'first_reach_travel_time':xr_first_reach_time,
+                           'first_sig_bar_off_trial_time': xr_first_sig_bar_off_time})
+
+# Merge conditions
+ds_condition = xr.Dataset.from_dataframe(df_conditions)
+xr_behaviour = xr.merge([ds_condition, xr_behaviour])
+# %%
+
+xr_behaviour.sel(trial_nb = (xr_behaviour.trial_outcome=='success'))
 # %%
