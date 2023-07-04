@@ -16,7 +16,7 @@ from trialexp.process.pycontrol import event_filters
 #%% Load inputs
 
 (sinput, soutput) = getSnake(locals(), 'workflow/pycontrol.smk',
-  [settings.debug_folder + '/processed/df_behavoiral.pkl'],
+  [settings.debug_folder + '/processed/xr_behaviour.nc'],
   'behavorial_analysis')
 
 
@@ -38,9 +38,10 @@ xr_behaviour = xr.Dataset({'first_reach_travel_time':xr_first_reach_time,
                            'first_sig_bar_off_trial_time': xr_first_sig_bar_off_time})
 
 # Merge conditions
-ds_condition = xr.Dataset.from_dataframe(df_conditions)
-xr_behaviour = xr.merge([ds_condition, xr_behaviour])
+# ds_condition = xr.Dataset.from_dataframe(df_conditions)
+# xr_behaviour = xr.merge([ds_condition, xr_behaviour])
 # %%
+xr_behaviour = xr_behaviour.expand_dims({'session_id':[df_event.attrs['session_id']]})
 
-xr_behaviour.sel(trial_nb = (xr_behaviour.trial_outcome=='success'))
 # %%
+xr_behaviour.to_netcdf(soutput.xr_behaviour, engine='h5netcdf')

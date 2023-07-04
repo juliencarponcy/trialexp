@@ -1,7 +1,7 @@
 # Utility functions for pycontrol and pyphotometry files processing
 
 import numpy as np
-
+import pandas as pd
 #----------------------------------------------------------------------------------
 # Plotting
 #----------------------------------------------------------------------------------
@@ -73,7 +73,30 @@ def normalize_coords(coord_dict, normalize_betwen=['Left_paw','spout'], bins_nb=
     return norm_coord_dict
 
 
-#----------------------------------------------------------------------------------
-# Load analog data
-#----------------------------------------------------------------------------------
+def merge_marker(df):
+    # merge marker and choose the one with max likelihood
+    max_likehood_idx = df.groupby(level='coords').idxmax()['likelihood']
+    # print(max_likehood_idx[0])
+    return df[(max_likehood_idx[0], slice(None))]
 
+def merge_marker_likelihood(df):
+    # fast implementation using numpy to merge markers
+    # other implementation using indexing in pd row by row is too slwo
+    
+    # find which marker has the larger likelihood
+    likelihood = df.loc[:,(slice(None), 'likelihood')].values
+    maxidx = np.argmax(likelihood,axis=1)
+    
+    # select data from that marker
+    data = df.values.reshape(len(df),-1,3) # rearrange to (frame, marker, coords)
+    data = data[np.arange(len(df)),maxidx,:]
+    
+    #recreate the dataframe
+    return pd.DataFrame(data,columns=['x','y','likelihood'])
+
+
+def interpolate_bad_points(df, threshold):
+    df = df.copy()
+    #likelihood value below the threshold will be removed and replaced by interpolation
+    df.loc[df.likelihood<threshold,:] = None
+    return df.interpolate()

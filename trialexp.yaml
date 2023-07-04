@@ -43,6 +43,7 @@ dependencies:
     - python-dotenv
     - neo
     - pathworklib
+    - ffmpeg-python
     - -e . # if not working execute "pip install -e ." from the top level of this repo
     # - matlabengine # causing an error
     
