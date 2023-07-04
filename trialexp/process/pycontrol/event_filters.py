@@ -111,7 +111,6 @@ def get_first_sig_bar_off_time(df_trial, min_off_time = 100):
     
     bar_off =  df_trial[df_trial['name']=='bar_off']
     bar_on =  df_trial[df_trial['name']=='bar']
-    print(df_trial.trial_nb.iloc[0])
     # print(bar_on)
     
     if len(bar_off) > 0 and len(bar_on) > 0:
