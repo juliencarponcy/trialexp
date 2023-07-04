@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[3]:
+# In[43]:
 
 
 import os
@@ -36,7 +36,7 @@ get_ipython().system('jupyter nbconvert "{input_path}" --to="python" --output="{
 # - lots of abortions
 # 
 
-# In[4]:
+# In[ ]:
 
 
 get_ipython().run_line_magic('reload_ext', 'autoreload')
@@ -72,7 +72,7 @@ from trialexp.process.pyphotometry.utils import measure_ACh_dip_rebound, measure
 # df_events = pd.read_pickle(os.path.join(data_dir, 'df_events_cond.pkl'))
 
 
-# In[5]:
+# In[ ]:
 
 
 by_sessions_dir = r'\\ettina\Magill_Lab\Julien\Data\head-fixed\by_sessions'
@@ -84,7 +84,7 @@ session_ids = [item for item in items if os.path.isdir(os.path.join(task_dir, it
 subject_ids = [re.match(r"(\w+)-", ssid).group(1) for ssid in session_ids]
 
 
-# In[6]:
+# In[ ]:
 
 
 ## Test data
@@ -98,7 +98,7 @@ subject_ids = [re.match(r"(\w+)-", ssid).group(1) for ssid in session_ids]
 # # Compute ACh
 # 3 m 47 s for the folder 'reaching_go_spout_bar_nov22' and the 5 mice
 
-# In[7]:
+# In[ ]:
 
 
 subject_ids_ACh = ['TT001','TT002','TT005','RE606', 'RE607']
@@ -106,7 +106,7 @@ subject_ids_ACh = ['TT001','TT002','TT005','RE606', 'RE607']
 ind_ACh = [ind for ind, sbj in enumerate(subject_ids) if sbj in subject_ids_ACh]
 
 
-# In[8]:
+# In[ ]:
 
 
 data = []
@@ -131,7 +131,7 @@ df_ACh_cue_onset.columns = ['session_id', 'subject_id', 'df_trials', 'n_trials',
               'is_success', 'msg', 'data_dir']
 
 
-# In[9]:
+# In[ ]:
 
 
 mask = (df_ACh_cue_onset['n_trials'].notnull()) & (df_ACh_cue_onset['n_trials'] > 100) & df_ACh_cue_onset['is_success']
@@ -143,7 +143,7 @@ df_ACh_cue_onset_100['n_trials']
 # # Compute DA
 # 
 
-# In[10]:
+# In[ ]:
 
 
 subject_ids_DA = ['kms058','kms062','kms063','kms064', 'JC317L']
@@ -151,7 +151,7 @@ subject_ids_DA = ['kms058','kms062','kms063','kms064', 'JC317L']
 ind_DA = [ind for ind, sbj in enumerate(subject_ids) if sbj in subject_ids_DA]
 
 
-# In[11]:
+# In[ ]:
 
 
 data = []
@@ -187,7 +187,7 @@ df_DA_cue_onset.columns = ['session_id', 'subject_id', 'df_trials', 'n_trials',
 # Name: dip_rebound_r_value, dtype: float64
 # 
 
-# In[12]:
+# In[ ]:
 
 
 mask = (df_DA_cue_onset['n_trials'].notnull()) & (
@@ -199,7 +199,7 @@ df_DA_cue_onset_100['n_trials']
 
 # ## Plotting style
 
-# In[13]:
+# In[ ]:
 
 
 # Define your list of markers
@@ -220,7 +220,7 @@ plt.rcParams['axes.labelsize'] = 12
 
 # # ACh
 
-# In[14]:
+# In[ ]:
 
 
 fig, ax = plt.subplots()
@@ -251,14 +251,14 @@ ax.text(0.4, 0.5, 'Increasing in size', ha = 'right')
 ax.text(-0.8, -0.5, 'Decreasing in size', ha = 'left')
 
 
-# In[15]:
+# In[ ]:
 
 
 np.count_nonzero((df_ACh_cue_onset_100['trial_nb_dip_r_value'] * -1 < 0.1) &
                  (df_ACh_cue_onset_100['trial_nb_rebound_r_value'] > 0.1))
 
 
-# In[16]:
+# In[ ]:
 
 
 # find sessions with CC for dip > 0.1, CC for rebound > 0.1
@@ -270,7 +270,7 @@ ss_dp
 
 
 
-# In[17]:
+# In[ ]:
 
 
 ss_rdp = df_ACh_cue_onset_100.loc[(df_ACh_cue_onset_100['trial_nb_rebound_r_value'] > 0.2), 'session_id']
@@ -278,7 +278,7 @@ ss_rdp = df_ACh_cue_onset_100.loc[(df_ACh_cue_onset_100['trial_nb_rebound_r_valu
 ss_rdp
 
 
-# In[18]:
+# In[ ]:
 
 
 ss_dd = df_ACh_cue_onset_100.loc[(df_ACh_cue_onset_100['trial_nb_dip_r_value'] * -1 < -0.2) &
@@ -286,7 +286,7 @@ ss_dd = df_ACh_cue_onset_100.loc[(df_ACh_cue_onset_100['trial_nb_dip_r_value'] *
 ss_dd
 
 
-# In[19]:
+# In[ ]:
 
 
 fig, ax = plt.subplots()
@@ -316,7 +316,7 @@ plt.ylabel('CC of ACh rebound size and trial_nb')
 plt.title('Average per animal')
 
 
-# In[20]:
+# In[ ]:
 
 
 fig, ax = plt.subplots()
@@ -342,7 +342,7 @@ plt.xticks(range(0,5), subject_ids_)
 plt.ylabel('CC of ACh dip size and trial number')
 
 
-# In[21]:
+# In[ ]:
 
 
 fig, ax = plt.subplots()
@@ -368,7 +368,7 @@ plt.xticks(range(0,5), subject_ids_)
 plt.ylabel('CC of ACh rebound size and trial number')
 
 
-# In[22]:
+# In[ ]:
 
 
 fig, ax = plt.subplots()
@@ -392,7 +392,7 @@ plt.xticks(range(0,5), subject_ids_)
 plt.ylabel('CC of DA peak size and trial number')
 
 
-# In[23]:
+# In[ ]:
 
 
 sbj = 'kms058'
@@ -401,7 +401,7 @@ df_ACh_cue_onset_100.loc[df_ACh_cue_onset_100['subject_id'] == sbj].index
  
 
 
-# In[24]:
+# In[ ]:
 
 
 subject_ids_ = sorted(list(set(df_ACh_cue_onset_100['subject_id'])))
@@ -429,7 +429,7 @@ for sbj in subject_ids_:
 
 # # DA
 
-# In[25]:
+# In[ ]:
 
 
 import seaborn as sns
@@ -455,7 +455,7 @@ ax.plot(ax.get_xlim(), [0, 0], '--k')
 plt.xticks(range(0,5), subject_ids_)
 
 
-# In[26]:
+# In[ ]:
 
 
 subject_ids_ = sorted(list(set(df_DA_cue_onset_100['subject_id'])))
@@ -493,7 +493,7 @@ for sbj in subject_ids_:
 # 
 # It's certainly less noisy, but 
 
-# In[27]:
+# In[ ]:
 
 
 subject_ids_ = sorted(list(set(df_ACh_cue_onset_100['subject_id'])))
@@ -509,7 +509,7 @@ for sbj in subject_ids_:
             df_ACh_cue_onset_100.loc[i, 'df_trials']['rebound'].rolling(window=20).mean()
 
 
-# In[28]:
+# In[ ]:
 
 
 plt.rcParams['font.size']= 16
@@ -554,24 +554,176 @@ ax012345.savefig()
 # 
 # 
 
-# In[29]:
+# In[ ]:
 
 
 ss_d = df_ACh_cue_onset_100.loc[(df_ACh_cue_onset_100['trial_nb_dip_r_value'] * -1 < -0.3), 'session_id']
 ss_d
 
 
-# In[30]:
+# In[ ]:
 
 
-ss = 'TT005-2023-05-25-154341'
+ss = 'TT001-2023-06-23-154127'
 datadir = r'\\ettina\Magill_Lab\Julien\Data\head-fixed\by_sessions\reaching_go_spout_bar_nov22' + '\\' + ss + r'\processed'
 
 xr_photometry = xr.open_dataset(os.path.join(datadir, 'xr_photometry.nc'))
 xr_session = xr.open_dataset(os.path.join(datadir, 'xr_session.nc'))
 
 
-# In[31]:
+# In[ ]:
+
+
+from scipy.stats import pearsonr
+ind_success = np.where(xr_session['trial_outcome'].values == 'success')[1] + 1
+
+dip_suc = xr_photometry['hold_for_water_zscored_df_over_f'].sel(
+    event_time=slice(75, 250), trial_nb=ind_success).min(dim='event_time').values
+dip_suc_r, dip_suc_p = pearsonr(dip_suc, np.arange(1, len(dip_suc) +1))
+
+
+# In[ ]:
+
+
+dip_suc_r
+
+
+# In[ ]:
+
+
+os.path.isfile(os.path.join(datadir, 'xr_photometry.nc'))
+
+
+# In[ ]:
+
+
+dip_suc = xr_photometry['hold_for_water_zscored_df_over_f'].sel(
+    event_time=slice(75, 250), trial_nb=ind_success).min(dim='event_time').values
+
+
+# In[ ]:
+
+
+#  Calculate CC or slope
+
+from scipy.stats import pearsonr
+
+if 'list_size3' in globals():
+    del list_size3
+
+list_size3 = []
+for ss in ss_d:
+
+    datadir = r'\\ettina\Magill_Lab\Julien\Data\head-fixed\by_sessions\reaching_go_spout_bar_nov22' + '\\' + ss + r'\processed'
+
+    try:
+        xr_photometry = xr.open_dataset(os.path.join(datadir, 'xr_photometry.nc'))
+        xr_session = xr.open_dataset(os.path.join(datadir, 'xr_session.nc'))
+        
+        # need to select trials for success and 
+
+        ind_success = np.where(xr_session['trial_outcome'].values == 'success')[1] + 1
+
+        trial_nbs = xr_session['trial_nb'].values
+
+        xr_photometry['hold_for_water_zscored_df_over_f'].sel(
+            event_time=slice(75, 250), trial_nb=ind_success).min(dim='event_time').values
+
+
+        ind_success = np.where(xr_session['trial_outcome'].values == 'success')[1] + 1
+
+        dip_suc = xr_photometry['hold_for_water_zscored_df_over_f'].sel(
+            event_time=slice(75, 250), trial_nb=ind_success).min(dim='event_time').values
+        dip_suc = dip_suc[~np.isnan(dip_suc)]
+        dip_suc_r, dip_suc_p = pearsonr(-1 * dip_suc, range(1, len(dip_suc) +1))
+        # Y could be trial_nb, range(1, len(x) +1), or timestamps of cue
+
+        reb_suc = xr_photometry['hold_for_water_zscored_df_over_f'].sel(
+            event_time=slice(200, 600), trial_nb=ind_success).max(dim='event_time').values
+        reb_suc = reb_suc[~np.isnan(reb_suc)]
+        reb_suc_r, reb_suc_p = pearsonr(reb_suc, range(1, len(reb_suc) + 1))
+
+        lbo_suc = xr_photometry['last_bar_off_zscored_df_over_f'].sel(
+            event_time=slice(0, 150), trial_nb=ind_success).max(dim='event_time').values
+        lbo_suc = lbo_suc[~np.isnan(lbo_suc)]
+        lbo_suc_r, lbo_suc_p = pearsonr(lbo_suc, range(1, len(lbo_suc) + 1))
+
+        rew_suc = xr_photometry['first_spout_zscored_df_over_f'].sel(
+            event_time=slice(500, 750), trial_nb=ind_success).max(dim='event_time').values
+        rew_suc = rew_suc[~np.isnan(rew_suc)]
+        rew_suc_r, rew_suc_p = pearsonr(rew_suc, range(1, len(rew_suc) + 1))
+
+        items = [ss, dip_suc, reb_suc, lbo_suc, rew_suc, 
+                dip_suc_r, reb_suc_r, lbo_suc_r, rew_suc_r]
+    except Exception as e: 
+        print(f'{ss}, {e}')
+        items = [ss, np.nan, np.nan, np.nan, np.nan, 
+                np.nan, np.nan, np.nan, np.nan]
+
+    df_size3 = pd.DataFrame([items])
+    df_size3.columns = ['session_id', 'dip_suc', 'reb_suc', 'lbo_suc', 'rew_suc', 
+                  'dip_suc_r', 'reb_suc_r', 'lbo_suc_r', 'rew__suc_r']
+    list_size3.append(df_size3)
+
+
+
+
+# In[ ]:
+
+
+df_size3_ = pd.concat(list_size3, axis=0)
+
+df_size3_ = df_size3_.dropna(subset=['dip_suc_r'])
+
+df_size3_['subject_id'] = [re.search('\w+', sid).group(0) for sid in df_size3_['session_id']]
+df_size3_
+
+
+# In[46]:
+
+
+df_size3_
+
+
+# In[48]:
+
+
+df_size3__ = df_size3_.loc[:,  ['dip_suc_r', 'reb_suc_r', 'lbo_suc_r', 'rew__suc_r']]
+
+df_melted = df_size3__.melt(var_name='group', value_name='value')
+
+
+# In[56]:
+
+
+ax.get_xlim()
+
+
+# In[60]:
+
+
+ax.get_xlim()
+
+
+# In[62]:
+
+
+plt.figure(figsize=(10, 6))
+palette = sns.color_palette('deep', 4)
+sns.swarmplot(x='group', y='value', data=df_melted, palette=palette,
+              zorder=1)  # zorder=1 to be underneath the boxplot
+# zorder=2 to be over the swarmplot
+sns.boxplot(x='group', y='value', data=df_melted, zorder=2,
+            boxprops=dict(alpha=.3), palette=palette, width=0.4)
+plt.axhline(0, ls='--', color='gray')
+plt.ylabel('Correlation coefficient of \nresponse size and successful trial ordinal\nDecreasing — Increasing')
+plt.xticks(range(0, 4), ['Cue onset dip', 'Cue onset rebound',
+           'Last bar_off peak', 'Reward peak'], rotation=60)
+
+
+# # Early, middle, late .... difficult to get statistical significance because of large variance
+
+# In[ ]:
 
 
 list_size3 = []
@@ -686,26 +838,26 @@ for ss in ss_d:
     list_size3.append(df_size3)
 
 
-# In[32]:
+# In[ ]:
 
 
 df_size3 = pd.concat(list_size3, axis=0)
 
 
-# In[33]:
+# In[ ]:
 
 
 y = df_size3['dip_1']
 y = [item for sublist in df_size3['dip_1'] for item in sublist]
 
 
-# In[34]:
+# In[ ]:
 
 
 df_size3.columns
 
 
-# In[35]:
+# In[ ]:
 
 
 def plot_one(key, k):
@@ -745,13 +897,13 @@ plt.xticks(rotation=90)  # Adjust font size here
 plt.ylabel('Response size in z-scored delta F/F', fontsize=14)
 
 
-# In[36]:
+# In[ ]:
 
 
 keys[0:3]
 
 
-# In[37]:
+# In[ ]:
 
 
 from scipy import stats
