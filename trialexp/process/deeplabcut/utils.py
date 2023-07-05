@@ -2,6 +2,9 @@
 
 import numpy as np
 import pandas as pd
+from scipy import signal
+import av
+import matplotlib.pylab as plt
 #----------------------------------------------------------------------------------
 # Plotting
 #----------------------------------------------------------------------------------
@@ -99,4 +102,63 @@ def interpolate_bad_points(df, threshold):
     df = df.copy()
     #likelihood value below the threshold will be removed and replaced by interpolation
     df.loc[df.likelihood<threshold,:] = None
-    return df.interpolate()
+    # return df.interpolate(method='nearest')
+    return df.fillna(method='ffill')
+
+def lowpass_coords(df, fs, corner_freq):
+    df = df.copy()
+    # use a low pass filter to filter the coordinates
+    [b,a] = signal.butter(3, corner_freq/(fs/2))
+    df['x'] = signal.filtfilt(b,a,df['x'])
+    df['y'] = signal.filtfilt(b,a,df['y'])
+    
+    return df
+
+
+# use pyav to extract the timestamp of each frame
+def extract_video_timestamp(video: str, index: int = 0):
+    """
+    adapted from https://stackoverflow.com/questions/47743246/getting-timestamp-of-each-frame-in-a-video?utm_source=pocket_saves
+
+    Parameters:
+        video (str): Video path
+        index (int): Stream index of the video.
+    Returns:
+        List of timestamps in ms
+    """
+    container = av.open(video)
+    video = container.streams.get(index)[0]
+
+    if video.type != "video":
+            raise ValueError(
+                f'The index {index} is not a video stream. It is an {video.type} stream.'
+            )
+
+    av_timestamps = [
+        int(packet.pts * video.time_base * 1000) for packet in container.demux(video) if packet.pts is not None
+    ]
+
+    container.close()
+    av_timestamps.sort()
+
+    return av_timestamps
+
+
+def plot_rsync(rsync_time):
+    # rsync_time: timestamp in ms of the rsync signal
+    plot_num = 4
+    fps = 100
+
+    fig,ax = plt.subplots(plot_num,2,figsize=(3*2,3*plot_num))
+
+    sync_time = rsync_time[1:plot_num+1]
+
+    for i,t in enumerate(sync_time):
+        sync_pt = int(t/1000*fps)
+
+
+        ax[i][0].imshow(frames[sync_pt-1,:,:],cmap='gray')
+        ax[i][1].imshow(frames[sync_pt+1,:,:],cmap='gray')
+
+        ax[i][0].axis('off')
+        ax[i][1].axis('off')
