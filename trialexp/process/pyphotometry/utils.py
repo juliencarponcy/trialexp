@@ -807,7 +807,8 @@ def resample_event(aligner, ref_time, event_time, event_value, fill_value=-1):
     return f(ref_time)
 
 
-def extract_event_data(trigger_timestamp, window, dataArray, sampling_rate, data_len =None, time_tolerance=5):
+def extract_event_data(trigger_timestamp, window, dataArray, sampling_rate, 
+                       data_len =None, time_tolerance=5, use_absolute_time=False):
     '''
     Extract continous data around a timestamp. The original timestamp will be
     aligned to the coordinate of the dataArray with aligner
@@ -825,7 +826,8 @@ def extract_event_data(trigger_timestamp, window, dataArray, sampling_rate, data
             If provided, checks for length of output data
         time_tolerance: int, default=5
             the minimum time difference in ms that must be matched between the trigger stampstamp and the time coordinate of the dataArray
-    
+        use_absolute_time: bool, default=False
+            if true, then use absolute time to extract the data
     Returns:
         data : numpy.ndarray
             Array of continuous data around the timestamp
@@ -848,6 +850,7 @@ def extract_event_data(trigger_timestamp, window, dataArray, sampling_rate, data
             min_time = d[min_idx]
             start_idx = min_idx +int(window[0]/1000*sampling_rate)
             end_idx = min_idx + int(window[1]/1000*sampling_rate)
+            print(start_idx, end_idx, min_time)
             
             if min_time < time_tolerance and (start_idx>0) and (end_idx< len(dataArray.data)):
                 min_idx = np.argmin(d)

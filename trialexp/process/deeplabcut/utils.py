@@ -144,7 +144,7 @@ def extract_video_timestamp(video: str, index: int = 0):
     return av_timestamps
 
 
-def plot_rsync(rsync_time):
+def plot_rsync(rsync_time, frames):
     # rsync_time: timestamp in ms of the rsync signal
     plot_num = 4
     fps = 100
@@ -162,3 +162,17 @@ def plot_rsync(rsync_time):
 
         ax[i][0].axis('off')
         ax[i][1].axis('off')
+        
+def get_marker_signal(marker_loc):
+    signal_time = marker_loc.time.data/1000
+    coords = marker_loc.data
+    speed = np.sqrt(np.sum(np.diff(coords,axis=0, prepend=[coords[0,:]])**2,axis=1))
+    
+    return (signal_time, coords, speed)
+    
+def add_video_timestamp(df,videofile):
+    # add timestamp of the video file to the deeplabcut dataframe
+    ts = extract_video_timestamp(videofile)
+    df['time'] = ts
+    df = df.set_index('time')
+    return df
