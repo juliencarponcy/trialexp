@@ -808,7 +808,7 @@ def resample_event(aligner, ref_time, event_time, event_value, fill_value=-1):
 
 
 def extract_event_data(trigger_timestamp, window, dataArray, sampling_rate, 
-                       data_len =None, time_tolerance=5, use_absolute_time=False):
+                       data_len =None, time_tolerance=5):
     '''
     Extract continous data around a timestamp. The original timestamp will be
     aligned to the coordinate of the dataArray with aligner
@@ -826,8 +826,6 @@ def extract_event_data(trigger_timestamp, window, dataArray, sampling_rate,
             If provided, checks for length of output data
         time_tolerance: int, default=5
             the minimum time difference in ms that must be matched between the trigger stampstamp and the time coordinate of the dataArray
-        use_absolute_time: bool, default=False
-            if true, then use absolute time to extract the data
     Returns:
         data : numpy.ndarray
             Array of continuous data around the timestamp
@@ -850,11 +848,15 @@ def extract_event_data(trigger_timestamp, window, dataArray, sampling_rate,
             min_time = d[min_idx]
             start_idx = min_idx +int(window[0]/1000*sampling_rate)
             end_idx = min_idx + int(window[1]/1000*sampling_rate)
-            print(start_idx, end_idx, min_time)
             
-            if min_time < time_tolerance and (start_idx>0) and (end_idx< len(dataArray.data)):
+            if min_time < time_tolerance and (start_idx>0) and (end_idx< len(dataArray.time)):
                 min_idx = np.argmin(d)
-                data.append(dataArray.data[start_idx:end_idx])
+                if dataArray.data.ndim == 1:
+                    data.append(dataArray.data[start_idx:end_idx])
+                else:
+                    #TODO: work on the case for multi-dimensional data
+                    data.append(dataArray.data[:,start_idx:end_idx])
+                    
                 event_found.append(True)
             else:
                 x = np.zeros((int((window[1]-window[0])/1000*sampling_rate),))*np.NaN
