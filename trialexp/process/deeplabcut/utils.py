@@ -8,6 +8,7 @@ import matplotlib.pylab as plt
 import xarray as xr
 from trialexp.process.pyphotometry.utils import extract_event_data
 from moviepy.editor import *
+import threading
 
 
 #----------------------------------------------------------------------------------
@@ -191,21 +192,19 @@ def add_video_timestamp(df,videofile):
     return df
 
 
-def extract_triggered_data(event_time, xr_session):
-    trial_window = [-1000, 1000]
-    sampling_rate = xr_session.attrs['sampling_rate']
+def extract_triggered_data(event_time, xr_session, trial_window, sampling_rate):
     event_period = (trial_window[1] - trial_window[0])/1000
     event_time_coord= np.linspace(trial_window[0], trial_window[1], int(event_period*sampling_rate)) #TODO
-
+    
     data, event_found = extract_event_data(event_time, trial_window, xr_session['zscored_df_over_f'], sampling_rate)
-
+    # print(data.shape)
+    print(f'Extracted {np.sum(event_found)} events')
     da = xr.DataArray(
             data, coords={'event_time':event_time_coord,
                          'event_index': np.arange(data.shape[0])},
                             dims=('event_index','event_time'))
 
 
-    da = da.coarsen(event_time=10,boundary='trim').mean()
     df = da.to_dataframe(name='photometry').reset_index()
     return df
 
@@ -251,3 +250,29 @@ def extract_sample_video(videofile, df, fn,num=5):
         clip = VideoFileClip(videofile).subclip(t-1,t+1)
         clip.write_videofile(f'sample_video/{fn}_{i}.mp4',fps=60, 
                              threads=5)
+        
+        
+
+def extract_video(videofile, fn, t, video_type='mp4',resize_ratio=1,logger='bar'):
+    # time should be in miliseconds
+    
+    t = t/1000
+    clip = VideoFileClip(videofile).subclip(t-1,t+1).resize(resize_ratio)
+    if video_type =='mp4':
+        clip.write_videofile(f'sample_video/{fn}_{t}.mp4',fps=60)
+    elif video_type =='gif':
+        clip.write_gif(f'sample_video/{fn}_{int(t)}.gif', fps=15,logger=logger)
+    
+    print(f'Saved sample_video/{fn}_{int(t)}')
+            
+def extract_sample_video_multi(videofile, fn, time, video_type='mp4',resize_ratio=1):
+    # Use multi-threading to speed up extraction of videos
+    threads = []
+    for i in range(len(time)):
+        thread = threading.Thread(target=extract_video, 
+                                  args=(videofile, fn, time[i], video_type,resize_ratio,None))
+        thread.start()
+        threads.append(thread)
+        
+    for thread in threads:
+        thread.join()
