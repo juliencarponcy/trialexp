@@ -5,6 +5,8 @@ import pandas as pd
 from scipy import signal
 import av
 import matplotlib.pylab as plt
+import xarray as xr
+from trialexp.process.pyphotometry.utils import extract_event_data
 #----------------------------------------------------------------------------------
 # Plotting
 #----------------------------------------------------------------------------------
@@ -169,10 +171,72 @@ def get_marker_signal(marker_loc):
     speed = np.sqrt(np.sum(np.diff(coords,axis=0, prepend=[coords[0,:]])**2,axis=1))
     
     return (signal_time, coords, speed)
+
+def get_movement_metrics(marker_loc):
+    signal_time = marker_loc.time.data/1000
+    coords = marker_loc.data
+    speed = np.diff(coords,axis=0, prepend=[coords[0,:]])
+    accel = np.diff(speed, axis=0, prepend=[speed[0,:]])
+    
+    return (signal_time, coords, speed, accel)
     
 def add_video_timestamp(df,videofile):
     # add timestamp of the video file to the deeplabcut dataframe
     ts = extract_video_timestamp(videofile)
     df['time'] = ts
     df = df.set_index('time')
+    return df
+
+
+def extract_triggered_data(event_time, xr_session):
+    trial_window = [-1000, 1000]
+    sampling_rate = xr_session.attrs['sampling_rate']
+    event_period = (trial_window[1] - trial_window[0])/1000
+    event_time_coord= np.linspace(trial_window[0], trial_window[1], int(event_period*sampling_rate)) #TODO
+
+    data, event_found = extract_event_data(event_time, trial_window, xr_session['zscored_df_over_f'], sampling_rate)
+
+    da = xr.DataArray(
+            data, coords={'event_time':event_time_coord,
+                         'event_index': np.arange(data.shape[0])},
+                            dims=('event_index','event_time'))
+
+
+    da = da.coarsen(event_time=10,boundary='trim').mean()
+    df = da.to_dataframe(name='photometry').reset_index()
+    return df
+
+
+
+def accelerate_forward(df_move, accel_threshold, speed_threshold):
+    # accelerate forward, from slow speed
+    df = df_move[(df_move.accel>accel_threshold) & (df_move.speed_x<0) & (df_move.speed<speed_threshold)]    
+    return df
+
+def accelerate_backward(df_move, accel_threshold, speed_threshold):
+    # accelerate forward, from slow speed
+    df = df_move[(df_move.accel>accel_threshold) & (df_move.speed_x>0) & (df_move.speed<speed_threshold)]    
+    return df
+
+def deccelerate_forward(df_move, accel_threshold, speed_threshold):
+    # accelerate forward, from slow speed
+    df = df_move[(df_move.accel<accel_threshold) & (df_move.speed_x<0) & (df_move.speed<speed_threshold)]    
+    return df
+
+def deccelerate_backward(df_move, accel_threshold, speed_threshold):
+    # accelerate forward, from slow speed
+    df = df_move[(df_move.accel<accel_threshold) & (df_move.speed_x>0) & (df_move.speed<speed_threshold)]    
+    return df
+
+def extract_trigger_acceleration(df_move, accel_threshold, speed_threshold, direction, accel_type):
+    if accel_type=='accel':
+        if direction == "forward":
+            df = df_move[(df_move.accel > accel_threshold) & (df_move.speed_x < 0) & (df_move.speed < speed_threshold)]
+        else:
+            df = df_move[(df_move.accel > accel_threshold) & (df_move.speed_x > 0) & (df_move.speed < speed_threshold)]
+    else:
+        if direction == "forward":
+            df = df_move[(df_move.accel < -accel_threshold) & (df_move.speed_x < 0) & (df_move.speed > speed_threshold)]
+        else:
+            df = df_move[(df_move.accel < -accel_threshold) & (df_move.speed_x > 0) & (df_move.speed > speed_threshold)]
     return df
