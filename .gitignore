@@ -120,3 +120,6 @@ reports
 output
 .env
 *.mp4
+*.gif
+*.png
+*.nc
