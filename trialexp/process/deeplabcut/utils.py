@@ -7,6 +7,9 @@ import av
 import matplotlib.pylab as plt
 import xarray as xr
 from trialexp.process.pyphotometry.utils import extract_event_data
+from moviepy.editor import *
+
+
 #----------------------------------------------------------------------------------
 # Plotting
 #----------------------------------------------------------------------------------
@@ -240,3 +243,11 @@ def extract_trigger_acceleration(df_move, accel_threshold, speed_threshold, dire
         else:
             df = df_move[(df_move.accel < -accel_threshold) & (df_move.speed_x > 0) & (df_move.speed > speed_threshold)]
     return df
+
+# plot a clip of the movie
+def extract_sample_video(videofile, df, fn,num=5):
+    for i in range(num):
+        t = df.iloc[i].time/1000
+        clip = VideoFileClip(videofile).subclip(t-1,t+1)
+        clip.write_videofile(f'sample_video/{fn}_{i}.mp4',fps=60, 
+                             threads=5)
