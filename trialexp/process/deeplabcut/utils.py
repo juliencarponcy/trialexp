@@ -253,7 +253,7 @@ def extract_sample_video(videofile, df, fn,num=5):
         
         
 
-def extract_video(videofile, fn, t, video_type='mp4',resize_ratio=1,logger='bar'):
+def extract_video(videofile, fn, t, video_type='mp4', resize_ratio=1,logger='bar', pretime =1 , posttime=1):
     # time should be in miliseconds
     
     t = t/1000
@@ -265,14 +265,80 @@ def extract_video(videofile, fn, t, video_type='mp4',resize_ratio=1,logger='bar'
     
     print(f'Saved sample_video/{fn}_{int(t)}')
             
-def extract_sample_video_multi(videofile, fn, time, video_type='mp4',resize_ratio=1):
+def extract_sample_video_multi(videofile, fn, time, video_type='mp4',resize_ratio=1,  pretime =1 , posttime=1):
     # Use multi-threading to speed up extraction of videos
     threads = []
     for i in range(len(time)):
         thread = threading.Thread(target=extract_video, 
-                                  args=(videofile, fn, time[i], video_type,resize_ratio,None))
+                                  args=(videofile, fn, time[i], video_type,resize_ratio,None,pretime, posttime))
         thread.start()
         threads.append(thread)
         
     for thread in threads:
         thread.join()
+        
+
+def get_direction(df_move, move_init_idx, window=10, win_dir = 'after'):
+    direction = []
+    for idx in move_init_idx:
+        if win_dir == 'after':
+            speed_x_mean =df_move.iloc[(idx):(idx+window)].speed_x.mean()
+        else:
+            speed_x_mean =df_move.iloc[(idx-window):(idx)].speed_x.mean()
+        if speed_x_mean <0:
+            d = 'forward'
+        else:
+            d = 'backward'
+        
+        direction.append(d)
+    return direction
+
+def get_average_speed(df_move, move_init_idx, window=10, win_dir = 'after'):
+    speed = []
+    for idx in move_init_idx:
+        if win_dir == 'after':
+            speed_mean =df_move.iloc[(idx):(idx+window)].speed.mean()
+        else:
+            speed_mean = df_move.iloc[(idx-window):(idx)].speed.mean()
+        speed.append(speed_mean)
+    return speed
+
+def get_average_value(df_move,col_name, move_init_idx, window=10, win_dir='after'):
+    data = []
+    for idx in move_init_idx:
+        if win_dir == 'after':        
+            d =df_move.iloc[(idx):(idx+window)][col_name].mean()
+        else:
+            d =df_move.iloc[(idx-window):idx][col_name].mean()
+        data.append(d)
+    return data
+
+def get_average_photom(df_move, move_init_idx, window=10, win_dir='after'):
+    photom = []
+    for idx in move_init_idx:
+        if win_dir == 'after':        
+            d =df_move.iloc[(idx):(idx+window)]['df/f'].mean()
+        else:
+            d =df_move.ilociloc[(idx-window):idx]['df/f'].mean()
+        photom.append(d)
+    return photom
+
+def get_movement_type(df_move, move_init_idx, threshold, window=10, win_dir='after'):
+    # get the starting pos and ending pos to find the displacement
+    mov_type = []
+    for idx in move_init_idx:
+        if win_dir == 'after':
+            start_pos = df_move.iloc[idx].x
+            end_pos = df_move.iloc[idx+window].x
+        else:
+            start_pos = df_move.iloc[idx - window].x
+            end_pos = df_move.iloc[idx].x
+            
+        displacement = end_pos - start_pos
+        
+        if abs(displacement)>threshold:
+            mov_type.append('reach')
+        else:
+            mov_type.append('twitch')
+        
+    return mov_type
