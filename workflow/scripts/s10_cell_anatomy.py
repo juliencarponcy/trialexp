@@ -8,6 +8,10 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 import xarray as xr
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+
 from snakehelper.SnakeIOHelper import getSnake
 
 
@@ -35,7 +39,7 @@ def parse_cell_UID(UID: pd.Index) -> pd.DataFrame:
 
     return df
 
-# %% Load Metadata and folders
+# %% Define variables and folders
 
 verbose = True
 tip_to_first_contact_um = 150 # distance from the tip of the Neuropixel to the first active contact
@@ -47,14 +51,17 @@ probe_names = [x.stem for x in ks3_folder.iterdir() if x.is_dir()]
 
 xr_spikes_trials_path = Path(sinput.xr_spikes_trials)
 xr_spikes_trials_phases_path = Path(sinput.xr_spikes_trials_phases)
-xr_spikes_session_path = Path(sinput.xr_spikes_session)
+xr_spikes_session_path = Path(sinput.xr_spikes_full_session)
 
-xr_spikes_trials_phases = xr.open_dataset(xr_spikes_trials_phases_path)
-xr_spikes_session = xr.open_dataset(xr_spikes_session_path)
-
+figures_path = xr_spikes_trials_path.parent / 'figures' / 'ephys'
+if not figures_path.exists():
+    figures_path.mkdir()
 
 session_path = xr_spikes_session_path.parent.parent
 session_ID = session_path.stem
+
+#%% Opening datasets
+xr_spikes_trials_phases = xr.open_dataset(xr_spikes_trials_phases_path)
 
 borders_csv_path  = [anatomy_folder / 'borders_table.csv' for anatomy_folder in anatomy_folders if session_ID.split('-', 1)[0] in str(anatomy_folder.stem)]
 probes_csv_path  = [anatomy_folder / 'T_probes.csv' for anatomy_folder in anatomy_folders if session_ID.split('-', 1)[0] in str(anatomy_folder.stem)]
@@ -83,25 +90,87 @@ xr_spikes_trials_phases['anat_depth'] = xr.DataArray(
     name =  'anat_depth', 
     dims={'UID'})
 
+# rename DataArray for brain region acronym 
+xr_spikes_trials_phases['brain_region_short']  = xr_spikes_trials_phases['brainRegion'].rename('brain_region_short')
+# create new DataArray for brain region name 
+xr_spikes_trials_phases['brain_region_long'] = xr_spikes_trials_phases.brainRegion.copy()
+# removing old camel-back formatted variable
+xr_spikes_trials_phases = xr_spikes_trials_phases.drop_vars(['brainRegion'])
+# NOTE TODO package formatting of variables of the xrray into separate function
+
 for probe_name in probe_names:
     probe_anat = probes_df[[probe_anat in probe_name for probe_anat in probes_df.probe_AB.to_list()]]
-    probe_borders = borders_df[borders_df.probe_AB.str.contains(probe_name[-1])]
-
-    # get tip depth
-    tip_depth_from_anatomy_um = probe_anat.depth_from_anatomy_um.values[0]
     # compute values only for current probe
-    # substract also tip_to_first_contact_um and
     probe_mask = UID_df['probe_name'].str.contains(probe_name).values 
-    # computation of depth from tip depth and tip_to_first_contact_um (triangular [contactless] tip of neuropixels depth)
-    xr_spikes_trials_phases['anat_depth'][probe_mask] = \
-        tip_depth_from_anatomy_um - tip_to_first_contact_um - xr_spikes_trials_phases['y'][probe_mask]
 
-    for struct_ID in probe_borders.index:
-        struct_mask = ((xr_spikes_trials_phases['anat_depth'] > probe_borders.upperBorder_um[struct_ID]) 
-                       & (xr_spikes_trials_phases['anat_depth'] <= probe_borders.lowerBorder_um[struct_ID]) 
-                       & (probe_mask)).values
-        xr_spikes_trials_phases.brainRegion[struct_mask] = probe_borders.acronym[struct_ID]
-        xr_spikes_trials_phases['brainRegion_acr'] = xr_spikes_trials_phases.brainRegion.copy()
-        xr_spikes_trials_phases.brainRegion.to_dataframe().apply(lambda x: probe_borders.name[probe_borders.acronym == x])
-xr_spikes_trials_phases['anat_depth'].to_dataframe().hist()    
-# %%
+    # If no corresponding anatomy
+    if probe_anat.empty:
+        xr_spikes_trials_phases['anat_depth'][probe_mask] = np.NaN
+        xr_spikes_trials_phases['brain_region_short'][probe_mask] = np.NaN
+        xr_spikes_trials_phases['brain_region_long'][probe_mask] = np.NaN
+
+    # If anatomy found
+    else:
+        probe_borders = borders_df[borders_df.probe_AB.str.contains(probe_name[-1])]
+
+        # get tip depth
+        tip_depth_from_anatomy_um = probe_anat.depth_from_anatomy_um.values[0]
+        # substract also tip_to_first_contact_um and
+
+        # TODO THIS IS MOST LIKELY WRONG FOR COMPUTATION NEED TO WORK ON THIS WITH KOUICHI
+        # computation of depth from tip depth and tip_to_first_contact_um (triangular [contactless] tip of neuropixels depth)
+        xr_spikes_trials_phases['anat_depth'][probe_mask] = \
+            tip_depth_from_anatomy_um - tip_to_first_contact_um - xr_spikes_trials_phases['y'][probe_mask]
+
+        for struct_ID in probe_borders.index:
+            struct_mask = ((xr_spikes_trials_phases['anat_depth'] > probe_borders.upperBorder_um[struct_ID]) 
+                            & (xr_spikes_trials_phases['anat_depth'] <= probe_borders.lowerBorder_um[struct_ID]) 
+                            & (probe_mask)).values
+
+            if struct_mask.any():
+                xr_spikes_trials_phases.brain_region_short[struct_mask] = probe_borders.acronym[struct_ID]
+                xr_spikes_trials_phases.brain_region_long[struct_mask] = probe_borders.name[struct_ID]
+
+#%% Plotting anatomy summary
+
+# TODO: implement in an external function
+
+structs, struct_count = np.unique(xr_spikes_trials_phases['brain_region_short'].values.astype(str), return_counts=True)
+
+f, axes = plt.subplots(1, 2, figsize=(15,5))
+plt.suptitle(f'Clusters anatomical distribution: {session_ID}')
+
+sns.barplot(x=structs, y=struct_count, ax=axes[0])
+axes[0].set_xlabel('Brain structure acronym')
+axes[0].set_ylabel('Number of clusters')
+
+xr_spikes_trials_phases['anat_depth'].to_dataframe().hist(ax=axes[1])   
+axes[1].set_xlabel('Anatomical depth (micrometers)')
+axes[1].set_ylabel('Number of clusters')
+
+f.savefig(figures_path / 'cluster_anat_distrib.png')
+# %% Copy brain regions to other xarrays and save
+
+xr_spikes_session = xr.open_dataset(xr_spikes_session_path, engine='h5netcdf')
+xr_spikes_trials =  xr.open_dataset(xr_spikes_trials_path, engine='h5netcdf')
+
+# copying anatomial variables to other xarrays
+xr_spikes_session[['anat_depth', 'brain_region_short', 'brain_region_long']] = xr_spikes_trials_phases[['anat_depth', 'brain_region_short', 'brain_region_long']].copy(deep=True)
+xr_spikes_trials[['anat_depth', 'brain_region_short', 'brain_region_long']] = xr_spikes_trials_phases[['anat_depth', 'brain_region_short', 'brain_region_long']].copy(deep=True)
+
+xr_spikes_trials_path = xr_spikes_trials_path.parent / 'xr_spikes_trials_anat.nc'
+xr_spikes_trials_phases_path = xr_spikes_trials_phases_path.parent / 'xr_spikes_trials_phases_anat.nc'
+xr_spikes_session_path = xr_spikes_session_path.parent / 'xr_spikes_full_session_anat.nc'
+
+# writing updated xarrays versions
+xr_spikes_session.to_netcdf(xr_spikes_session_path, engine='h5netcdf')
+xr_spikes_trials.to_netcdf(xr_spikes_trials_path, mode='a', engine='h5netcdf')
+xr_spikes_trials_phases.to_netcdf(xr_spikes_trials_phases_path, mode='a', engine='h5netcdf')
+
+# closing xarrays
+xr_spikes_session.close()
+xr_spikes_trials.close()
+xr_spikes_trials_phases.close()
+
+
+# %% 

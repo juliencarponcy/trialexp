@@ -24,7 +24,7 @@ from trialexp.process.ephys.spikes_preprocessing import \
     merge_cell_metrics_and_spikes, get_spike_trains, \
     get_max_timestamps_from_probes, extract_trial_data
 
-
+from trialexp.process.ephys.utils import dataframe_cleanup
 #%% Load inputs
 
 
@@ -150,10 +150,26 @@ session_ce_cell_metrics = merge_cell_metrics_and_spikes(ce_cell_metrics_files, a
 all_cell_metrics = pd.merge(si_cell_metrics_df,session_ce_cell_metrics, left_index=True, right_index=True, how='outer')
 # discard cell metrics without 'x' position (trick which give same nb of clusters as binned data)
 all_cell_metrics.dropna(axis=0, subset='x', inplace=True)
+# Clean dataframe turning object columns into text columns 
+all_cell_metrics = dataframe_cleanup(all_cell_metrics)
 # Create the xr dataset
 xr_cell_metrics= all_cell_metrics.to_xarray()
 
 #%% Building session-wide xarray dataset
+
+
+# Deactivated full_session xarray Dataset because of I/O troubles with ettin:
+
+# KeyError: [, ('/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/by_sessions_new/reaching_go_spout_bar_nov22/kms058-2023-03-24-151254/processed/xr_spikes_full_session.nc',), 'a', (('decode_vlen_strings', True), ('invalid_netcdf', None)), 'a555f0d1-841a-4855-8bd0-1edcb13991d0']
+
+# During handling of the above exception, another exception occurred:
+
+# BlockingIOError                           Traceback (most recent call last)
+# /home/MRC.OX.AC.UK/phar0732/Documents/GitHub/trialexp/workflow/scripts/s09_cell_to_xarray.py in line 25
+#      180 xr_spikes_session_path = Path(soutput.xr_spikes_full_session)
+#      181 # xr_spikes_session_path.unlink()
+# ---> 182 xr_spikes_session.to_netcdf(xr_spikes_session_path, engine='h5netcdf')
+
 
 spike_fr_xr_session = xr.DataArray(
     inst_rates,
@@ -174,7 +190,11 @@ xr_spikes_session.attrs['bin_duration'] = bin_duration
 xr_spikes_session.attrs['sigma_ms'] = sigma_ms
 xr_spikes_session.attrs['kernel'] = 'ExponentialKernel'
 
-xr_spikes_session.to_netcdf(Path(sinput.xr_session).parent / f'xr_spikes_session.nc', engine='h5netcdf')
+# recovering path of xarray file from SnakeMake pipeline (spikesort.smk)
+xr_spikes_session_path = Path(soutput.xr_spikes_full_session)
+# xr_spikes_session_path.unlink()
+xr_spikes_session.to_netcdf(xr_spikes_session_path, engine='h5netcdf')
+xr_spikes_session.close()
 
 #%% Extracting instantaneous rates by trial for all behavioural phases
 
@@ -239,8 +259,9 @@ xr_spikes_trials.attrs['bin_duration'] = bin_duration
 xr_spikes_trials.attrs['sigma_ms'] = sigma_ms
 xr_spikes_trials.attrs['kernel'] = 'ExponentialKernel'
 
-# Save
+# Save)
 xr_spikes_trials.to_netcdf(Path(sinput.xr_session).parent / f'xr_spikes_trials.nc', engine='h5netcdf')
+xr_spikes_trials.close()
 
 #%% Saving similar xarray Dataset but this time with the behavioral phase as an extra dimension
 # instead of saving one DataArray per behavioral phase (this to leave implementation choice for future processing)
@@ -271,6 +292,10 @@ xr_spikes_trials_phases.attrs['kernel'] = 'ExponentialKernel'
 
 # Save
 xr_spikes_trials_phases.to_netcdf(Path(sinput.xr_session).parent / f'xr_spikes_trials_phases.nc', engine='h5netcdf')
+
+# close
+xr_spikes_trials_phases.close()
+xr_spikes_session.close()
 #%%
 
 # Preview of cluster responses to trigger

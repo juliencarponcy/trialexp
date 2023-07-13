@@ -254,7 +254,7 @@ for label_id, label in enumerate(labels):
       waveforms = aggregate_raw_waveforms[
         aggregate_cell_metrics_df.maxWaveformCh.iloc[i_cell] - side_channels : ,:,i_cell] 
    
-    for ch in range(side_channels*2):
+    for ch in range(waveforms.shape[0]):
       axes[i_plot, 0].plot(waveforms[ch,:], color=colors[ch])
 
     # Careful here, plotting in position in the PCA dim reduction is hard-coded below

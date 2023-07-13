@@ -177,7 +177,7 @@ rule cells_to_xarray:
     output:
         xr_spikes_trials = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials.nc',
         xr_spikes_trials_phases = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials_phases.nc',
-        xr_spikes_session = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_session.nc'
+        xr_spikes_full_session = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_full_session.nc'
 
     threads: 32
 
@@ -190,9 +190,15 @@ rule cell_anatomy:
     input:
         xr_spikes_trials = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials.nc',
         xr_spikes_trials_phases = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials_phases.nc',
-        xr_spikes_session = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_session.nc'
+        xr_spikes_full_session = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_full_session.nc'
     output:
         anatomy_complete = touch('{sessions}/{task_path}/{session_id}/processed/anatomy.done')
+
+    threads: 32
+
+    script:
+        "scripts/s10_cell_anatomy.py"
+
 # rule session_correlations:
 #     input:
 #         xr_spikes_session = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_session.nc'
