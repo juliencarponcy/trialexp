@@ -27,7 +27,7 @@ dependencies:
   - jupyter
   - matplotlib
   - nb_conda
-  - pandas
+  - pandas<2.0
   - statsmodels
   - scikit-learn
   - seaborn
@@ -44,6 +44,11 @@ dependencies:
     - sonpy
     - h5netcdf
     - python-dotenv
+    - neo
     - elephant    
+    - pathworklib
+    - -e . # if not working execute "pip install -e ." from the top level of this repo
+    # - matlabengine # causing an error
+    
 
 

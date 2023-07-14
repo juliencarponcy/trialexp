@@ -35,9 +35,16 @@ tasks_params_df = pd.read_csv(tasks_params_path)
 tasks = tasks_params_df.task.values.tolist()
 
 skip_existing = True #whether to skip existing folders
+task_to_copy = ['reaching_go_spout_bar_nov22', 
+                'reaching_go_spout_incr_break2_nov22',
+                'pavlovian_spontanous_reaching_march23'] #task name to copy, if empty then search for all tasks
 # %%
 
 for task_id, task in enumerate(tasks):
+    
+    if len(task_to_copy)>0:
+        if not task in task_to_copy:
+            continue
 
     print(f'task {task_id+1}/{len(tasks)}: {task}')
     export_base_path = SESSION_ROOT_DIR/f'{task}'
@@ -139,9 +146,6 @@ for task_id, task in enumerate(tasks):
     df_pycontrol['ephys_folder_name'] = matched_ephys_fn
     
     df_pycontrol = df_pycontrol[(df_pycontrol.subject_id!='00') & (df_pycontrol.subject_id!='01')] # do not copy the test data
-    
-    #TODO need to consider the case where there is only pycontrol data but no photometry
-    df_pycontrol = df_pycontrol.dropna(subset='pyphoto_path')
 
     for i in tqdm(range(len(df_pycontrol))):
         row = df_pycontrol.iloc[i]
@@ -175,8 +179,9 @@ for task_id, task in enumerate(tasks):
             copy_if_not_exist(f, target_pycontrol_folder) 
             
         #Copy pyphotometry file if they match
-        if create_photo_sync(str(pycontrol_file), str(pyphotometry_file)) is not None:
-            copy_if_not_exist(pyphotometry_file, target_pyphoto_folder)
+        if pyphotometry_file is not None:
+            if create_photo_sync(str(pycontrol_file), str(pyphotometry_file)) is not None:
+                copy_if_not_exist(pyphotometry_file, target_pyphoto_folder)
 
 
         #write information about ephys recrodings in the ephys folder

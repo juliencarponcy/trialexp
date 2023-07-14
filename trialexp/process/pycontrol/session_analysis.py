@@ -186,6 +186,10 @@ def extract_trial_by_trigger(df_pycontrol, trigger, event2analysis, trial_window
     # add trial number and calculate the time from trigger
     trigger_time = df_events[(df_events.name==trigger)].time.values
     df_events, trigger_time = add_trial_nb(df_events, trigger_time,trial_window) #add trial number according to the trigger
+    
+    if len(trigger_time) == 0:
+        raise ValueError('Error: No trial can be found')
+    
     df_events = df_events.groupby('trial_nb', group_keys=False).apply(get_rel_time, trigger_name=trigger)
     df_events.dropna(subset=['trial_time'],inplace=True)
     
@@ -273,7 +277,42 @@ def compute_trial_outcome(row, task_name):
             return 'success'
         else:
             return 'undefined'
-
+    elif task_name in ['reaching_go_spout_bar_dual_dec22',
+                       'reaching_go_spout_bar_dual_all_reward_dec22']:
+        if row.break_after_abort:
+            return 'aborted'
+        elif not row.spout:
+            return 'no_reach'
+        elif row.button_press:
+            return 'button_press'
+        elif row['water by bar_off']:
+            return 'water_by_bar_off'
+        elif row.spout and not row['water by spout']:
+            return 'late_reach'
+        elif row['water by spout']:
+            return 'success'
+        else:
+            return 'undefined'
+    elif task_name in ['reaching_go_spout_bar_free_water_june28']:
+        if row.break_after_abort:
+            return 'aborted'
+        elif row['free reward delivered']:
+            if row.spout:
+                return 'free_reward_reach'
+            else:
+                return 'free_reward_no_reach'
+        elif not row.spout:
+            return 'no_reach'
+        elif row.button_press:
+            return 'button_press'
+        elif row['water by bar_off']:
+            return 'water_by_bar_off'
+        elif row.spout and not row.water_on:
+            return 'late_reach'
+        elif row['water by spout']:
+            return 'success'
+        else:
+            return 'undefined'
     else:
         if row.success:
             return 'success'

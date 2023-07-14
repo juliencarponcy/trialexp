@@ -65,25 +65,16 @@ Note: using all available cores may cause problems to ettin, it is suggested tha
 snakemake -c10 --snakefile workflow/pycontrol.smk
 ```
 
-
+### Executing profiles
+To avoid specifying the number of cores or whether to skip on error every time you run snakemake, you can provide a profile file. Please consult the [official documentation](https://snakemake.readthedocs.io/en/stable/executing/cli.html#profiles) for details. A sample profile is provided in `workflow/profile/config.yaml`.
 
 #### Task-specific execution
 
-If you want to just analyze a particular task, change the following line (part of line 9) in the `pycontrol.smk` file:
+If you want to just analyze a particular task, add the task name to the following line in the `pycontrol.smk` file. If you do not specify any task, it will run the pipeline on all tasks.
 
 ```python
-sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob('*/*')
+task2analyze(['reaching_go_spout_bar_nov22', 'reaching_go_spout_incr_break2_nov22','pavlovian_spontanous_reaching_march23'])
 ```
-
-to 
-
-```python
-sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob('<task_name>/*')
-```
-
-Replace `task_name` with the task you want to run.
-
-
 
 #### Spike-sorting
 
