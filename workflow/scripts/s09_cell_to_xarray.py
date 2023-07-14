@@ -29,7 +29,7 @@ from trialexp.process.ephys.utils import dataframe_cleanup
 
 
 (sinput, soutput) = getSnake(locals(), 'workflow/spikesort.smk',
-  [settings.debug_folder + r'/processed/xr_spikes_trials.nc'],
+  [settings.debug_folder + r'/processed/xr_spikes_full_session.nc'],
   'cells_to_xarray')
 
 # %% Path definitions
@@ -190,9 +190,12 @@ xr_spikes_session.attrs['bin_duration'] = bin_duration
 xr_spikes_session.attrs['sigma_ms'] = sigma_ms
 xr_spikes_session.attrs['kernel'] = 'ExponentialKernel'
 
-# recovering path of xarray file from SnakeMake pipeline (spikesort.smk)
+# getting path of xarray file from SnakeMake pipeline (spikesort.smk)
 xr_spikes_session_path = Path(soutput.xr_spikes_full_session)
-# xr_spikes_session_path.unlink()
+# remove from disk previous version of the xarray
+if xr_spikes_session_path.exists():
+    xr_spikes_session_path.unlink() 
+# save
 xr_spikes_session.to_netcdf(xr_spikes_session_path, engine='h5netcdf')
 xr_spikes_session.close()
 
@@ -258,9 +261,14 @@ xr_spikes_trials = xr.merge([*spike_fr_xr, *spike_zfr_xr, xr_cell_metrics, trial
 xr_spikes_trials.attrs['bin_duration'] = bin_duration
 xr_spikes_trials.attrs['sigma_ms'] = sigma_ms
 xr_spikes_trials.attrs['kernel'] = 'ExponentialKernel'
-
-# Save)
-xr_spikes_trials.to_netcdf(Path(sinput.xr_session).parent / f'xr_spikes_trials.nc', engine='h5netcdf')
+#%% Save
+# get path
+xr_spikes_trials_path = Path(soutput.xr_spikes_trials)
+# remove from disk previous version of the xarray
+if xr_spikes_trials_path.exists():
+    xr_spikes_trials_path.unlink() 
+# save
+xr_spikes_trials.to_netcdf(xr_spikes_trials_path, engine='h5netcdf')
 xr_spikes_trials.close()
 
 #%% Saving similar xarray Dataset but this time with the behavioral phase as an extra dimension
@@ -290,8 +298,15 @@ xr_spikes_trials_phases.attrs['bin_duration'] = bin_duration
 xr_spikes_trials_phases.attrs['sigma_ms'] = sigma_ms
 xr_spikes_trials_phases.attrs['kernel'] = 'ExponentialKernel'
 
-# Save
-xr_spikes_trials_phases.to_netcdf(Path(sinput.xr_session).parent / f'xr_spikes_trials_phases.nc', engine='h5netcdf')
+#%% Save
+
+# get path
+xr_spikes_trials_phases_path = Path(soutput.xr_spikes_trials_phases)
+# remove from disk previous version of the xarray
+if xr_spikes_trials_phases_path.exists():
+    xr_spikes_trials_phases_path.unlink()
+# save
+xr_spikes_trials_phases.to_netcdf(xr_spikes_trials_phases_path, engine='h5netcdf')
 
 # close
 xr_spikes_trials_phases.close()

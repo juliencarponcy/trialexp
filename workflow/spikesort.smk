@@ -192,9 +192,7 @@ rule cell_anatomy:
         xr_spikes_trials_phases = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials_phases.nc',
         xr_spikes_full_session = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_full_session.nc'
     output:
-        xr_spikes_trials_anat = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials_anat.nc',
-        xr_spikes_trials_phases_anat = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials_phases_anat.nc',
-        xr_spikes_full_session_anat = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_full_session_anat.nc'
+        cell_anatomy_complete = '{sessions}/{task_path}/{session_id}/processed/ephys_anatomy.done'
 
     threads: 32
 
@@ -204,9 +202,11 @@ rule cell_anatomy:
 rule cell_trial_responses_plot:
     input:
         xr_session = '{sessions}/{task_path}/{session_id}/processed/xr_session.nc',
-        xr_spikes_trials_anat = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials_anat.nc',
-        xr_spikes_trials_phases_anat = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials_phases_anat.nc',
-        xr_spikes_full_session_anat = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_full_session_anat.nc'
+        xr_spikes_trials = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials.nc',
+        xr_spikes_trials_phases = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials_phases.nc',
+        xr_spikes_full_session = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_full_session.nc',
+        cell_anatomy_complete = '{sessions}/{task_path}/{session_id}/processed/ephys_anatomy.done'
+
     output:
         cell_trial_responses_complete = touch('{sessions}/{task_path}/{session_id}/processed/cell_trial_responses.done')
 

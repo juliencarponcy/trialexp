@@ -22,7 +22,7 @@ from workflow.scripts import settings
 
 
 (sinput, soutput) = getSnake(locals(), 'workflow/spikesort.smk',
-  [settings.debug_folder + r'/processed/anatomy.done'],
+  [settings.debug_folder + r'/processed/ephys_anatomy.done'],
   'cell_anatomy')
 
 
@@ -174,9 +174,23 @@ xr_spikes_trials =  xr.open_dataset(xr_spikes_trials_path, engine='h5netcdf')
 xr_spikes_session[['anat_depth', 'brain_region_short', 'brain_region_long']] = xr_spikes_trials_phases[['anat_depth', 'brain_region_short', 'brain_region_long']].copy(deep=True)
 xr_spikes_trials[['anat_depth', 'brain_region_short', 'brain_region_long']] = xr_spikes_trials_phases[['anat_depth', 'brain_region_short', 'brain_region_long']].copy(deep=True)
 
-xr_spikes_trials_path = xr_spikes_trials_path.parent / 'xr_spikes_trials_anat.nc'
-xr_spikes_trials_phases_path = xr_spikes_trials_phases_path.parent / 'xr_spikes_trials_phases_anat.nc'
-xr_spikes_session_path = xr_spikes_session_path.parent / 'xr_spikes_full_session_anat.nc'
+# xr_spikes_trials_path = xr_spikes_trials_path.parent / 'xr_spikes_trials_anat.nc'
+# xr_spikes_trials_phases_path = xr_spikes_trials_phases_path.parent / 'xr_spikes_trials_phases_anat.nc'
+# xr_spikes_session_path = xr_spikes_session_path.parent / 'xr_spikes_full_session_anat.nc'
+
+# xr_spikes_trials_path = xr_spikes_trials_path.parent / 'xr_spikes_trials_anat.nc'
+# xr_spikes_trials_phases_path = xr_spikes_trials_phases_path.parent / 'xr_spikes_trials_phases_anat.nc'
+# xr_spikes_session_path = xr_spikes_session_path.parent / 'xr_spikes_full_session_anat.nc'
+
+#%% Saving new xarrays
+
+# remove from disk previous version of the anat xarray
+if xr_spikes_trials_path.exists():
+    xr_spikes_trials_path.unlink() 
+if xr_spikes_trials_phases_path.exists():
+    xr_spikes_trials_phases_path.unlink() 
+if xr_spikes_session_path.exists():
+    xr_spikes_session_path.unlink() 
 
 # writing updated xarrays versions
 xr_spikes_session.to_netcdf(xr_spikes_session_path, engine='h5netcdf')
