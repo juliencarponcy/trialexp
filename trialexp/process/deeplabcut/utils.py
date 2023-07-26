@@ -331,12 +331,25 @@ def marker2dataframe(marker_loc):
 
 def get_movement_metrics(marker_loc):
     signal_time = marker_loc.time.data/1000
-    coords = marker_loc.data
+    coords = marker_loc.data[:,:2]
     speed = np.diff(coords,axis=0, prepend=[coords[0,:]])
     accel = np.diff(speed, axis=0, prepend=[speed[0,:]])
     
     return (signal_time, coords, speed, accel)
     
+def filter_init(df_move, move_init_idx, consec_rest, consec_move):
+    # filter move init only if it is proceed by some amount of consec_rest
+    # followed by consec_move of movement
+    # allow for some tolerance as there may be tracking error
+    
+    valid_init = []
+    for idx in move_init_idx:
+        rest_cond = df_move.iloc[(idx-consec_rest):idx].is_rest.mean() > 0.9
+        move_cond = df_move.iloc[idx:(idx+consec_move)].is_rest.mean() < 0.1
+        if (rest_cond and move_cond):
+            valid_init.append(idx)
+            
+    return valid_init
 def add_video_timestamp(df,videofile):
     # add timestamp of the video file to the deeplabcut dataframe
     ts = extract_video_timestamp(videofile)
@@ -406,24 +419,24 @@ def extract_sample_video(videofile, df, fn,num=5):
         
         
 
-def extract_video(videofile, fn, t, video_type='mp4', resize_ratio=1,logger='bar', pretime =1 , posttime=1):
+def extract_video(videofile, fn_prefix, output_path,  t, video_type='mp4', resize_ratio=1,logger='bar', pretime =1 , posttime=1):
     # time should be in miliseconds
     
     t = t/1000
     clip = VideoFileClip(videofile).subclip(t-1,t+1).resize(resize_ratio)
     if video_type =='mp4':
-        clip.write_videofile(f'sample_video/{fn}_{t}.mp4',fps=60)
+        clip.write_videofile(f'{output_path}/{fn_prefix}_{int(t)}.mp4',fps=60)
     elif video_type =='gif':
-        clip.write_gif(f'sample_video/{fn}_{int(t)}.gif', fps=15,logger=logger)
+        clip.write_gif(f'{output_path}/{fn_prefix}_{int(t)}.gif', fps=15,logger=logger)
     
-    print(f'Saved sample_video/{fn}_{int(t)}')
+    print(f'{fn_prefix}_{int(t)}')
             
-def extract_sample_video_multi(videofile, fn, time, video_type='mp4',resize_ratio=1,  pretime =1 , posttime=1):
+def extract_sample_video_multi(videofile, fn_prefix, output_path, time, video_type='mp4',resize_ratio=1,  pretime =1 , posttime=1):
     # Use multi-threading to speed up extraction of videos
     threads = []
     for i in range(len(time)):
         thread = threading.Thread(target=extract_video, 
-                                  args=(videofile, fn, time[i], video_type,resize_ratio,None,pretime, posttime))
+                                  args=(videofile, fn_prefix, output_path, time[i], video_type,resize_ratio,None,pretime, posttime))
         thread.start()
         threads.append(thread)
         

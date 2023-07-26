@@ -57,6 +57,16 @@ rule sync_video:
     script:
         'scripts/deeplabcut/04_sync_video.py'
 
+rule analyze_movement:
+    input:
+        xr_dlc ='{session_path}/{task_path}/{session_id}/processed/xr_session_dlc.nc',
+    output:
+        df_init_data = '{session_path}/{task_path}/{session_id}/processed/deeplabcut/df_init_data.pkl',
+        df_init_type = '{session_path}/{task_path}/{session_id}/processed/deeplabcut/df_init_type.pkl',
+        move_init_video = directory('{session_path}/{task_path}/{session_id}/processed/deeplabcut')
+    script:
+        'scripts/deeplabcut/05_movement_analysis.py'
+
 rule deeplabcut_final:
     input:
         spike_metrics_done = deeplabcut_input
