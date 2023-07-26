@@ -35,7 +35,7 @@ rule analyze_video:
     output: 
         dlc_result = '{session_path}/{task_path}/{session_id}/processed/dlc_results.h5'
     script:
-        'scripts/08_analyze_video.py'
+        'scripts/deeplabcut/02_analyze_video.py'
 
 rule dlc_preprocess:
     input:
@@ -44,7 +44,7 @@ rule dlc_preprocess:
     output:
         dlc_processed ='{session_path}/{task_path}/{session_id}/processed/dlc_results_clean.pkl'
     script:
-        'scripts/09_dlc_preprocess.py'
+        'scripts/deeplabcut/03_dlc_preprocess.py'
 
 rule sync_video:
     input:
@@ -55,7 +55,7 @@ rule sync_video:
         xr_dlc ='{session_path}/{task_path}/{session_id}/processed/xr_session_dlc.nc',
         synced_video = '{session_path}/{task_path}/{session_id}/processed/dlc_synced_video.mp4'
     script:
-        'scripts/10_sync_video.py'
+        'scripts/deeplabcut/04_sync_video.py'
 
 rule deeplabcut_final:
     input:
