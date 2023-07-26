@@ -28,6 +28,7 @@ xr_session = xr.open_dataset(sinput.xr_session)
 
 xr_dlc = xr_dlc.interp(time=xr_session.time)
 xr_session['dlc_markers'] = xr_dlc
+xr_session.attrs['side_cam'] = df_dlc.attrs['side_cam']
 xr_session.to_netcdf(soutput.xr_dlc, engine='h5netcdf')
 
 #%% Save sync video for verification
