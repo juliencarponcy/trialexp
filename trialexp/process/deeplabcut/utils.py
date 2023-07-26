@@ -9,7 +9,8 @@ import xarray as xr
 from trialexp.process.pyphotometry.utils import extract_event_data
 from moviepy.editor import *
 import threading
-
+from moviepy.editor import *
+from moviepy.video.io.bindings import mplfig_to_npimage
 
 #----------------------------------------------------------------------------------
 # Plotting
@@ -109,7 +110,10 @@ def interpolate_bad_points(df, threshold):
     #likelihood value below the threshold will be removed and replaced by interpolation
     df.loc[df.likelihood<threshold,:] = None
     # return df.interpolate(method='nearest')
-    return df.fillna(method='ffill')
+    df =  df.fillna(method='ffill')
+    df = df.fillna(method='bfill') #avoid error in lowpass filtering later
+    
+    return df
 
 def lowpass_coords(df, fs, corner_freq):
     df = df.copy()
@@ -120,6 +124,144 @@ def lowpass_coords(df, fs, corner_freq):
     
     return df
 
+def preprocess_(df, threshold=0.7, dlc_fps=100, lowpass_freq=20):
+    df = interpolate_bad_points(df,threshold)
+    df = lowpass_coords(df,dlc_fps, lowpass_freq)
+    return df
+
+def filter_and_merge(df,threshold=0.7):
+    markers = df.columns.get_level_values(0).unique()
+    
+    # remove all value lower than a certain threshold
+    idx = df.loc[:, (slice(None), 'likelihood')]<threshold
+    for m in markers:
+        df.loc[idx[m]['likelihood'], (m, slice(None))] = None
+    dfmean = df.groupby(level='coords', axis=1).mean()
+    
+    return dfmean
+
+
+def copy_coords(df, new_df, marker_name):
+    #copy coordinates from new df to old df with multindex column
+    #note: this will modify the df inplace
+    for c in ['x','y','likelihood']:
+        df[(marker_name,c)] = new_df[c]
+        
+def preprocess_dlc(df):
+    # df is the dataframe from DLC, with multiindex columns
+    df  = df.copy()
+    markers = df.columns.get_level_values(0).unique()
+    
+    for m in markers:
+        # do the preprocessing on each marker, and copy the results back to the original
+        # multindex dataframe
+        marker_coords = df.xs(m,level='bodyparts',axis=1)
+        marker_coords = preprocess_(marker_coords)
+        copy_coords(df, marker_coords,m)
+        
+    return df
+
+def dlc2xarray(df_dlc):
+    #convert the DLC results structure to xarray
+    data = df_dlc.values
+    data = data.reshape(-1,data.shape[1]//3,3)
+    bodyparts = df_dlc.columns.get_level_values(0).unique()
+    
+    da = xr.DataArray(
+        data,
+        dims = ('time','bodyparts','coords'),
+        coords = {'bodyparts': bodyparts,
+                  'time':df_dlc.index,
+                  'coords':['x','y','likelihood']}
+    )
+    
+    return da
+
+def plot_event_video(t, starting_time, time_span, events2plot, clip, marker_signal, photo_signal):
+
+    # events2plot should contains all the events that needs to be plotted
+    
+    x_start_time = starting_time + t//time_span*time_span
+    x_end_time = x_start_time+time_span
+
+    ax1 = plt.subplot2grid((3, 2), (0, 0))
+    ax2 = plt.subplot2grid((3, 2), (1, 0), sharex=ax1)
+    ax3 = plt.subplot2grid((3, 2), (2, 0), sharex=ax1)
+    ax4 = plt.subplot2grid((3, 2), (0, 1), rowspan=3)
+
+    plot_axes = [ax1,ax2,ax3]
+    
+    
+    ## Event
+    evt_colours =['r','g','b','w']
+    for i, event in enumerate(events2plot.name.unique()):
+        evt_time = events2plot[events2plot.name==event].time/1000
+        evt_time = evt_time[(evt_time>x_start_time) & (evt_time<=x_end_time)]
+        ax1.eventplot(evt_time, lineoffsets=80+20*i, linelengths=20,label=event, color=evt_colours[i])
+    
+    
+    ## Speed data
+    (signal_time, coords, speed) = marker_signal
+    
+    ax1.plot(signal_time, speed, label='speed')
+    ax1.legend(loc='upper left', prop = { "size": 7 }, ncol=4)
+    ax1.set_ylim([0, 200])
+    
+    
+    ## Marker coordinates
+    idx2plot = (signal_time > x_start_time) & (signal_time<x_start_time+time_span)
+    ax2.plot(signal_time[idx2plot], coords[idx2plot, 0], label='x')
+    ax2.plot(signal_time[idx2plot], coords[idx2plot,1], label='y')
+    ax2.legend(loc='upper left', prop = { "size": 7 }, ncol=4)
+    ax2.set_ylabel('Tracker coords')
+    ax2.set_ylim([200, 1200])
+
+    
+    ## Photometry signal
+    ax3.plot(signal_time[idx2plot], photo_signal[idx2plot])
+    ax3.set_ylabel('zscored df/f')
+
+    ax1.set(xlim=(x_start_time,x_start_time+time_span))
+    
+    #plot the line for the curren time
+    for ax in plot_axes:
+        ax.axvline(starting_time+t,color='y')
+    ax3.set_xlabel('Time (s)')
+    
+    ## Video
+    ax4.imshow(clip.get_frame(starting_time+t))
+    ax4.axis('off')
+    
+    ## Plot the marker location on the video too
+    idx = np.argmin(abs(signal_time - (starting_time+t))) # use time to find the correct index to plot
+    ax4.plot(coords[idx,0], coords[idx,1], 'ro')
+    
+    plt.subplots_adjust(hspace=0.3)
+    
+
+
+
+def make_sync_video(videofile_path:str, output_video_path:str, xr_session, df_pycontrol, bodypart='wrist', duration=20, start_time=80):
+    # Create video with photometry data for verificationn
+
+    plt.style.use("dark_background")
+
+    marker = xr_session['dlc_markers'].sel(bodyparts=bodypart)
+    marker_signal = marker2dataframe(marker)
+    photo_signal = xr_session.zscored_df_over_f.data[0]
+    
+    events2plot = df_pycontrol[df_pycontrol.name.isin(['hold_for_water', 'spout','bar_off'])]
+
+    def make_frame(t):
+        plot_event_video(t, start_time, 20, events2plot, clip, marker_signal, photo_signal)
+        return mplfig_to_npimage(plt.gcf())
+
+    clip = VideoFileClip(videofile_path)
+
+    plt.figure(figsize=(10,5), dpi=100)
+    animation_fps = 25
+    animation = VideoClip(make_frame, duration=20)
+    animation.write_videofile(output_video_path, fps=animation_fps, threads=20)
 
 # use pyav to extract the timestamp of each frame
 def extract_video_timestamp(video: str, index: int = 0):
@@ -151,6 +293,8 @@ def extract_video_timestamp(video: str, index: int = 0):
 
 
 def plot_rsync(rsync_time, frames):
+    # write documentation
+    
     # rsync_time: timestamp in ms of the rsync signal
     plot_num = 4
     fps = 100
@@ -169,9 +313,18 @@ def plot_rsync(rsync_time, frames):
         ax[i][0].axis('off')
         ax[i][1].axis('off')
         
-def get_marker_signal(marker_loc):
+def get_marker_signal(marker_loc):    
     signal_time = marker_loc.time.data/1000
     coords = marker_loc.data
+    speed = np.sqrt(np.sum(np.diff(coords,axis=0, prepend=[coords[0,:]])**2,axis=1))
+    
+    return (signal_time, coords, speed)
+
+
+def marker2dataframe(marker_loc):
+    # convert the xarray format to dataframe for easier manipulation
+    signal_time = marker_loc.time.data/1000
+    coords = marker_loc.data[:,[0,1]]
     speed = np.sqrt(np.sum(np.diff(coords,axis=0, prepend=[coords[0,:]])**2,axis=1))
     
     return (signal_time, coords, speed)
