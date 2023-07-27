@@ -35,7 +35,7 @@ videofile = str(video_path/xr_session.attrs['side_cam'])
 
 dlc_utils.extract_sample_video_multi(videofile, 'move_int', soutput.move_init_video, 
                                      valid_init_time[:5].values, video_type='mp4', resize_ratio=0.5)
-# %%
+# %% Analyze movement types
 direction = dlc_utils.get_direction(df_move, valid_init)
 speed = dlc_utils.get_average_speed(df_move, valid_init)
 accel = dlc_utils.get_average_value(df_move,'accel', valid_init)
