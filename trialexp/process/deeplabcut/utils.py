@@ -430,6 +430,42 @@ def extract_video(videofile, fn_prefix, output_path,  t, video_type='mp4', resiz
         clip.write_gif(f'{output_path}/{fn_prefix}_{int(t)}.gif', fps=15,logger=logger)
     
     print(f'{fn_prefix}_{int(t)}')
+    
+def dlc2movementdf(xr_session, marker_loc):
+    # convert marker location to speed and acceleration data
+
+    signal_time, coords, speed, accel = get_movement_metrics(marker_loc)
+    speed_mag = np.linalg.norm(speed,axis=1)
+    accel_mag = np.diff(speed_mag, prepend=speed_mag[0])
+
+    f = xr_session.zscored_df_over_f.data[0]
+
+    df_move = pd.DataFrame({
+        'accel': accel_mag,
+        'accel_x': accel[:,0],
+        'accel_y': accel[:,1],
+        'speed': speed_mag,
+        'speed_x': speed[:,0],
+        'speed_y': speed[:,1],
+        'x' : coords[:,0],
+        'y' : coords[:,1],
+        'time': xr_session.time,
+        'df/f': f})
+    
+    is_moving = (df_move.speed>5)
+    is_rest = ((df_move.speed<2) & (df_move.accel.abs()<3)).astype(np.int8)
+    df_move['is_rest'] = is_rest
+        
+    return  df_move
+
+def get_valid_init(df_move):
+    # find the time for movement initiation
+
+    move_init_idx = np.where(np.diff(df_move.is_rest, prepend=False)==-1)[0]
+    valid_init = filter_init(df_move, move_init_idx,50, 10)
+    valid_init_time = df_move.iloc[valid_init].time
+    
+    return valid_init, valid_init_time
             
 def extract_sample_video_multi(videofile, fn_prefix, output_path, time, video_type='mp4',resize_ratio=1,  pretime =1 , posttime=1):
     # Use multi-threading to speed up extraction of videos

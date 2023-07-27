@@ -63,6 +63,7 @@ rule analyze_movement:
     output:
         df_init_data = '{session_path}/{task_path}/{session_id}/processed/deeplabcut/df_init_data.pkl',
         df_init_type = '{session_path}/{task_path}/{session_id}/processed/deeplabcut/df_init_type.pkl',
+        movement_figure = '{session_path}/{task_path}/{session_id}/processed/deeplabcut/movement_figure.png',
         move_init_video = directory('{session_path}/{task_path}/{session_id}/processed/deeplabcut')
     script:
         'scripts/deeplabcut/05_movement_analysis.py'
