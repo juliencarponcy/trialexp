@@ -6,14 +6,15 @@ import numpy as np
 from pathlib import Path
 import shutil
 import glob
+import os
 #%% Load inputs
 
 (sinput, soutput) = getSnake(locals(), 'workflow/deeplabcut.smk',
   [settings.debug_folder + '/processed/dlc_results.h5'],
   'analyze_video')
 # %%
-path_config_file = '/home/MRC.OX.AC.UK/ndcn1330/ettin/Teris/ASAP/deeplabcut/side_2_hands_newobj-julien-2022-08-26/config.yaml'
-video_path = Path('/home/MRC.OX.AC.UK/ndcn1330/ettin/Julien/Data/head-fixed/videos')
+path_config_file = os.environ['DLC_CONFIG_PATH']
+video_path = Path(os.environ['VIDEO_DIR'])
 
 #%% read the video files
 filelist = np.loadtxt(sinput.video_list,dtype=str)
