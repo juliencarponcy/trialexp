@@ -527,7 +527,7 @@ def measure_DA_peak(data_dir):
             try:
             # Calculate the mean over the specified event_time interval for reb
                 pk = xr_photometry['hold_for_water_zscored_df_over_f'].sel(
-                    trial_nb=k, event_time=slice(200, 600)).mean(dim='event_time')
+                    trial_nb=k, event_time=slice(75, 250)).mean(dim='event_time')
             except Exception as e:
                 #print(f"Caught an error: {e}")
                 return [],  dummy_dict, False, str(e)
