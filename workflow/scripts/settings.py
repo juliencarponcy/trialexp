@@ -5,6 +5,6 @@ import os
 
 debug_folder = os.path.join(os.environ['SESSION_ROOT_DIR'], 
                             'reaching_go_spout_bar_nov22',
-                            'TT001-2023-05-31-153253')
+                            'TT005-2023-07-25-133502')
 # debug_folder = r'/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/by_sessions/reaching_go_spout_bar_nov22/kms062-2023-03-06-182344'
 # %%
