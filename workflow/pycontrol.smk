@@ -112,6 +112,7 @@ def photometry_input(wildcards):
 rule pycontrol_final:
     input:
         photometry_done = photometry_input,
+        xr_session = '{session_path}/{task}/{session_id}/processed/xr_session.nc',
         pycontrol_done = '{session_path}/{task}/{session_id}/processed/log/pycontrol.done',
         xr_behaviour = '{session_path}/{task}/{session_id}/processed/xr_behaviour.nc',
         spike2='{session_path}/{task}/{session_id}/processed/spike2_export.done'
