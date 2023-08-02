@@ -11,7 +11,7 @@ from moviepy.editor import *
 import threading
 from moviepy.editor import *
 from moviepy.video.io.bindings import mplfig_to_npimage
-
+import subprocess
 #----------------------------------------------------------------------------------
 # Plotting
 #----------------------------------------------------------------------------------
@@ -544,3 +544,34 @@ def get_movement_type(df_move, move_init_idx, threshold, window=10, win_dir='aft
             mov_type.append('twitch')
         
     return mov_type
+
+
+
+def rescale_video(
+    video_path,
+    output_path,
+    width,
+    height=-1,
+    rotatecw="No",
+    angle=0.0,
+    frame_rate = 30,
+    suffix="rescale",
+):
+    '''
+    Adapted from DLC code, but force the frame rate to be the same
+    '''
+    command = (
+        f"ffmpeg -n -i {video_path} -filter:v "
+        f'"scale={width}:{height}{{}}" -r {frame_rate} -c:a copy {output_path}'
+    )
+    # Rotate, see: https://stackoverflow.com/questions/3937387/rotating-videos-with-ffmpeg
+    # interesting option to just update metadata.
+    if rotatecw == "Arbitrary":
+        angle = np.deg2rad(angle)
+        command = command.format(f", rotate={angle}")
+    elif rotatecw == "Yes":
+        command = command.format(f", transpose=1")
+    else:
+        command = command.format("")
+    subprocess.call(command, shell=True)
+    return output_path
