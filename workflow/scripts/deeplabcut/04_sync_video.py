@@ -36,4 +36,7 @@ xr_session.to_netcdf(soutput.xr_dlc, engine='h5netcdf')
 video_path = Path(os.environ['VIDEO_DIR'])
 videofile = str(video_path/df_dlc.attrs['side_cam'])
 df_pycontrol = pd.read_pickle(sinput.pycontrol_dataframe)
-make_sync_video(videofile, soutput.synced_video, xr_session, df_pycontrol, bodypart='wrist')
+start_time = xr_session.time.data[0]/1000 + 80
+make_sync_video(videofile, soutput.synced_video, xr_session, df_pycontrol, bodypart='wrist',start_time=start_time)
+
+# %%
