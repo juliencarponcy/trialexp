@@ -32,17 +32,13 @@ copy_coords(df, dftip, 'tip')
 df_clean = preprocess_dlc(df)
 
 #%% Load video timestamp information
-# video_path = Path(os.environ['VIDEO_DIR'])
-# filelist = np.loadtxt(sinput.video_list,dtype=str)
-# side_cam = [str(video_path/(f+'.mp4')) for f in filelist if 'Side' in f][0]
+
 ts = extract_video_timestamp(sinput.side_video)
 
 df_clean['time'] = ts
 df_clean = df_clean.set_index('time')
-# df_clean.attrs['side_cam'] = Path(side_cam).name
 df_clean.attrs['side_cam'] = str(sinput.side_video)
 
 # %% Save
 df_clean.to_pickle(soutput.dlc_processed)
 
-# %%
