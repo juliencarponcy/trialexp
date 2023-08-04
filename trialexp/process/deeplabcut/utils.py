@@ -105,13 +105,17 @@ def merge_marker_likelihood(df):
     return pd.DataFrame(data,columns=['x','y','likelihood'])
 
 
-def interpolate_bad_points(df, threshold):
+def interpolate_bad_points(df, threshold, max_correction_ratio=0.3):
     df = df.copy()
-    #likelihood value below the threshold will be removed and replaced by interpolation
-    df.loc[df.likelihood<threshold,:] = None
-    # return df.interpolate(method='nearest')
-    df =  df.fillna(method='ffill')
-    df = df.fillna(method='bfill') #avoid error in lowpass filtering later
+    
+    # do a sanity check here, if more than max_correction_ratio needs to be removed, refuse the correction
+    ratio2remove = (df.likelihood<threshold).mean()
+    if ratio2remove < max_correction_ratio:
+        #likelihood value below the threshold will be removed and replaced by interpolation
+        df.loc[df.likelihood<threshold,:] = None
+        # return df.interpolate(method='nearest')
+        df =  df.fillna(method='ffill')
+        df = df.fillna(method='bfill') #avoid error in lowpass filtering later
     
     return df
 
@@ -241,7 +245,8 @@ def plot_event_video(t, starting_time, time_span, events2plot, clip, marker_sign
 
 
 
-def make_sync_video(videofile_path:str, output_video_path:str, xr_session, df_pycontrol, bodypart='wrist', duration=20, start_time=80):
+def make_sync_video(videofile_path:str, output_video_path:str, xr_session, df_pycontrol, bodypart='wrist',
+                    duration=20, start_time=80):
     # Create video with photometry data for verificationn
 
     plt.style.use("dark_background")
