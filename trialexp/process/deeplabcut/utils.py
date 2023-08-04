@@ -181,7 +181,7 @@ def dlc2xarray(df_dlc):
     
     return da
 
-def plot_event_video(t, starting_time, time_span, events2plot, clip, marker_signal, photo_signal):
+def plot_event_video(t, starting_time, time_span, events2plot, clip, marker_signal:list, photo_signal):
 
     # events2plot should contains all the events that needs to be plotted
     
@@ -205,7 +205,7 @@ def plot_event_video(t, starting_time, time_span, events2plot, clip, marker_sign
     
     
     ## Speed data
-    (signal_time, coords, speed) = marker_signal
+    (signal_time, coords, speed) = marker_signal[0] # only show the speed for the first marker
     
     ax1.plot(signal_time, speed, label='speed')
     ax1.legend(loc='upper left', prop = { "size": 7 }, ncol=4)
@@ -245,7 +245,8 @@ def plot_event_video(t, starting_time, time_span, events2plot, clip, marker_sign
 
 
 
-def make_sync_video(videofile_path:str, output_video_path:str, xr_session, df_pycontrol, bodypart='wrist',
+def make_sync_video(videofile_path:str, output_video_path:str, xr_session, df_pycontrol,
+                    bodypart:list,
                     duration=20, start_time=80):
     # Create video with photometry data for verificationn
 
@@ -327,12 +328,17 @@ def get_marker_signal(marker_loc):
 
 
 def marker2dataframe(marker_loc):
-    # convert the xarray format to dataframe for easier manipulation
-    signal_time = marker_loc.time.data/1000
-    coords = marker_loc.data[:,[0,1]]
-    speed = np.sqrt(np.sum(np.diff(coords,axis=0, prepend=[coords[0,:]])**2,axis=1))
     
-    return (signal_time, coords, speed)
+    df_list = []
+    for part in marker_loc.bodyparts:
+        loc = marker_loc.sel(bodyparts=part)
+        # convert the xarray format to dataframe for easier manipulation
+        signal_time = loc.time.data/1000
+        coords = loc.data[:,[0,1]]
+        speed = np.sqrt(np.sum(np.diff(coords,axis=0, prepend=[coords[0,:]])**2,axis=1))
+
+        df_list.append(signal_time, coords, speed)
+    return df_list
 
 def get_movement_metrics(marker_loc):
     signal_time = marker_loc.time.data/1000
