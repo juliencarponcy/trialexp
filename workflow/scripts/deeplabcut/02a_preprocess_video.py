@@ -23,16 +23,5 @@ side_cam = [str(video_path/(f+'.mp4')) for f in filelist if 'Side' in f]
 dlc_result = Path(soutput.dlc_result)
 
 #%%
-outpath=str(dlc_result.parents[1]/'video'/'side_downsampled.mp4')
-if not Path(outpath).exists():
-    video = dlc_utils.rescale_video(side_cam[0], output_path=outpath, width=640, frame_rate=100)
+video = dlc_utils.rescale_video(side_cam[0], output_path=soutput.side_video, width=640, frame_rate=100)
 
-# %% analyze video
-deeplabcut.analyze_videos(path_config_file, [outpath], gputouse=0, batchsize=64,
-                          destfolder=dlc_result.parent)
-
-# %% rename the DLC results to better work with snakemake
-dlc_file = glob.glob(str(dlc_result.parent/'*.h5'))[0]
-shutil.copy(dlc_file, soutput.dlc_result)
-
-# %%

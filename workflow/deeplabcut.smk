@@ -13,12 +13,14 @@ def task2analyze(tasks:list=None):
         tasks=['*']
 
     for t in tasks:
-        total_sessions+=expand('{sessions}/processed/deeplabcut_workflow.done', sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob(f'{t}/*'))        
+        total_sessions+=expand('{sessions}/processed/deeplabcut_workflow.done', sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob(f'{t}/TT005-2023-07*'))        
 
     return total_sessions
 
 rule deeplabcut_all:
-    input: task2analyze(['reaching_go_spout_bar_nov22', 'reaching_go_spout_incr_break2_nov22','pavlovian_spontanous_reaching_march23'])
+    # input: task2analyze(['reaching_go_spout_bar_nov22', 'reaching_go_spout_incr_break2_nov22','pavlovian_spontanous_reaching_march23'])
+    input: task2analyze(['reaching_go_spout_bar_nov22'])
+
 
 
 def deeplabcut_input(wildcards):
@@ -29,18 +31,31 @@ def deeplabcut_input(wildcards):
     else:
         return []
 
+def 
+
+
+rule preprocess_video:
+    input:
+        video_list = '{session_path}/{task_path}/{session_id}/video/video_list.txt'
+    output:
+        side_video = '{session_path}/{task_path}/{session_id}/video/side_downsampled.mp4',
+    script:
+        'scripts/deeplabcut/02a_preprocess_video.py'
+
+
+
 rule analyze_video:
     input: 
-        video_list = '{session_path}/{task_path}/{session_id}/video/video_list.txt'
+        side_video = '{session_path}/{task_path}/{session_id}/video/side_downsampled.mp4',
     output: 
         dlc_result = '{session_path}/{task_path}/{session_id}/processed/dlc_results.h5'
     threads: 64
     script:
-        'scripts/deeplabcut/02_analyze_video.py'
+        'scripts/deeplabcut/02b_analyze_video.py'
 
 rule dlc_preprocess:
     input:
-        video_list = '{session_path}/{task_path}/{session_id}/video/video_list.txt',
+        side_video = '{session_path}/{task_path}/{session_id}/video/side_downsampled.mp4',
         dlc_result = '{session_path}/{task_path}/{session_id}/processed/dlc_results.h5'
     output:
         dlc_processed ='{session_path}/{task_path}/{session_id}/processed/dlc_results_clean.pkl'
