@@ -42,7 +42,7 @@ accel = dlc_utils.get_average_value(df_move,'accel', valid_init)
 x = dlc_utils.get_average_value(df_move,'x', valid_init, win_dir='before')
 y = dlc_utils.get_average_value(df_move,'y', valid_init, win_dir='before')
 
-mov_type = dlc_utils.get_movement_type(df_move, valid_init, 100, window=50)
+mov_type = dlc_utils.get_movement_type(df_move, valid_init, 50, window=50)
 speed_cls = pd.qcut(speed,3, labels=['slow','middle','fast'])
 average_photom = dlc_utils.get_average_photom(df_move, valid_init)
 
@@ -70,3 +70,5 @@ g.set_xlabels('Time (ms)')
 g.set_ylabels('zscore dF/F')
 plt.savefig(soutput.movement_figure,dpi=200)
 
+
+# %%

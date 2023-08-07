@@ -31,8 +31,6 @@ def deeplabcut_input(wildcards):
     else:
         return []
 
-def 
-
 
 rule preprocess_video:
     input:
@@ -41,8 +39,6 @@ rule preprocess_video:
         side_video = '{session_path}/{task_path}/{session_id}/video/side_downsampled.mp4',
     script:
         'scripts/deeplabcut/02a_preprocess_video.py'
-
-
 
 rule analyze_video:
     input: 
