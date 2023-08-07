@@ -1,4 +1,4 @@
-cores: 10
+cores: 20
 rerun-triggers: mtime
 rerun-incomplete: True
 keep-going: True

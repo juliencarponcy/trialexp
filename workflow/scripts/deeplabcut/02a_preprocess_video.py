@@ -20,7 +20,6 @@ video_path = Path(os.environ['VIDEO_DIR'])
 #%% read the video files
 filelist = np.loadtxt(sinput.video_list,dtype=str)
 side_cam = [str(video_path/(f+'.mp4')) for f in filelist if 'Side' in f]
-dlc_result = Path(soutput.dlc_result)
 
 #%%
 video = dlc_utils.rescale_video(side_cam[0], output_path=soutput.side_video, width=640, frame_rate=100)

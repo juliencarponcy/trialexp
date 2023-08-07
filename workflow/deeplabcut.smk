@@ -13,7 +13,7 @@ def task2analyze(tasks:list=None):
         tasks=['*']
 
     for t in tasks:
-        total_sessions+=expand('{sessions}/processed/deeplabcut_workflow.done', sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob(f'{t}/TT005-2023-07*'))        
+        total_sessions+=expand('{sessions}/processed/deeplabcut_workflow.done', sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob(f'{t}/TT002*'))        
 
     return total_sessions
 
@@ -45,7 +45,7 @@ rule analyze_video:
         side_video = '{session_path}/{task_path}/{session_id}/video/side_downsampled.mp4',
     output: 
         dlc_result = '{session_path}/{task_path}/{session_id}/processed/dlc_results.h5'
-    threads: 64
+    threads: 15
     script:
         'scripts/deeplabcut/02b_analyze_video.py'
 
@@ -55,6 +55,7 @@ rule dlc_preprocess:
         dlc_result = '{session_path}/{task_path}/{session_id}/processed/dlc_results.h5'
     output:
         dlc_processed ='{session_path}/{task_path}/{session_id}/processed/dlc_results_clean.pkl'
+    threads: 2
     script:
         'scripts/deeplabcut/03_dlc_preprocess.py'
 
