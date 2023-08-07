@@ -205,7 +205,8 @@ def plot_event_video(t, starting_time, time_span, events2plot, clip, marker_sign
     
     
     ## Speed data
-    (signal_time, coords, speed) = marker_signal[0] # only show the speed for the first marker
+    (signal_time, coords, likelihood, speed) = marker_signal[0] # only show the speed for the first marker
+    
     
     ax1.plot(signal_time, speed, label='speed')
     ax1.legend(loc='upper left', prop = { "size": 7 }, ncol=4)
@@ -237,8 +238,11 @@ def plot_event_video(t, starting_time, time_span, events2plot, clip, marker_sign
     ax4.axis('off')
     
     ## Plot the marker location on the video too
-    idx = np.argmin(abs(signal_time - (starting_time+t))) # use time to find the correct index to plot
-    ax4.plot(coords[idx,0], coords[idx,1], 'ro')
+    marker_list = ['ro','g*','w+']
+    for i, (signal_time, coords,likelihood,speed) in enumerate(marker_signal):
+        # print(likelihood)
+        idx = np.argmin(abs(signal_time - (starting_time+t))) # use time to find the correct index to plot
+        ax4.plot(coords[idx,0], coords[idx,1], marker_list[i%len(marker_list)], alpha=likelihood[idx])
     
     plt.subplots_adjust(hspace=0.3)
     
@@ -335,9 +339,10 @@ def marker2dataframe(marker_loc):
         # convert the xarray format to dataframe for easier manipulation
         signal_time = loc.time.data/1000
         coords = loc.data[:,[0,1]]
+        likelihood = loc.data[:,2]
         speed = np.sqrt(np.sum(np.diff(coords,axis=0, prepend=[coords[0,:]])**2,axis=1))
 
-        df_list.append(signal_time, coords, speed)
+        df_list.append((signal_time, coords, likelihood, speed))
     return df_list
 
 def get_movement_metrics(marker_loc):

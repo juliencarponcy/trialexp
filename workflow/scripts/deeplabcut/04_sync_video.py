@@ -37,6 +37,5 @@ video_path = Path(os.environ['VIDEO_DIR'])
 videofile = str(video_path/df_dlc.attrs['side_cam'])
 df_pycontrol = pd.read_pickle(sinput.pycontrol_dataframe)
 start_time = xr_session.time.data[0]/1000 + 80
-make_sync_video(videofile, soutput.synced_video, xr_session, df_pycontrol, bodypart='wrist',start_time=start_time)
+make_sync_video(videofile, soutput.synced_video, xr_session, df_pycontrol, bodypart=['wrist','tip'],start_time=start_time)
 
-# %%
