@@ -577,7 +577,7 @@ def rescale_video(
     Adapted from DLC code, but force the frame rate to be the same
     '''
     command = (
-        f"ffmpeg -n -i {video_path} -filter:v "
+        f"ffmpeg -n -loglevel fatal -i {video_path} -filter:v "
         f'"scale={width}:{height}{{}}" -r {frame_rate} -c:a copy {output_path}'
     )
     # Rotate, see: https://stackoverflow.com/questions/3937387/rotating-videos-with-ffmpeg
