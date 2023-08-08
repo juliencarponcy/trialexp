@@ -34,11 +34,11 @@ tasks_params_path = PROJECT_ROOT / 'params' / 'tasks_params.csv'
 tasks_params_df = pd.read_csv(tasks_params_path)
 tasks = tasks_params_df.task.values.tolist()
 
-skip_existing = True #whether to skip existing folders
-task_to_copy = ['reaching_go_spout_bar_nov22', 
-                'reaching_go_spout_incr_break2_nov22',
-                'pavlovian_spontanous_reaching_march23'] #task name to copy, if empty then search for all tasks
-
+skip_existing = False #whether to skip existing folders
+# task_to_copy = ['reaching_go_spout_bar_nov22', 
+#                 'reaching_go_spout_incr_break2_nov22',
+#                 'pavlovian_spontanous_reaching_march23'] #task name to copy, if empty then search for all tasks
+task_to_copy = ['reaching_go_spout_bar_nov22'] #task name to copy, if empty then search for all tasks
 #%%
 
 def get_df_video(video_folder):
@@ -74,7 +74,7 @@ for task_id, task in enumerate(tasks):
 
     pycontrol_folder = ETTIN_DATA_FOLDER/'head-fixed'/'pycontrol'/f'{task}'
     pyphoto_folder = ETTIN_DATA_FOLDER/'head-fixed'/'pyphotometry'/'data'/f'{task}'
-    ephys_base_path = ETTIN_DATA_FOLDER/'head-fixed'/'openephys'
+    ephys_base_path = ETTIN_DATA_FOLDER/'head-fixed'/'neuropixels'
     video_folder = ETTIN_DATA_FOLDER/'head-fixed'/'videos'
 
     # Gather all pycontrol, photometry, and ephys files/folders 
@@ -99,7 +99,6 @@ for task_id, task in enumerate(tasks):
     # remove unsuccessful ephys folders parsing 
     parsed_ephys_folders = [result for result in all_parsed_ephys_folders if result is not None]
     df_ephys_exp = pd.DataFrame(parsed_ephys_folders)
-    
     df_video = get_df_video(video_folder)
 
     
@@ -163,7 +162,6 @@ for task_id, task in enumerate(tasks):
         # Ephys matching
         if not df_ephys_exp.empty:
             df_ephys_exp_subject = df_ephys_exp[df_ephys_exp.subject_id == row.subject_id]
-
             if not df_ephys_exp_subject.empty:
                 min_td = np.min(abs(row.timestamp - df_ephys_exp_subject.exp_datetime))
                 idx = np.argmin(abs(row.timestamp - df_ephys_exp_subject.exp_datetime))
