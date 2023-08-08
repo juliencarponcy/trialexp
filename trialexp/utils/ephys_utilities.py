@@ -14,22 +14,16 @@ from trialexp.utils.rsync import *
 def parse_openephys_folder(fn):
     m = split('_', fn)
     if isinstance(m,list) and len(m) >=3:
-        subject_name = m[0]
-        pattern_id = r'(\d+)'
-        id = search(pattern_id, subject_name)
-        if id:
-            subject_id = id.group(1)
-        else:
-            subject_id = None
+        subject_id = m[0]
+
         date_string = m[1]
         time_string = m[2]
         try:
             expt_datetime = datetime.strptime(date_string + '_' + time_string, "%Y-%m-%d_%H-%M-%S")
-            return {'subject_name': subject_name, 
-                'subject_id': subject_id,
+            return {'subject_id': subject_id, 
                 'foldername':fn, 
                 'exp_datetime':expt_datetime}
-        except ValueError('Folder name does not match open-ephys pattern'):
+        except ValueError:
             pass
 
 
@@ -43,11 +37,16 @@ def get_recordings_properties(ephys_base_path, fn):
 
 
     # List continuous streams names
-    continuous_streams = list(folder_structure['Record Node 101']['experiments'][1]['recordings'][1]['streams']['continuous'].keys())
-    # Only select action potentials streams
-    AP_streams = [AP_stream for AP_stream in continuous_streams if 'AP' in AP_stream]
-    print(f'Nb of Experiments (blocks): {nb_block}\nNb of segments per block: {nb_segment_per_block}\nDefault exp name: {experiment_names}\n')
-    print(f'Spike streams:{AP_streams}\n')
+    try:
+        continuous_streams = list(folder_structure['Record Node 101']['experiments'][1]['recordings'][1]['streams']['continuous'].keys())
+        # Only select action potentials streams
+        AP_streams = [AP_stream for AP_stream in continuous_streams if 'AP' in AP_stream]
+        print(f'Nb of Experiments (blocks): {nb_block}\nNb of segments per block: {nb_segment_per_block}\nDefault exp name: {experiment_names}\n')
+        print(f'Spike streams:{AP_streams}\n')
+    except KeyError:
+        print('Key error encountered at ', fn)
+        raise KeyError
+
 
     # if len(experiment_names) > 1:
     #     raise NotImplementedError('More than one experiment in the open-ephys folder')
