@@ -26,7 +26,6 @@ dependencies:
   - ipython
   - jupyter
   - matplotlib
-  - nb_conda
   - pandas<2.0
   - statsmodels
   - scikit-learn
@@ -47,6 +46,8 @@ dependencies:
     - neo
     - elephant    
     - pathworklib
+    - ffmpeg-python
+    - deeplabcut
     - -e . # if not working execute "pip install -e ." from the top level of this repo
     # - matlabengine # causing an error
     

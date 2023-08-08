@@ -12,7 +12,7 @@ import pandas as pd
 from tqdm import tqdm
 
 from trialexp.utils.pycontrol_utilities import parse_pycontrol_fn
-from trialexp.utils.pyphotometry_utilities import parse_pyhoto_fn, create_photo_sync
+from trialexp.utils.pyphotometry_utilities import parse_pyhoto_fn, create_photo_sync, parse_video_fn
 from trialexp.utils.ephys_utilities import parse_openephys_folder, get_recordings_properties, create_ephys_rsync
 
 from dotenv import load_dotenv
@@ -38,6 +38,29 @@ skip_existing = True #whether to skip existing folders
 task_to_copy = ['reaching_go_spout_bar_nov22', 
                 'reaching_go_spout_incr_break2_nov22',
                 'pavlovian_spontanous_reaching_march23'] #task name to copy, if empty then search for all tasks
+
+#%%
+
+def get_df_video(video_folder):
+    video_files = list(video_folder.glob('*.mp4'))
+    df_video = pd.DataFrame(list(map(parse_video_fn, video_files)))
+    df_video = df_video.dropna()
+    return df_video
+
+#%%
+def get_matched_timestamp(df, df_pycontrol_row, camera_no=2, min_minute=3):
+    df = df[df.subject_id == df_pycontrol_row.subject_id]
+    # find the closet match in time
+    if not df.empty:
+        min_td = np.min(abs(df_pycontrol_row.timestamp - df.timestamp))
+        idx = np.argmin(abs(df_pycontrol_row.timestamp - df.timestamp))
+        if min_td < timedelta(minutes=min_minute):
+            #Find videos from other cameras
+            cameras =  df[df.iloc[idx].timestamp == df.timestamp]
+            return cameras
+    else:
+        return None
+
 # %%
 
 for task_id, task in enumerate(tasks):
@@ -52,13 +75,18 @@ for task_id, task in enumerate(tasks):
     pycontrol_folder = ETTIN_DATA_FOLDER/'head-fixed'/'pycontrol'/f'{task}'
     pyphoto_folder = ETTIN_DATA_FOLDER/'head-fixed'/'pyphotometry'/'data'/f'{task}'
     ephys_base_path = ETTIN_DATA_FOLDER/'head-fixed'/'openephys'
+    video_folder = ETTIN_DATA_FOLDER/'head-fixed'/'videos'
 
     # Gather all pycontrol, photometry, and ephys files/folders 
     pycontrol_files = list(pycontrol_folder.glob('*.txt'))
     pyphoto_files = list(pyphoto_folder.glob('*.ppd'))
+    
+    
     open_ephys_folders = os.listdir(ephys_base_path)
 
     df_pycontrol = pd.DataFrame(list(map(parse_pycontrol_fn, pycontrol_files)))
+    df_pycontrol = df_pycontrol[(df_pycontrol.subject_id!='00') & (df_pycontrol.subject_id!='01')] # do not copy the test data
+
     try:
         df_pycontrol = df_pycontrol[df_pycontrol.session_length>1000*60*5] #remove sessions that are too short
     except AttributeError:
@@ -66,10 +94,14 @@ for task_id, task in enumerate(tasks):
         continue
 
     df_pyphoto = pd.DataFrame(list(map(parse_pyhoto_fn, pyphoto_files)))
+        
     all_parsed_ephys_folders = list(map(parse_openephys_folder, open_ephys_folders))
     # remove unsuccessful ephys folders parsing 
     parsed_ephys_folders = [result for result in all_parsed_ephys_folders if result is not None]
     df_ephys_exp = pd.DataFrame(parsed_ephys_folders)
+    
+    df_video = get_df_video(video_folder)
+
     
     # Match
     #Try to match pycontrol file together with pyphotometry file
@@ -77,6 +109,7 @@ for task_id, task in enumerate(tasks):
     matched_photo_fn  = []
     matched_ephys_path = []
     matched_ephys_fn  = []
+    matched_video_names = []
     
     df_pycontrol['do_copy'] = True
     
@@ -89,6 +122,7 @@ for task_id, task in enumerate(tasks):
                 df_pycontrol.loc[i, 'do_copy'] = False
                     
     df_pycontrol = df_pycontrol[df_pycontrol.do_copy==True]
+    
     for _, row in df_pycontrol.iterrows():
         
         # Photometry matching
@@ -99,6 +133,16 @@ for task_id, task in enumerate(tasks):
         else:
             matched_photo_path.append(None)
             matched_photo_fn.append(None)
+            
+            
+        # Matching videos
+        matched_videos = get_matched_timestamp(df_video,row)
+        if matched_videos is not None:
+            matched_video_names.append(matched_videos.filename.values)
+        else:
+            matched_video_names.append(None)
+
+        
 
         # find the closet match in time
         if not df_pyphoto_subject.empty:
@@ -145,7 +189,7 @@ for task_id, task in enumerate(tasks):
     df_pycontrol['ephys_path'] = matched_ephys_path
     df_pycontrol['ephys_folder_name'] = matched_ephys_fn
     
-    df_pycontrol = df_pycontrol[(df_pycontrol.subject_id!='00') & (df_pycontrol.subject_id!='01')] # do not copy the test data
+    df_pycontrol['video_names'] = matched_video_names
 
     for i in tqdm(range(len(df_pycontrol))):
         row = df_pycontrol.iloc[i]
@@ -155,6 +199,7 @@ for task_id, task in enumerate(tasks):
         target_pycontrol_folder = Path(export_base_path, session_id, 'pycontrol')
         target_pyphoto_folder = Path(export_base_path, session_id, 'pyphotometry')
         target_ephys_folder = Path(export_base_path, session_id, 'ephys')
+        target_video_folder = Path(export_base_path, session_id, 'video')
         
         if not target_pycontrol_folder.exists():
             # create the base folder
@@ -166,8 +211,12 @@ for task_id, task in enumerate(tasks):
         if not target_ephys_folder.exists():
             target_ephys_folder.mkdir(parents=True)
             
+        if not target_video_folder.exists():
+            target_video_folder.mkdir(parents=True)
+            
         pycontrol_file = row.path
         pyphotometry_file = row.pyphoto_path
+        video_files = row.video_names
 
         #copy the pycontrol files
         # print(pycontrol_file, target_pycontrol_folder)
@@ -182,6 +231,11 @@ for task_id, task in enumerate(tasks):
         if pyphotometry_file is not None:
             if create_photo_sync(str(pycontrol_file), str(pyphotometry_file)) is not None:
                 copy_if_not_exist(pyphotometry_file, target_pyphoto_folder)
+                
+        # write down the filename of the video file
+        video_list_file = target_video_folder/'video_list.txt'
+        if row.video_names is not None and not video_list_file.exists():
+            np.savetxt(video_list_file, row.video_names, '%s')
 
 
         #write information about ephys recrodings in the ephys folder
@@ -214,6 +268,7 @@ for task_id, task in enumerate(tasks):
             else:
                 # no syncable recordings
                 ...
+
 
             recordings_properties.to_csv(target_ephys_folder / 'rec_properties.csv')
 

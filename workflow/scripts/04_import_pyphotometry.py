@@ -22,16 +22,22 @@ import pickle
 
 
 #%% Load pyphotometry file
-fn = list(Path(sinput.photometry_folder).glob('*.ppd'))[0]
-data_photometry = import_ppd(fn)
-data_photometry = denoise_filter(data_photometry)
-data_photometry = motion_correction_win(data_photometry)
-data_photometry = compute_df_over_f(data_photometry, low_pass_cutoff=0.001)
-data_photometry = compute_zscore(data_photometry)
+try:
+    fn = list(Path(sinput.photometry_folder).glob('*.ppd'))[0]
+    has_photometry = True
+    data_photometry = import_ppd(fn)
+    data_photometry = denoise_filter(data_photometry)
+    data_photometry = motion_correction_win(data_photometry)
+    data_photometry = compute_df_over_f(data_photometry, low_pass_cutoff=0.001)
+    data_photometry = compute_zscore(data_photometry)
+    
+    # Convert to xarray
+    skip_var = ['analog_1_est_motion','analog_1_corrected', 'analog_1_baseline_fluo', 'analog_2_baseline_fluo']
+    dataset = photometry2xarray(data_photometry, skip_var = skip_var)
+except IndexError:
+    has_photometry = False
 
-#%% Convert to xarray
-skip_var = ['analog_1_est_motion','analog_1_corrected', 'analog_1_baseline_fluo', 'analog_2_baseline_fluo']
-dataset = photometry2xarray(data_photometry, skip_var = skip_var)
+
  
 #%% Load pycontrol file
 df_pycontrol = pd.read_pickle(sinput.pycontrol_dataframe)
@@ -41,52 +47,71 @@ trial_window = df_event.attrs['trial_window']
 
 # %% synchornize pyphotometry with pycontrol
 rsync_time = df_pycontrol[df_pycontrol.name=='rsync'].time
-photo_rsync = dataset.attrs['pulse_times_2']
 
-#align pyphotometry time to pycontrol
-pycontrol_aligner = Rsync_aligner(pulse_times_A=  photo_rsync,
-                pulse_times_B= rsync_time, plot=False) #align pycontrol time to pyphotometry time
-
-
-dataset = align_photometry_to_pycontrol(dataset, df_event, pycontrol_aligner)
-
-
-#%% Add in the relative time to different events
+# Add in the relative time to different events
 event_period = (trial_window[1] - trial_window[0])/1000
 sampling_freq = 1000
 event_time_coord= np.linspace(trial_window[0], trial_window[1], int(event_period*sampling_freq)) #TODO
 
-#%% Add trigger
-trigger = df_event.attrs['triggers'][0]
-add_event_data(df_event, event_filters.get_first_event_from_name,
-               trial_window, dataset, event_time_coord, 
-               'zscored_df_over_f', trigger, dataset.attrs['sampling_rate'],
-               filter_func_kwargs={'evt_name':trigger})
 
-#%% Add first bar off
-add_event_data(df_event, event_filters.get_first_bar_off, trial_window, dataset,event_time_coord, 
-               'zscored_df_over_f', 'first_bar_off', dataset.attrs['sampling_rate'])
+if has_photometry:
+    photo_rsync = dataset.attrs['pulse_times_2']
 
-#%% Add first spout
-add_event_data(df_event, event_filters.get_first_spout, trial_window, dataset, event_time_coord, 
-               'zscored_df_over_f', 'first_spout', dataset.attrs['sampling_rate'])
-
-#%% Add last bar_off before first spout
-
-add_event_data(df_event, event_filters.get_last_bar_off_before_first_spout, trial_window,
-               dataset,event_time_coord, 
-               'zscored_df_over_f', 'last_bar_off', dataset.attrs['sampling_rate'])
+    #align pyphotometry time to pycontrol
+    pycontrol_aligner = Rsync_aligner(pulse_times_A=  photo_rsync,
+                    pulse_times_B= rsync_time, plot=False) #align pycontrol time to pyphotometry time
 
 
-#%%
-dataset = dataset.sel(time = dataset.trial>=0) #remove data outside of task
+    dataset = align_photometry_to_pycontrol(dataset, df_event, pycontrol_aligner)
 
-# add in all metadata
-dataset.attrs.update(df_pycontrol.attrs)
-dataset.attrs.update(df_event.attrs)
-dataset.to_netcdf(soutput.xr_photometry, engine='h5netcdf')
 
-# %%
+    # Add trigger
+    trigger = df_event.attrs['triggers'][0]
+    add_event_data(df_event, event_filters.get_first_event_from_name,
+                trial_window, dataset, event_time_coord, 
+                'zscored_df_over_f', trigger, dataset.attrs['sampling_rate'],
+                filter_func_kwargs={'evt_name':trigger})
+
+    # Add first bar off
+    add_event_data(df_event, event_filters.get_first_bar_off, trial_window, dataset,event_time_coord, 
+                'zscored_df_over_f', 'first_bar_off', dataset.attrs['sampling_rate'])
+
+    # Add first spout
+    add_event_data(df_event, event_filters.get_first_spout, trial_window, dataset, event_time_coord, 
+                'zscored_df_over_f', 'first_spout', dataset.attrs['sampling_rate'])
+
+    # Add last bar_off before first spout
+
+    add_event_data(df_event, event_filters.get_last_bar_off_before_first_spout, trial_window,
+                dataset,event_time_coord, 
+                'zscored_df_over_f', 'last_bar_off', dataset.attrs['sampling_rate'])
+
+
+    dataset = dataset.sel(time = dataset.trial>=0) #remove data outside of task
+
+    # add in all metadata
+    dataset.attrs.update(df_pycontrol.attrs)
+    dataset.attrs.update(df_event.attrs)
+
+    dataset.to_netcdf(soutput.xr_photometry, engine='h5netcdf')
+
+else:
+    # create the dataset for pycontrol data only
+    dataset = xr.Dataset()
+    t = df_pycontrol.time.values
+    time_coords = np.arange(t[0], t[-1])
+    dataset = dataset.assign_coords(time=('time',time_coords))
+    dataset = dataset.assign_coords(event_time=('event_time', event_time_coord))
+    
+    # add in all metadata
+    dataset.attrs.update(df_pycontrol.attrs)
+    dataset.attrs.update(df_event.attrs)
+    
+    # save a dummpy photometry file to satisfy snakemake
+    Path(soutput.xr_photometry).touch()
+    
+
+
 # Bin the data such that we only have 1 data point per time bin
 # bin according to 50ms time bin, original sampling frequency is at 1000Hz
 dataset_binned = dataset.coarsen(time=10, event_time=10, boundary='trim').mean()
@@ -108,6 +133,9 @@ xr_session.to_netcdf(soutput.xr_session, engine='h5netcdf')
 
 # %%
 #Also save the pyphoto_aligner
-with open(soutput.pycontrol_aligner, 'wb') as f:
-  pickle.dump(pycontrol_aligner, f)
-# %%
+if has_photometry:
+    with open(soutput.pycontrol_aligner, 'wb') as f:
+        pickle.dump(pycontrol_aligner, f)
+else:
+    Path(soutput.pycontrol_aligner).touch()
+
