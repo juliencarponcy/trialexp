@@ -348,10 +348,11 @@ def marker2dataframe(marker_loc):
 def get_movement_metrics(marker_loc):
     signal_time = marker_loc.time.data/1000
     coords = marker_loc.data[:,:2]
+    likelihood = marker_loc.data[:,2]
     speed = np.diff(coords,axis=0, prepend=[coords[0,:]])
     accel = np.diff(speed, axis=0, prepend=[speed[0,:]])
     
-    return (signal_time, coords, speed, accel)
+    return (signal_time, coords, speed, accel, likelihood)
     
 def filter_init(df_move, move_init_idx, consec_rest, consec_move):
     # filter move init only if it is proceed by some amount of consec_rest
@@ -450,7 +451,7 @@ def extract_video(videofile, fn_prefix, output_path,  t, video_type='mp4', resiz
 def dlc2movementdf(xr_session, marker_loc):
     # convert marker location to speed and acceleration data
 
-    signal_time, coords, speed, accel = get_movement_metrics(marker_loc)
+    signal_time, coords, speed, accel,likelihood = get_movement_metrics(marker_loc)
     speed_mag = np.linalg.norm(speed,axis=1)
     accel_mag = np.diff(speed_mag, prepend=speed_mag[0])
 
@@ -465,6 +466,7 @@ def dlc2movementdf(xr_session, marker_loc):
         'speed_y': speed[:,1],
         'x' : coords[:,0],
         'y' : coords[:,1],
+        'likelihood': likelihood,
         'time': xr_session.time,
         'df/f': f})
     

@@ -23,7 +23,7 @@ import seaborn as sns
 xr_session = xr.open_dataset(sinput.xr_dlc)
 
 # %% Calculate movement data
-wrist_loc = xr_session['dlc_markers'].loc[:,'wrist',['x','y']]
+wrist_loc = xr_session['dlc_markers'].loc[:,'wrist',['x','y','likelihood']]
 df_move = dlc_utils.dlc2movementdf(xr_session, wrist_loc)
 valid_init, valid_init_time = dlc_utils.get_valid_init(df_move)
 df_init_data = dlc_utils.extract_triggered_data(valid_init_time, xr_session, [-1000, 1500],
@@ -41,6 +41,7 @@ speed = dlc_utils.get_average_speed(df_move, valid_init)
 accel = dlc_utils.get_average_value(df_move,'accel', valid_init)
 x = dlc_utils.get_average_value(df_move,'x', valid_init, win_dir='before')
 y = dlc_utils.get_average_value(df_move,'y', valid_init, win_dir='before')
+likelihood = dlc_utils.get_average_value(df_move,'likelihood', valid_init, win_dir='before')
 
 mov_type = dlc_utils.get_movement_type(df_move, valid_init, 50, window=50)
 speed_cls = pd.qcut(speed,3, labels=['slow','middle','fast'])
@@ -51,6 +52,7 @@ df_init_type =  pd.DataFrame({'event_index':np.arange(len(direction)),
                               'speed': speed,
                               'x': x,
                               'y': y,
+                              'likelihood': likelihood,
                               'accel': accel,
                               'speed_class': speed_cls,
                               'move_type': mov_type,
@@ -63,8 +65,9 @@ df_init_type.to_pickle(soutput.df_init_type)
 df_init_data.to_pickle(soutput.df_init_data)
 
 # %% Plot figures
+df2plot = df_init_data[df_init_data.likelihood>0.7] # only plot reliable data
 sns.set_context('paper',font_scale=1.5)
-g = sns.relplot(df_init_data, kind='line', x='event_time',
+g = sns.relplot(df2plot, kind='line', x='event_time',
                 y='photometry', hue='direction', col='move_type')
 g.set_xlabels('Time (ms)')
 g.set_ylabels('zscore dF/F')
