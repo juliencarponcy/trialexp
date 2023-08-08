@@ -38,7 +38,7 @@ rule spike_sorting:
     threads: 32
 
     script:
-        "scripts/s01_sort_ks3.py"
+        "scripts/spike_sorting/s01_sort_ks3.py"
 
 
 
@@ -75,7 +75,7 @@ rule spike_metrics_ks3:
     priority: 10
 
     script:
-        "scripts/s02_cluster_metrics_ks3.py"
+        "scripts/spike_sorting/s02_cluster_metrics_ks3.py"
 
 
 rule waveform_and_quality_metrics:
@@ -91,7 +91,7 @@ rule waveform_and_quality_metrics:
     priority: 11
 
     script:
-        "scripts/s02_waveform_and_quality_metrics.py"
+        "scripts/spike_sorting/s02_waveform_and_quality_metrics.py"
 
 
 rule ephys_sync:
@@ -107,7 +107,7 @@ rule ephys_sync:
     priority: 40
 
     script:
-        "scripts/s04_ephys_sync.py"
+        "scripts/spike_sorting/s04_ephys_sync.py"
 
 rule cell_metrics_processing:
     input:
@@ -122,7 +122,7 @@ rule cell_metrics_processing:
     priority: 50
 
     script:
-        "scripts/s05_cell_metrics_processing.py"
+        "scripts/spike_sorting/s05_cell_metrics_processing.py"
 
 
 rule cell_metrics_aggregation:
@@ -137,7 +137,7 @@ rule cell_metrics_aggregation:
     priority: 60
 
     script:
-        "scripts/s06_cell_metrics_aggregation.py"
+        "scripts/spike_sorting/s06_cell_metrics_aggregation.py"
 
 rule cell_metrics_dim_reduction:
     input:
@@ -151,7 +151,7 @@ rule cell_metrics_dim_reduction:
     priority: 70
 
     script:
-        "scripts/s07_cell_metrics_dim_reduction.py"
+        "scripts/spike_sorting/s07_cell_metrics_dim_reduction.py"
 
 rule cell_metrics_clustering:
     input:
@@ -165,7 +165,7 @@ rule cell_metrics_clustering:
     priority: 80
 
     script:
-        "scripts/s08_cell_metrics_clustering.py"
+        "scripts/spike_sorting/s08_cell_metrics_clustering.py"
 
 
 rule cells_to_xarray:
@@ -184,7 +184,7 @@ rule cells_to_xarray:
     priority: 85
 
     script:
-        "scripts/s09_cell_to_xarray.py"
+        "scripts/spike_sorting/s09_cell_to_xarray.py"
 
 rule cell_anatomy:
     input:
@@ -197,7 +197,7 @@ rule cell_anatomy:
     threads: 32
 
     script:
-        "scripts/s10_cell_anatomy.py"
+        "scripts/spike_sorting/s10_cell_anatomy.py"
 
 rule cell_trial_responses_plot:
     input:
@@ -213,7 +213,7 @@ rule cell_trial_responses_plot:
     threads: 32
 
     script:
-        "scripts/s11_cell_trial_responses_plot.py"
+        "scripts/spike_sorting/s11_cell_trial_responses_plot.py"
 
 # rule session_correlations:
 #     input:
@@ -227,7 +227,7 @@ rule cell_trial_responses_plot:
 #     priority: 90
 
 #     script:
-#         "scripts/s10_session_correlations.py"
+#         "scripts/spike_sorting/s10_session_correlations.py"
 
 rule spike_final:
     input:
