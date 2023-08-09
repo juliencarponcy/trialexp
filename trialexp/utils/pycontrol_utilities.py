@@ -18,13 +18,7 @@ def parse_pycontrol_fn(fn):
     pattern = r'(\w+)-(.*)\.txt'
     m = search(pattern, fn.name)
     if m:
-        subject_name = m.group(1)
-        pattern_id = r'(\d+)'
-        id = search(pattern_id, subject_name)
-        if id:
-            subject_id = id.group(1)
-        else:
-            subject_id = None
+        subject_id = m.group(1)
         date_string = m.group(2)
         expt_datetime = datetime.strptime(date_string, "%Y-%m-%d-%H%M%S")
         
@@ -32,16 +26,14 @@ def parse_pycontrol_fn(fn):
             df = session_dataframe(fn)
             session_length = df.time.iloc[-1]
             
-            return {'subject_name': subject_name, 
-                    'subject_id': subject_id,
+            return { 'subject_id': subject_id,
                     'path': fn,                 
                     'session_id': fn.stem,
                     'filename': fn.stem, 
                     'timestamp': expt_datetime,
                     'session_length': session_length }
         except KeyError:
-            return {'subject_name': subject_name, 
-                    'subject_id': subject_id,
+            return { 'subject_id': subject_id,
                     'path': fn,                 
                     'session_id': fn.stem,
                     'filename': fn.stem, 

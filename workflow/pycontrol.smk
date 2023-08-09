@@ -91,6 +91,16 @@ rule photometry_figure:
     script:
         'scripts/05_plot_pyphotometry.py'
 
+rule behavorial_analysis:
+    input:
+        condition_dataframe = '{session_path}/{task}/{session_id}/processed/df_conditions.pkl',
+        event_dataframe = '{session_path}/{task}/{session_id}/processed/df_events_cond.pkl',
+    output:
+        xr_behaviour = '{session_path}/{task}/{session_id}/processed/xr_behaviour.nc',
+    script:
+        'scripts/06_behavorial_analysis.py'
+
+
 def photometry_input(wildcards):
     #determine if photometry needs to run in the current folder
     ppd_files = glob(f'{wildcards.session_path}/{wildcards.task}/{wildcards.session_id}/pyphotometry/*.ppd')
@@ -102,7 +112,9 @@ def photometry_input(wildcards):
 rule pycontrol_final:
     input:
         photometry_done = photometry_input,
+        xr_session = '{session_path}/{task}/{session_id}/processed/xr_session.nc',
         pycontrol_done = '{session_path}/{task}/{session_id}/processed/log/pycontrol.done',
+        xr_behaviour = '{session_path}/{task}/{session_id}/processed/xr_behaviour.nc',
         spike2='{session_path}/{task}/{session_id}/processed/spike2_export.done'
     output:
         done = touch('{session_path}/{task}/{session_id}/processed/pycontrol_workflow.done')

@@ -10,6 +10,7 @@ import pandas as pd
 from tqdm.auto import tqdm
 import xarray as xr
 import numpy as np 
+import os
 
 def load_pycontrol_variables(session_path, parameters, param_extract_method='tail'):
     session_id = session_path.name
@@ -99,7 +100,7 @@ def build_session_info(root_path, load_pycontrol=False,
     
     return df_session_info
 
-def load_datasets(session_paths):
+def load_datasets(session_paths, load_behaviour_dataset=False):
     ds_list=[]
     for p in tqdm(session_paths):
         fn = p/'processed'/'xr_session.nc'
@@ -107,6 +108,14 @@ def load_datasets(session_paths):
             ds = xr.open_dataset(fn) 
             # print(np.unique(np.diff(ds.event_time.data)), ds.event_time.data[-1], p)
             ds = ds.drop_dims('time') # for performance reason
+            
+            
+            if load_behaviour_dataset:
+                fn_be = p/'processed'/'xr_behaviour.nc'
+                if fn_be.exists():
+                    ds_be = xr.open_dataset(fn_be)
+                    ds = xr.merge([ds,ds_be])
+            
             ds_list.append(ds)
             ds.close()
         except FileNotFoundError:
@@ -115,8 +124,8 @@ def load_datasets(session_paths):
     return ds_list
 
 
-def load_and_concat_dataset(session_paths):
-    ds_list = load_datasets(session_paths)
+def load_and_concat_dataset(session_paths, load_behaviour_dataset=False):
+    ds_list = load_datasets(session_paths, load_behaviour_dataset)
     print('Concating datasets...')
     return xr.combine_nested(ds_list,'session_id')
 
@@ -179,3 +188,6 @@ def filter_sessions(df_session_info, animal_id=None,
         df = df.query(query)
         
     return df
+
+def get_session_path(row, root_path):
+    return Path(os.path.join(root_path, row.task_name, row.session_id))

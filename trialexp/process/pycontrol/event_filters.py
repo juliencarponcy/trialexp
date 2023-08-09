@@ -1,4 +1,5 @@
 import xarray as xr
+import numpy as np
 
 def get_first_bar_off(df_trial):
     #Find first bar off in trial
@@ -71,3 +72,61 @@ def extract_clean_trigger_event(df_trial, target_event_name, clean_window, ignor
 
         if sum(idx) ==1 and df_trial.loc[idx].iloc[0]['name'] == target_event_name:
             return df_trial.loc[idx].iloc[0] # must return a series
+        
+        
+def get_reach_travel_time(df_trial):
+    # Calculate time between the last bar off and spout touch
+    #' to be used '
+    
+    bar_off =  df_trial[df_trial['name']=='bar_off']
+    spout =  df_trial[df_trial['name']=='spout']
+    
+    if len(spout) > 0 and len(bar_off) > 0:
+        spout1 = spout.iloc[0]
+
+        filtered_df = bar_off[bar_off['trial_time'] < spout1['trial_time']]
+        last_bar_off_time = filtered_df['trial_time'].max()
+    
+        return spout1.trial_time - last_bar_off_time
+    
+    
+def get_first_bar_off_speed(df_trial):
+    # Calculate the time between the first bar off and the next bar on
+    
+    bar_off =  df_trial[df_trial['name']=='bar_off']
+    bar_on =  df_trial[df_trial['name']=='bar_on']
+
+    
+    if len(bar_off) > 0 and len(bar_on) > 0:
+        bar_off1 = bar_off.iloc[0]
+
+        bar_on = bar_on[bar_on['trial_time'] > bar_off1['trial_time']]
+        
+        if len(bar_on)>0:
+            return bar_on.iloc[0]['trial_time'] - bar_off1['trial_time']
+        
+def get_first_sig_bar_off_time(df_trial, min_off_time = 100):
+    # Calculate the trial time of the first bar off, time between bar off and the next on 
+    # must be larger than min_off_time
+    
+    bar_off =  df_trial[df_trial['name']=='bar_off']
+    bar_on =  df_trial[df_trial['name']=='bar']
+    # print(bar_on)
+    
+    if len(bar_off) > 0 and len(bar_on) > 0:
+        bar_off1 = bar_off.iloc[0]
+
+        bar_on = bar_on[bar_on['trial_time'] > bar_off1['trial_time']]
+        
+        #make sure bar on and off are of the same size
+        if len(bar_on) > len(bar_off):
+            bar_on = bar_on.iloc[:len(bar_off)]
+        else:
+            bar_off = bar_off.iloc[:len(bar_on)]
+        
+        interval = bar_on.trial_time.values - bar_off.trial_time.values
+        
+        # filter out short bar off
+        idx = np.where(interval>min_off_time)[0]
+        if len(idx)>0:
+            return bar_off.iloc[idx[0]].trial_time
