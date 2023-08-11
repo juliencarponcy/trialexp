@@ -27,6 +27,15 @@ def parse_openephys_folder(fn):
             pass
 
 
+def get_continuous_stream_names(folder_structure):
+    # get the names of the continous stream
+    first_expt_key = list(folder_structure['Record Node 101']['experiments'].keys())[0]
+    first_expt = folder_structure['Record Node 101']['experiments'][first_expt_key]
+    
+    first_recording_key = list(first_expt['recordings'].keys())[0]
+    first_recording = first_expt['recordings'][first_recording_key]
+    return list(first_recording['streams']['continuous'].keys())
+
 
 def get_recordings_properties(ephys_base_path, fn):
     exp_dict = parse_openephys_folder(fn)
@@ -38,11 +47,11 @@ def get_recordings_properties(ephys_base_path, fn):
 
     # List continuous streams names
     try:
-        continuous_streams = list(folder_structure['Record Node 101']['experiments'][1]['recordings'][1]['streams']['continuous'].keys())
+        continuous_streams = get_continuous_stream_names(folder_structure)
         # Only select action potentials streams
         AP_streams = [AP_stream for AP_stream in continuous_streams if 'AP' in AP_stream]
-        print(f'Nb of Experiments (blocks): {nb_block}\nNb of segments per block: {nb_segment_per_block}\nDefault exp name: {experiment_names}\n')
-        print(f'Spike streams:{AP_streams}\n')
+        # print(f'Nb of Experiments (blocks): {nb_block}\nNb of segments per block: {nb_segment_per_block}\nDefault exp name: {experiment_names}\n')
+        # print(f'Spike streams:{AP_streams}\n')
     except KeyError:
         print('Key error encountered at ', fn)
         raise KeyError
