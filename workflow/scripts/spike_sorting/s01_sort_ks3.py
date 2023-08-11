@@ -61,7 +61,7 @@ for idx_rec in idx_to_sort:
     temp_output_sorter_specific_folder = temp_sorter_folder / sorter_name / probe_name
     output_si_sorted_folder = si_sorted_folder / sorter_name / probe_name
 
-    ephys_path = Path(rec_properties.full_path.iloc[idx_rec]).parent.parent.parent.parent.parent
+    ephys_path = Path(rec_properties.full_path.iloc[idx_rec]).parents[4]
     
     # Maybe not the best method to get it
     # has introduced some bugs for forgotten reason related to folder changes
@@ -124,3 +124,6 @@ for idx_rec in idx_to_sort:
     #     continue
     # else:
     #     print(f'processing folder: {output_sorter_specific_folder}')
+    
+    
+# %%
