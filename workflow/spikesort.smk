@@ -12,7 +12,7 @@ def rec_properties_input(wildcards):
     # determine if there is an ephys recording for that folder
     recording_csv = glob(f'{wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/ephys/rec_properties.csv')
     if len(recording_csv) > 0:
-        return f'{wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/ephys/rec_properties.csv'
+        return f'{wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed/spikesort.done'
     else:
         return []
 
@@ -25,13 +25,25 @@ def gather_metrics_to_aggregate(wildcards):
     #     return []
     ...
 
+def task2analyze(tasks:list=None):
+    #specify the list of task to analyze to save time.
+    total_sessions = []
+
+    if tasks is None:
+        tasks=['*']
+
+    for t in tasks:
+        total_sessions+=expand('{sessions}/processed/spike_workflow.done', sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob(f'{t}/TT*'))        
+
+    return total_sessions
+
 rule spike_all:
-    input: expand('{sessions_root}/processed/spike_workflow.done', sessions_root = Path(os.environ.get('SESSION_ROOT_DIR')).glob('*/*'))
+     # input: task2analyze(['reaching_go_spout_bar_nov22', 'reaching_go_spout_incr_break2_nov22','pavlovian_spontanous_reaching_march23'])
+    input: task2analyze(['reaching_go_spout_bar_nov22'])
 
 rule spike_sorting:
     input:
-        rec_properties = rec_properties_input
-
+        rec_properties = '{sessions}/{task_path}/{session_id}/ephys/rec_properties.csv',
     output:
         sorting_complete = touch('{sessions}/{task_path}/{session_id}/processed/spike_sorting.done'),       
     
@@ -42,85 +54,69 @@ rule spike_sorting:
 
 
 
-rule move_to_server:
-    input: 
-        sorting_complete = '{sessions}/{task_path}/{session_id}/processed/spike_sorting.done'
+# rule move_to_server:
+#     input: 
+#         sorting_complete = '{sessions}/{task_path}/{session_id}/processed/spike_sorting.done'
 
-    params:
-        local_root_sorting_folder = Path(os.environ['TEMP_DATA_PATH'])
+#     params:
+#         local_root_sorting_folder = Path(os.environ['TEMP_DATA_PATH'])
 
-    output:
-        move_complete = touch('{sessions}/{task_path}/{session_id}/processed/move_to_server.done')
+#     output:
+#         move_complete = touch('{sessions}/{task_path}/{session_id}/processed/move_to_server.done')
 
-    threads: 32
+#     threads: 32
 
-    priority: 30
+#     priority: 30
 
-    run:
-        shell('mv {params.local_root_sorting_folder}/kilosort3 {wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed --remove-source-files')
-        shell('mv {params.local_root_sorting_folder}/si {wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed/si --remove-source-files')
-        shell('rm -rf {params.local_root_sorting_folder}/kilosort3')
-        shell('rm -rf {params.local_root_sorting_folder}/si')
+#     run:
+#         shell('mv {params.local_root_sorting_folder}/kilosort3 {wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed --remove-source-files')
+#         shell('mv {params.local_root_sorting_folder}/si {wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed/si --remove-source-files')
+#         shell('rm -rf {params.local_root_sorting_folder}/kilosort3')
+#         shell('rm -rf {params.local_root_sorting_folder}/si')
 
 rule spike_metrics_ks3:
     input:
-        rec_properties = rec_properties_input,
-        move_complete = '{sessions}/{task_path}/{session_id}/processed/move_to_server.done',
-
+        rec_properties = '{sessions}/{task_path}/{session_id}/ephys/rec_properties.csv',
+        # move_complete = '{sessions}/{task_path}/{session_id}/processed/move_to_server.done',
+        sorting_complete = '{sessions}/{task_path}/{session_id}/processed/spike_sorting.done'
     output:
         metrics_complete = touch('{sessions}/{task_path}/{session_id}/processed/spike_metrics.done')
-    
     threads: 32
-    
     priority: 10
-
     script:
         "scripts/spike_sorting/s02_cluster_metrics_ks3.py"
 
 
 rule waveform_and_quality_metrics:
     input:
-        rec_properties = rec_properties_input,
-        move_complete = '{sessions}/{task_path}/{session_id}/processed/move_to_server.done'
-
+        rec_properties = '{sessions}/{task_path}/{session_id}/ephys/rec_properties.csv',
+        sorting_complete = '{sessions}/{task_path}/{session_id}/processed/spike_sorting.done'
     output:
         si_quality_complete = touch('{sessions}/{task_path}/{session_id}/processed/si_quality.done')
-    
     threads: 32
-    
     priority: 11
-
     script:
-        "scripts/spike_sorting/s02_waveform_and_quality_metrics.py"
+        "scripts/spike_sorting/s02b_waveform_and_quality_metrics.py"
 
 
 rule ephys_sync:
     input:
-        rec_properties = rec_properties_input,
+        rec_properties = '{sessions}/{task_path}/{session_id}/ephys/rec_properties.csv',
         metrics_complete = '{sessions}/{task_path}/{session_id}/processed/spike_metrics.done'
-
     output:
         ephys_sync_complete = touch('{sessions}/{task_path}/{session_id}/processed/ephys_sync.done')
-    
     threads: 32
-
     priority: 40
-
     script:
         "scripts/spike_sorting/s04_ephys_sync.py"
 
 rule cell_metrics_processing:
     input:
-        rec_properties = rec_properties_input,
-        ephys_sync_complete = '{sessions}/{task_path}/{session_id}/processed/ephys_sync.done'
-
+        ephys_sync_complete = '{sessions}/{task_path}/{session_id}/processed/ephys_sync.done',
     output:
         cell_metrics_processing_complete = touch('{sessions}/{task_path}/{session_id}/processed/cell_metrics_processing.done')
-
     threads: 32
-
     priority: 50
-
     script:
         "scripts/spike_sorting/s05_cell_metrics_processing.py"
 
@@ -128,42 +124,30 @@ rule cell_metrics_processing:
 rule cell_metrics_aggregation:
     input:
         cell_metrics_processing_complete = '{sessions}/{task_path}/{session_id}/processed/cell_metrics_processing.done'
-
     output:
         cell_metrics_aggregation_complete =  touch('{sessions}/{task_path}/{session_id}/processed/cell_metrics_aggregation.done')
-
     threads: 32
-
     priority: 60
-
     script:
         "scripts/spike_sorting/s06_cell_metrics_aggregation.py"
 
 rule cell_metrics_dim_reduction:
     input:
         cell_metrics_aggregation_complete = '{sessions}/{task_path}/{session_id}/processed/cell_metrics_aggregation.done'
-
     output:
         cell_metrics_dim_reduction_complete =  touch('{sessions}/{task_path}/{session_id}/processed/cell_metrics_dim_reduction.done')
-
     threads: 32
-
     priority: 70
-
     script:
         "scripts/spike_sorting/s07_cell_metrics_dim_reduction.py"
 
 rule cell_metrics_clustering:
     input:
-        cell_metrics_dim_reduction_complete = '{sessions}/{task_path}/{session_id}/processed/cell_metrics_dim_reduction.done'
-    
+        cell_metrics_dim_reduction_complete = '{sessions}/{task_path}/{session_id}/processed/cell_metrics_dim_reduction.done' 
     output:
         cell_metrics_clustering_complete =  touch('{sessions}/{task_path}/{session_id}/processed/cell_metrics_clustering.done')
-
     threads: 32
-
     priority: 80
-
     script:
         "scripts/spike_sorting/s08_cell_metrics_clustering.py"
 
@@ -171,49 +155,45 @@ rule cell_metrics_clustering:
 rule cells_to_xarray:
     input:
         ephys_sync_complete = '{sessions}/{task_path}/{session_id}/processed/ephys_sync.done',
-        xr_session = '{sessions}/{task_path}/{session_id}/processed/xr_session.nc',
-        sorting_path = Path('{sessions}/{task_path}/{session_id}/processed/kilosort3/')
-    
+        xr_session = '{sessions}/{task_path}/{session_id}/processed/xr_session.nc',    
     output:
-        xr_spikes_trials = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials.nc',
-        xr_spikes_trials_phases = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials_phases.nc',
-        xr_spikes_full_session = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_full_session.nc'
-
-    threads: 32
-
-    priority: 85
-
-    script:
-        "scripts/spike_sorting/s09_cell_to_xarray.py"
-
-rule cell_anatomy:
-    input:
-        xr_spikes_trials = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials.nc',
-        xr_spikes_trials_phases = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials_phases.nc',
-        xr_spikes_full_session = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_full_session.nc'
-    output:
-        cell_anatomy_complete = '{sessions}/{task_path}/{session_id}/processed/ephys_anatomy.done'
-
-    threads: 32
-
-    script:
-        "scripts/spike_sorting/s10_cell_anatomy.py"
-
-rule cell_trial_responses_plot:
-    input:
-        xr_session = '{sessions}/{task_path}/{session_id}/processed/xr_session.nc',
         xr_spikes_trials = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials.nc',
         xr_spikes_trials_phases = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials_phases.nc',
         xr_spikes_full_session = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_full_session.nc',
-        cell_anatomy_complete = '{sessions}/{task_path}/{session_id}/processed/ephys_anatomy.done'
-
-    output:
-        cell_trial_responses_complete = touch('{sessions}/{task_path}/{session_id}/processed/cell_trial_responses.done')
-
+        spike_sort_done = touch('{sessions}/{task_path}/{session_id}/processed/spikesort.done'),
     threads: 32
-
+    priority: 85
     script:
-        "scripts/spike_sorting/s11_cell_trial_responses_plot.py"
+        "scripts/spike_sorting/s09_cell_to_xarray.py"
+
+# rule cell_anatomy:
+#     input:
+#         xr_spikes_trials = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials.nc',
+#         xr_spikes_trials_phases = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials_phases.nc',
+#         xr_spikes_full_session = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_full_session.nc'
+#     output:
+#         cell_anatomy_complete = '{sessions}/{task_path}/{session_id}/processed/ephys_anatomy.done'
+
+#     threads: 32
+
+#     script:
+#         "scripts/spike_sorting/s10_cell_anatomy.py"
+
+# rule cell_trial_responses_plot:
+#     input:
+#         xr_session = '{sessions}/{task_path}/{session_id}/processed/xr_session.nc',
+#         xr_spikes_trials = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials.nc',
+#         xr_spikes_trials_phases = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials_phases.nc',
+#         xr_spikes_full_session = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_full_session.nc',
+#         cell_anatomy_complete = '{sessions}/{task_path}/{session_id}/processed/ephys_anatomy.done'
+
+#     output:
+#         cell_trial_responses_complete = touch('{sessions}/{task_path}/{session_id}/processed/cell_trial_responses.done')
+
+#     threads: 32
+
+#     script:
+#         "scripts/spike_sorting/s11_cell_trial_responses_plot.py"
 
 # rule session_correlations:
 #     input:
@@ -231,7 +211,8 @@ rule cell_trial_responses_plot:
 
 rule spike_final:
     input:
-        xr_spikes_trials = '{session_path}/{task_path}/{session_id}/processed/xr_spikes_trials.nc'
+        rec_properties_input
+        # xr_spikes_trials = '{session_path}/{task_path}/{session_id}/processed/xr_spikes_trials.nc'
         
     output:
-        done = touch('{session_path}/{task_path}/{session_id}/processed/spike_workflow.done')
+        done = touch('{sessions}/{task_path}/{session_id}/processed/spike_workflow.done')
