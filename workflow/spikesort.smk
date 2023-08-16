@@ -87,7 +87,7 @@ rule ephys_sync:
     threads: 32
     priority: 40
     script:
-        "scripts/spike_sorting/s04a_ephys_sync.py"
+        "scripts/spike_sorting/s04_ephys_sync.py"
 
 rule cell_metrics_processing:
     input:
@@ -136,7 +136,9 @@ rule cell_metrics_clustering:
 rule cells_to_xarray:
     input:
         ephys_sync_complete = '{sessions}/{task_path}/{session_id}/processed/ephys_sync.done',
-        xr_session = '{sessions}/{task_path}/{session_id}/processed/xr_session.nc',    
+        xr_session = '{sessions}/{task_path}/{session_id}/processed/xr_session.nc',   
+        sorting_path = '{sessions}/{task_path}/{session_id}/processed/kilosort3',   
+        cell_matrics_full= '{sessions}/{task_path}/{session_id}/processed/kilosort3/cell_metrics_full.pkl' 
     output:
         xr_spikes_trials = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials.nc',
         xr_spikes_trials_phases = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials_phases.nc',

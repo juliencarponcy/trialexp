@@ -169,11 +169,3 @@ df_metrics_all.to_pickle(soutput.cell_matrics_full)
 
 # Saving aggregated DataFrame for CellExplorer
 # session_ce_df.to_pickle(waveform_results_folder / 'ce_cell_metrics_df.pkl' )
-
-# %%
-
-    
-
-    
-
-# %%

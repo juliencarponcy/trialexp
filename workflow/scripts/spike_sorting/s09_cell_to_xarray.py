@@ -13,7 +13,7 @@ import quantities as pq
 
 from sklearn.preprocessing import StandardScaler
 
-from elephant import statistics, kernels
+# from elephant import statistics, kernels
 
 from snakehelper.SnakeIOHelper import getSnake
 
@@ -38,17 +38,17 @@ verbose = True
 
 root_path = Path(os.environ['SESSION_ROOT_DIR'])
 # Where to store globally computed figures
-clusters_figure_path = Path(os.environ['CLUSTERS_FIGURES_PATH'])
+# clusters_figure_path = Path(os.environ['CLUSTERS_FIGURES_PATH'])
 # where to store global processed data
-clusters_data_path = Path(os.environ['PROCCESSED_CLUSTERS_PATH'])
+# clusters_data_path = Path(os.environ['PROCCESSED_CLUSTERS_PATH'])
 
 # Get probe names from folder path
 probe_names = [folder.stem for folder in list(Path(sinput.sorting_path).glob('*'))]
 
 # Fetch file paths from all probes
-synced_timestamp_files = list(Path(sinput.sorting_path).glob('*/sorter_output/rsync_corrected_spike_times.npy'))
+synced_timestamp_files = list(Path(sinput.sorting_path).glob('*/rsync_corrected_spike_times.npy'))
 spike_clusters_files = list(Path(sinput.sorting_path).glob('*/sorter_output/spike_clusters.npy'))
-ce_cell_metrics_files = list(Path(sinput.sorting_path).glob('*/sorter_output/cell_metrics_df_full.pkl'))
+ce_cell_metrics_full= Path(sinput.cell_matrics_full)
 
 # session outputs
 session_figure_path = Path(sinput.xr_session).parent / 'figures'
@@ -60,12 +60,11 @@ bin_duration = 10 # ms for binning spike timestamps
 sigma_ms = 200 # ms for half-gaussian kernel size (1SD duration)
 
 #%% File loading
-ce_cell_metrics_df_full = pd.DataFrame()
-for cell_metrics_df_file in ce_cell_metrics_files:
-    ce_cell_metrics_df_full = pd.concat([ce_cell_metrics_df_full, pd.read_pickle(cell_metrics_df_file)])
 
-si_cell_metrics_df = pd.read_pickle(session_waveform_path / 'si_metrics_df.pkl')
-si_cell_metrics_df = si_cell_metrics_df.set_index('UID')
+ce_cell_metrics_df_full = pd.read_pickle(ce_cell_metrics_full)
+
+# si_cell_metrics_df = pd.read_pickle(session_waveform_path / 'si_metrics_df.pkl')
+# si_cell_metrics_df = si_cell_metrics_df.set_index('UID')
 
 xr_session = xr.open_dataset(sinput.xr_session)
 xr_photometry = xr.open_dataset(Path(sinput.xr_session).parent / 'xr_photometry.nc')
@@ -100,12 +99,14 @@ behav_phases_filters = {
 trial_outcomes = df_conditions.trial_outcome
 
 
+# get the time for each important events
 df_aggregated = pd.concat([trial_outcomes, trial_onsets], axis=1)
 
 for ev_name, filter in behav_phases_filters.items():
     # add timestamp of particuliar behavioral phases
     print(ev_name)
     df_aggregated = pd.concat([df_aggregated, event_filters.extract_event_time(df_events_cond, filter, dict())], axis=1)
+
 
 # rename the columns
 df_aggregated.columns = ['trial_outcome', 'trial_onset',  *behav_phases_filters.keys()]
@@ -116,6 +117,7 @@ df_aggregated['rest'] = df_aggregated.trial_onset - 2000 # Hard coded, 2000ms re
 
 behav_phases = df_aggregated.columns[1:] # exclude trial outcome column
 trial_outcomes = df_conditions.trial_outcome.unique()
+
 # %% Extract instantaneous rates (continuous) from spike times (discrete)
 
 # Use SpikeTrain class from neo.core

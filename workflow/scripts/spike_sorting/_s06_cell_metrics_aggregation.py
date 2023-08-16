@@ -4,17 +4,13 @@ Script to create the session folder structure
 #%%
 import os
 from pathlib import Path
-
 import numpy as np
 import pandas as pd
-
 from snakehelper.SnakeIOHelper import getSnake
-
 from workflow.scripts import settings
-
-
 from matplotlib import pyplot as plt
 import seaborn as sns
+
 #%% Load inputs
 
 
