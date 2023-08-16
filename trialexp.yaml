@@ -36,14 +36,15 @@ dependencies:
   - python-dotenv
   - snakemake
   - pip:
-    - "git+https://github.com/teristam/snakehelper.git"
     - sonpy
     - h5netcdf
     - python-dotenv
     - neo
     - pathworklib
+    - plotnine # required for pathworklib
     - ffmpeg-python
     - deeplabcut
+    - "git+https://github.com/teristam/snakehelper.git"    
     - -e . # if not working execute "pip install -e ." from the top level of this repo
     # - matlabengine # causing an error
     
