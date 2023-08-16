@@ -53,27 +53,6 @@ rule spike_sorting:
         "scripts/spike_sorting/s01_sort_ks3.py"
 
 
-
-# rule move_to_server:
-#     input: 
-#         sorting_complete = '{sessions}/{task_path}/{session_id}/processed/spike_sorting.done'
-
-#     params:
-#         local_root_sorting_folder = Path(os.environ['TEMP_DATA_PATH'])
-
-#     output:
-#         move_complete = touch('{sessions}/{task_path}/{session_id}/processed/move_to_server.done')
-
-#     threads: 32
-
-#     priority: 30
-
-#     run:
-#         shell('mv {params.local_root_sorting_folder}/kilosort3 {wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed --remove-source-files')
-#         shell('mv {params.local_root_sorting_folder}/si {wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed/si --remove-source-files')
-#         shell('rm -rf {params.local_root_sorting_folder}/kilosort3')
-#         shell('rm -rf {params.local_root_sorting_folder}/si')
-
 rule spike_metrics_ks3:
     input:
         rec_properties = '{sessions}/{task_path}/{session_id}/ephys/rec_properties.csv',
@@ -101,17 +80,19 @@ rule waveform_and_quality_metrics:
 
 rule ephys_sync:
     input:
-        rec_properties = '{sessions}/{task_path}/{session_id}/ephys/rec_properties.csv',
+        kilosort_path = '{sessions}/{task_path}/{session_id}/processed/kilosort3',
         metrics_complete = '{sessions}/{task_path}/{session_id}/processed/spike_metrics.done'
     output:
         ephys_sync_complete = touch('{sessions}/{task_path}/{session_id}/processed/ephys_sync.done')
     threads: 32
     priority: 40
     script:
-        "scripts/spike_sorting/s04_ephys_sync.py"
+        "scripts/spike_sorting/s04a_ephys_sync.py"
 
 rule cell_metrics_processing:
     input:
+        rec_properties = '{sessions}/{task_path}/{session_id}/ephys/rec_properties.csv',
+        kilosort_path = '{sessions}/{task_path}/{session_id}/processed/kilosort3',
         ephys_sync_complete = '{sessions}/{task_path}/{session_id}/processed/ephys_sync.done',
     output:
         cell_metrics_processing_complete = touch('{sessions}/{task_path}/{session_id}/processed/cell_metrics_processing.done')
