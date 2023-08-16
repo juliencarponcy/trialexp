@@ -7,6 +7,7 @@ from pathlib import Path
 
 import matlab.engine
 from snakehelper.SnakeIOHelper import getSnake
+from trialexp.process.ephys.utils import prepare_mathlab_path
 
 from workflow.scripts import settings
 
@@ -25,28 +26,23 @@ verbose = True
 
 sorter_specific_path = Path(sinput.rec_properties).parent.parent / 'processed' / sorter_name
 
-probe_folders = [str(sorter_specific_path / probe_folder / 'sorter_output') for probe_folder in os.listdir(sorter_specific_path)]
+probe_folders = [str(sorter_specific_path / probe_folder) for probe_folder in os.listdir(sorter_specific_path)]
 
 # %% Start Matlab engine and add paths
 eng = matlab.engine.start_matlab()
 
-# Adding Path to Matlab from Environment variables defined in .env file.
-s = eng.genpath(os.environ['CORTEX_LAB_SPIKES_PATH']) # maybe unnecessary, just open all ks3 results
-n = eng.genpath(os.environ['NPY_MATLAB_PATH'])
-c = eng.genpath(os.environ['CELL_EXPLORER_PATH'])
 
-eng.addpath(s, nargout=0)
-eng.addpath(n, nargout=0)
-eng.addpath(c, nargout=0)
-
+prepare_mathlab_path(eng)
 # %% Process CellExplorer Cell metrics
+# TODO do this analyze on the temp folder to improve speed
 for probe_folder in probe_folders:
 
-    cell_exp_session = eng.sessionTemplate(probe_folder, 'showGUI', False)
+    cell_exp_session = eng.sessionTemplate_nxp(probe_folder, 'showGUI', False)
     
     ### Important:
     # The following defaults have been modified in CellExplorer base code
-    # to match NeuroPixels defaults, has setting them afterwards induced bugs
+    # sessionTemplate.m
+    # to match NeuroPixels defaults, as setting them afterwards induced bugs
     
     # adjusting wrong default params
     # sampling rate
@@ -58,7 +54,7 @@ for probe_folder in probe_folders:
     cell_metrics = eng.ProcessCellMetrics('session', cell_exp_session, \
         'showGUI', False, 'showWaveforms', False, 'showFigures', False, \
         'manualAdjustMonoSyn', False, 'forceReloadSpikes', True, 'forceReload', True, \
-        'summaryFigures', True)
+        'summaryFigures', False)
 
     # Dump cell metrics dict in pkl
     # with open(probe_folder / 'cell_metrics.pkl', 'wb') as handle: 

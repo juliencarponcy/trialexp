@@ -30,3 +30,12 @@ def session_and_probe_specific_uid(session_ID: str, probe_name: str, uid: int):
     '''
     
     return session_ID + '_' + probe_name + '_' + str(uid)
+def prepare_mathlab_path(eng):
+    # Adding Path to Matlab from Environment variables defined in .env file.
+    s = eng.genpath(os.environ['CORTEX_LAB_SPIKES_PATH']) # maybe unnecessary, just open all ks3 results
+    n = eng.genpath(os.environ['NPY_MATLAB_PATH'])
+    c = eng.genpath(os.environ['CELL_EXPLORER_PATH'])
+
+    eng.addpath(s, nargout=0)
+    eng.addpath(n, nargout=0)
+    eng.addpath(c, nargout=0)
