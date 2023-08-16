@@ -87,7 +87,7 @@ for idx_rec in idx_to_sort:
         # 'chunk_memory': 12800000000,
         'chunk_duration': '10s', 
         'progress_bar': False}
-
+    
     # TODO: Add try / catch with warnings and logging of the failed sorting (in rec_properties.csv for instance)
     # In order to cleanly skip dodgy recordings and keep the pipeline running
     try:
@@ -112,6 +112,8 @@ for idx_rec in idx_to_sort:
         session_path = rec_properties_path.parents[1] /'processed'
         shutil.copytree(output_si_sorted_folder, session_path/'si'/probe_name)
         shutil.copytree(temp_output_sorter_specific_folder, session_path/'kilosort3'/probe_name)
+        rec_properties.iloc[[idx_rec]].to_csv(session_path/'kilosort3'/probe_name/'rec_prop.csv', index=False) #also save the recording property
+
 
         #
         # remove temp folders
@@ -125,3 +127,5 @@ for idx_rec in idx_to_sort:
         # rec_properties['sorting_error'].iloc[idx_rec] = True
 
 
+
+# %%
