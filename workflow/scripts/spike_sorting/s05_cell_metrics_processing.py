@@ -121,16 +121,17 @@ for probe_folder in kilosort_path.glob('Probe*'):
 
 
     # # Prepare the DataFrame so it can be aggregated with other animals, sessions, or probes
-    # cell_metrics_df['subject_ID'] = session_ID.split('-')[0]
+    df_metrics['subject_ID'] = session_ID.split('-')[0]
     
-    # # Drop useless or badly automatically filled column for DataFrame cleaning
+    # Drop useless or badly automatically filled column for DataFrame cleaning
 
-    # # subject_ID replace animal columns as it is random bad auto extraction from cellExplorer, deleting animal
-    # cell_metrics_df.drop(columns='animal', inplace=True)
+    # subject_ID replace animal columns as it is random bad auto extraction from cellExplorer, deleting animal
+    df_metrics.drop(columns='animal', inplace=True)
     
-    # cell_metrics_df['datetime'] = datetime.strptime(session_ID.split('-', maxsplit=1)[1],'%Y-%m-%d-%H%M%S')
-    # cell_metrics_df['task_folder'] = rec_properties_path.parent.parent.parent.stem
-    # cell_metrics_df['probe_name'] = probe_folder.parent.stem
+    df_metrics['datetime'] = datetime.strptime(session_ID.split('-', maxsplit=1)[1],'%Y-%m-%d-%H%M%S')
+    df_metrics['session_ID'] = session_ID
+    df_metrics['task_folder'] = rec_properties_path.parents[2].stem
+    df_metrics['probe_name'] = probe_folder.parent.stem
 
     # # Turn UID into real UID with session name and date and cellID and set as index
     
@@ -152,7 +153,7 @@ for probe_folder in kilosort_path.glob('Probe*'):
     # cell_metrics_df[clustering_cols].to_pickle(probe_folder / 'cell_metrics_df_clustering.pkl')
     
     # # Save a full version of the cell-metrics dataframe  
-    # cell_metrics_df.to_pickle(probe_folder / 'cell_metrics_df_full.pkl')
+    df_metrics.to_pickle(probe_folder / 'cell_metrics_df_full.pkl')
 
     # # Storing raw waveforms of all channels, dim  N channels x M timestamps x L clusters
     # all_raw_wf = np.ndarray((spikes['rawWaveform_all'][0][0][0][0].shape[0], spikes['rawWaveform_all'][0][0][0][0].shape[1], spikes['rawWaveform_all'][0][0][0].shape[0]))
