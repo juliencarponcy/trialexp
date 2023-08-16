@@ -26,7 +26,7 @@ from workflow.scripts import settings
 from trialexp.process.ephys.utils import denest_string_cell, session_and_probe_specific_uid, cellmat2dataframe
 
 #%% Load inputs
-cell_metrics_processing_done_path = str(Path(settings.debug_folder) / 'processed' / 'cell_metrics_processing.done')
+cell_metrics_processing_done_path = str(Path(settings.debug_folder) / 'processed' / 'kilosort3' /'cell_metrics_full.pkl')
 
 (sinput, soutput) = getSnake(locals(), 'workflow/spikesort.smk',
  [cell_metrics_processing_done_path], 'cell_metrics_processing')
@@ -60,9 +60,9 @@ rec_properties = pd.read_csv(rec_properties_path, header=0, index_col=0)
 kilosort_path = Path(sinput.kilosort_path)
 # %% Get the path of CellExplorer outputs
 
-session_ce_df = pd.DataFrame()
+df_metrics_all = []
 for probe_folder in kilosort_path.glob('Probe*'):
-    probe_name = probe_folder.parent.stem
+    probe_name = probe_folder.stem
 
     mat_files = list(probe_folder.glob('*.mat'))
 
@@ -153,7 +153,10 @@ for probe_folder in kilosort_path.glob('Probe*'):
     # cell_metrics_df[clustering_cols].to_pickle(probe_folder / 'cell_metrics_df_clustering.pkl')
     
     # # Save a full version of the cell-metrics dataframe  
-    df_metrics.to_pickle(probe_folder / 'cell_metrics_df_full.pkl')
+    df_metrics_all.append(df_metrics)
+
+df_metrics_all = pd.concat(df_metrics_all) 
+df_metrics_all.to_pickle(soutput.cell_matrics_full)
 
     # # Storing raw waveforms of all channels, dim  N channels x M timestamps x L clusters
     # all_raw_wf = np.ndarray((spikes['rawWaveform_all'][0][0][0][0].shape[0], spikes['rawWaveform_all'][0][0][0][0].shape[1], spikes['rawWaveform_all'][0][0][0].shape[0]))
