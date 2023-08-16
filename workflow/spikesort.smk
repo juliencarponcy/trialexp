@@ -95,7 +95,7 @@ rule cell_metrics_processing:
         kilosort_path = '{sessions}/{task_path}/{session_id}/processed/kilosort3',
         ephys_sync_complete = '{sessions}/{task_path}/{session_id}/processed/ephys_sync.done',
     output:
-        cell_metrics_processing_complete = touch('{sessions}/{task_path}/{session_id}/processed/cell_metrics_processing.done')
+        cell_matrics_full= '{sessions}/{task_path}/{session_id}/processed/kilosort3/cell_metrics_full.pkl'
     threads: 32
     priority: 50
     script:
@@ -104,7 +104,7 @@ rule cell_metrics_processing:
 
 rule cell_metrics_aggregation:
     input:
-        cell_metrics_processing_complete = '{sessions}/{task_path}/{session_id}/processed/cell_metrics_processing.done'
+        cell_matrics_full= '{sessions}/{task_path}/{session_id}/processed/kilosort3/cell_metrics_full.pkl'
     output:
         cell_metrics_aggregation_complete =  touch('{sessions}/{task_path}/{session_id}/processed/cell_metrics_aggregation.done')
     threads: 32
