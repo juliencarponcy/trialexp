@@ -95,7 +95,7 @@ rule cell_metrics_processing:
         kilosort_path = '{sessions}/{task_path}/{session_id}/processed/kilosort3',
         ephys_sync_complete = '{sessions}/{task_path}/{session_id}/processed/ephys_sync.done',
     output:
-        cell_matrics_full= '{sessions}/{task_path}/{session_id}/processed/kilosort3/cell_metrics_full.pkl'
+        cell_matrics_full= '{sessions}/{task_path}/{session_id}/processed/kilosort3/cell_metrics_full.nc'
     threads: 32
     priority: 50
     script:

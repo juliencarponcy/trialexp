@@ -11,8 +11,7 @@ from datetime import datetime
 import pandas as pd
 import numpy as np
 from scipy.io import loadmat
-
-# is this necessary?
+import xarray as xr
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -23,10 +22,11 @@ from spikeinterface.core import select_segment_recording
 
 from snakehelper.SnakeIOHelper import getSnake
 from workflow.scripts import settings
-from trialexp.process.ephys.utils import denest_string_cell, session_and_probe_specific_uid, cellmat2dataframe
+from trialexp.process.ephys.utils import cellmat2xarray, denest_string_cell, session_and_probe_specific_uid, cellmat2dataframe
 
+xr.set_options(display_expand_attrs=False) # attrs is too long
 #%% Load inputs
-cell_metrics_processing_done_path = str(Path(settings.debug_folder) / 'processed' / 'kilosort3' /'cell_metrics_full.pkl')
+cell_metrics_processing_done_path = str(Path(settings.debug_folder) / 'processed' / 'kilosort3' /'cell_metrics_full.nc')
 
 (sinput, soutput) = getSnake(locals(), 'workflow/spikesort.smk',
  [cell_metrics_processing_done_path], 'cell_metrics_processing')
@@ -60,7 +60,7 @@ rec_properties = pd.read_csv(rec_properties_path, header=0, index_col=0)
 kilosort_path = Path(sinput.kilosort_path)
 # %% Get the path of CellExplorer outputs
 
-df_metrics_all = []
+xr_metrics_all = []
 for probe_folder in kilosort_path.glob('Probe*'):
     probe_name = probe_folder.stem
 
@@ -75,9 +75,13 @@ for probe_folder in kilosort_path.glob('Probe*'):
     spikes_dict = loadmat(spikes_path, simplify_cells=True)
     spikes = spikes_dict['spikes']
     
-    df_cell_metrics = cellmat2dataframe(cell_metrics)
-    df_spike_info = cellmat2dataframe(spikes)
-    df_metrics = df_cell_metrics.merge(df_spike_info, on=['cluID','UID'])
+    # df_cell_metrics = cellmat2dataframe(cell_metrics)
+    # df_spike_info = cellmat2dataframe(spikes)
+    # df_metrics = df_cell_metrics.merge(df_spike_info, on=['cluID','UID'])
+    
+    dataset_spike = cellmat2xarray(spikes)
+    dataset_metrics = cellmat2xarray(cell_metrics)
+    dataset = xr.merge([dataset_spike, dataset_metrics])
 
     # # Get name and shapes of variables
 
@@ -121,18 +125,19 @@ for probe_folder in kilosort_path.glob('Probe*'):
 
 
     # # Prepare the DataFrame so it can be aggregated with other animals, sessions, or probes
-    df_metrics['subject_ID'] = session_ID.split('-')[0]
-    
+    dataset.attrs['subject_ID'] = session_ID.split('-')[0]
+    dataset.attrs['session_ID'] = session_ID
+    dataset.attrs['task_folder'] = rec_properties_path.parents[2].stem
+    dataset.attrs['probe_name'] = probe_folder.stem
+
     # Drop useless or badly automatically filled column for DataFrame cleaning
 
     # subject_ID replace animal columns as it is random bad auto extraction from cellExplorer, deleting animal
-    df_metrics.drop(columns='animal', inplace=True)
+    dataset=dataset.drop_vars(['animal'])
     
-    df_metrics['datetime'] = datetime.strptime(session_ID.split('-', maxsplit=1)[1],'%Y-%m-%d-%H%M%S')
-    df_metrics['session_ID'] = session_ID
-    df_metrics['task_folder'] = rec_properties_path.parents[2].stem
-    df_metrics['probe_name'] = probe_folder.parent.stem
+    dataset = dataset.expand_dims({'probe_name':[probe_folder.stem]})
 
+   
     # # Turn UID into real UID with session name and date and cellID and set as index
     
     # cell_metrics_df['UID'] = cell_metrics_df['UID'].apply(lambda x: session_and_probe_specific_uid(session_ID, probe_name, x))
@@ -153,10 +158,11 @@ for probe_folder in kilosort_path.glob('Probe*'):
     # cell_metrics_df[clustering_cols].to_pickle(probe_folder / 'cell_metrics_df_clustering.pkl')
     
     # # Save a full version of the cell-metrics dataframe  
-    df_metrics_all.append(df_metrics)
+    xr_metrics_all.append(dataset)
 
-df_metrics_all = pd.concat(df_metrics_all) 
-df_metrics_all.to_pickle(soutput.cell_matrics_full)
+xr_metrics_all = xr.merge(xr_metrics_all)
+xr_metrics_all.to_netcdf(soutput.cell_matrics_full, engine='h5netcdf') 
+# df_metrics_all.to_pickle(soutput.cell_matrics_full)
 
     # # Storing raw waveforms of all channels, dim  N channels x M timestamps x L clusters
     # all_raw_wf = np.ndarray((spikes['rawWaveform_all'][0][0][0][0].shape[0], spikes['rawWaveform_all'][0][0][0][0].shape[1], spikes['rawWaveform_all'][0][0][0].shape[0]))
@@ -169,3 +175,13 @@ df_metrics_all.to_pickle(soutput.cell_matrics_full)
 
 # Saving aggregated DataFrame for CellExplorer
 # session_ce_df.to_pickle(waveform_results_folder / 'ce_cell_metrics_df.pkl' )
+# 'ids', 'ts', 'times', 'amplitudes', 'subject_ID', 
+# 'session_ID', 'task_folder', 'probe_name'
+#%%
+for v in xr_metrics_all.attrs.keys():
+    try:
+        print(xr_metrics_all.attrs[v][0].dtype)
+    except:
+        pass
+
+# %%

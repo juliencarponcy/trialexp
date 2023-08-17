@@ -3,6 +3,8 @@ import numpy as np
 import pandas as pd   
 from pandas.api.types import infer_dtype
 import os
+import xarray as xr
+
 
 def denest_string_cell(cell):
         if len(cell) == 0: 
@@ -32,6 +34,102 @@ def session_and_probe_specific_uid(session_ID: str, probe_name: str, uid: int):
     
     return session_ID + '_' + probe_name + '_' + str(uid)
 
+def np2xrarray(x, UID, new_dim_prefix:str):
+    #Convert a numpy ndarray to xr.DataArray, taking into account the data dimension
+    
+    data = np.stack(x)
+            
+    var_new_dims = [f'{new_dim_prefix}_d{i+1}' for i in range(data.ndim-1)]
+    extra_coords = {var_new_dims[i]:np.arange(data.shape[i+1]) for i in range(data.ndim-1)} # skip the first UID cooordinates
+    extra_coords['UID'] = UID
+    
+    # print(name, k, data.shape, var_new_dims, extra_coords.keys())
+    
+    da = xr.DataArray(
+        data,
+        coords=extra_coords,
+        dims = ['UID',*var_new_dims]
+    )
+    
+    
+    return da
+
+def cellmat2xarray(cell_metrics):
+    df = pd.DataFrame()
+    #convert the cell matrics struct from MATLAB to dataframe
+    cell_var_names = cell_metrics.keys()
+    n_row = cell_metrics['UID'].size
+    UID = cell_metrics['UID']
+    da_list = {}
+    attrs_list = {}
+    dims_dict = {}
+      
+    for name in cell_var_names:
+        metrics = cell_metrics[name]
+        if type(metrics) is np.ndarray and metrics.shape == (n_row,):
+            try:
+                da = np2xrarray(metrics, UID, name)
+                da_list[name] = da
+            except ValueError:
+                #TODO: fix the incompatibility of some object type in the attrs, preventing saving to netCDF file
+                # attrs_list[name] = metrics.tolist()
+                pass
+
+        elif type(metrics) is dict:
+            # More complex nested metrics, in higher dimension (e.g. 1D)
+            # expand as new variable
+            for k in metrics.keys():   
+                if (type(metrics[k]) is np.ndarray and 
+                    metrics[k].ndim==2 and 
+                    metrics[k].shape[1] == n_row):
+                    # 2D data
+                    
+                    var_new_dim = f'{k}_idx'
+                    da = xr.DataArray(
+                        metrics[k],
+                        coords={var_new_dim:np.arange(metrics[k].shape[0]), 'UID':UID},
+                        dims = [var_new_dim,'UID']
+                    )
+                    
+                    da_list[f'{name}_{k}'] = da
+                    
+                elif (type(metrics[k]) is np.ndarray and 
+                      metrics[k].ndim==1 and 
+                      metrics[k].shape[0] == n_row):
+                    # more complex data, e.g. for waveforms, 3 or more dimensions
+                    
+                    try:
+                        data = np.stack(metrics[k])
+                    except ValueError:
+                        # variable data format, save in attrs
+                        attrs_list[f'{name}_{k}'] = metrics[k]
+                        continue
+                        
+                    var_new_dim = f'{k}_idx'
+                    
+                    var_new_dims = [f'{name}_{k}_d{i+1}' for i in range(data.ndim-1)]
+                    extra_coords = {var_new_dims[i]:np.arange(data.shape[i+1]) for i in range(data.ndim-1)} # skip the first UID cooordinates
+                    extra_coords['UID'] = UID
+                    
+                    # print(name, k, data.shape, var_new_dims, extra_coords.keys())
+                    
+                    da = xr.DataArray(
+                        data,
+                        coords=extra_coords,
+                        dims = ['UID',*var_new_dims]
+                    )
+                    da_list[f'{name}_{k}'] = da
+                                            
+    dataset = xr.Dataset(da_list)
+    dataset.attrs.update(attrs_list)
+
+    if 'general' in cell_metrics.keys():
+        dataset.attrs.update(cell_metrics['general'])  
+        
+    if 'putativeConnections' in cell_metrics.keys():
+        dataset.attrs['putativeConnections'] = cell_metrics['putativeConnections']
+            
+    return dataset
 
 def cellmat2dataframe(cell_metrics):
     df = pd.DataFrame()
