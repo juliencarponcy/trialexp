@@ -19,9 +19,8 @@ from snakehelper.SnakeIOHelper import getSnake
 
 from workflow.scripts import settings
 from trialexp.process.pyphotometry.utils import *
-from trialexp.process.pycontrol import event_filters
 from trialexp.process.ephys.spikes_preprocessing import \
-    build_evt_fr_xarray, merge_cell_metrics_and_spikes, get_spike_trains, \
+    build_evt_fr_xarray, make_evt_dataframe, merge_cell_metrics_and_spikes, get_spike_trains, \
     get_max_timestamps_from_probes, extract_trial_data
 
 from trialexp.process.ephys.utils import dataframe_cleanup
@@ -59,56 +58,30 @@ trial_window = (500, 500) # time before and after timestamps to extract
 #%% File loading
 
 xr_cell_metrics = xr.load_dataset(ce_cell_metrics_full)
-
-
 xr_session = xr.open_dataset(sinput.xr_session)
 session_root_path = Path(sinput.xr_session).parent
 df_events_cond = pd.read_pickle(session_root_path / 'df_events_cond.pkl')
 df_conditions = pd.read_pickle(session_root_path / 'df_conditions.pkl')
 df_trials = pd.read_pickle(session_root_path / 'df_trials.pkl')
 
-trigger = df_events_cond.attrs['triggers'][0]
+# trigger = df_events_cond.attrs['triggers'][0]
 
 
 #%% Gathering trial outcomes and timestamps of different phases
 
-trial_onsets = df_trials[df_trials.valid == True].timestamp
 
-# Defining filters for different triggering time point for behavioral phases
-behav_phases_filters = {
-    'first_bar_off' : event_filters.get_first_bar_off,
-    'last_bar_off' : event_filters.get_last_bar_off_before_first_spout,
-    'spout' : event_filters.get_first_spout
-}
-trial_outcomes = df_conditions.trial_outcome
-
-
-# get the time for each important events
-df_aggregated = pd.concat([trial_outcomes, trial_onsets], axis=1)
-
-for ev_name, filter in behav_phases_filters.items():
-    # add timestamp of particuliar behavioral phases
-    df_aggregated = pd.concat([df_aggregated, event_filters.extract_event_time(df_events_cond, filter, dict())], axis=1)
-
-
-# rename the columns
-df_aggregated.columns = ['trial_outcome', 'trial_onset',  *behav_phases_filters.keys()]
-df_aggregated['reward'] = df_aggregated.spout + 500 # Hard coded, 500ms delay, perhaps adapt to a parameter?
-df_aggregated['rest'] = df_aggregated.trial_onset - 2000 # Hard coded, 2000ms resting period, perhaps adapt to a parameter?
+df_aggregated = make_evt_dataframe(df_trials, df_conditions, df_events_cond)
 
 behav_phases = list(df_aggregated.columns)
 behav_phases.remove('trial_outcome')# exclude trial outcome column
-trial_outcomes = df_conditions.trial_outcome.unique()
 
-# %% Extract instantaneous rates (continuous) from spike times (discrete)
-
-# Use SpikeTrain class from neo.core
+#%% Extract instantaneous rates (continuous) from spike times (discrete)
 
 spike_trains, all_clusters_UIDs = get_spike_trains(
                     synced_timestamp_files = synced_timestamp_files, 
                     spike_clusters_files = spike_clusters_files)
 
-#%%
+
 t_stop = get_max_timestamps_from_probes(synced_timestamp_files)
 
 kernel = kernels.ExponentialKernel(sigma=sigma_ms*pq.ms)
@@ -214,3 +187,6 @@ xr_spikes_trials.attrs['kernel'] = 'ExponentialKernel'
 #%% Save
 xr_spikes_trials.to_netcdf(Path(soutput.xr_spikes_trials), engine='h5netcdf')
 xr_spikes_trials.close()
+
+#%%
+xr_spikes_trials

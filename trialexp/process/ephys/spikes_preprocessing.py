@@ -7,6 +7,8 @@ from neo.core import SpikeTrain # %% Extract and bin spikes by cluster_ID
 
 from trialexp.process.ephys.utils import dataframe_cleanup
 import xarray as xr
+from trialexp.process.pycontrol import event_filters
+
 
 ## %
 def get_max_timestamps_from_probes(timestamp_files: list):
@@ -149,3 +151,31 @@ def merge_cell_metrics_and_spikes(
     session_cell_metrics = dataframe_cleanup(session_cell_metrics)
 
     return session_cell_metrics
+
+
+def make_evt_dataframe(df_trials, df_conditions, df_events_cond):
+    trial_onsets = df_trials[df_trials.valid == True].timestamp
+
+    # Defining filters for different triggering time point for behavioral phases
+    behav_phases_filters = {
+        'first_bar_off' : event_filters.get_first_bar_off,
+        'last_bar_off' : event_filters.get_last_bar_off_before_first_spout,
+        'spout' : event_filters.get_first_spout
+    }
+    trial_outcomes = df_conditions.trial_outcome
+
+
+    # get the time for each important events
+    df_aggregated = pd.concat([trial_outcomes, trial_onsets], axis=1)
+
+    for ev_name, filter in behav_phases_filters.items():
+        # add timestamp of particuliar behavioral phases
+        df_aggregated = pd.concat([df_aggregated, event_filters.extract_event_time(df_events_cond, filter, dict())], axis=1)
+
+
+    # rename the columns
+    df_aggregated.columns = ['trial_outcome', 'trial_onset',  *behav_phases_filters.keys()]
+    df_aggregated['reward'] = df_aggregated.spout + 500 # Hard coded, 500ms delay, perhaps adapt to a parameter?
+    df_aggregated['rest'] = df_aggregated.trial_onset - 2000 # Hard coded, 2000ms resting period, perhaps adapt to a parameter?
+
+    return df_aggregated
