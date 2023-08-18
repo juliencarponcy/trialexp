@@ -28,7 +28,7 @@ from trialexp.process.ephys.utils import dataframe_cleanup
 
 
 (sinput, soutput) = getSnake(locals(), 'workflow/spikesort.smk',
-  [settings.debug_folder + r'/processed/xr_spikes_full_session.nc'],
+  [settings.debug_folder + r'/processed/xr_spikes_trials.nc'],
   'cells_to_xarray')
 
 # %% Path definitions
@@ -102,21 +102,6 @@ session_time_vector = np.linspace(bin_duration,inst_rates.shape[0]*bin_duration,
 # z-scoring firing rate
 scaler = StandardScaler()
 z_inst_rates = scaler.fit_transform(inst_rates)
-#%% Aggregating Clusters metadata
-
-# Merge CellExplorer metrics with all clusters in kilosort data
-# session_ce_cell_metrics = merge_cell_metrics_and_spikes(ce_cell_metrics_full, all_clusters_UIDs)
-# Combine all cell metrics (SpikeInterface + CellExplorer) 
-# all_cell_metrics = pd.merge(ce_cell_metrics_full,session_ce_cell_metrics, left_index=True, right_index=True, how='outer')
-# discard cell metrics without 'x' position (trick which give same nb of clusters as binned data)
-# all_cell_metrics.dropna(axis=0, subset='x', inplace=True)
-# Clean dataframe turning object columns into text columns 
-# all_cell_metrics = dataframe_cleanup(all_cell_metrics)
-# Create the xr dataset
-# all_cell_metrics = ce_cell_metrics_df_full.set_index('UID')
-# xr_cell_metrics= all_cell_metrics.to_xarray()
-
-# all_cell_metrics['peakVoltage_sorted'].to_xarray()
 
 #%% Building session-wide xarray dataset
 
@@ -136,11 +121,12 @@ spike_zfr_xr_session = xr.DataArray(
     )
 
 # Take reference only from the cells included in Cell Explorer
-xr_spikes_session = xr.merge([xr_cell_metrics, spike_fr_xr_session, spike_zfr_xr_session], join='inner')
-xr_spikes_session.attrs['bin_duration'] = bin_duration
-xr_spikes_session.attrs['sigma_ms'] = sigma_ms
-xr_spikes_session.attrs['kernel'] = 'ExponentialKernel'
+xr_spikes_fr = xr.merge([spike_fr_xr_session, spike_zfr_xr_session], join='inner')
+xr_spikes_fr.attrs['bin_duration'] = bin_duration
+xr_spikes_fr.attrs['sigma_ms'] = sigma_ms
+xr_spikes_fr.attrs['kernel'] = 'ExponentialKernel'
 
+xr_spikes_fr.to_netcdf(Path(soutput.xr_spikes_fr), engine='h5netcdf')
 
 #%% Extracting instantaneous rates by trial for all behavioural phases
 
@@ -164,7 +150,7 @@ for ev_idx, ev_name in enumerate(behav_phases):
 # trial outcomes
 trial_out = xr.DataArray(
     df_aggregated.trial_outcome,
-    name= 'trial_outome',
+    name= 'trial_outcome',
     coords= {'trial_nb': df_aggregated.index},
     dims = ('trial_nb')
 
@@ -184,9 +170,19 @@ xr_spikes_trials.attrs['bin_duration'] = bin_duration
 xr_spikes_trials.attrs['sigma_ms'] = sigma_ms
 xr_spikes_trials.attrs['kernel'] = 'ExponentialKernel'
 
-#%% Save
 xr_spikes_trials.to_netcdf(Path(soutput.xr_spikes_trials), engine='h5netcdf')
 xr_spikes_trials.close()
 
 #%%
-xr_spikes_trials
+# x = xr_spikes_trials.sel(probe_name='ProbeA')
+# xx = x.sortby('firingRate',ascending=False)
+
+# %%
+# import seaborn as sns
+# var_name = 'spikes_FR.spout'
+# x3 = xx[var_name].isel(cluID=50, 
+#                            trial_nb=(xx['trial_outcome']=='success'))
+
+# fr = x3.to_dataframe().reset_index()
+
+# sns.lineplot(fr, x='event_time', y=var_name)
