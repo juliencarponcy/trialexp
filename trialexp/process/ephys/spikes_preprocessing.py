@@ -6,6 +6,7 @@ import pandas as pd
 from neo.core import SpikeTrain # %% Extract and bin spikes by cluster_ID 
 
 from trialexp.process.ephys.utils import dataframe_cleanup
+import xarray as xr
 
 ## %
 def get_max_timestamps_from_probes(timestamp_files: list):
@@ -18,6 +19,13 @@ def get_max_timestamps_from_probes(timestamp_files: list):
 def get_spike_trains(
         synced_timestamp_files: list, 
         spike_clusters_files: list):
+    
+    # Note: UID is the id used internally in cellexplorer
+    # clusID the is the label from kilosort
+    # the cluster label from cluster_KSLabel.tsv and spike_clusters.npy are the same
+    # by default, cell explorer will only load good unit from kilosort as defined in the cluster_KSLabel.tsv
+    # defination of 'good' is  ContamPct < 10, ContamPct is based on a refactory period of 2msec
+    # so the all_clusters_UIDs here is the super-set of the cluID from Cell Explorer
     
     max_ts = get_max_timestamps_from_probes(synced_timestamp_files)
 
@@ -79,7 +87,7 @@ def extract_trial_data(xr_inst_rates, evt_timestamps, trial_window, bin_duration
     return trial_data, trial_time_vec
 
 
-def build_evt_fr_xarray(fr_xr, timestamps, trial_index, name):
+def build_evt_fr_xarray(fr_xr, timestamps, trial_index, name, trial_window, bin_duration):
     # Construct an xr.DataArray with firing rate triggered by the specified timestamps
     
     trial_rates, trial_time_vec = extract_trial_data(fr_xr, timestamps, trial_window, bin_duration)
