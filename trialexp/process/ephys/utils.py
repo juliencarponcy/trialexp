@@ -34,32 +34,37 @@ def session_and_probe_specific_uid(session_ID: str, probe_name: str, uid: int):
     
     return session_ID + '_' + probe_name + '_' + str(uid)
 
-def np2xrarray(x, UID, new_dim_prefix:str):
+def np2xrarray(x, cluID, new_dim_prefix:str):
     #Convert a numpy ndarray to xr.DataArray, taking into account the data dimension
     
     data = np.stack(x)
             
     var_new_dims = [f'{new_dim_prefix}_d{i+1}' for i in range(data.ndim-1)]
     extra_coords = {var_new_dims[i]:np.arange(data.shape[i+1]) for i in range(data.ndim-1)} # skip the first UID cooordinates
-    extra_coords['UID'] = UID
+    extra_coords['cluID'] = cluID
     
     # print(name, k, data.shape, var_new_dims, extra_coords.keys())
     
     da = xr.DataArray(
         data,
         coords=extra_coords,
-        dims = ['UID',*var_new_dims]
+        dims = ['cluID',*var_new_dims]
     )
     
     
     return da
 
-def cellmat2xarray(cell_metrics):
+def cellmat2xarray(cell_metrics, cluID_prefix=''):
     df = pd.DataFrame()
     #convert the cell matrics struct from MATLAB to dataframe
     cell_var_names = cell_metrics.keys()
     n_row = cell_metrics['UID'].size
-    UID = cell_metrics['UID']
+    
+    # Reformat the cluID to be unique
+    cluID = [f'{cluID_prefix}{id}' for id in cell_metrics['cluID']]
+    cell_metrics.pop('UID')
+    cell_metrics.pop('cluID')
+    
     da_list = {}
     attrs_list = {}
     dims_dict = {}
@@ -68,7 +73,7 @@ def cellmat2xarray(cell_metrics):
         metrics = cell_metrics[name]
         if type(metrics) is np.ndarray and metrics.shape == (n_row,):
             try:
-                da = np2xrarray(metrics, UID, name)
+                da = np2xrarray(metrics, cluID, name)
                 da_list[name] = da
             except ValueError:
                 #TODO: fix the incompatibility of some object type in the attrs, preventing saving to netCDF file
@@ -87,8 +92,8 @@ def cellmat2xarray(cell_metrics):
                     var_new_dim = f'{k}_idx'
                     da = xr.DataArray(
                         metrics[k],
-                        coords={var_new_dim:np.arange(metrics[k].shape[0]), 'UID':UID},
-                        dims = [var_new_dim,'UID']
+                        coords={var_new_dim:np.arange(metrics[k].shape[0]), 'cluID':cluID},
+                        dims = [var_new_dim,'cluID']
                     )
                     
                     da_list[f'{name}_{k}'] = da
@@ -109,17 +114,17 @@ def cellmat2xarray(cell_metrics):
                     
                     var_new_dims = [f'{name}_{k}_d{i+1}' for i in range(data.ndim-1)]
                     extra_coords = {var_new_dims[i]:np.arange(data.shape[i+1]) for i in range(data.ndim-1)} # skip the first UID cooordinates
-                    extra_coords['UID'] = UID
+                    extra_coords['cluID'] = cluID
                     
                     # print(name, k, data.shape, var_new_dims, extra_coords.keys())
                     
                     da = xr.DataArray(
                         data,
                         coords=extra_coords,
-                        dims = ['UID',*var_new_dims]
+                        dims = ['cluID',*var_new_dims]
                     )
                     da_list[f'{name}_{k}'] = da
-                                            
+                            
     dataset = xr.Dataset(da_list)
     dataset.attrs.update(attrs_list)
 

@@ -78,9 +78,9 @@ for probe_folder in kilosort_path.glob('Probe*'):
     # df_cell_metrics = cellmat2dataframe(cell_metrics)
     # df_spike_info = cellmat2dataframe(spikes)
     # df_metrics = df_cell_metrics.merge(df_spike_info, on=['cluID','UID'])
-    
-    dataset_spike = cellmat2xarray(spikes)
-    dataset_metrics = cellmat2xarray(cell_metrics)
+    clusID_prefix = f'{session_ID}_{probe_name}_'
+    dataset_spike = cellmat2xarray(spikes, clusID_prefix)
+    dataset_metrics = cellmat2xarray(cell_metrics,clusID_prefix)
     dataset = xr.merge([dataset_spike, dataset_metrics])
 
     # # Get name and shapes of variables
@@ -177,11 +177,3 @@ xr_metrics_all.to_netcdf(soutput.cell_matrics_full, engine='h5netcdf')
 # session_ce_df.to_pickle(waveform_results_folder / 'ce_cell_metrics_df.pkl' )
 # 'ids', 'ts', 'times', 'amplitudes', 'subject_ID', 
 # 'session_ID', 'task_folder', 'probe_name'
-#%%
-for v in xr_metrics_all.attrs.keys():
-    try:
-        print(xr_metrics_all.attrs[v][0].dtype)
-    except:
-        pass
-
-# %%
