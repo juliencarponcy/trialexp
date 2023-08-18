@@ -138,7 +138,7 @@ rule cells_to_xarray:
         ephys_sync_complete = '{sessions}/{task_path}/{session_id}/processed/ephys_sync.done',
         xr_session = '{sessions}/{task_path}/{session_id}/processed/xr_session.nc',   
         sorting_path = '{sessions}/{task_path}/{session_id}/processed/kilosort3',   
-        cell_matrics_full= '{sessions}/{task_path}/{session_id}/processed/kilosort3/cell_metrics_full.pkl' 
+        cell_matrics_full= '{sessions}/{task_path}/{session_id}/processed/kilosort3/cell_metrics_full.nc' 
     output:
         xr_spikes_trials = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials.nc',
         xr_spikes_trials_phases = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials_phases.nc',

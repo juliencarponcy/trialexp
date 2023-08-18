@@ -13,7 +13,7 @@ import quantities as pq
 
 from sklearn.preprocessing import StandardScaler
 
-# from elephant import statistics, kernels
+from elephant import statistics, kernels
 
 from snakehelper.SnakeIOHelper import getSnake
 
@@ -21,7 +21,7 @@ from workflow.scripts import settings
 from trialexp.process.pyphotometry.utils import *
 from trialexp.process.pycontrol import event_filters
 from trialexp.process.ephys.spikes_preprocessing import \
-    merge_cell_metrics_and_spikes, get_spike_trains, \
+    build_evt_fr_xarray, merge_cell_metrics_and_spikes, get_spike_trains, \
     get_max_timestamps_from_probes, extract_trial_data
 
 from trialexp.process.ephys.utils import dataframe_cleanup
@@ -47,7 +47,7 @@ probe_names = [folder.stem for folder in list(Path(sinput.sorting_path).glob('*'
 
 # Fetch file paths from all probes
 synced_timestamp_files = list(Path(sinput.sorting_path).glob('*/rsync_corrected_spike_times.npy'))
-spike_clusters_files = list(Path(sinput.sorting_path).glob('*/sorter_output/spike_clusters.npy'))
+spike_clusters_files = list(Path(sinput.sorting_path).glob('*/spike_clusters.npy'))
 ce_cell_metrics_full= Path(sinput.cell_matrics_full)
 
 # session outputs
@@ -61,13 +61,13 @@ sigma_ms = 200 # ms for half-gaussian kernel size (1SD duration)
 
 #%% File loading
 
-ce_cell_metrics_df_full = pd.read_pickle(ce_cell_metrics_full)
+xr_cell_metrics = xr.load_dataset(ce_cell_metrics_full)
 
 # si_cell_metrics_df = pd.read_pickle(session_waveform_path / 'si_metrics_df.pkl')
 # si_cell_metrics_df = si_cell_metrics_df.set_index('UID')
 
 xr_session = xr.open_dataset(sinput.xr_session)
-xr_photometry = xr.open_dataset(Path(sinput.xr_session).parent / 'xr_photometry.nc')
+# xr_photometry = xr.open_dataset(Path(sinput.xr_session).parent / 'xr_photometry.nc')
 
 df_events_cond_path = Path(sinput.xr_session).parent / 'df_events_cond.pkl'
 df_events_cond = pd.read_pickle(df_events_cond_path)
@@ -121,10 +121,16 @@ trial_outcomes = df_conditions.trial_outcome.unique()
 # %% Extract instantaneous rates (continuous) from spike times (discrete)
 
 # Use SpikeTrain class from neo.core
+# Note: UID is the id used internally in cellexplorer
+# clusID the is the label from kilosort
+# the cluster label from cluster_KSLabel.tsv and spike_clusters.npy are the same
+# by default, cell explorer will only load good unit from kilosort as defined in the cluster_KSLabel.tsv
+# so the all_clusters_UIDs here is the super-set of the cluID from Cell Explorer
 spike_trains, all_clusters_UIDs = get_spike_trains(
                     synced_timestamp_files = synced_timestamp_files, 
                     spike_clusters_files = spike_clusters_files)
 
+#%%
 t_stop = get_max_timestamps_from_probes(synced_timestamp_files)
 
 kernel = kernels.ExponentialKernel(sigma=sigma_ms*pq.ms)
@@ -147,15 +153,20 @@ z_inst_rates = scaler.fit_transform(inst_rates)
 #%% Aggregating Clusters metadata
 
 # Merge CellExplorer metrics with all clusters in kilosort data
-session_ce_cell_metrics = merge_cell_metrics_and_spikes(ce_cell_metrics_files, all_clusters_UIDs)
+# session_ce_cell_metrics = merge_cell_metrics_and_spikes(ce_cell_metrics_full, all_clusters_UIDs)
 # Combine all cell metrics (SpikeInterface + CellExplorer) 
-all_cell_metrics = pd.merge(si_cell_metrics_df,session_ce_cell_metrics, left_index=True, right_index=True, how='outer')
+# all_cell_metrics = pd.merge(ce_cell_metrics_full,session_ce_cell_metrics, left_index=True, right_index=True, how='outer')
 # discard cell metrics without 'x' position (trick which give same nb of clusters as binned data)
-all_cell_metrics.dropna(axis=0, subset='x', inplace=True)
+# all_cell_metrics.dropna(axis=0, subset='x', inplace=True)
 # Clean dataframe turning object columns into text columns 
-all_cell_metrics = dataframe_cleanup(all_cell_metrics)
+# all_cell_metrics = dataframe_cleanup(all_cell_metrics)
 # Create the xr dataset
-xr_cell_metrics= all_cell_metrics.to_xarray()
+# all_cell_metrics = ce_cell_metrics_df_full.set_index('UID')
+# xr_cell_metrics= all_cell_metrics.to_xarray()
+
+
+#%%
+# all_cell_metrics['peakVoltage_sorted'].to_xarray()
 
 #%% Building session-wide xarray dataset
 
@@ -172,72 +183,77 @@ xr_cell_metrics= all_cell_metrics.to_xarray()
 #      181 # xr_spikes_session_path.unlink()
 # ---> 182 xr_spikes_session.to_netcdf(xr_spikes_session_path, engine='h5netcdf')
 
-
+# Session_time_vector is already syncronized with pycontrol
 spike_fr_xr_session = xr.DataArray(
     inst_rates,
     name = f'spikes_FR_session',
-    coords={'time': session_time_vector, 'UID': all_clusters_UIDs},
-    dims=('time', 'UID')
+    coords={'time': session_time_vector, 'cluID': all_clusters_UIDs},
+    dims=('time', 'cluID')
     )
 
 spike_zfr_xr_session = xr.DataArray(
     z_inst_rates,
     name = f'spikes_zFR_session',
-    coords={'time': session_time_vector, 'UID': all_clusters_UIDs},
-    dims=('time', 'UID')
+    coords={'time': session_time_vector, 'cluID': all_clusters_UIDs},
+    dims=('time', 'cluID')
     )
 
-xr_spikes_session = xr.merge([spike_fr_xr_session, spike_zfr_xr_session, xr_cell_metrics])
+#Take reference only from the cells included in Cell Explorer
+xr_spikes_session = xr.merge([xr_cell_metrics, spike_fr_xr_session, spike_zfr_xr_session], join='inner')
 xr_spikes_session.attrs['bin_duration'] = bin_duration
 xr_spikes_session.attrs['sigma_ms'] = sigma_ms
 xr_spikes_session.attrs['kernel'] = 'ExponentialKernel'
 
-# getting path of xarray file from SnakeMake pipeline (spikesort.smk)
-xr_spikes_session_path = Path(soutput.xr_spikes_full_session)
-# remove from disk previous version of the xarray
-if xr_spikes_session_path.exists():
-    xr_spikes_session_path.unlink() 
-# save
-xr_spikes_session.to_netcdf(xr_spikes_session_path, engine='h5netcdf')
-xr_spikes_session.close()
+# # getting path of xarray file from SnakeMake pipeline (spikesort.smk)
+# xr_spikes_session_path = Path(soutput.xr_spikes_full_session)
+# # remove from disk previous version of the xarray
+# if xr_spikes_session_path.exists():
+#     xr_spikes_session_path.unlink() 
+# # save
+# xr_spikes_session.to_netcdf(xr_spikes_session_path, engine='h5netcdf')
+# xr_spikes_session.close()
 
 #%% Extracting instantaneous rates by trial for all behavioural phases
 
-trial_rates = dict()
-trial_zrates = dict()
 
+# trial_rates = dict()
+# trial_zrates = dict()
+da_list = []
 for ev_idx, ev_name in enumerate(behav_phases): 
 
     timestamps = df_aggregated[ev_name]
-    # Binning by trials, 3D output (trial, time, cluster)
-    trial_rates[ev_name], trial_time_vec = extract_trial_data(inst_rates, session_time_vector, timestamps, trial_window, bin_duration)
+    # # Binning by trials, 3D output (trial, time, cluster)
+    # trial_rates[ev_name], trial_time_vec = extract_trial_data2(spike_fr_xr_session, timestamps, trial_window, bin_duration)
 
-    trial_zrates[ev_name], trial_time_vec = extract_trial_data(z_inst_rates, session_time_vector, timestamps, trial_window, bin_duration)
+    # trial_zrates[ev_name], trial_time_vec = extract_trial_data2(spike_zfr_xr_session, timestamps, trial_window, bin_duration)
+    da_list.append(build_evt_fr_xarray(spike_fr_xr_session, timestamps, df_aggregated.index, f'spikes_FR.{ev_name}'))
+    da_list.append(build_evt_fr_xarray(spike_zfr_xr_session, timestamps, df_aggregated.index, f'spikes_zFR.{ev_name}'))
 
+    
 
 #%% Convert trial firing rates to DataArrays
 
-# empty dictionaries of DataArrays
-spike_fr_xr = list()
-spike_zfr_xr = list()
+# # empty dictionaries of DataArrays
+# spike_fr_xr = list()
+# spike_zfr_xr = list()
 
-for ev_idx, ev_name in enumerate(behav_phases): 
+# for ev_idx, ev_name in enumerate(behav_phases): 
 
-    spike_fr_xr.append(xr.DataArray(
-        trial_rates[ev_name],
-        name = f'spikes_FR.{ev_name}',
-        coords={'trial_nb': df_aggregated.index, 'event_time': trial_time_vec, 'UID': all_clusters_UIDs},
-        dims=('trial_nb', 'event_time', 'UID')
-        )
-    )
+#     spike_fr_xr.append(xr.DataArray(
+#         trial_rates[ev_name],
+#         name = f'spikes_FR.{ev_name}',
+#         coords={'trial_nb': df_aggregated.index, 'event_time': trial_time_vec, 'cluID': all_clusters_UIDs},
+#         dims=('trial_nb', 'event_time', 'cluID')
+#         )
+#     )
 
-    spike_zfr_xr.append(xr.DataArray(
-        trial_zrates[ev_name],
-        name = f'spikes_zFR.{ev_name}',
-        coords={'trial_nb': df_aggregated.index, 'event_time': trial_time_vec, 'UID': all_clusters_UIDs},
-        dims=('trial_nb', 'event_time', 'UID')
-        )
-    )
+#     spike_zfr_xr.append(xr.DataArray(
+#         trial_zrates[ev_name],
+#         name = f'spikes_zFR.{ev_name}',
+#         coords={'trial_nb': df_aggregated.index, 'event_time': trial_time_vec, 'cluID': all_clusters_UIDs},
+#         dims=('trial_nb', 'event_time', 'cluID')
+#         )
+#     )
 
 #%% Adding trials metadata
 
@@ -259,59 +275,57 @@ trial_ts = xr.DataArray(
 
 )
 
-xr_spikes_trials = xr.merge([*spike_fr_xr, *spike_zfr_xr, xr_cell_metrics, trial_out, trial_ts])
+xr_spikes_trials = xr.merge([xr_cell_metrics, trial_out, trial_ts, *da_list], join='inner')
 xr_spikes_trials.attrs['bin_duration'] = bin_duration
 xr_spikes_trials.attrs['sigma_ms'] = sigma_ms
 xr_spikes_trials.attrs['kernel'] = 'ExponentialKernel'
+
 #%% Save
 # get path
 xr_spikes_trials_path = Path(soutput.xr_spikes_trials)
-# remove from disk previous version of the xarray
-if xr_spikes_trials_path.exists():
-    xr_spikes_trials_path.unlink() 
-# save
 xr_spikes_trials.to_netcdf(xr_spikes_trials_path, engine='h5netcdf')
 xr_spikes_trials.close()
 
-#%% Saving similar xarray Dataset but this time with the behavioral phase as an extra dimension
-# instead of saving one DataArray per behavioral phase (this to leave implementation choice for future processing)
 
-# stacking the 3D arrays for firing rates (trial_nb x event_time x UID) onto a 4th dimension (trial_phase)
-trial_rates_phases = np.stack([trial_rate_array for trial_rate_array in trial_rates.values()],axis=3)
-trial_zrates_phases = np.stack([trial_zrate_array for trial_zrate_array in trial_zrates.values()],axis=3)
+# #%% Saving similar xarray Dataset but this time with the behavioral phase as an extra dimension
+# # instead of saving one DataArray per behavioral phase (this to leave implementation choice for future processing)
 
-#%%
-spike_fr_xr_phases = xr.DataArray(
-    trial_rates_phases,
-    name = f'spikes_FR',
-    coords={'trial_nb': df_aggregated.index, 'event_time': trial_time_vec, 'UID': all_clusters_UIDs, 'trial_phase': df_aggregated.columns[1:]},
-    dims=('trial_nb', 'event_time', 'UID', 'trial_phase')
-    )
+# # stacking the 3D arrays for firing rates (trial_nb x event_time x UID) onto a 4th dimension (trial_phase)
+# trial_rates_phases = np.stack([trial_rate_array for trial_rate_array in trial_rates.values()],axis=3)
+# trial_zrates_phases = np.stack([trial_zrate_array for trial_zrate_array in trial_zrates.values()],axis=3)
 
-spike_zfr_xr_phases = xr.DataArray(
-    trial_zrates_phases,
-    name = f'spikes_zFR',
-    coords={'trial_nb': df_aggregated.index, 'event_time': trial_time_vec, 'UID': all_clusters_UIDs, 'trial_phase': df_aggregated.columns[1:]},
-    dims=('trial_nb', 'event_time', 'UID', 'trial_phase')
-    )    
+# #%%
+# spike_fr_xr_phases = xr.DataArray(
+#     trial_rates_phases,
+#     name = f'spikes_FR',
+#     coords={'trial_nb': df_aggregated.index, 'event_time': trial_time_vec, 'UID': all_clusters_UIDs, 'trial_phase': df_aggregated.columns[1:]},
+#     dims=('trial_nb', 'event_time', 'UID', 'trial_phase')
+#     )
 
-xr_spikes_trials_phases = xr.merge([spike_fr_xr_phases, spike_zfr_xr_phases, xr_cell_metrics, trial_out, trial_ts])
-xr_spikes_trials_phases.attrs['bin_duration'] = bin_duration
-xr_spikes_trials_phases.attrs['sigma_ms'] = sigma_ms
-xr_spikes_trials_phases.attrs['kernel'] = 'ExponentialKernel'
+# spike_zfr_xr_phases = xr.DataArray(
+#     trial_zrates_phases,
+#     name = f'spikes_zFR',
+#     coords={'trial_nb': df_aggregated.index, 'event_time': trial_time_vec, 'UID': all_clusters_UIDs, 'trial_phase': df_aggregated.columns[1:]},
+#     dims=('trial_nb', 'event_time', 'UID', 'trial_phase')
+#     )    
 
-#%% Save
+# xr_spikes_trials_phases = xr.merge([spike_fr_xr_phases, spike_zfr_xr_phases, xr_cell_metrics, trial_out, trial_ts])
+# xr_spikes_trials_phases.attrs['bin_duration'] = bin_duration
+# xr_spikes_trials_phases.attrs['sigma_ms'] = sigma_ms
+# xr_spikes_trials_phases.attrs['kernel'] = 'ExponentialKernel'
 
-# get path
-xr_spikes_trials_phases_path = Path(soutput.xr_spikes_trials_phases)
-# remove from disk previous version of the xarray
-if xr_spikes_trials_phases_path.exists():
-    xr_spikes_trials_phases_path.unlink()
-# save
-xr_spikes_trials_phases.to_netcdf(xr_spikes_trials_phases_path, engine='h5netcdf')
+# #%% Save
+
+# # get path
+# xr_spikes_trials_phases_path = Path(soutput.xr_spikes_trials_phases)
+# # remove from disk previous version of the xarray
+# if xr_spikes_trials_phases_path.exists():
+#     xr_spikes_trials_phases_path.unlink()
+# # save
+# xr_spikes_trials_phases.to_netcdf(xr_spikes_trials_phases_path, engine='h5netcdf')
 
 # close
-xr_spikes_trials_phases.close()
+# xr_spikes_trials_phases.close()
 xr_spikes_session.close()
 #%%
 

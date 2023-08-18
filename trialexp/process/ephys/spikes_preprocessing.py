@@ -49,16 +49,19 @@ def get_spike_trains(
                                                    file_origin=synced_file))
             
     return spike_trains, all_clusters_UIDs
-    
-def extract_trial_data(inst_rates, time_vector, timestamps, trial_window, bin_duration):
-    num_trials = len(timestamps)
-    num_clusters = inst_rates.shape[1]
+
+
+def extract_trial_data(xr_inst_rates, evt_timestamps, trial_window, bin_duration):
+    # Extract instantaneous rate triggered by some event timestamps
+    num_trials = len(evt_timestamps)
+    num_clusters = len(xr_inst_rates.cluID)
+    time_vector = xr_inst_rates.time
 
     num_time_points = int(trial_window[0] + trial_window[1]) // bin_duration +1
     trial_time_vec = np.linspace(-trial_window[0], trial_window[1], num_time_points)
     trial_data = np.empty((num_trials, num_time_points, num_clusters))
 
-    for i, timestamp in enumerate(timestamps):
+    for i, timestamp in enumerate(evt_timestamps):
         if np.isnan(timestamp):  # Skip NaN timestamps
             continue
         
@@ -67,10 +70,29 @@ def extract_trial_data(inst_rates, time_vector, timestamps, trial_window, bin_du
         # Find the indices of the time points within the trial window
         start_idx = np.searchsorted(time_vector, start_time, side='left')
         # Extract the data for the trial and assign it to the trial_data array
-        trial_data[i, :, :] = inst_rates[start_idx:start_idx + num_time_points, :]
+        try:
+            trial_data[i, :, :] = xr_inst_rates.data[start_idx:start_idx + num_time_points, :]
+        except ValueError:
+            # cannot find the data from the specifed timestamp, fill with NaN
+            trial_data[i, :, :] = np.empty((num_time_points, num_clusters))*np.nan
 
     return trial_data, trial_time_vec
 
+
+def build_evt_fr_xarray(fr_xr, timestamps, trial_index, name):
+    # Construct an xr.DataArray with firing rate triggered by the specified timestamps
+    
+    trial_rates, trial_time_vec = extract_trial_data(fr_xr, timestamps, trial_window, bin_duration)
+    
+    da = xr.DataArray(
+        trial_rates,
+        # name = f'spikes_FR.{ev_name}',
+        name = name,
+        coords={'trial_nb': trial_index, 'event_time': trial_time_vec, 'cluID': fr_xr.cluID},
+        dims=('trial_nb', 'event_time', 'cluID')
+        )
+    
+    return da
 
 def get_cluster_UIDs_from_path(cluster_file: Path):
     # take Path or str
