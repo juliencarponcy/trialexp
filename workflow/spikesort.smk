@@ -141,8 +141,7 @@ rule cells_to_xarray:
         cell_matrics_full= '{sessions}/{task_path}/{session_id}/processed/kilosort3/cell_metrics_full.nc' 
     output:
         xr_spikes_trials = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials.nc',
-        xr_spikes_trials_phases = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials_phases.nc',
-        xr_spikes_full_session = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_full_session.nc',
+        xr_spikes_fr = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_fr.nc',
         spike_sort_done = touch('{sessions}/{task_path}/{session_id}/processed/spikesort.done'),
     threads: 32
     priority: 85
@@ -162,35 +161,31 @@ rule cells_to_xarray:
 #     script:
 #         "scripts/spike_sorting/s10_cell_anatomy.py"
 
-# rule cell_trial_responses_plot:
-#     input:
-#         xr_session = '{sessions}/{task_path}/{session_id}/processed/xr_session.nc',
-#         xr_spikes_trials = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials.nc',
-#         xr_spikes_trials_phases = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials_phases.nc',
-#         xr_spikes_full_session = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_full_session.nc',
-#         cell_anatomy_complete = '{sessions}/{task_path}/{session_id}/processed/ephys_anatomy.done'
+rule cell_trial_responses_plot:
+    input:
+        xr_session = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_session.nc',
+        # xr_spikes_trials_phases = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials_phases.nc',
+        # xr_spikes_full_session = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_full_session.nc',
+        # cell_anatomy_complete = '{sessions}/{task_path}/{session_id}/processed/ephys_anatomy.done'
 
-#     output:
-#         cell_trial_responses_complete = touch('{sessions}/{task_path}/{session_id}/processed/cell_trial_responses.done')
+    output:
+        figures_path = directory('{sessions}/{task_path}/{session_id}/processed/figures/ephys'),
+        cell_trial_responses_complete = touch('{sessions}/{task_path}/{session_id}/processed/cell_trial_responses.done')
+    threads: 32
 
-#     threads: 32
+    script:
+        "scripts/spike_sorting/s11_cell_trial_responses_plot.py"
 
-#     script:
-#         "scripts/spike_sorting/s11_cell_trial_responses_plot.py"
-
-# rule session_correlations:
-#     input:
-#         xr_spikes_session = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_session.nc'
-
-#     output:
-#         xr_session_correlations = '{sessions}/{task_path}/{session_id}/processed/xr_session_correlations.nc'
-    
-#     threads: 32
-
-#     priority: 90
-
-#     script:
-#         "scripts/spike_sorting/s10_session_correlations.py"
+rule session_correlations:
+    input:
+        # xr_session = '{sessions}/{task_path}/{session_id}/processed/xr_session.nc',
+        xr_spike_fr = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_fr.nc',
+    output:
+        xr_session_correlations = '{sessions}/{task_path}/{session_id}/processed/xr_session_correlations.nc'
+    threads: 32
+    priority: 90
+    script:
+        "scripts/spike_sorting/s10_session_correlations.py"
 
 rule spike_final:
     input:
