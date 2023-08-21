@@ -142,6 +142,7 @@ rule cells_to_xarray:
     output:
         xr_spikes_trials = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials.nc',
         xr_spikes_fr = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_fr.nc',
+        neo_spike_train = '{sessions}/{task_path}/{session_id}/processed/neo_spiketrain.pkl',
         spike_sort_done = touch('{sessions}/{task_path}/{session_id}/processed/spikesort.done'),
     threads: 32
     priority: 85
@@ -163,11 +164,10 @@ rule cells_to_xarray:
 
 rule cell_trial_responses_plot:
     input:
-        xr_session = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_session.nc',
-        # xr_spikes_trials_phases = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials_phases.nc',
-        # xr_spikes_full_session = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_full_session.nc',
-        # cell_anatomy_complete = '{sessions}/{task_path}/{session_id}/processed/ephys_anatomy.done'
-
+        xr_spikes_trials = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials.nc',
+        xr_spikes_fr = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_fr.nc',
+        pycontrol_dataframe = '{sessions}/{task_path}/{session_id}/processed/df_pycontrol.pkl',
+        xr_session = '{sessions}/{task_path}/{session_id}/processed/xr_session.nc',       
     output:
         figures_path = directory('{sessions}/{task_path}/{session_id}/processed/figures/ephys'),
         cell_trial_responses_complete = touch('{sessions}/{task_path}/{session_id}/processed/cell_trial_responses.done')

@@ -52,8 +52,8 @@ session_root_path = Path(sinput.xr_spike_fr).parent
 
 xr_session = xr.open_dataset(session_root_path/'xr_session.nc')
 
-
-xr_spike_session = xr.merge([xr_session, xr_spike_fr]) # make sure their time coord is the same
+xr_spike_fr_interp = xr_spike_fr.interp(time=xr_session.time)
+xr_spike_session = xr.merge([xr_session, xr_spike_fr_interp]) # make sure their time coord is the same
 
 df_events_cond = pd.read_pickle(session_root_path/'df_events_cond.pkl')
 df_pycontrol = pd.read_pickle(session_root_path/'df_pycontrol.pkl')
@@ -112,3 +112,13 @@ for uid_idx, uid in enumerate(UIDs):
 #     axes[1].set_title('Firing rate (spikes/s) around trial')# %% Continuous All session long binning
 #     axes[1].set_xlabel('Time ')
 #     figure.savefig(session_figure_path / f'cluster_responses_to_{ev_name}.png')
+#%%
+x = xr_spike_session.spikes_zFR_session.data[:,30]
+plt.plot(x)
+# %%
+x2 = xr_spike_fr.spikes_zFR_session.data[:,30]
+plt.plot(x2)
+
+#%% 
+plt.plot(cross_corr[1,:])
+# %%
