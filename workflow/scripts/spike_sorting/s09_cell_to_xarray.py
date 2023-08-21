@@ -5,6 +5,7 @@ other previous step for behaviour and photometry
 #%%
 import os
 from pathlib import Path
+import pickle
 
 import numpy as np
 import pandas as pd
@@ -122,11 +123,19 @@ spike_zfr_xr_session = xr.DataArray(
 
 # Take reference only from the cells included in Cell Explorer
 xr_spikes_fr = xr.merge([spike_fr_xr_session, spike_zfr_xr_session], join='inner')
+xr_spikes_fr = xr_spikes_fr.sel(cluID=xr_cell_metrics.cluID) #only choose the 'good' cell from kilosort
 xr_spikes_fr.attrs['bin_duration'] = bin_duration
 xr_spikes_fr.attrs['sigma_ms'] = sigma_ms
 xr_spikes_fr.attrs['kernel'] = 'ExponentialKernel'
 
 xr_spikes_fr.to_netcdf(Path(soutput.xr_spikes_fr), engine='h5netcdf')
+xr_spikes_fr.close()
+
+# also save the neo spike train object
+with open(Path(soutput.neo_spike_train),'wb') as f:
+    pickle.dump(spike_trains, f)
+#%% Plot the overall firing rate 
+
 
 #%% Extracting instantaneous rates by trial for all behavioural phases
 
@@ -172,17 +181,3 @@ xr_spikes_trials.attrs['kernel'] = 'ExponentialKernel'
 
 xr_spikes_trials.to_netcdf(Path(soutput.xr_spikes_trials), engine='h5netcdf')
 xr_spikes_trials.close()
-
-#%%
-# x = xr_spikes_trials.sel(probe_name='ProbeA')
-# xx = x.sortby('firingRate',ascending=False)
-
-# %%
-# import seaborn as sns
-# var_name = 'spikes_FR.spout'
-# x3 = xx[var_name].isel(cluID=50, 
-#                            trial_nb=(xx['trial_outcome']=='success'))
-
-# fr = x3.to_dataframe().reset_index()
-
-# sns.lineplot(fr, x='event_time', y=var_name)
