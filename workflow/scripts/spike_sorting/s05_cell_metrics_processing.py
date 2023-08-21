@@ -38,25 +38,12 @@ verbose = True
 sorter_name = 'kilosort3'
 ks3_path = Path(sinput.ephys_sync_complete).parent / sorter_name
 rec_properties_path = Path(sinput.rec_properties)
-
 session_ID = ks3_path.parent.parent.stem
-
 processed_folder = rec_properties_path.parent.parent / 'processed' 
-# Only select probe folders where the results of the sorting can be found.
-# probe_folders = [processed_folder / sorter_name / probe_folder / 'sorter_output'
-#                   for probe_folder in os.listdir(processed_folder / sorter_name)
-#                   if 'spike_clusters.npy' in os.listdir(processed_folder / sorter_name / probe_folder / 'sorter_output')]
-# probe_names = [probe_folder.parent.stem for probe_folder in probe_folders]
+
 
 rec_properties = pd.read_csv(rec_properties_path, header=0, index_col=0)
-# Filter only longest syncable files
-# rec_properties = rec_properties[(rec_properties['syncable'] == True) & (rec_properties['longest'] == True)]
-# experiments_nb = rec_properties.exp_nb.unique()
 
-# # Folder where to store outputs of waveforms info
-# waveform_results_folder = rec_properties_path.parent.parent / 'processed' / 'waveforms'
-# if not waveform_results_folder.exists():
-#     waveform_results_folder.mkdir()
 kilosort_path = Path(sinput.kilosort_path)
 # %% Get the path of CellExplorer outputs
 
@@ -74,14 +61,29 @@ for probe_folder in kilosort_path.glob('Probe*'):
     cell_metrics = cell_metrics_dict['cell_metrics']
     spikes_dict = loadmat(spikes_path, simplify_cells=True)
     spikes = spikes_dict['spikes']
-    
-    # df_cell_metrics = cellmat2dataframe(cell_metrics)
-    # df_spike_info = cellmat2dataframe(spikes)
-    # df_metrics = df_cell_metrics.merge(df_spike_info, on=['cluID','UID'])
+
+    # Convert CellExplorer data structure to xarray
     clusID_prefix = f'{session_ID}_{probe_name}_'
     dataset_spike = cellmat2xarray(spikes, clusID_prefix)
     dataset_metrics = cellmat2xarray(cell_metrics,clusID_prefix)
-    dataset = xr.merge([dataset_spike, dataset_metrics])
+    dataset = xr.merge([dataset_metrics, dataset_spike])
+    
+    
+
+    # # Prepare the DataFrame so it can be aggregated with other animals, sessions, or probes
+    dataset.attrs['subject_ID'] = session_ID.split('-')[0]
+    dataset.attrs['session_ID'] = session_ID
+    dataset.attrs['task_folder'] = rec_properties_path.parents[2].stem
+    dataset.attrs['probe_name'] = probe_folder.stem
+
+    # Drop useless or badly automatically filled column for DataFrame cleaning
+
+    # subject_ID replace animal columns as it is random bad auto extraction from cellExplorer, deleting animal
+    dataset=dataset.drop_vars(['animal'])
+    
+    dataset = dataset.expand_dims({'probe_name':[probe_folder.stem]})
+
+    xr_metrics_all.append(dataset)
 
     # # Get name and shapes of variables
 
@@ -124,56 +126,5 @@ for probe_folder in kilosort_path.glob('Probe*'):
     # cell_metrics_df['peak_average_all_wf'] = peak_average_all_wf
 
 
-    # # Prepare the DataFrame so it can be aggregated with other animals, sessions, or probes
-    dataset.attrs['subject_ID'] = session_ID.split('-')[0]
-    dataset.attrs['session_ID'] = session_ID
-    dataset.attrs['task_folder'] = rec_properties_path.parents[2].stem
-    dataset.attrs['probe_name'] = probe_folder.stem
-
-    # Drop useless or badly automatically filled column for DataFrame cleaning
-
-    # subject_ID replace animal columns as it is random bad auto extraction from cellExplorer, deleting animal
-    dataset=dataset.drop_vars(['animal'])
-    
-    dataset = dataset.expand_dims({'probe_name':[probe_folder.stem]})
-
-   
-    # # Turn UID into real UID with session name and date and cellID and set as index
-    
-    # cell_metrics_df['UID'] = cell_metrics_df['UID'].apply(lambda x: session_and_probe_specific_uid(session_ID, probe_name, x))
-    # cell_metrics_df.set_index(keys = 'UID', drop = True, inplace = True)
-
-    # # Define variables meaningless for clustering
-    # invalid_cols_for_clustering = ['UID','animal', 'brainRegion','cellID', 'cluID',
-    #                                 'electrodeGroup', 'labels', 'maxWaveformCh', 'maxWaveformCh1', 
-    #                                 'maxWaveformChannelOrder', 'putativeCellType', 'sessionName', 
-    #                                 'shankID', 'synapticConnectionsIn', 'synapticConnectionsOut', 
-    #                                 'synapticEffect', 'thetaModulationIndex', 'total', 'trilat_x', 
-    #                                 'trilat_y', 'deepSuperficial', 'deepSuperficialDistance',
-    #                                 'subject_ID',	'datetime']
-
-    # clustering_cols = [col for col in cell_metrics_df.columns if col not in invalid_cols_for_clustering]
-
-    # # Save a dataframe with partial information specifically for later clustering
-    # cell_metrics_df[clustering_cols].to_pickle(probe_folder / 'cell_metrics_df_clustering.pkl')
-    
-    # # Save a full version of the cell-metrics dataframe  
-    xr_metrics_all.append(dataset)
-
 xr_metrics_all = xr.merge(xr_metrics_all)
-xr_metrics_all.to_netcdf(soutput.cell_matrics_full, engine='h5netcdf') 
-# df_metrics_all.to_pickle(soutput.cell_matrics_full)
-
-    # # Storing raw waveforms of all channels, dim  N channels x M timestamps x L clusters
-    # all_raw_wf = np.ndarray((spikes['rawWaveform_all'][0][0][0][0].shape[0], spikes['rawWaveform_all'][0][0][0][0].shape[1], spikes['rawWaveform_all'][0][0][0].shape[0]))
-    # for clu_idx, rawWaveforms in enumerate(spikes['rawWaveform_all'][0][0][0]):
-    #     all_raw_wf[:,:, clu_idx] = rawWaveforms
-    
-    # np.save(probe_folder / 'all_raw_waveforms.npy', all_raw_wf)
-
-    # session_ce_df = pd.concat([session_ce_df, cell_metrics_df], axis=0)
-
-# Saving aggregated DataFrame for CellExplorer
-# session_ce_df.to_pickle(waveform_results_folder / 'ce_cell_metrics_df.pkl' )
-# 'ids', 'ts', 'times', 'amplitudes', 'subject_ID', 
-# 'session_ID', 'task_folder', 'probe_name'
+xr_metrics_all.to_netcdf(soutput.cell_matrics_full, engine='h5netcdf',invalid_netcdf=True) 

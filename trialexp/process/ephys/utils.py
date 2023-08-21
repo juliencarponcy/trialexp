@@ -54,6 +54,10 @@ def np2xrarray(x, cluID, new_dim_prefix:str):
     
     return da
 
+def flatten_dict(d, prefix):
+    return {f'{prefix}_{k}':v for k,v in d.items()}
+    
+
 def cellmat2xarray(cell_metrics, cluID_prefix=''):
     df = pd.DataFrame()
     #convert the cell matrics struct from MATLAB to dataframe
@@ -107,7 +111,7 @@ def cellmat2xarray(cell_metrics, cluID_prefix=''):
                         data = np.stack(metrics[k])
                     except ValueError:
                         # variable data format, save in attrs
-                        attrs_list[f'{name}_{k}'] = metrics[k]
+                        # attrs_list[f'{name}_{k}'] = metrics[k].tolist()
                         continue
                         
                     var_new_dim = f'{k}_idx'
@@ -129,12 +133,23 @@ def cellmat2xarray(cell_metrics, cluID_prefix=''):
     dataset.attrs.update(attrs_list)
 
     if 'general' in cell_metrics.keys():
-        dataset.attrs.update(cell_metrics['general'])  
+        # only extract some useful field
+        chan_coords = flatten_dict(cell_metrics['general']['chanCoords'], 'chanCoords')
+        dataset.attrs.update(chan_coords)  
         
     if 'putativeConnections' in cell_metrics.keys():
-        dataset.attrs['putativeConnections'] = cell_metrics['putativeConnections']
+        connections = flatten_dict(cell_metrics['putativeConnections'], 'putativeConnections')
+        dataset.attrs.update(connections)
+        
+        
+    # do a check to make sure all attribute can be exported
+    for k in dataset.attrs.keys():
+        assert type(dataset.attrs[k]) is not dict, f'Error, dict type detectec in attribute {k}'
             
     return dataset
+
+
+
 
 def cellmat2dataframe(cell_metrics):
     df = pd.DataFrame()
