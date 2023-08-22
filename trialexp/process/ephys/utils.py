@@ -1,9 +1,12 @@
 
+from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd   
 from pandas.api.types import infer_dtype
 import os
 import xarray as xr
+
+from trialexp.process.group_analysis.plot_utils import style_plot
 
 
 def denest_string_cell(cell):
@@ -201,3 +204,66 @@ def prepare_mathlab_path(eng):
     eng.addpath(s, nargout=0)
     eng.addpath(n, nargout=0)
     eng.addpath(c, nargout=0)
+    
+    
+def plot_firing_rate(xr_fr_coord, xr_session, df_pycontrol, events2plot, xlim=None):
+    # xlim should be in milisecond
+    
+    style_plot()
+    bin_duration = xr_fr_coord.attrs['bin_duration']
+
+    
+    spike_rates = xr_fr_coord.spikes_zFR_session.data
+    
+    fig,ax = plt.subplots(3,1,figsize=(20,15),dpi=200, sharex=True)
+    
+    ax_photo, ax_fr, ax_event = ax
+        
+    # photometry
+    ax_photo.plot(xr_session.zscored_df_over_f.data.ravel())
+    
+    # firing rate map
+    image = ax_fr.imshow(spike_rates.T, vmax=2, vmin=-2,cmap='icefire')
+    ax_fr.set_aspect('auto')
+    
+    yticks = np.arange(0, spike_rates.shape[1],50 ) #where we want to show the
+    
+    
+    ax_fr.set_yticks(yticks)
+    ax_fr.set_yticklabels(xr_fr_coord.pos_y.data[yticks]); #the cooresponding label for the tick
+    ax_fr.invert_yaxis()
+    
+    
+    xticks = np.linspace(0,spike_rates.shape[0]-10,10).astype(int)
+    
+    ax_fr.set_xticks(xticks)
+    xticklabels = (xr_fr_coord.time[xticks].data/1000).astype(int)
+    ax_fr.set_xticklabels(xticklabels)
+
+    
+    ax_fr.set_ylabel('Distance from tip (um)')
+    ax_fr.set_xlabel('Time (s)')
+
+    # also plot the important pycontrol events
+    
+    events2plot = df_pycontrol[df_pycontrol.name.isin(events2plot)]
+
+    ## Event
+    evt_colours =['r','g','b','w']
+    # Note: the time coordinate of the firing map corresponds to the time bins
+    for i, event in enumerate(events2plot.name.unique()):
+        evt_time = events2plot[events2plot.name==event].time
+        evt_time_idx = [np.searchsorted(xr_fr_coord.time, t) for t in evt_time]
+        # evt_time = evt_time/bin_duration
+        ax_event.eventplot(evt_time_idx, lineoffsets=80+20*i, linelengths=20,label=event, color=evt_colours[i])
+    
+    ax_event.legend(loc='upper left', prop = { "size": 12 }, ncol=4)
+
+    
+    cbar_ax = fig.add_axes([0.95, 0.55, 0.02, 0.35]) 
+    fig.colorbar(image, cax=cbar_ax)
+    
+    if xlim is not None:
+        ax_photo.set_xlim(np.array(xlim)/bin_duration)
+    
+    return fig

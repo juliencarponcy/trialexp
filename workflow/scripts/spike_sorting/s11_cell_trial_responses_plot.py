@@ -9,9 +9,12 @@ import seaborn as sns
 import xarray as xr
 from matplotlib import gridspec
 from snakehelper.SnakeIOHelper import getSnake
+from trialexp.process.ephys.spikes_preprocessing import build_evt_fr_xarray
+from trialexp.process.ephys.utils import plot_firing_rate
+from trialexp.process.group_analysis.plot_utils import style_plot
 
 from workflow.scripts import settings
-
+from scipy.special import kl_div
 #%% Load inputs
 
 
@@ -69,58 +72,96 @@ plt.savefig(figures_path/f'cluster_depth_distribution_{probe_name}.png',dpi=200)
 xr_session = xr.open_dataset(Path(sinput.xr_session))
 xr_session = xr_session.interp(time=xr_fr_coord.time)
 
-#%%
-def plot_firing_rate(xr_fr_coord, xr_session, df_pycontrol, events2plot):
-    spike_rates = xr_fr_coord.spikes_zFR_session.data
-    
-    fig,ax = plt.subplots(3,1,figsize=(20,15),dpi=200, sharex=True)
-    
-    # firing rate map
-    image = ax[0].imshow(spike_rates.T, vmax=2, vmin=-2,cmap='icefire')
-    ax[0].set_aspect('auto')
-    
-    yticks = np.arange(0, spike_rates.shape[1],50 ) #where we want to show the
-    
-    
-    ax[0].set_yticks(yticks)
-    ax[0].set_yticklabels(xr_fr_coord.pos_y.data[yticks]); #the cooresponding label for the tick
-    ax[0].invert_yaxis()
-    
-    xticks = np.linspace(0,spike_rates.shape[0]-10,10).astype(int)
-    ax[0].set_xticks(xticks)
-    xticklabels = (xr_fr_coord.time[xticks].data/1000).astype(int)
-    ax[0].set_xticklabels(xticklabels)
-
-    
-    ax[0].set_ylabel('Distance from tip (um)')
-    ax[0].set_xlabel('Time (s)')
-
-    # also plot the important pycontrol events
-    
-    events2plot = df_pycontrol[df_pycontrol.name.isin(events2plot)]
-
-    ## Event
-    evt_colours =['r','g','b','w']
-    # Note: the time coordinate of the firing map corresponds to the time bins
-    bin_duration = xr_fr_coord.attrs['bin_duration']
-    for i, event in enumerate(events2plot.name.unique()):
-        evt_time = events2plot[events2plot.name==event].time
-        evt_time_idx = [np.searchsorted(xr_fr_coord.time, t) for t in evt_time]
-        # evt_time = evt_time/bin_duration
-        ax[1].eventplot(evt_time_idx, lineoffsets=80+20*i, linelengths=20,label=event, color=evt_colours[i])
-    
-    ax[1].legend(loc='upper left', prop = { "size": 7 }, ncol=4)
-    
-    
-    ax[2].plot(xr_session.zscored_df_over_f.data)
-    
-    cbar_ax = fig.add_axes([0.95, 0.55, 0.02, 0.35]) 
-    fig.colorbar(image, cax=cbar_ax)
-    
-    return fig
-
+#%% Firing rate map 
+sns.set_context('paper')
 fig = plot_firing_rate(xr_fr_coord, xr_session, df_pycontrol, ['hold_for_water', 'spout','bar_off','aborted']);
-# fig.savefig(figures_path/f'firing_map_{probe_name}.png',dpi=200)
+fig.savefig(figures_path/f'firing_map_{probe_name}.png',dpi=200)
+
+# a zoomed in version
+fig = plot_firing_rate(xr_fr_coord, xr_session, df_pycontrol,
+                       ['hold_for_water', 'spout','bar_off','aborted'],
+                       xlim=[180*1000, 240*1000]);
+
+fig.savefig(figures_path/f'firing_map_{probe_name}_1min.png',dpi=200)
+
+
+#%%
+# choose some random event
+timestamps = sorted(np.random.choice(xr_fr.time, size=300, replace=False))
+trial_nb = np.arange(len(timestamps))
+trial_window = (500, 500) # time before and after timestamps to extract
+bin_duration = xr_fr.attrs['bin_duration']
+
+da_rand = build_evt_fr_xarray(xr_fr.spikes_FR_session, timestamps, trial_nb, f'spikes_FR.random', 
+                                        trial_window, bin_duration)
+
+#%% Use KL divergence to measure the difference between the random and event triggered response
+
+x = da_rand.isel(cluID=0)
+y = da.sel(cluID=x.cluID)
+
+x = x.data
+y = y.data
+
+
+# compute the pdf
+a = np.concatenate([x.ravel(),y.ravel()])
+a = a[~np.isnan(a)]
+bins = np.linspace(a.min(), a.max(), 20)
+tIdx = 0
+kl_d = np.zeros((x.shape[1]))
+
+# for tIdx in range(len(kl_d)):
+#     x_pdf = np.histogram(x[:,tIdx], bins=bins)[0]
+#     y_pdf = np.histogram(y[:,tIdx], bins=bins)[0]
+
+
+#     kl_d[tIdx] = kl_div(y_pdf,x_pdf).sum()
+    
+#%%
+from scipy.stats import ttest_ind
+var_name = 'spikes_FR.spout'
+da = xr_spikes_trials[var_name]
+
+pvalue_ratio = np.zeros((len(da.cluID),))
+for i, cluID in enumerate([da.cluID[2]]):
+    
+    x = da_rand.sel(cluID=cluID).data
+    y = da.sel(cluID=cluID).data
+        
+    pvalue = ttest_ind(x,y,axis=0, nan_policy='omit').pvalue #Note: can be nan in the data if the event cannot be found
+    pvalue_ratio[i] = np.mean(pvalue<0.05)
+
+#%%
+cluIdx = 1
+df2plot = da.isel(cluID=cluIdx).to_dataframe().reset_index()
+df2plot['type'] = 'real'
+df2plotR = da_rand.isel(cluID=cluIdx).to_dataframe().reset_index()
+df2plotR['type'] = 'random'
+
+df2plot = pd.concat([df2plot, df2plotR])
+sns.lineplot(df2plot, y=var_name, x='spk_event_time', hue='type', ci=100)
+
+#%%
+# calculate the modulation index of neurons
+var_name = 'spikes_FR.spout'
+da = xr_spikes_trials[var_name]
+fr_std = da.std(dim='trial_nb').mean(dim='spk_event_time')
+meanCurve = da.mean(dim='trial_nb')
+p2p = meanCurve.max(dim='spk_event_time') -  meanCurve.min(dim='spk_event_time')
+f2 = p2p/fr_std
+f2 = f2.sortby(f2,ascending=False)
+
+#%%
+df2plot = da.sel(cluID=f2.cluID[0]).to_dataframe().reset_index()
+df2plot['type'] = 'real'
+df2plotR = da_rand.sel(cluID=f2.cluID[0]).to_dataframe().reset_index()
+df2plotR['type'] = 'random'
+
+df2plot = pd.concat([df2plot, df2plotR])
+
+
+sns.lineplot(df2plot, y=var_name, x='spk_event_time', hue='type',n_boot=100)
 
 #%% Define trials of interest
 
