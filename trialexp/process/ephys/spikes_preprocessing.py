@@ -4,11 +4,24 @@ import numpy as np
 import pandas as pd
 
 from neo.core import SpikeTrain # %% Extract and bin spikes by cluster_ID 
-
-from trialexp.process.ephys.utils import dataframe_cleanup
 import xarray as xr
 from trialexp.process.pycontrol import event_filters
+from pandas.api.types import infer_dtype
 
+        
+def dataframe_cleanup(dataframe: pd.DataFrame):
+    '''
+    Turn object columns into str columns and fill empty gaps with ''
+    '''
+    types_dict = dict(zip(dataframe.columns,dataframe.dtypes))
+    for (col, dtype) in types_dict.items():
+        if dtype == np.dtype(object):
+            dtype_inferred = infer_dtype(dataframe[col])
+            dataframe[col] = dataframe[col].fillna('', downcast={np.dtype(object):str}).astype(str)
+            dataframe[col] = dataframe[col].astype(dtype_inferred)
+            # session_cell_metrics[col] = session_cell_metrics[col].astype(str)
+    
+    return dataframe
 
 ## %
 def get_max_timestamps_from_probes(timestamp_files: list):
@@ -160,7 +173,7 @@ def make_evt_dataframe(df_trials, df_conditions, df_events_cond):
     behav_phases_filters = {
         'first_bar_off' : event_filters.get_first_bar_off,
         'last_bar_off' : event_filters.get_last_bar_off_before_first_spout,
-        'spout' : event_filters.get_first_spout
+        'first_spout' : event_filters.get_first_spout
     }
     trial_outcomes = df_conditions.trial_outcome
 
@@ -175,7 +188,7 @@ def make_evt_dataframe(df_trials, df_conditions, df_events_cond):
 
     # rename the columns
     df_aggregated.columns = ['trial_outcome', 'trial_onset',  *behav_phases_filters.keys()]
-    df_aggregated['reward'] = df_aggregated.spout + 500 # Hard coded, 500ms delay, perhaps adapt to a parameter?
+    df_aggregated['reward'] = df_aggregated.first_spout + 500 # Hard coded, 500ms delay, perhaps adapt to a parameter?
     df_aggregated['rest'] = df_aggregated.trial_onset - 2000 # Hard coded, 2000ms resting period, perhaps adapt to a parameter?
 
     return df_aggregated

@@ -2,32 +2,21 @@
 from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd   
-from pandas.api.types import infer_dtype
 import os
 import xarray as xr
-
+from trialexp.process.ephys.spikes_preprocessing import build_evt_fr_xarray
+from elephant.conversion import BinnedSpikeTrain
+import quantities as pq
 from trialexp.process.group_analysis.plot_utils import style_plot
-
+import seaborn as sns
+import neo 
 
 def denest_string_cell(cell):
         if len(cell) == 0: 
             return 'ND'
         else:
             return str(cell[0])
-        
-def dataframe_cleanup(dataframe: pd.DataFrame):
-    '''
-    Turn object columns into str columns and fill empty gaps with ''
-    '''
-    types_dict = dict(zip(dataframe.columns,dataframe.dtypes))
-    for (col, dtype) in types_dict.items():
-        if dtype == np.dtype(object):
-            dtype_inferred = infer_dtype(dataframe[col])
-            dataframe[col] = dataframe[col].fillna('', downcast={np.dtype(object):str}).astype(str)
-            dataframe[col] = dataframe[col].astype(dtype_inferred)
-            # session_cell_metrics[col] = session_cell_metrics[col].astype(str)
-    
-    return dataframe
+
 
 def session_and_probe_specific_uid(session_ID: str, probe_name: str, uid: int):
     '''
@@ -267,3 +256,57 @@ def plot_firing_rate(xr_fr_coord, xr_session, df_pycontrol, events2plot, xlim=No
         ax_photo.set_xlim(np.array(xlim)/bin_duration)
     
     return fig
+
+
+
+def compare_fr_with_random(da, xr_fr, cluID, trial_window, bin_duration, pvalues=None, random_n=1000, ax=None):
+    # xr_fr: the dataArray with the continuuous firing rate of the cell
+    timestamps = sorted(np.random.choice(xr_fr.time, size=random_n, replace=False))
+    trial_nb = np.arange(len(timestamps))
+    da_rand = build_evt_fr_xarray(xr_fr, timestamps, trial_nb, f'{da.name}', 
+                                            trial_window, bin_duration)
+
+    cluIdx = 8
+    df2plot = da.sel(cluID=cluID).to_dataframe()
+    df2plot['type'] = 'event-triggered'
+    df2plotR = da_rand.sel(cluID=cluID).to_dataframe()
+    df2plotR['type'] = 'random'
+
+    df2plot = pd.concat([df2plot, df2plotR]).reset_index()
+    ax = sns.lineplot(df2plot, y=da.name, x='spk_event_time', hue='type', n_boot=100, ax=ax)
+    
+    if pvalues is not None:
+        # also indiciate where the difference is significant
+        idx = np.where(pvalues<0.05)[0]
+        yloc = ax.get_ylim()[0]
+        ax.plot(da.spk_event_time[idx], [yloc]*len(idx),'r*')
+        
+    
+
+def binned_firing_rate(spiketrains, bin_size, t_start=None, t_stop=None,
+                   output='counts'):
+    # modified from time_histogram from elephant because the original function collapses
+    # the spike train of all cells
+    
+    bs = BinnedSpikeTrain(spiketrains, t_start=t_start, t_stop=t_stop,
+                          bin_size=bin_size)
+    
+    bs_hist = bs.to_array().T
+    # Renormalise the histogram
+    if output == 'counts':
+        # Raw
+        bin_hist = pq.Quantity(bs_hist, units=pq.dimensionless, copy=False)
+    elif output == 'mean':
+        # Divide by number of input spike trains
+        bin_hist = pq.Quantity(bs_hist / len(spiketrains),
+                               units=pq.dimensionless, copy=False)
+    elif output == 'rate':
+        # Divide by number of input spike trains and bin width
+        bin_hist = bs_hist / (len(spiketrains) * bin_size)
+    else:
+        raise ValueError(f'Parameter output ({output}) is not valid.')
+
+    return neo.AnalogSignal(signal=bin_hist,
+                            sampling_period=bin_size, units=1/pq.s,
+                            t_start=bs.t_start, normalization=output,
+                            copy=False)
