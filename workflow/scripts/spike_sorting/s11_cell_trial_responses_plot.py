@@ -10,7 +10,7 @@ import xarray as xr
 from matplotlib import gridspec
 from snakehelper.SnakeIOHelper import getSnake
 from trialexp.process.ephys.spikes_preprocessing import build_evt_fr_xarray
-from trialexp.process.ephys.utils import plot_firing_rate
+from trialexp.process.ephys.utils import compare_fr_with_random, plot_firing_rate
 from trialexp.process.group_analysis.plot_utils import style_plot
 
 from workflow.scripts import settings
@@ -87,29 +87,29 @@ fig.savefig(figures_path/f'firing_map_{probe_name}_1min.png',dpi=200)
 
 #%%
 # choose some random event
-timestamps = sorted(np.random.choice(xr_fr.time, size=300, replace=False))
-trial_nb = np.arange(len(timestamps))
-trial_window = (500, 500) # time before and after timestamps to extract
-bin_duration = xr_fr.attrs['bin_duration']
+# timestamps = sorted(np.random.choice(xr_fr.time, size=300, replace=False))
+# trial_nb = np.arange(len(timestamps))
+# trial_window = (500, 1000) # time before and after timestamps to extract
+# bin_duration = xr_fr.attrs['bin_duration']
 
-da_rand = build_evt_fr_xarray(xr_fr.spikes_FR_session, timestamps, trial_nb, f'spikes_FR.random', 
-                                        trial_window, bin_duration)
+# da_rand = build_evt_fr_xarray(xr_fr.spikes_FR_session, timestamps, trial_nb, f'spikes_FR.random', 
+#                                         trial_window, bin_duration)
 
 #%% Use KL divergence to measure the difference between the random and event triggered response
 
-x = da_rand.isel(cluID=0)
-y = da.sel(cluID=x.cluID)
+# x = da_rand.isel(cluID=0)
+# y = da.sel(cluID=x.cluID)
 
-x = x.data
-y = y.data
+# x = x.data
+# y = y.data
 
 
-# compute the pdf
-a = np.concatenate([x.ravel(),y.ravel()])
-a = a[~np.isnan(a)]
-bins = np.linspace(a.min(), a.max(), 20)
-tIdx = 0
-kl_d = np.zeros((x.shape[1]))
+# # compute the pdf
+# a = np.concatenate([x.ravel(),y.ravel()])
+# a = a[~np.isnan(a)]
+# bins = np.linspace(a.min(), a.max(), 20)
+# tIdx = 0
+# kl_d = np.zeros((x.shape[1]))
 
 # for tIdx in range(len(kl_d)):
 #     x_pdf = np.histogram(x[:,tIdx], bins=bins)[0]
@@ -119,28 +119,93 @@ kl_d = np.zeros((x.shape[1]))
 #     kl_d[tIdx] = kl_div(y_pdf,x_pdf).sum()
     
 #%%
-from scipy.stats import ttest_ind
-var_name = 'spikes_FR.spout'
+from scipy.stats import ttest_ind, wilcoxon, poisson_means_test
+var_name = 'spikes_FR.first_spout'
 da = xr_spikes_trials[var_name]
 
-pvalue_ratio = np.zeros((len(da.cluID),))
-for i, cluID in enumerate([da.cluID[2]]):
-    
-    x = da_rand.sel(cluID=cluID).data
-    y = da.sel(cluID=cluID).data
-        
-    pvalue = ttest_ind(x,y,axis=0, nan_policy='omit').pvalue #Note: can be nan in the data if the event cannot be found
-    pvalue_ratio[i] = np.mean(pvalue<0.05)
+# choose some random event
+timestamps = sorted(np.random.choice(xr_fr.time, size=len(da.trial_nb), replace=False))
+trial_nb = np.arange(len(timestamps))
+trial_window = (500, 1000) # time before and after timestamps to extract
+bin_duration = xr_fr.attrs['bin_duration']
+
+da_rand = build_evt_fr_xarray(xr_fr.spikes_FR_session, timestamps, trial_nb, f'{var_name}', 
+                                        trial_window, bin_duration)
+
+timestamps = sorted(np.random.choice(xr_fr.time, size=len(da.trial_nb), replace=False))
+da_rand2 = build_evt_fr_xarray(xr_fr.spikes_FR_session, timestamps, trial_nb, f'{var_name}', 
+                                        trial_window, bin_duration)
+
+da = da_rand2
 
 #%%
-cluIdx = 1
-df2plot = da.isel(cluID=cluIdx).to_dataframe().reset_index()
+pvalue_ratio = np.zeros((len(da.cluID),))
+pvalues = np.zeros((len(da.cluID),len(da.spk_event_time) ))
+# for i, cluID in enumerate([da.cluID[2]]):
+for i, cluID in enumerate(da.cluID):
+
+    x = da_rand.sel(cluID=cluID).data
+    y = da.sel(cluID=cluID).data
+    
+    # firing rate may not be normally distributed
+    # pvalue = ttest_ind(x,y,axis=0, nan_policy='omit').pvalue #Note: can be nan in the data if the event cannot be found
+    pvalues[i,:] = wilcoxon(x,y,axis=0, nan_policy='omit').pvalue
+    # pvalue = poisson_means_test(x,10, y,10, axis=0, nan_policy='omit')
+    pvalue_ratio[i] = np.mean(pvalues[i,:]<0.05)
+    
+# TODO: even with toally random data, portion of significance is still too high
+
+#%%
+# sort the cluID according to the pvalue_ratio descendingly
+sortIdx = np.argsort(pvalue_ratio)[::-1]
+cluID = da.cluID[sortIdx]
+pvalues = pvalues[sortIdx,:]
+pvalue_ratio = pvalue_ratio[sortIdx]
+
+
+fig, ax = plt.subplots(3,3,dpi=300, figsize=(3*3,3*3))
+
+for cellIdx2plot in range(len(ax.flat)):
+    compare_fr_with_random(da, xr_fr.spikes_FR_session,
+                        cluID[cellIdx2plot], trial_window, 
+                        bin_duration, pvalues[cellIdx2plot,:], ax=ax.flat[cellIdx2plot])
+
+
+#%%
+from scipy import stats
+n_trial = len(da_rand.trial_nb)
+k1 = np.nansum(x[:,4]/100)
+k2 = np.nansum(y[:,4]/100)
+
+a = x[:,4].ravel()
+a = a[~np.isnan(a)]
+a = stats.uniform.rvs(size=100)
+kstest(a, 'poisson', args=(a.mean(),))
+
+    
+
+#%%
+df1 = pd.DataFrame()
+df1['value'] = x[:,0]
+df1['var'] = 'x'
+
+df2 = pd.DataFrame()
+df2['value'] = y[:,0]
+df2['var'] = 'y'
+
+df = pd.concat([df1,df2]).reset_index()
+
+sns.histplot(df, x='value', hue='var', bins=20,kde=True)
+
+#%%
+cluIdx = 10
+df2plot = da.isel(cluID=cluIdx).to_dataframe()
 df2plot['type'] = 'real'
-df2plotR = da_rand.isel(cluID=cluIdx).to_dataframe().reset_index()
+df2plotR = da_rand.isel(cluID=cluIdx).to_dataframe()
 df2plotR['type'] = 'random'
 
-df2plot = pd.concat([df2plot, df2plotR])
-sns.lineplot(df2plot, y=var_name, x='spk_event_time', hue='type', ci=100)
+df2plot = pd.concat([df2plot, df2plotR]).reset_index()
+sns.lineplot(df2plot, y=var_name, x='spk_event_time', hue='type', n_boot=100)
 
 #%%
 # calculate the modulation index of neurons
@@ -197,4 +262,8 @@ sns.lineplot(df2plot, y=var_name, x='spk_event_time', hue='type',n_boot=100)
 # axes[1].set_ylabel('Number of clusters')
 
 # fig.savefig(figures_path / 'cluster_anat_distrib.png')
+
+# %%
+xr_fr.close()
+xr_spikes_trials.close()
 # %%
