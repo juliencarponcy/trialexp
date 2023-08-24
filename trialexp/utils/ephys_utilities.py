@@ -124,15 +124,17 @@ def create_ephys_rsync(pycontrol_file: str, sync_path: str, ephys_start_time: fl
     event_array = np.load(Path(sync_path, 'states.npy'))
     ts_array = np.load(Path(sync_path, 'timestamps.npy')) - ephys_start_time
     rsync_ephys_ts = ts_array[event_array == rsync_ephys_chan_idx]
+    # print(rsync_ephys_ts*1000)
     
     with warnings.catch_warnings():
         warnings.simplefilter('ignore')
         data_pycontrol = session_dataframe(pycontrol_file)
 
         pycontrol_rsync = data_pycontrol[data_pycontrol.name=='rsync'].time.values
+        # print(pycontrol_rsync)
         
         try:
             return Rsync_aligner(pulse_times_A= rsync_ephys_ts*1000, 
-            pulse_times_B= pycontrol_rsync, plot=False) #align pycontrol time to pyphotometry time
+            pulse_times_B= pycontrol_rsync, plot=False) 
         except (RsyncError, ValueError) as e:
             return None
