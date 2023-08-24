@@ -109,7 +109,6 @@ def build_evt_fr_xarray(fr_xr, timestamps, trial_index, name, trial_window, bin_
     
     da = xr.DataArray(
         trial_rates,
-        # name = f'spikes_FR.{ev_name}',
         name = name,
         coords={'trial_nb': trial_index, 'spk_event_time': trial_time_vec, 'cluID': fr_xr.cluID},
         dims=('trial_nb', 'spk_event_time', 'cluID')
