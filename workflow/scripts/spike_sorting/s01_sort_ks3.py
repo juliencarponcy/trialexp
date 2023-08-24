@@ -78,8 +78,8 @@ for idx_rec in idx_to_sort:
         recordings = se.read_openephys(ephys_path, block_index=exp_nb, stream_name=AP_stream) # nb-based
     
     # Segment indices are not the same as the recording number, they are based on the number of recording folders
+    # e.g. recording1,recording3,recording4 -> segment indices will always be 0,1,2
     # Will lead to issue if some recording folders are omitted
-    # recording = select_segment_recording(recordings, segment_indices= int(rec_nb)) # index-based
     # find the correct segment for the recording
     rec_sorted = rec_properties.sort_values('rec_nb')
     rec_sorted = rec_sorted[rec_sorted.AP_stream==AP_stream]
@@ -120,7 +120,7 @@ for idx_rec in idx_to_sort:
     
     sorting.save(folder =  session_path/'si'/probe_name) # very small, can save directly
     
-#     #  copy the output back to the original session folder
+    # also save the rec_properties for this particular recording
     session_path = rec_properties_path.parents[1] /'processed'
     rec_properties.iloc[[idx_rec]].to_csv(session_path/'kilosort3'/probe_name/'rec_prop.csv', index=False) #also save the recording property
 
