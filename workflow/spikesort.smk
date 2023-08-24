@@ -45,10 +45,8 @@ rule spike_sorting:
     input:
         rec_properties = '{sessions}/{task_path}/{session_id}/ephys/rec_properties.csv',
     output:
-        sorting_complete = touch('{sessions}/{task_path}/{session_id}/processed/spike_sorting.done'),       
-    
+        sorting_complete = touch('{sessions}/{task_path}/{session_id}/processed/spike_sorting.done'),           
     threads: 32
-
     script:
         "scripts/spike_sorting/s01_sort_ks3.py"
 

@@ -8,6 +8,7 @@ import warnings
 import shutil
 
 from pathlib import Path
+import numpy as np
 
 import pandas as pd
 
@@ -25,28 +26,28 @@ spike_sorting_done_path = str(Path(settings.debug_folder) / 'processed' / 'spike
 (sinput, soutput) = getSnake(locals(), 'workflow/spikesort.smk',
  [spike_sorting_done_path], 'spike_sorting')
 
-
 # %%
 
 sorter_name = 'kilosort3'
 verbose = True
 rec_properties_path = Path(sinput.rec_properties)
+session_id = rec_properties_path.parents[1].stem
 rec_properties = pd.read_csv(rec_properties_path, index_col = 0)
-
 rec_properties['sorting_error'] = False
 # Only select longest syncable recordings to sort
-idx_to_sort = rec_properties[rec_properties.longest == True].index.values
+idx_to_sort = rec_properties[(rec_properties.syncable == True) & (rec_properties.longest==True)].index.values
 
 root_data_path = os.environ['SORTING_ROOT_DATA_PATH']
 
-si_sorted_folder = Path(os.environ['TEMP_DATA_PATH']) / 'si'
-temp_sorter_folder = Path(os.environ['TEMP_DATA_PATH']) 
+si_sorted_folder = Path(os.environ['TEMP_DATA_PATH']) /session_id/ 'si'
+temp_sorter_folder = Path(os.environ['TEMP_DATA_PATH']) /session_id
 
 # %%
 for idx_rec in idx_to_sort:
     exp_nb = rec_properties.exp_nb.iloc[idx_rec]
     rec_nb = rec_properties.rec_nb.iloc[idx_rec]
     AP_stream = rec_properties.AP_stream.iloc[idx_rec]
+    duration = rec_properties.duration.iloc[idx_rec]
     
     # symplifying folder names for each probe
     if 'ProbeA' in AP_stream:    
@@ -76,7 +77,19 @@ for idx_rec in idx_to_sort:
     else:
         recordings = se.read_openephys(ephys_path, block_index=exp_nb, stream_name=AP_stream) # nb-based
     
-    recording = select_segment_recording(recordings, segment_indices= int(rec_nb-1)) # index-based
+    # Segment indices are not the same as the recording number, they are based on the number of recording folders
+    # Will lead to issue if some recording folders are omitted
+    # recording = select_segment_recording(recordings, segment_indices= int(rec_nb)) # index-based
+    # find the correct segment for the recording
+    rec_sorted = rec_properties.sort_values('rec_nb')
+    rec_sorted = rec_sorted[rec_sorted.AP_stream==AP_stream]
+    segment_no = np.where(rec_sorted.rec_nb == rec_nb)[0]
+    
+    recording = recordings.select_segments(segment_no)
+    
+    # make sure we have selected the correct recording
+    assert int(recording.get_total_duration()) == int(duration), 'Error: recording durations do not match!'
+    
     if verbose:
         print(f'{Path(ephys_path).parts[-1]}, {probe_name}, exp_nb:{exp_nb}, rec_nb:{rec_nb}. recording duration: {recording.get_total_duration()}s')   
 
@@ -90,42 +103,25 @@ for idx_rec in idx_to_sort:
     
     # TODO: Add try / catch with warnings and logging of the failed sorting (in rec_properties.csv for instance)
     # In order to cleanly skip dodgy recordings and keep the pipeline running
-    try:
-        sorting = ss.run_sorter(
-                sorter_name = sorter_name,
-                recording = recording, 
-                output_folder = temp_output_sorter_specific_folder,
-                remove_existing_folder = True, 
-                delete_output_folder = False, 
-                verbose = True,
-                **sorter_specific_params)
-        
-        # delete previous output_sorting_folder and its contents if it exists,
-        # this prevent the save method to crash.
-        if output_si_sorted_folder.exists():
-            shutil.rmtree(output_si_sorted_folder)
-        
-        sorting.save(folder = output_si_sorted_folder)
-        
-        #  copy the output back to the original session folder
-        print('I am copying sorting output back to session folder')
-        session_path = rec_properties_path.parents[1] /'processed'
-        shutil.copytree(output_si_sorted_folder, session_path/'si'/probe_name)
-        shutil.copytree(temp_output_sorter_specific_folder, session_path/'kilosort3'/probe_name)
-        rec_properties.iloc[[idx_rec]].to_csv(session_path/'kilosort3'/probe_name/'rec_prop.csv', index=False) #also save the recording property
-
-
-        #
-        # remove temp folders
+    # try:
+    sorting = ss.run_sorter(
+            sorter_name = sorter_name,
+            recording = recording, 
+            output_folder = temp_output_sorter_specific_folder,
+            remove_existing_folder = True, 
+            delete_output_folder = False, 
+            verbose = True,
+            **sorter_specific_params)
+    
+#     # delete previous output_sorting_folder and its contents if it exists,
+#     # this prevent the save method to crash.
+    if output_si_sorted_folder.exists():
         shutil.rmtree(output_si_sorted_folder)
-        shutil.rmtree(temp_output_sorter_specific_folder)
-        print('Temp folders cleaned')
-
-    except:
-        Warning(f'Sorting failed: {Path(ephys_path).parts[-1]}, {probe_name}, exp_nb:{exp_nb}, rec_nb:{rec_nb}. recording duration: {recording.get_total_duration()}s')
-        # Flag the recording as sorted
-        # rec_properties['sorting_error'].iloc[idx_rec] = True
-
+    
+    sorting.save(folder =  session_path/'si'/probe_name) # very small, can save directly
+    
+#     #  copy the output back to the original session folder
+    session_path = rec_properties_path.parents[1] /'processed'
+    rec_properties.iloc[[idx_rec]].to_csv(session_path/'kilosort3'/probe_name/'rec_prop.csv', index=False) #also save the recording property
 
 
-# %%
