@@ -85,65 +85,32 @@ fig = plot_firing_rate(xr_fr_coord, xr_session, df_pycontrol,
 
 fig.savefig(figures_path/f'firing_map_{probe_name}_1min.png',dpi=200)
 
-
 #%%
-# choose some random event
-# timestamps = sorted(np.random.choice(xr_fr.time, size=300, replace=False))
-# trial_nb = np.arange(len(timestamps))
-# trial_window = (500, 1000) # time before and after timestamps to extract
-# bin_duration = xr_fr.attrs['bin_duration']
-
-# da_rand = build_evt_fr_xarray(xr_fr.spikes_FR_session, timestamps, trial_nb, f'spikes_FR.random', 
-#                                         trial_window, bin_duration)
-
-#%% Use KL divergence to measure the difference between the random and event triggered response
-
-# x = da_rand.isel(cluID=0)
-# y = da.sel(cluID=x.cluID)
-
-# x = x.data
-# y = y.data
-
-
-# # compute the pdf
-# a = np.concatenate([x.ravel(),y.ravel()])
-# a = a[~np.isnan(a)]
-# bins = np.linspace(a.min(), a.max(), 20)
-# tIdx = 0
-# kl_d = np.zeros((x.shape[1]))
-
-# for tIdx in range(len(kl_d)):
-#     x_pdf = np.histogram(x[:,tIdx], bins=bins)[0]
-#     y_pdf = np.histogram(y[:,tIdx], bins=bins)[0]
-
-
-#     kl_d[tIdx] = kl_div(y_pdf,x_pdf).sum()
-    
-#%%
-
-var_name = 'spikes_FR.first_spout'
-da = xr_spikes_trials[var_name]
+var2plot = [x for x in xr_spikes_trials if x.startswith('spikes_FR')]
 trial_window = (500, 1000) # time before and after timestamps to extract
 bin_duration = xr_fr.attrs['bin_duration']
 
-da_rand, pvalues, pvalue_ratio = get_pvalue_random_events(da, xr_fr, trial_window, bin_duration)
+for var_name in tqdm(var2plot):
+    da = xr_spikes_trials[var_name]
 
-#%%
-# sort the cluID according to the pvalue_ratio descendingly
-sortIdx = np.argsort(pvalue_ratio)[::-1]
-pvalue_ratio_sorted = pvalue_ratio[sortIdx]
-cluID_sorted = da.cluID[sortIdx]
-pvalues_sorted = pvalues[sortIdx,:]
+    da_rand, pvalues, pvalue_ratio = get_pvalue_random_events(da, xr_fr, trial_window, bin_duration)
 
-
-fig, ax = plt.subplots(3,3,dpi=200, figsize=(4*3,4*3))
-
-for cellIdx2plot in range(len(ax.flat)):
-    compare_fr_with_random(da, da_rand, 
-                        cluID_sorted[cellIdx2plot], pvalues_sorted[cellIdx2plot,:],
-                        ax=ax.flat[cellIdx2plot])
+    # sort the cluID according to the pvalue_ratio descendingly
+    sortIdx = np.argsort(pvalue_ratio)[::-1]
+    pvalue_ratio_sorted = pvalue_ratio[sortIdx]
+    cluID_sorted = da.cluID[sortIdx]
+    pvalues_sorted = pvalues[sortIdx,:]
 
 
+    fig, ax = plt.subplots(3,3,dpi=200, figsize=(4*3,4*3))
+
+    for cellIdx2plot in range(len(ax.flat)):
+        compare_fr_with_random(da, da_rand, 
+                            cluID_sorted[cellIdx2plot], pvalues_sorted[cellIdx2plot,:],
+                            ax=ax.flat[cellIdx2plot])
+
+    fig.tight_layout()
+    fig.savefig(figures_path/f'event_response_{var_name}.png',dpi=200)
 
 #%% Define trials of interest
 

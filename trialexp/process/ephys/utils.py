@@ -278,6 +278,10 @@ def compare_fr_with_random(da, da_rand, cluID, pvalues=None, random_n=1000, ax=N
     ax = sns.lineplot(df2plot, y=da.name, x='spk_event_time', hue='type', n_boot=100, ax=ax)
     ax.legend(loc='upper left', prop = { "size": 8 }, ncol=4)
     ax.set(xlabel='Time around event (ms)')
+    
+    s = str(cluID.data)
+    cluLabel = '_'.join(s.split('_')[1:])
+    ax.set_title(cluLabel)
 
     if pvalues is not None:
         # also indiciate where the difference is significant
@@ -285,6 +289,7 @@ def compare_fr_with_random(da, da_rand, cluID, pvalues=None, random_n=1000, ax=N
         yloc = ax.get_ylim()[0]
         ax.plot(da.spk_event_time[idx], [yloc]*len(idx),'r*')
         
+    return ax        
     
 
 def binned_firing_rate(spiketrains, bin_size, t_start=None, t_stop=None,
@@ -332,7 +337,7 @@ def get_pvalue_random_events(da, xr_fr, trial_window, bin_duration,  num_sample=
     pvalue_ratio = np.zeros((len(da.cluID),))
     pvalues = np.zeros((len(da.cluID),len(da.spk_event_time) ))
     
-    for i, cluID in tqdm(enumerate(da.cluID), total=len(da.cluID)):
+    for i, cluID in enumerate(da.cluID):
         x = da_rand.sel(cluID=cluID).data
         y = da.sel(cluID=cluID).data
         

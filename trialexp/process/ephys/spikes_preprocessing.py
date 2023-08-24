@@ -166,6 +166,7 @@ def merge_cell_metrics_and_spikes(
 
 
 def make_evt_dataframe(df_trials, df_conditions, df_events_cond):
+    # trial onset is the trigger time
     trial_onsets = df_trials[df_trials.valid == True].timestamp
 
     # Defining filters for different triggering time point for behavioral phases
