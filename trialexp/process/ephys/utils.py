@@ -3,6 +3,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd   
 import os
+from tqdm.auto import tqdm
 import xarray as xr
 from trialexp.process.ephys.spikes_preprocessing import build_evt_fr_xarray
 from elephant.conversion import BinnedSpikeTrain
@@ -10,6 +11,8 @@ import quantities as pq
 from trialexp.process.group_analysis.plot_utils import style_plot
 import seaborn as sns
 import neo 
+from scipy.stats import ttest_ind, wilcoxon, ranksums
+from statsmodels.stats.multitest import multipletests
 
 def denest_string_cell(cell):
         if len(cell) == 0: 
@@ -259,14 +262,13 @@ def plot_firing_rate(xr_fr_coord, xr_session, df_pycontrol, events2plot, xlim=No
 
 
 
-def compare_fr_with_random(da, xr_fr, cluID, trial_window, bin_duration, pvalues=None, random_n=1000, ax=None):
+def compare_fr_with_random(da, da_rand, cluID, pvalues=None, random_n=1000, ax=None):
     # xr_fr: the dataArray with the continuuous firing rate of the cell
-    timestamps = sorted(np.random.choice(xr_fr.time, size=random_n, replace=False))
-    trial_nb = np.arange(len(timestamps))
-    da_rand = build_evt_fr_xarray(xr_fr, timestamps, trial_nb, f'{da.name}', 
-                                            trial_window, bin_duration)
+    # timestamps = sorted(np.random.choice(xr_fr.time, size=random_n, replace=False))
+    # trial_nb = np.arange(len(timestamps))
+    # da_rand = build_evt_fr_xarray(xr_fr, timestamps, trial_nb, f'{da.name}', 
+    #                                         trial_window, bin_duration)
 
-    cluIdx = 8
     df2plot = da.sel(cluID=cluID).to_dataframe()
     df2plot['type'] = 'event-triggered'
     df2plotR = da_rand.sel(cluID=cluID).to_dataframe()
@@ -274,7 +276,9 @@ def compare_fr_with_random(da, xr_fr, cluID, trial_window, bin_duration, pvalues
 
     df2plot = pd.concat([df2plot, df2plotR]).reset_index()
     ax = sns.lineplot(df2plot, y=da.name, x='spk_event_time', hue='type', n_boot=100, ax=ax)
-    
+    ax.legend(loc='upper left', prop = { "size": 8 }, ncol=4)
+    ax.set(xlabel='Time around event (ms)')
+
     if pvalues is not None:
         # also indiciate where the difference is significant
         idx = np.where(pvalues<0.05)[0]
@@ -310,3 +314,34 @@ def binned_firing_rate(spiketrains, bin_size, t_start=None, t_stop=None,
                             sampling_period=bin_size, units=1/pq.s,
                             t_start=bs.t_start, normalization=output,
                             copy=False)
+    
+
+
+def get_pvalue_random_events(da, xr_fr, trial_window, bin_duration,  num_sample=1000):
+    # Compare with random event and return the corrected p values
+    
+    # choose some random event
+    timestamps = sorted(np.random.choice(xr_fr.time, size=num_sample, replace=False))
+    trial_nb = np.arange(len(timestamps))
+
+    da_rand = build_evt_fr_xarray(xr_fr.spikes_FR_session, timestamps, trial_nb, f'{da.name}', 
+                                            trial_window, bin_duration)
+    
+    
+    # Compare the event response with the random events
+    pvalue_ratio = np.zeros((len(da.cluID),))
+    pvalues = np.zeros((len(da.cluID),len(da.spk_event_time) ))
+    
+    for i, cluID in tqdm(enumerate(da.cluID), total=len(da.cluID)):
+        x = da_rand.sel(cluID=cluID).data
+        y = da.sel(cluID=cluID).data
+        
+        # firing rate may not be normally distributed
+        # pvalues[i,:] = ttest_ind(x,y,axis=0, nan_policy='omit').pvalue #Note: can be nan in the data if the event cannot be found
+        pvalues[i,:] = ranksums(x,y,axis=0, nan_policy='omit').pvalue #wilcoxon two samples
+        
+        # adjust for multiple comparison
+        rejected,pvalues[i,:],_,_ = multipletests(pvalues[i,:],0.05)
+        pvalue_ratio[i] = np.mean(rejected)
+        
+    return da_rand, pvalues, pvalue_ratio

@@ -6,11 +6,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from tqdm.auto import tqdm
 import xarray as xr
 from matplotlib import gridspec
 from snakehelper.SnakeIOHelper import getSnake
 from trialexp.process.ephys.spikes_preprocessing import build_evt_fr_xarray
-from trialexp.process.ephys.utils import compare_fr_with_random, plot_firing_rate
+from trialexp.process.ephys.utils import compare_fr_with_random, get_pvalue_random_events, plot_firing_rate
 from trialexp.process.group_analysis.plot_utils import style_plot
 
 from workflow.scripts import settings
@@ -67,7 +68,7 @@ a.set(ylabel='Depth (um)', title='ProbeA')
 plt.savefig(figures_path/f'cluster_depth_distribution_{probe_name}.png',dpi=200)
 
 
-#%%
+#%% Align the photometry time to the firing rate time
 
 xr_session = xr.open_dataset(Path(sinput.xr_session))
 xr_session = xr_session.interp(time=xr_fr_coord.time)
@@ -119,114 +120,30 @@ fig.savefig(figures_path/f'firing_map_{probe_name}_1min.png',dpi=200)
 #     kl_d[tIdx] = kl_div(y_pdf,x_pdf).sum()
     
 #%%
-from scipy.stats import ttest_ind, wilcoxon, poisson_means_test
+
 var_name = 'spikes_FR.first_spout'
 da = xr_spikes_trials[var_name]
-
-# choose some random event
-timestamps = sorted(np.random.choice(xr_fr.time, size=len(da.trial_nb), replace=False))
-trial_nb = np.arange(len(timestamps))
 trial_window = (500, 1000) # time before and after timestamps to extract
 bin_duration = xr_fr.attrs['bin_duration']
 
-da_rand = build_evt_fr_xarray(xr_fr.spikes_FR_session, timestamps, trial_nb, f'{var_name}', 
-                                        trial_window, bin_duration)
-
-timestamps = sorted(np.random.choice(xr_fr.time, size=len(da.trial_nb), replace=False))
-da_rand2 = build_evt_fr_xarray(xr_fr.spikes_FR_session, timestamps, trial_nb, f'{var_name}', 
-                                        trial_window, bin_duration)
-
-da = da_rand2
-
-#%%
-pvalue_ratio = np.zeros((len(da.cluID),))
-pvalues = np.zeros((len(da.cluID),len(da.spk_event_time) ))
-# for i, cluID in enumerate([da.cluID[2]]):
-for i, cluID in enumerate(da.cluID):
-
-    x = da_rand.sel(cluID=cluID).data
-    y = da.sel(cluID=cluID).data
-    
-    # firing rate may not be normally distributed
-    # pvalue = ttest_ind(x,y,axis=0, nan_policy='omit').pvalue #Note: can be nan in the data if the event cannot be found
-    pvalues[i,:] = wilcoxon(x,y,axis=0, nan_policy='omit').pvalue
-    # pvalue = poisson_means_test(x,10, y,10, axis=0, nan_policy='omit')
-    pvalue_ratio[i] = np.mean(pvalues[i,:]<0.05)
-    
-# TODO: even with toally random data, portion of significance is still too high
+da_rand, pvalues, pvalue_ratio = get_pvalue_random_events(da, xr_fr, trial_window, bin_duration)
 
 #%%
 # sort the cluID according to the pvalue_ratio descendingly
 sortIdx = np.argsort(pvalue_ratio)[::-1]
-cluID = da.cluID[sortIdx]
-pvalues = pvalues[sortIdx,:]
-pvalue_ratio = pvalue_ratio[sortIdx]
+pvalue_ratio_sorted = pvalue_ratio[sortIdx]
+cluID_sorted = da.cluID[sortIdx]
+pvalues_sorted = pvalues[sortIdx,:]
 
 
-fig, ax = plt.subplots(3,3,dpi=300, figsize=(3*3,3*3))
+fig, ax = plt.subplots(3,3,dpi=200, figsize=(4*3,4*3))
 
 for cellIdx2plot in range(len(ax.flat)):
-    compare_fr_with_random(da, xr_fr.spikes_FR_session,
-                        cluID[cellIdx2plot], trial_window, 
-                        bin_duration, pvalues[cellIdx2plot,:], ax=ax.flat[cellIdx2plot])
+    compare_fr_with_random(da, da_rand, 
+                        cluID_sorted[cellIdx2plot], pvalues_sorted[cellIdx2plot,:],
+                        ax=ax.flat[cellIdx2plot])
 
 
-#%%
-from scipy import stats
-n_trial = len(da_rand.trial_nb)
-k1 = np.nansum(x[:,4]/100)
-k2 = np.nansum(y[:,4]/100)
-
-a = x[:,4].ravel()
-a = a[~np.isnan(a)]
-a = stats.uniform.rvs(size=100)
-kstest(a, 'poisson', args=(a.mean(),))
-
-    
-
-#%%
-df1 = pd.DataFrame()
-df1['value'] = x[:,0]
-df1['var'] = 'x'
-
-df2 = pd.DataFrame()
-df2['value'] = y[:,0]
-df2['var'] = 'y'
-
-df = pd.concat([df1,df2]).reset_index()
-
-sns.histplot(df, x='value', hue='var', bins=20,kde=True)
-
-#%%
-cluIdx = 10
-df2plot = da.isel(cluID=cluIdx).to_dataframe()
-df2plot['type'] = 'real'
-df2plotR = da_rand.isel(cluID=cluIdx).to_dataframe()
-df2plotR['type'] = 'random'
-
-df2plot = pd.concat([df2plot, df2plotR]).reset_index()
-sns.lineplot(df2plot, y=var_name, x='spk_event_time', hue='type', n_boot=100)
-
-#%%
-# calculate the modulation index of neurons
-var_name = 'spikes_FR.spout'
-da = xr_spikes_trials[var_name]
-fr_std = da.std(dim='trial_nb').mean(dim='spk_event_time')
-meanCurve = da.mean(dim='trial_nb')
-p2p = meanCurve.max(dim='spk_event_time') -  meanCurve.min(dim='spk_event_time')
-f2 = p2p/fr_std
-f2 = f2.sortby(f2,ascending=False)
-
-#%%
-df2plot = da.sel(cluID=f2.cluID[0]).to_dataframe().reset_index()
-df2plot['type'] = 'real'
-df2plotR = da_rand.sel(cluID=f2.cluID[0]).to_dataframe().reset_index()
-df2plotR['type'] = 'random'
-
-df2plot = pd.concat([df2plot, df2plotR])
-
-
-sns.lineplot(df2plot, y=var_name, x='spk_event_time', hue='type',n_boot=100)
 
 #%% Define trials of interest
 
