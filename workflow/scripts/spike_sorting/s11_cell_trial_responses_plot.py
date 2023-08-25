@@ -13,6 +13,7 @@ from snakehelper.SnakeIOHelper import getSnake
 from trialexp.process.ephys.spikes_preprocessing import build_evt_fr_xarray
 from trialexp.process.ephys.utils import compare_fr_with_random, get_pvalue_random_events, plot_firing_rate
 from trialexp.process.group_analysis.plot_utils import style_plot
+from joblib import Parallel, delayed
 
 from workflow.scripts import settings
 from scipy.special import kl_div
@@ -77,29 +78,31 @@ xr_session = xr.load_dataset(Path(sinput.xr_session))
 xr_session = xr_session.interp(time=xr_fr_coord.time)
 
 #%% Firing rate map 
-# sns.set_context('paper')
-# fig = plot_firing_rate(xr_fr_coord, xr_session, df_pycontrol, ['hold_for_water', 'spout','bar_off','aborted']);
-# fig.savefig(figures_path/f'firing_map_{probe_name}.png',dpi=200)
+sns.set_context('paper')
+fig = plot_firing_rate(xr_fr_coord, xr_session, df_pycontrol, ['hold_for_water', 'spout','bar_off','aborted']);
+fig.savefig(figures_path/f'firing_map_{probe_name}.png',dpi=200)
 
-# # a zoomed in version
-# fig = plot_firing_rate(xr_fr_coord, xr_session, df_pycontrol,
-#                        ['hold_for_water', 'spout','bar_off','aborted'],
-#                        xlim=[180*1000, 240*1000]);
+# a zoomed in version
+fig = plot_firing_rate(xr_fr_coord, xr_session, df_pycontrol,
+                       ['hold_for_water', 'spout','bar_off','aborted'],
+                       xlim=[180*1000, 240*1000]);
 
-# fig.savefig(figures_path/f'firing_map_{probe_name}_1min.png',dpi=200)
+fig.savefig(figures_path/f'firing_map_{probe_name}_1min.png',dpi=200)
 
 #%%
 var2plot = [x for x in xr_spikes_trials if x.startswith('spikes_FR')]
 bin_duration = xr_fr.attrs['bin_duration']
 trial_window = xr_spikes_trials.attrs['trial_window']
+style_plot()
 
-for var_name in tqdm(var2plot):
+def draw_response_curve(var_name):
+    print(f'Drawing the response curve for {var_name}')
     da = xr_spikes_trials[var_name]
 
     da_rand, pvalues, pvalue_ratio = get_pvalue_random_events(da, xr_fr, trial_window, bin_duration)
 
     # sort the cluID according to the pvalue_ratio descendingly
-    pvalue_ratio = pvalue_ratio[(pvalue_ratio>0.2)&(pvalue_ratio<0.9)]
+    pvalue_ratio[(pvalue_ratio<0.2)|(pvalue_ratio>0.8)] = 0 #only focus on ratio between 0.2 and 0.8
     sortIdx = np.argsort(pvalue_ratio)[::-1]
     pvalue_ratio_sorted = pvalue_ratio[sortIdx]
     cluID_sorted = da.cluID[sortIdx]
@@ -113,45 +116,11 @@ for var_name in tqdm(var2plot):
                             cluID_sorted[cellIdx2plot], pvalues_sorted[cellIdx2plot,:],
                             ax=ax.flat[cellIdx2plot])
 
-    # fig.tight_layout()
-    # fig.savefig(figures_path/f'event_response_{var_name}.png',dpi=200)
+    fig.tight_layout()
+    fig.savefig(figures_path/f'event_response_{var_name}.png',dpi=200)
+    
+# use joblib to speed up the processing
+# generator expression
+Parallel(n_jobs=len(var2plot))(delayed(draw_response_curve)(var_name) for var_name in var2plot)
 
-#%% Define trials of interest
 
-# Plot the distrubtion of cluster in each brain regions
-# trial_types_to_plot = ('water by spout')
-
-# structs, struct_count = np.unique(xr_spikes_trials_phases['brain_region_short'].values.astype(str), return_counts=True)
-
-# # create grid for different subplots
-# spec = gridspec.GridSpec(ncols=2, nrows=1,
-#                          width_ratios=[2, 1], wspace=0.1)
-
-# # create a figure
-# fig = plt.figure(figsize=(20,5))
-# # to change size of subplot's
-# # set height of each subplot as 8
-# # fig.set_figheight(8)
- 
-# # set width of each subplot as 8
-# fig.set_figwidth
-# axes = list()
-# axes.append(fig.add_subplot(spec[0]))
-# plt.suptitle(f'Clusters anatomical distribution: {session_ID}')
-
-# sns.barplot(x=structs, y=struct_count, ax=axes[0])
-# axes[0].set_xlabel('Brain structure acronym')
-# axes[0].set_ylabel('Number of clusters')
-
-# axes.append(fig.add_subplot(spec[1]))
-
-# sns.histplot(data=xr_spikes_trials_phases[['probe_name_x','anat_depth']].to_dataframe(),x='anat_depth', hue='probe_name_x', kde=True)
-# axes[1].set_xlabel('Anatomical depth (micrometers)')
-# axes[1].set_ylabel('Number of clusters')
-
-# fig.savefig(figures_path / 'cluster_anat_distrib.png')
-
-# %%
-xr_fr.close()
-xr_spikes_trials.close()
-# %%
