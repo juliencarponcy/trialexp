@@ -264,10 +264,7 @@ def plot_firing_rate(xr_fr_coord, xr_session, df_pycontrol, events2plot, xlim=No
 
 def compare_fr_with_random(da, da_rand, cluID, pvalues=None, random_n=1000, ax=None):
     # xr_fr: the dataArray with the continuuous firing rate of the cell
-    # timestamps = sorted(np.random.choice(xr_fr.time, size=random_n, replace=False))
-    # trial_nb = np.arange(len(timestamps))
-    # da_rand = build_evt_fr_xarray(xr_fr, timestamps, trial_nb, f'{da.name}', 
-    #                                         trial_window, bin_duration)
+    
 
     df2plot = da.sel(cluID=cluID).to_dataframe()
     df2plot['type'] = 'event-triggered'
