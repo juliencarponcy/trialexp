@@ -7,7 +7,7 @@ from neo.core import SpikeTrain # %% Extract and bin spikes by cluster_ID
 import xarray as xr
 from trialexp.process.pycontrol import event_filters
 from pandas.api.types import infer_dtype
-
+from functools import partial
         
 def dataframe_cleanup(dataframe: pd.DataFrame):
     '''
@@ -189,6 +189,6 @@ def make_evt_dataframe(df_trials, df_conditions, df_events_cond):
     # rename the columns
     df_aggregated.columns = ['trial_outcome', 'trial_onset',  *behav_phases_filters.keys()]
     df_aggregated['reward'] = df_aggregated.first_spout + 500 # Hard coded, 500ms delay, perhaps adapt to a parameter?
-    df_aggregated['rest'] = df_aggregated.trial_onset - 2000 # Hard coded, 2000ms resting period, perhaps adapt to a parameter?
+    df_aggregated['pre-cue1000'] = df_aggregated.trial_onset - 1000 # Hard coded, 2000ms resting period, perhaps adapt to a parameter?
 
     return df_aggregated
