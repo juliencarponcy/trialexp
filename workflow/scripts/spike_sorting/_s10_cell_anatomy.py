@@ -204,3 +204,38 @@ xr_spikes_trials_phases.close()
 
 
 # %% 
+#%% Define trials of interest
+
+# Plot the distrubtion of cluster in each brain regions
+# trial_types_to_plot = ('water by spout')
+
+# structs, struct_count = np.unique(xr_spikes_trials_phases['brain_region_short'].values.astype(str), return_counts=True)
+
+# # create grid for different subplots
+# spec = gridspec.GridSpec(ncols=2, nrows=1,
+#                          width_ratios=[2, 1], wspace=0.1)
+
+# # create a figure
+# fig = plt.figure(figsize=(20,5))
+# # to change size of subplot's
+# # set height of each subplot as 8
+# # fig.set_figheight(8)
+ 
+# # set width of each subplot as 8
+# fig.set_figwidth
+# axes = list()
+# axes.append(fig.add_subplot(spec[0]))
+# plt.suptitle(f'Clusters anatomical distribution: {session_ID}')
+
+# sns.barplot(x=structs, y=struct_count, ax=axes[0])
+# axes[0].set_xlabel('Brain structure acronym')
+# axes[0].set_ylabel('Number of clusters')
+
+# axes.append(fig.add_subplot(spec[1]))
+
+# sns.histplot(data=xr_spikes_trials_phases[['probe_name_x','anat_depth']].to_dataframe(),x='anat_depth', hue='probe_name_x', kde=True)
+# axes[1].set_xlabel('Anatomical depth (micrometers)')
+# axes[1].set_ylabel('Number of clusters')
+
+# fig.savefig(figures_path / 'cluster_anat_distrib.png')
+
