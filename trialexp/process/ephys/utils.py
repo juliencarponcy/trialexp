@@ -373,14 +373,14 @@ def crosscorr_lag_range(datax: pd.Series, datay: pd.Series, lags:list):
 
 
 
-def plot_correlated_neurons(cross_corr, xr_spike_session, n_fig = 5):
-    UIDs = xr_spike_session.UIDs.data
+def plot_correlated_neurons(cross_corr, xr_spike_session, lags, n_fig = 5):
+    UIDs = xr_spike_session.cluID.data
     
     max_corr = cross_corr.max(axis=1)
     max_corr_lag = cross_corr.argmax(axis=1)
     cell_idx_sorted = np.argsort(max_corr)[::-1]
     max_corr_lag_sorted = max_corr_lag[cell_idx_sorted]
-    uid_sorted = UIDs[cell_idx_sorted].values
+    uid_sorted = UIDs[cell_idx_sorted]
     max_corr_sorted = max_corr[cell_idx_sorted]
 
     start_time = 180
@@ -393,6 +393,7 @@ def plot_correlated_neurons(cross_corr, xr_spike_session, n_fig = 5):
     fig, ax = plt.subplots(n_fig,1,figsize=(10,n_fig*2), sharex=True)
     photom = xr_spike_session.analog_1_df_over_f.sel(time=time2plot).data.ravel()
     ax[0].plot(time2plot/1000, photom, label='df/f',color='g')
+    ax[0].set_title('dF/F')
 
     for i, ax in enumerate(ax.flat[1:]):
 
