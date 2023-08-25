@@ -42,7 +42,9 @@ def get_last_bar_off_before_first_spout(df_trial):
 
 def get_first_event_from_name(df_trial, evt_name):
     event =  df_trial[df_trial['name']==evt_name]
-    return event.iloc[0]
+    
+    if len(event) >0:    
+        return event.iloc[0]
     
 def extract_event_time(df_event, filter_func, filter_func_kwargs, groupby_col='trial_nb'):
     #extract event on a trial based on a filter function
