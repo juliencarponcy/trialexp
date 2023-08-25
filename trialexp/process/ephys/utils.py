@@ -347,3 +347,65 @@ def get_pvalue_random_events(da, xr_fr, trial_window, bin_duration,  num_sample=
         pvalue_ratio[i] = np.mean(rejected)
         
     return da_rand, pvalues, pvalue_ratio
+
+
+# Cross-corr with lags from: https://towardsdatascience.com/computing-cross-correlation-between-geophysical-time-series-488642be7bf0
+def crosscorr(datax: pd.Series, datay: pd.Series, lag:int =0):
+    """ Lag-N cross correlation. 
+    Shifted data filled with NaNs 
+
+    Parameters
+    ----------
+    lag : int, default 0
+    datax, datay : pandas.Series objects of equal length
+    Returns
+    ----------
+    crosscorr : float
+    """
+    return datax.corr(datay.shift(lag))
+
+def crosscorr_lag_range(datax: pd.Series, datay: pd.Series, lags:list):
+    cross_corr = np.ndarray(shape=(len(lags)))
+    for lag_idx, lag in enumerate(lags):
+        cross_corr[lag_idx] = crosscorr(datax,datay,lag)
+
+    return cross_corr
+
+
+
+def plot_correlated_neurons(cross_corr, xr_spike_session, n_fig = 5):
+    UIDs = xr_spike_session.UIDs.data
+    
+    max_corr = cross_corr.max(axis=1)
+    max_corr_lag = cross_corr.argmax(axis=1)
+    cell_idx_sorted = np.argsort(max_corr)[::-1]
+    max_corr_lag_sorted = max_corr_lag[cell_idx_sorted]
+    uid_sorted = UIDs[cell_idx_sorted].values
+    max_corr_sorted = max_corr[cell_idx_sorted]
+
+    start_time = 180
+    stop_time = start_time + 30
+    start_time_idx = np.searchsorted(xr_spike_session.time, start_time*1000)
+    stop_time_idx = np.searchsorted(xr_spike_session.time, stop_time*1000)
+    time2plot = xr_spike_session.time[start_time_idx:stop_time_idx]
+
+    style_plot()
+    fig, ax = plt.subplots(n_fig,1,figsize=(10,n_fig*2), sharex=True)
+    photom = xr_spike_session.analog_1_df_over_f.sel(time=time2plot).data.ravel()
+    ax[0].plot(time2plot/1000, photom, label='df/f',color='g')
+
+    for i, ax in enumerate(ax.flat[1:]):
+
+        shift = int(max_corr_lag_sorted[i]-25)
+        time2plot_maxlag = xr_spike_session.time[(start_time_idx+shift):(stop_time_idx+shift)]
+
+        fr = xr_spike_session.spikes_zFR_session.sel(cluID=uid_sorted[i], time=time2plot_maxlag).data
+
+        title = '_'.join(str(uid_sorted[i]).split('_')[1:])
+        ax.plot(time2plot/1000,fr,label='Z-scored Firing rate')
+        ax.set_title(f'{title}, R2={max_corr_sorted[i]:.2f}, lag={lags[max_corr_lag_sorted[i]]}')
+        ax.set_xlabel('Time (s)')
+        
+    fig.tight_layout()
+    
+    return fig

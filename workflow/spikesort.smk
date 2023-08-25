@@ -54,9 +54,9 @@ rule spike_sorting:
 rule spike_metrics_ks3:
     input:
         rec_properties = '{sessions}/{task_path}/{session_id}/ephys/rec_properties.csv',
-        # move_complete = '{sessions}/{task_path}/{session_id}/processed/move_to_server.done',
         sorting_complete = '{sessions}/{task_path}/{session_id}/processed/spike_sorting.done'
     output:
+        kilosort_path = directory('{sessions}/{task_path}/{session_id}/processed/kilosort3'),
         metrics_complete = touch('{sessions}/{task_path}/{session_id}/processed/spike_metrics.done')
     threads: 32
     priority: 10
@@ -93,7 +93,7 @@ rule cell_metrics_processing:
         kilosort_path = '{sessions}/{task_path}/{session_id}/processed/kilosort3',
         ephys_sync_complete = '{sessions}/{task_path}/{session_id}/processed/ephys_sync.done',
     output:
-        cell_matrics_full= '{sessions}/{task_path}/{session_id}/processed/kilosort3/cell_metrics_full.nc'
+        cell_matrics_full= '{sessions}/{task_path}/{session_id}/processed/cell_metrics_full.nc'
     threads: 32
     priority: 50
     script:
@@ -102,7 +102,7 @@ rule cell_metrics_processing:
 
 rule cell_metrics_aggregation:
     input:
-        cell_matrics_full= '{sessions}/{task_path}/{session_id}/processed/kilosort3/cell_metrics_full.pkl'
+        cell_matrics_full= '{sessions}/{task_path}/{session_id}/processed/cell_metrics_full.pkl'
     output:
         cell_metrics_aggregation_complete =  touch('{sessions}/{task_path}/{session_id}/processed/cell_metrics_aggregation.done')
     threads: 32
@@ -136,7 +136,7 @@ rule cells_to_xarray:
         ephys_sync_complete = '{sessions}/{task_path}/{session_id}/processed/ephys_sync.done',
         xr_session = '{sessions}/{task_path}/{session_id}/processed/xr_session.nc',   
         sorting_path = '{sessions}/{task_path}/{session_id}/processed/kilosort3',   
-        cell_matrics_full= '{sessions}/{task_path}/{session_id}/processed/kilosort3/cell_metrics_full.nc' 
+        cell_matrics_full= '{sessions}/{task_path}/{session_id}/processed/cell_metrics_full.nc' 
     output:
         xr_spikes_trials = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials.nc',
         xr_spikes_fr = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_fr.nc',
@@ -176,10 +176,10 @@ rule cell_trial_responses_plot:
 
 rule session_correlations:
     input:
-        # xr_session = '{sessions}/{task_path}/{session_id}/processed/xr_session.nc',
         xr_spike_fr = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_fr.nc',
     output:
-        xr_session_correlations = '{sessions}/{task_path}/{session_id}/processed/xr_session_correlations.nc'
+        df_cross_corr = '{sessions}/{task_path}/{session_id}/processed/df_cross_corr.pkl',
+        corr_plot = '{sessions}/{task_path}/{session_id}/processed/figures/ephys/correlated_cells.png'
     threads: 32
     priority: 90
     script:

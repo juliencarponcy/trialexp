@@ -25,18 +25,20 @@ from workflow.scripts import settings
 sorter_name = 'kilosort3'
 verbose = True
 
-# use the temporary folder for processing with Cell Explorer
-# Doing processong in local file should be much faster than over the network, 
-# since Cell Explorer probably does very frequent disk I/O via memmap
 
 rec_properties_path = Path(sinput.rec_properties)
 session_id = rec_properties_path.parents[1].stem
-sorter_specific_path = Path(os.environ['TEMP_DATA_PATH']) /session_id/ sorter_name
 
+
+# use the temporary folder for processing with Cell Explorer
+# Doing processong in local file should be much faster than over the network, 
+# since Cell Explorer probably does very frequent disk I/O via memmap
+sorter_specific_path = Path(os.environ['TEMP_DATA_PATH']) /session_id/ sorter_name
 assert sorter_specific_path.exists(), 'Sorted data do not exist!'
 probe_folders = [str(sorter_specific_path / probe_folder) for probe_folder in os.listdir(sorter_specific_path)]
 
 session_path = rec_properties_path.parents[1] /'processed'
+kilosort_path = Path(soutput.kilosort_path)
 
 # %% Start Matlab engine and add paths
 eng = matlab.engine.start_matlab()
@@ -59,7 +61,7 @@ for probe_folder in probe_folders:
     # copy the kilosort output and cell metrics back to the session folder
     print('I will now copy the Cell metrics and sorting output back to the session folder')
     probe_path = Path(probe_folder)
-    shutil.copytree(probe_path, session_path/'kilosort3'/probe_path.stem, dirs_exist_ok=True)
+    shutil.copytree(probe_path, kilosort_path/probe_path.stem, dirs_exist_ok=True)
     
     print('Folders copied. I will now delete the temp folders')
     # delete the temporary folders

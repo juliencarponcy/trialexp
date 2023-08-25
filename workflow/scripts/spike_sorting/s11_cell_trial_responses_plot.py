@@ -119,6 +119,8 @@ def draw_response_curve(var_name):
     fig.tight_layout()
     fig.savefig(figures_path/f'event_response_{var_name}.png',dpi=200)
     
+    #TODO also draw the heatmaps
+    
 # use joblib to speed up the processing
 # generator expression
 Parallel(n_jobs=len(var2plot))(delayed(draw_response_curve)(var_name) for var_name in var2plot)
