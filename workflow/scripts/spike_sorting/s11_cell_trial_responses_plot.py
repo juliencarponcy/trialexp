@@ -25,7 +25,7 @@ from scipy.special import kl_div
 
 
 # %% Define variables and folders
-# xr_session= xr.open_dataset(Path(sinput.xr_session))
+# xr_session= xr.load_dataset(Path(sinput.xr_session))
 # xr_spikes_trials_path = Path(sinput.xr_spikes_trials_anat)
 # xr_spikes_trials_phases_path = Path(sinput.xr_spikes_trials_phases_anat)
 # xr_spikes_session_path = Path(sinput.xr_spikes_full_session_anat)
@@ -36,9 +36,12 @@ figures_path = Path(soutput.figures_path)
 # session_ID = session_path.stem
 
 #%% Opening datasets
-# xr_session = xr.open_dataset(Path(xr_session_path)
-xr_spikes_trials = xr.open_dataset(Path(sinput.xr_spikes_trials))
-xr_fr = xr.open_dataset(Path(sinput.xr_spikes_fr))
+# load_dataset will load the file into memory and automatically close it
+# open_dataset will not load everything into memory at once
+# load_dataset is better for analysis pipeline as mulitple script may work on the same file
+
+xr_spikes_trials = xr.load_dataset(Path(sinput.xr_spikes_trials)) 
+xr_fr = xr.load_dataset(Path(sinput.xr_spikes_fr))
 session_ID = xr_spikes_trials.attrs['session_ID']
 df_pycontrol = pd.read_pickle(sinput.pycontrol_dataframe)
 
@@ -70,25 +73,25 @@ plt.savefig(figures_path/f'cluster_depth_distribution_{probe_name}.png',dpi=200)
 
 #%% Align the photometry time to the firing rate time
 
-xr_session = xr.open_dataset(Path(sinput.xr_session))
+xr_session = xr.load_dataset(Path(sinput.xr_session))
 xr_session = xr_session.interp(time=xr_fr_coord.time)
 
 #%% Firing rate map 
-sns.set_context('paper')
-fig = plot_firing_rate(xr_fr_coord, xr_session, df_pycontrol, ['hold_for_water', 'spout','bar_off','aborted']);
-fig.savefig(figures_path/f'firing_map_{probe_name}.png',dpi=200)
+# sns.set_context('paper')
+# fig = plot_firing_rate(xr_fr_coord, xr_session, df_pycontrol, ['hold_for_water', 'spout','bar_off','aborted']);
+# fig.savefig(figures_path/f'firing_map_{probe_name}.png',dpi=200)
 
-# a zoomed in version
-fig = plot_firing_rate(xr_fr_coord, xr_session, df_pycontrol,
-                       ['hold_for_water', 'spout','bar_off','aborted'],
-                       xlim=[180*1000, 240*1000]);
+# # a zoomed in version
+# fig = plot_firing_rate(xr_fr_coord, xr_session, df_pycontrol,
+#                        ['hold_for_water', 'spout','bar_off','aborted'],
+#                        xlim=[180*1000, 240*1000]);
 
-fig.savefig(figures_path/f'firing_map_{probe_name}_1min.png',dpi=200)
+# fig.savefig(figures_path/f'firing_map_{probe_name}_1min.png',dpi=200)
 
 #%%
 var2plot = [x for x in xr_spikes_trials if x.startswith('spikes_FR')]
-trial_window = (500, 1000) # time before and after timestamps to extract
 bin_duration = xr_fr.attrs['bin_duration']
+trial_window = xr_spikes_trials.attrs['trial_window']
 
 for var_name in tqdm(var2plot):
     da = xr_spikes_trials[var_name]
@@ -96,21 +99,22 @@ for var_name in tqdm(var2plot):
     da_rand, pvalues, pvalue_ratio = get_pvalue_random_events(da, xr_fr, trial_window, bin_duration)
 
     # sort the cluID according to the pvalue_ratio descendingly
+    pvalue_ratio = pvalue_ratio[(pvalue_ratio>0.2)&(pvalue_ratio<0.9)]
     sortIdx = np.argsort(pvalue_ratio)[::-1]
     pvalue_ratio_sorted = pvalue_ratio[sortIdx]
     cluID_sorted = da.cluID[sortIdx]
     pvalues_sorted = pvalues[sortIdx,:]
 
 
-    fig, ax = plt.subplots(3,3,dpi=200, figsize=(4*3,4*3))
+    fig, ax = plt.subplots(4,4,dpi=200, figsize=(4*3,4*3))
 
     for cellIdx2plot in range(len(ax.flat)):
         compare_fr_with_random(da, da_rand, 
                             cluID_sorted[cellIdx2plot], pvalues_sorted[cellIdx2plot,:],
                             ax=ax.flat[cellIdx2plot])
 
-    fig.tight_layout()
-    fig.savefig(figures_path/f'event_response_{var_name}.png',dpi=200)
+    # fig.tight_layout()
+    # fig.savefig(figures_path/f'event_response_{var_name}.png',dpi=200)
 
 #%% Define trials of interest
 

@@ -55,12 +55,12 @@ bin_duration = 10 # ms for binning spike timestamps
 #ms for half-gaussian kernel size (1SD duration), 
 # 20ms as suggest from Martin et al (1999) https://www.sciencedirect.com/science/article/pii/S0165027099001272#FIG4
 sigma_ms = 20 #
-trial_window = (500, 1000) # time before and after timestamps to extract
+trial_window = (500, 2000) # time before and after timestamps to extract
 
 #%% File loading
 
 xr_cell_metrics = xr.load_dataset(ce_cell_metrics_full)
-xr_session = xr.open_dataset(sinput.xr_session)
+xr_session = xr.load_dataset(sinput.xr_session)
 session_root_path = Path(sinput.xr_session).parent
 df_events_cond = pd.read_pickle(session_root_path / 'df_events_cond.pkl')
 df_conditions = pd.read_pickle(session_root_path / 'df_conditions.pkl')
@@ -186,6 +186,8 @@ xr_spikes_trials = xr.merge([xr_cell_metrics, trial_out, trial_ts, *da_list], jo
 xr_spikes_trials.attrs['bin_duration'] = bin_duration
 xr_spikes_trials.attrs['sigma_ms'] = sigma_ms
 xr_spikes_trials.attrs['kernel'] = 'ExponentialKernel'
+xr_spikes_trials.attrs['trial_window'] = trial_window
+
 
 xr_spikes_trials.to_netcdf(Path(soutput.xr_spikes_trials), engine='h5netcdf')
 xr_spikes_trials.close()

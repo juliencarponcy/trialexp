@@ -47,10 +47,10 @@ root_path = Path(os.environ['SESSION_ROOT_DIR'])
 # if bin duration == 1ms, we will have a BOOL arary (@1000Hz)
 
 
-xr_spike_fr = xr.open_dataset(sinput.xr_spike_fr)
+xr_spike_fr = xr.load_dataset(sinput.xr_spike_fr)
 session_root_path = Path(sinput.xr_spike_fr).parent
 
-xr_session = xr.open_dataset(session_root_path/'xr_session.nc')
+xr_session = xr.load_dataset(session_root_path/'xr_session.nc')
 
 xr_spike_fr_interp = xr_spike_fr.interp(time=xr_session.time)
 xr_spike_session = xr.merge([xr_session, xr_spike_fr_interp]) # make sure their time coord is the same
