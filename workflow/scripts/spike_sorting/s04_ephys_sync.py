@@ -31,7 +31,7 @@ ephys_sync_done_path = str(Path(settings.debug_folder) / 'processed' / 'ephys_sy
 verbose = True
 sorter_name = 'kilosort3'
 
-kilosort_folder = Path(sinput.kilosort_path)
+kilosort_folder = Path(sinput.metrics_complete).parent /'kilosort'
 pycontrol_path = (kilosort_folder.parents[1]/'pycontrol')
 pycontrol_path = list(pycontrol_path.glob('*.txt'))[0]
 sync_path = kilosort_folder.parents[1]/'ephys'

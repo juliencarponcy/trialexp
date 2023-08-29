@@ -44,7 +44,7 @@ processed_folder = rec_properties_path.parent.parent / 'processed'
 
 rec_properties = pd.read_csv(rec_properties_path, header=0, index_col=0)
 
-kilosort_path = Path(sinput.kilosort_path)
+kilosort_path = Path(sinput.ephys_sync_complete).parent/'kilosort'
 # %% Get the path of CellExplorer outputs
 
 xr_metrics_all = []

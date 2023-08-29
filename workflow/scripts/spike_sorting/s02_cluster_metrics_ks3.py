@@ -5,10 +5,8 @@ Script to create the session folder structure
 import os
 from pathlib import Path
 import shutil
-
 import matlab.engine
 from snakehelper.SnakeIOHelper import getSnake
-from trialexp.process.ephys.utils import prepare_mathlab_path
 
 from workflow.scripts import settings
 
@@ -38,12 +36,20 @@ assert sorter_specific_path.exists(), 'Sorted data do not exist!'
 probe_folders = [str(sorter_specific_path / probe_folder) for probe_folder in os.listdir(sorter_specific_path)]
 
 session_path = rec_properties_path.parents[1] /'processed'
-kilosort_path = Path(soutput.kilosort_path)
+kilosort_path = session_path /'kilosort'
 
 # %% Start Matlab engine and add paths
 eng = matlab.engine.start_matlab()
 
-prepare_mathlab_path(eng)
+# importing matlabplot while the eng is active may have some library conflicts issues
+s = eng.genpath(os.environ['CORTEX_LAB_SPIKES_PATH']) # maybe unnecessary, just open all ks3 results
+n = eng.genpath(os.environ['NPY_MATLAB_PATH'])
+c = eng.genpath(os.environ['CELL_EXPLORER_PATH'])
+
+eng.addpath(s, nargout=0)
+eng.addpath(n, nargout=0)
+eng.addpath(c, nargout=0)
+
 # %% Process CellExplorer Cell metrics
 
 for probe_folder in probe_folders:

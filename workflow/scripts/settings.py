@@ -8,6 +8,6 @@ dotenv.load_dotenv()
 
 debug_folder = os.path.join(os.environ['SESSION_ROOT_DIR'], 
                             'reaching_go_spout_bar_nov22',
-                            'RE607-2023-07-13-121341')
+                            'TT004-2023-07-31-145414')
 # debug_folder = r'/home/MRC.OX.AC.UK/phar0732/ettin/Data/head-fixed/by_sessions/reaching_go_spout_bar_nov22/kms062-2023-03-06-182344'
 # %%

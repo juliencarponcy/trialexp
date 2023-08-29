@@ -45,7 +45,7 @@ rule spike_sorting:
     input:
         rec_properties = '{sessions}/{task_path}/{session_id}/ephys/rec_properties.csv',
     output:
-        sorting_complete = touch('{sessions}/{task_path}/{session_id}/processed/spike_sorting.done'),           
+        sorting_complete = touch('{sessions}/{task_path}/{session_id}/processed/spike_sorting.done'), 
     threads: 32
     script:
         "scripts/spike_sorting/s01_sort_ks3.py"
@@ -54,9 +54,8 @@ rule spike_sorting:
 rule spike_metrics_ks3:
     input:
         rec_properties = '{sessions}/{task_path}/{session_id}/ephys/rec_properties.csv',
-        sorting_complete = '{sessions}/{task_path}/{session_id}/processed/spike_sorting.done'
+        sorting_complete = '{sessions}/{task_path}/{session_id}/processed/spike_sorting.done',
     output:
-        kilosort_path = directory('{sessions}/{task_path}/{session_id}/processed/kilosort3'),
         metrics_complete = touch('{sessions}/{task_path}/{session_id}/processed/spike_metrics.done')
     threads: 32
     priority: 10
@@ -78,7 +77,6 @@ rule waveform_and_quality_metrics:
 
 rule ephys_sync:
     input:
-        kilosort_path = '{sessions}/{task_path}/{session_id}/processed/kilosort3',
         metrics_complete = '{sessions}/{task_path}/{session_id}/processed/spike_metrics.done'
     output:
         ephys_sync_complete = touch('{sessions}/{task_path}/{session_id}/processed/ephys_sync.done')
@@ -90,7 +88,6 @@ rule ephys_sync:
 rule cell_metrics_processing:
     input:
         rec_properties = '{sessions}/{task_path}/{session_id}/ephys/rec_properties.csv',
-        kilosort_path = '{sessions}/{task_path}/{session_id}/processed/kilosort3',
         ephys_sync_complete = '{sessions}/{task_path}/{session_id}/processed/ephys_sync.done',
     output:
         cell_matrics_full= '{sessions}/{task_path}/{session_id}/processed/cell_metrics_full.nc'
@@ -135,13 +132,11 @@ rule cells_to_xarray:
     input:
         ephys_sync_complete = '{sessions}/{task_path}/{session_id}/processed/ephys_sync.done',
         xr_session = '{sessions}/{task_path}/{session_id}/processed/xr_session.nc',   
-        sorting_path = '{sessions}/{task_path}/{session_id}/processed/kilosort3',   
         cell_matrics_full= '{sessions}/{task_path}/{session_id}/processed/cell_metrics_full.nc' 
     output:
         xr_spikes_trials = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials.nc',
         xr_spikes_fr = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_fr.nc',
         neo_spike_train = '{sessions}/{task_path}/{session_id}/processed/neo_spiketrain.pkl',
-        spike_sort_done = touch('{sessions}/{task_path}/{session_id}/processed/spikesort.done'),
     threads: 32
     priority: 85
     script:
@@ -167,28 +162,42 @@ rule cell_trial_responses_plot:
         pycontrol_dataframe = '{sessions}/{task_path}/{session_id}/processed/df_pycontrol.pkl',
         xr_session = '{sessions}/{task_path}/{session_id}/processed/xr_session.nc',       
     output:
-        figures_path = directory('{sessions}/{task_path}/{session_id}/processed/figures/ephys'),
-        cell_trial_responses_complete = touch('{sessions}/{task_path}/{session_id}/processed/cell_trial_responses.done')
+        figures_path = directory('{sessions}/{task_path}/{session_id}/processed/figures/ephys/response_curves'),
+        cell_trial_responses_complete = touch('{sessions}/{task_path}/{session_id}/processed/cell_trial_responses.done'),
     threads: 32
 
     script:
         "scripts/spike_sorting/s11_cell_trial_responses_plot.py"
 
+
+def session_correlations_input(wildcards):
+    # only run if photometry file is present
+    ppd_files = glob(f'{wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/pyphotometry/*.ppd')
+    if len(ppd_files)>0:
+        return f'{wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed/ephys/correlated_cells.png'
+    else:
+        return []
+
 rule session_correlations:
-    input:
+    input: 
         xr_spike_fr = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_fr.nc',
     output:
         df_cross_corr = '{sessions}/{task_path}/{session_id}/processed/df_cross_corr.pkl',
-        corr_plot = '{sessions}/{task_path}/{session_id}/processed/figures/ephys/correlated_cells.png'
+        corr_plot = '{sessions}/{task_path}/{session_id}/processed/figures/ephys/correlated_cells.png',
     threads: 32
     priority: 90
     script:
         "scripts/spike_sorting/s10_session_correlations.py"
 
-rule spike_final:
+rule spikesort_done:
+    input:
+        corr_plot = session_correlations_input,
+        cell_trial_responses_complete = '{sessions}/{task_path}/{session_id}/processed/cell_trial_responses.done',
+    output:
+        spike_sort_done = touch('{sessions}/{task_path}/{session_id}/processed/spikesort.done'),
+
+rule spike_workflow_final:
     input:
         rec_properties_input
-        # xr_spikes_trials = '{session_path}/{task_path}/{session_id}/processed/xr_spikes_trials.nc'
-        
     output:
         done = touch('{sessions}/{task_path}/{session_id}/processed/spike_workflow.done')

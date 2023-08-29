@@ -76,4 +76,4 @@ fig.savefig(soutput.corr_plot)
 
 # %%
 #TODO: event in specific type of trial
-# snakemake --snakefile workflow/spikesort.smk -n ~/ettin/Julien/Data/head-fixed/by_sessions/reaching_go_spout_bar_nov22/RE607-2023-07-13-124258/processed/spike_workflow.done
+# snakemake --snakefile workflow/spikesort.smk -n ~/ettin/Julien/Data/head-fixed/by_sessions/reaching_go_spout_bar_nov22/TT004-2023-07-31-145414/processed/spike_workflow.done

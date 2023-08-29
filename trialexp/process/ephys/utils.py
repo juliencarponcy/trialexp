@@ -184,18 +184,6 @@ def cellmat2dataframe(cell_metrics):
         df.attrs['putativeConnections'] = cell_metrics['putativeConnections']
             
     return df
-
-
-
-def prepare_mathlab_path(eng):
-    # Adding Path to Matlab from Environment variables defined in .env file.
-    s = eng.genpath(os.environ['CORTEX_LAB_SPIKES_PATH']) # maybe unnecessary, just open all ks3 results
-    n = eng.genpath(os.environ['NPY_MATLAB_PATH'])
-    c = eng.genpath(os.environ['CELL_EXPLORER_PATH'])
-
-    eng.addpath(s, nargout=0)
-    eng.addpath(n, nargout=0)
-    eng.addpath(c, nargout=0)
     
     
 def plot_firing_rate(xr_fr_coord, xr_session, df_pycontrol, events2plot, xlim=None):

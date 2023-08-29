@@ -38,11 +38,12 @@ verbose = True
 root_path = Path(os.environ['SESSION_ROOT_DIR'])
 
 # Get probe names from folder path
-probe_names = [folder.stem for folder in list(Path(sinput.sorting_path).glob('*'))]
+sorting_path = Path(sinput.xr_session).parent/'kilosort'
+probe_names = [folder.stem for folder in list(sorting_path.glob('*'))]
 
 # Fetch file paths from all probes
-synced_timestamp_files = list(Path(sinput.sorting_path).glob('*/rsync_corrected_spike_times.npy'))
-spike_clusters_files = list(Path(sinput.sorting_path).glob('*/spike_clusters.npy'))
+synced_timestamp_files = list(sorting_path.glob('*/rsync_corrected_spike_times.npy'))
+spike_clusters_files = list(sorting_path.glob('*/spike_clusters.npy'))
 ce_cell_metrics_full= Path(sinput.cell_matrics_full)
 
 # session outputs
