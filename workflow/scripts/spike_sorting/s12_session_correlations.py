@@ -69,8 +69,11 @@ df_cross_corr = pd.DataFrame({
     'cross_corr': cross_corr.tolist()
 })
 df_cross_corr.to_pickle(soutput.df_cross_corr)
-#%% Plot the first 5 cell with maximum cross correlation with photometry
+#%% Plot the first few cell with maximum cross correlation with photometry
 
-fig = plot_correlated_neurons(cross_corr, xr_spike_session)
+fig = plot_correlated_neurons(cross_corr, xr_spike_session, lags, n_fig=8)
+fig.savefig(soutput.corr_plot)
+
 # %%
 #TODO: event in specific type of trial
+# snakemake --snakefile workflow/spikesort.smk -n ~/ettin/Julien/Data/head-fixed/by_sessions/reaching_go_spout_bar_nov22/RE607-2023-07-13-124258/processed/spike_workflow.done
