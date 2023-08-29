@@ -69,3 +69,6 @@ for probe_folder in probe_folders:
   
 # %% Stop Matlab engine
 eng.quit()
+
+# also remove the root session path in temp
+shutil.rmtree(probe_path.parents[1])

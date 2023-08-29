@@ -212,7 +212,8 @@ def plot_firing_rate(xr_fr_coord, xr_session, df_pycontrol, events2plot, xlim=No
     ax_photo, ax_fr, ax_event = ax
         
     # photometry
-    ax_photo.plot(xr_session.zscored_df_over_f.data.ravel())
+    if 'zscored_df_over_f' in xr_session:
+        ax_photo.plot(xr_session.zscored_df_over_f.data.ravel())
     
     # firing rate map
     image = ax_fr.imshow(spike_rates.T, vmax=2, vmin=-2,cmap='icefire')

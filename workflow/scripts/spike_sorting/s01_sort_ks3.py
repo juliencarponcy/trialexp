@@ -120,11 +120,15 @@ for idx_rec in idx_to_sort:
     if output_si_sorted_folder.exists():
         shutil.rmtree(output_si_sorted_folder)
         
+    output_si_sorted_folder.parent.mkdir(parents=True, exist_ok=True) #make sure the parent directory exist
+        
     sorting.save(folder =  output_si_sorted_folder) # very small, can save directly
     
     # also save the rec_properties for this particular recording
+    record_path = session_path/'kilosort3'/probe_name
+    if not record_path.exists():
+        record_path.mkdir(parents=True)
     rec_properties.iloc[[idx_rec]].to_csv(session_path/'kilosort3'/probe_name/'rec_prop.csv', index=False) #also save the recording property
-
 
 
 # %%

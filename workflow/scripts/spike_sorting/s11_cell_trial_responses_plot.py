@@ -26,15 +26,9 @@ from scipy.special import kl_div
 
 
 # %% Define variables and folders
-# xr_session= xr.load_dataset(Path(sinput.xr_session))
-# xr_spikes_trials_path = Path(sinput.xr_spikes_trials_anat)
-# xr_spikes_trials_phases_path = Path(sinput.xr_spikes_trials_phases_anat)
-# xr_spikes_session_path = Path(sinput.xr_spikes_full_session_anat)
 
-# figures_path = xr_spikes_trials_path.parent / 'figures' / 'ephys'
+
 figures_path = Path(soutput.figures_path)
-# session_path = xr_spikes_session_path.parent.parent
-# session_ID = session_path.stem
 
 #%% Opening datasets
 # load_dataset will load the file into memory and automatically close it
@@ -46,30 +40,25 @@ xr_fr = xr.load_dataset(Path(sinput.xr_spikes_fr))
 session_ID = xr_spikes_trials.attrs['session_ID']
 df_pycontrol = pd.read_pickle(sinput.pycontrol_dataframe)
 
-#%%
-
-onset = xr_spikes_trials['spikes_FR.trial_onset']
-df2plot = onset.to_dataframe()
-
 #%% Overall firing rate plot
 # need to get the channel map and plot them in the correct depth
 
 # find out the location of each cluster
 # the total shank length of 1.0 NXP probe is 10mm
-probe_name = 'ProbeA'
-probe = xr_spikes_trials.sel(probe_name=probe_name)
-waveform_chan = probe.maxWaveformCh.to_dataframe()
-chanCoords_x = probe.attrs['chanCoords_x']
-chanCoords_y = probe.attrs['chanCoords_y']
-waveform_chan['pos_x'] = chanCoords_x[waveform_chan.maxWaveformCh]
-waveform_chan['pos_y'] = chanCoords_y[waveform_chan.maxWaveformCh]
+for probe_name in xr_spikes_trials.probe_name.data:
+    probe = xr_spikes_trials.sel(probe_name=probe_name)
+    waveform_chan = probe.maxWaveformCh.to_dataframe()
+    chanCoords_x = probe.attrs['chanCoords_x']
+    chanCoords_y = probe.attrs['chanCoords_y']
+    waveform_chan['pos_x'] = chanCoords_x[waveform_chan.maxWaveformCh]
+    waveform_chan['pos_y'] = chanCoords_y[waveform_chan.maxWaveformCh]
 
-xr_fr_coord = xr_fr.merge(waveform_chan)
+    xr_fr_coord = xr_fr.merge(waveform_chan)
 
-# plot distribution of cell in depth
-a = sns.histplot(waveform_chan, y='pos_y',bins=50)
-a.set(ylabel='Depth (um)', title='ProbeA')
-plt.savefig(figures_path/f'cluster_depth_distribution_{probe_name}.png',dpi=200)
+    # plot distribution of cell in depth
+    a = sns.histplot(waveform_chan, y='pos_y',bins=50)
+    a.set(ylabel='Depth (um)', title='ProbeA')
+    plt.savefig(figures_path/f'cluster_depth_distribution_{probe_name}.png',dpi=200)
 
 
 #%% Align the photometry time to the firing rate time
@@ -79,15 +68,18 @@ xr_session = xr_session.interp(time=xr_fr_coord.time)
 
 #%% Firing rate map 
 sns.set_context('paper')
-fig = plot_firing_rate(xr_fr_coord, xr_session, df_pycontrol, ['hold_for_water', 'spout','bar_off','aborted']);
-fig.savefig(figures_path/f'firing_map_{probe_name}.png',dpi=200)
 
-# a zoomed in version
-fig = plot_firing_rate(xr_fr_coord, xr_session, df_pycontrol,
-                       ['hold_for_water', 'spout','bar_off','aborted'],
-                       xlim=[180*1000, 240*1000]);
+for probe_name in np.unique(xr_fr_coord.probe_name.data):
+    xr_fr_coord_probe = xr_fr_coord.sel(cluID=(xr_fr_coord.probe_name==probe_name))
+    fig = plot_firing_rate(xr_fr_coord_probe, xr_session, df_pycontrol, ['hold_for_water', 'spout','bar_off','aborted']);
+    fig.savefig(figures_path/f'firing_map_{probe_name}.png',dpi=200)
 
-fig.savefig(figures_path/f'firing_map_{probe_name}_1min.png',dpi=200)
+    # a zoomed in version
+    fig = plot_firing_rate(xr_fr_coord_probe, xr_session, df_pycontrol,
+                        ['hold_for_water', 'spout','bar_off','aborted'],
+                        xlim=[180*1000, 240*1000]);
+
+    fig.savefig(figures_path/f'firing_map_{probe_name}_1min.png',dpi=200)
 
 #%%
 var2plot = [x for x in xr_spikes_trials if x.startswith('spikes_FR')]
@@ -126,3 +118,5 @@ def draw_response_curve(var_name):
 Parallel(n_jobs=len(var2plot))(delayed(draw_response_curve)(var_name) for var_name in var2plot)
 
 
+
+# %%

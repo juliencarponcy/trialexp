@@ -26,7 +26,7 @@ from trialexp.process.ephys.utils import cellmat2xarray, denest_string_cell, ses
 
 xr.set_options(display_expand_attrs=False) # attrs is too long
 #%% Load inputs
-cell_metrics_processing_done_path = str(Path(settings.debug_folder) / 'processed' / 'kilosort3' /'cell_metrics_full.nc')
+cell_metrics_processing_done_path = str(Path(settings.debug_folder) / 'processed' /'cell_metrics_full.nc')
 
 (sinput, soutput) = getSnake(locals(), 'workflow/spikesort.smk',
  [cell_metrics_processing_done_path], 'cell_metrics_processing')
