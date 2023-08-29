@@ -31,6 +31,7 @@ spike_sorting_done_path = str(Path(settings.debug_folder) / 'processed' / 'spike
 sorter_name = 'kilosort3'
 verbose = True
 rec_properties_path = Path(sinput.rec_properties)
+session_path = rec_properties_path.parents[1]/'processed'
 session_id = rec_properties_path.parents[1].stem
 rec_properties = pd.read_csv(rec_properties_path, index_col = 0)
 rec_properties['sorting_error'] = False
@@ -38,8 +39,7 @@ rec_properties['sorting_error'] = False
 idx_to_sort = rec_properties[(rec_properties.syncable == True) & (rec_properties.longest==True)].index.values
 
 root_data_path = os.environ['SORTING_ROOT_DATA_PATH']
-
-si_sorted_folder = Path(os.environ['TEMP_DATA_PATH']) /session_id/ 'si'
+# si_sorted_folder = Path(os.environ['TEMP_DATA_PATH']) /session_id/ 'si'
 temp_sorter_folder = Path(os.environ['TEMP_DATA_PATH']) /session_id
 
 # %%
@@ -60,7 +60,7 @@ for idx_rec in idx_to_sort:
     # Define outputs folder, specific for each probe and sorter
     # output_sorter_specific_folder = sorter_specific_folder / sorter_name / probe_name
     temp_output_sorter_specific_folder = temp_sorter_folder / sorter_name / probe_name
-    output_si_sorted_folder = si_sorted_folder / sorter_name / probe_name
+    output_si_sorted_folder = session_path /'si'/ sorter_name / probe_name
 
     ephys_path = Path(rec_properties.full_path.iloc[idx_rec]).parents[4]
     
@@ -115,13 +115,16 @@ for idx_rec in idx_to_sort:
     
 #     # delete previous output_sorting_folder and its contents if it exists,
 #     # this prevent the save method to crash.
+    
+    # clear any existing folder content
     if output_si_sorted_folder.exists():
         shutil.rmtree(output_si_sorted_folder)
-    
-    sorting.save(folder =  session_path/'si'/probe_name) # very small, can save directly
+        
+    sorting.save(folder =  output_si_sorted_folder) # very small, can save directly
     
     # also save the rec_properties for this particular recording
-    session_path = rec_properties_path.parents[1] /'processed'
     rec_properties.iloc[[idx_rec]].to_csv(session_path/'kilosort3'/probe_name/'rec_prop.csv', index=False) #also save the recording property
 
 
+
+# %%
