@@ -48,6 +48,7 @@ kilosort_path = Path(sinput.ephys_sync_complete).parent/'kilosort'
 # %% Get the path of CellExplorer outputs
 
 xr_metrics_all = []
+probe_names = []
 for probe_folder in kilosort_path.glob('Probe*'):
     probe_name = probe_folder.stem
 
@@ -74,16 +75,14 @@ for probe_folder in kilosort_path.glob('Probe*'):
     dataset.attrs['subject_ID'] = session_ID.split('-')[0]
     dataset.attrs['session_ID'] = session_ID
     dataset.attrs['task_folder'] = rec_properties_path.parents[2].stem
-    dataset.attrs['probe_name'] = probe_folder.stem
-
-    # Drop useless or badly automatically filled column for DataFrame cleaning
 
     # subject_ID replace animal columns as it is random bad auto extraction from cellExplorer, deleting animal
     dataset=dataset.drop_vars(['animal'])
-    
-    dataset = dataset.expand_dims({'probe_name':[probe_folder.stem]})
-
     xr_metrics_all.append(dataset)
+    probe_names.append(probe_name)
 
 xr_metrics_all = xr.merge(xr_metrics_all)
+xr_metrics_all.attrs['probe_names'] = probe_names
 xr_metrics_all.to_netcdf(soutput.cell_matrics_full, engine='h5netcdf',invalid_netcdf=True) 
+
+# %%
