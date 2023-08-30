@@ -1,4 +1,5 @@
 
+from joblib import Parallel, delayed
 from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd   
@@ -420,3 +421,50 @@ def plot_correlated_neurons(cross_corr, xr_spike_session, lags, n_fig = 5):
     fig.tight_layout()
     
     return fig
+
+def compute_tuning_prop(xr_spikes_trials, xr_fr, trial_window, bin_duration, var2plot):
+    # compute the tuninng propertie of each cell
+    
+    def calculate_tuning_prop(var_name):
+        da = xr_spikes_trials[var_name]
+        da_rand, pvalues, pvalue_ratio = get_pvalue_random_events(da, xr_fr, trial_window, bin_duration)
+        max_region_size = get_max_sig_region_size(pvalues, p_threshold=0.05)
+        return {var_name:{
+            'pvalues': pvalues.tolist(),
+            'pvalue_ratio': pvalue_ratio,
+            'max_region_size':max_region_size
+        }}
+
+    result = Parallel(n_jobs=10)(delayed(calculate_tuning_prop)(var_name) for var_name in var2plot)
+
+    # combin into one dict
+    tuning_dict = result[0]
+    for r in result[1:]:
+        tuning_dict.update(r)
+    
+    pvalues_dict = {}
+    for var_name, prop_dict in tuning_dict.items():
+        for k,v in prop_dict.items():
+            pvalues_dict[f'{var_name}:{k}'] = v
+    
+    # convert into dataframe    
+    pvalues_dict['cluID'] = xr_fr.cluID.data
+    df_tuning = pd.DataFrame(pvalues_dict)
+    
+    return df_tuning
+
+def combine2dataframe(result):
+    # combine a list of dictionary into dataframe
+    tuning_dict = result[0]
+    for r in result[1:]:
+        tuning_dict.update(r)
+    
+    pvalues_dict = {}
+    for var_name, prop_dict in tuning_dict.items():
+        for k,v in prop_dict.items():
+            pvalues_dict[f'{var_name}:{k}'] = v
+    
+    # convert into dataframe    
+    df_tuning = pd.DataFrame(pvalues_dict)
+    
+    return df_tuning

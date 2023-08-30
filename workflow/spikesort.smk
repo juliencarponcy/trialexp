@@ -163,6 +163,7 @@ rule cell_trial_responses_plot:
         xr_session = '{sessions}/{task_path}/{session_id}/processed/xr_session.nc',       
     output:
         figures_path = directory('{sessions}/{task_path}/{session_id}/processed/figures/ephys/response_curves'),
+        df_cell_prop = '{sessions}/{task_path}/{session_id}/processed/df_cell_prop.pkl',
         cell_trial_responses_complete = touch('{sessions}/{task_path}/{session_id}/processed/cell_trial_responses.done'),
     threads: 32
 

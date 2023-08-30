@@ -11,7 +11,7 @@ import xarray as xr
 from matplotlib import gridspec
 from snakehelper.SnakeIOHelper import getSnake
 from trialexp.process.ephys.spikes_preprocessing import build_evt_fr_xarray
-from trialexp.process.ephys.utils import compare_fr_with_random, get_max_sig_region_size, get_pvalue_random_events, plot_firing_rate
+from trialexp.process.ephys.utils import combine2dataframe, compare_fr_with_random, compute_tuning_prop, get_max_sig_region_size, get_pvalue_random_events, plot_firing_rate
 from trialexp.process.group_analysis.plot_utils import style_plot
 from joblib import Parallel, delayed
 
@@ -84,7 +84,7 @@ for probe_name in xr_fr_coord.attrs['probe_names']:
 
     fig.savefig(figures_path/f'firing_map_{probe_name}_1min.png',dpi=200)
 
-#%%
+#%% compute tuning prop
 var2plot = [x for x in xr_spikes_trials if x.startswith('spikes_FR')]
 bin_duration = xr_fr.attrs['bin_duration']
 trial_window = xr_spikes_trials.attrs['trial_window']
@@ -116,12 +116,27 @@ def draw_response_curve(var_name):
     fig.tight_layout()
     fig.savefig(figures_path/f'event_response_{var_name}.png',dpi=200)
     
+    return {var_name:{
+        'pvalues': pvalues.tolist(),
+        'pvalue_ratio': pvalue_ratio,
+        'max_region_size':max_region_size
+    }}
+    
     #TODO also draw the heatmaps
     #TODO: save the resutls of the significance analysis to another dataframe
     
 # use joblib to speed up the processing
 # generator expression
-Parallel(n_jobs=len(var2plot))(delayed(draw_response_curve)(var_name) for var_name in var2plot)
+result = Parallel(n_jobs=len(var2plot))(delayed(draw_response_curve)(var_name) for var_name in var2plot)
+df_tuning = combine2dataframe(result)
+df_tuning['cluID'] = xr_spikes_trials.cluID
 
+# %%
+# Extract additional cell characteristics
+df_chan_coords  = xr_fr_coord[['pos_x','pos_y','maxWaveformCh']].to_dataframe()
+
+# save
+df_cell_prop = df_tuning.merge(df_chan_coords, on='cluID')
+df_cell_prop.to_pickle(Path(soutput.df_cell_prop))
 
 # %%
