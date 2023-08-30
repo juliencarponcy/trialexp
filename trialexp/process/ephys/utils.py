@@ -249,12 +249,31 @@ def plot_firing_rate(xr_fr_coord, xr_session, df_pycontrol, events2plot, xlim=No
     
     return fig
 
+def get_max_sig_region_size(pvalues, p_threshold=0.05):
+    #return the size of the maximum consecutive region where pvalues<p_threshold
+    # pvalues is assign to be of shape (cell x time)
+    
+    cond = (pvalues<p_threshold).astype(int)
+    pad = np.zeros((cond.shape[0],1))
+    cond = np.hstack([pad, cond, pad]) #take care of the edge
+    
+    d = np.diff(cond,axis=1)
+    max_region_size = np.zeros((cond.shape[0],))
+    for i in range(cond.shape[0]):
+        #detect the state change
+        start = np.where(d[i,:]==1)[0]
+        end = np.where(d[i,:]==-1)[0]
+        region_size = end-start
+        if len(region_size)>0:
+            max_region_size[i]=np.max(region_size) # maximum consecutive region size
+            
+    return max_region_size
 
 
 def compare_fr_with_random(da, da_rand, cluID, pvalues=None, random_n=1000, ax=None):
     # xr_fr: the dataArray with the continuuous firing rate of the cell
     
-
+    style_plot()
     df2plot = da.sel(cluID=cluID).to_dataframe()
     df2plot['type'] = 'event-triggered'
     df2plotR = da_rand.sel(cluID=cluID).to_dataframe()

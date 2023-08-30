@@ -11,12 +11,11 @@ import xarray as xr
 from matplotlib import gridspec
 from snakehelper.SnakeIOHelper import getSnake
 from trialexp.process.ephys.spikes_preprocessing import build_evt_fr_xarray
-from trialexp.process.ephys.utils import compare_fr_with_random, get_pvalue_random_events, plot_firing_rate
+from trialexp.process.ephys.utils import compare_fr_with_random, get_max_sig_region_size, get_pvalue_random_events, plot_firing_rate
 from trialexp.process.group_analysis.plot_utils import style_plot
 from joblib import Parallel, delayed
 
 from workflow.scripts import settings
-from scipy.special import kl_div
 #%% Load inputs
 
 
@@ -91,6 +90,7 @@ var2plot = [x for x in xr_spikes_trials if x.startswith('spikes_FR')]
 bin_duration = xr_fr.attrs['bin_duration']
 trial_window = xr_spikes_trials.attrs['trial_window']
 
+#%%
 style_plot()
 
 def draw_response_curve(var_name):
@@ -98,11 +98,11 @@ def draw_response_curve(var_name):
     da = xr_spikes_trials[var_name]
 
     da_rand, pvalues, pvalue_ratio = get_pvalue_random_events(da, xr_fr, trial_window, bin_duration)
+    
+    max_region_size = get_max_sig_region_size(pvalues, p_threshold=0.05)
 
-    # sort the cluID according to the pvalue_ratio descendingly
-    pvalue_ratio[(pvalue_ratio<0.2)|(pvalue_ratio>0.8)] = 0 #only focus on ratio between 0.2 and 0.8
-    sortIdx = np.argsort(pvalue_ratio)[::-1]
-    pvalue_ratio_sorted = pvalue_ratio[sortIdx]
+    max_region_size[(max_region_size>100)|(max_region_size<10)] = 0 #only focus on region between 1s and 100ms
+    sortIdx = np.argsort(max_region_size)[::-1]
     cluID_sorted = da.cluID[sortIdx]
     pvalues_sorted = pvalues[sortIdx,:]
 
@@ -118,11 +118,11 @@ def draw_response_curve(var_name):
     fig.savefig(figures_path/f'event_response_{var_name}.png',dpi=200)
     
     #TODO also draw the heatmaps
+    #TODO: save the resutls of the significance analysis to another dataframe
     
 # use joblib to speed up the processing
 # generator expression
 Parallel(n_jobs=len(var2plot))(delayed(draw_response_curve)(var_name) for var_name in var2plot)
-
 
 
 # %%
