@@ -39,30 +39,29 @@ xr_fr = xr.load_dataset(Path(sinput.xr_spikes_fr))
 session_ID = xr_spikes_trials.attrs['session_ID']
 df_pycontrol = pd.read_pickle(sinput.pycontrol_dataframe)
 
+
 #%% Overall firing rate plot
 # need to get the channel map and plot them in the correct depth
+waveform_chan = xr_spikes_trials.maxWaveformCh.to_dataframe()
+chanCoords_x = xr_spikes_trials.attrs['chanCoords_x']
+chanCoords_y = xr_spikes_trials.attrs['chanCoords_y']
+waveform_chan['pos_x'] = chanCoords_x[waveform_chan.maxWaveformCh.astype(int)]
+waveform_chan['pos_y'] = chanCoords_y[waveform_chan.maxWaveformCh.astype(int)]
+xr_fr_coord = xr_fr.merge(waveform_chan)
+xr_fr_coord.attrs['probe_names'] = xr_spikes_trials.attrs['probe_names']
+xr_fr_coord = xr_fr_coord.sortby('pos_y')
 
-# find out the location of each cluster
-# the total shank length of 1.0 NXP probe is 10mm
-for probe_name in xr_spikes_trials.attrs['probe_names']:
-    cluID_probe = [id for id in xr_spikes_trials.cluID.data if probe_name in id]
-    probe = xr_spikes_trials.sel(cluID=cluID_probe)
-    waveform_chan = probe.maxWaveformCh.to_dataframe()
-    chanCoords_x = probe.attrs['chanCoords_x']
-    chanCoords_y = probe.attrs['chanCoords_y']
-    waveform_chan['pos_x'] = chanCoords_x[waveform_chan.maxWaveformCh.astype(int)]
-    waveform_chan['pos_y'] = chanCoords_y[waveform_chan.maxWaveformCh.astype(int)]
-
-    xr_fr_coord = xr_fr.merge(waveform_chan)
-
-    # plot distribution of cell in depth
+for probe_name in xr_fr_coord.attrs['probe_names']:
+    cluID_probe = [probe_name in id for id in xr_fr_coord.cluID.data]
+    pos_y = xr_fr_coord.pos_y.sel(cluID=cluID_probe)
+     # plot distribution of cell in depth
     fig, ax= plt.subplots(1,1,figsize=(4,4))
     style_plot()
-    sns.histplot(waveform_chan, y='pos_y',bins=50,ax=ax)
+    sns.histplot(y=pos_y,bins=50,ax=ax)
     ax.set(ylabel='Depth (um)', title=f'{probe_name}')
+    ax.set_ylim([0,4000])
     fig.savefig(figures_path/f'cluster_depth_distribution_{probe_name}.png',dpi=200)
 
-xr_fr_coord.attrs['probe_names'] = xr_spikes_trials.attrs['probe_names']
 #%% Align the photometry time to the firing rate time
 
 xr_session = xr.load_dataset(Path(sinput.xr_session))
@@ -72,7 +71,7 @@ xr_session = xr_session.interp(time=xr_fr_coord.time)
 sns.set_context('paper')
 
 for probe_name in xr_fr_coord.attrs['probe_names']:
-    cluID_probe = [id for id in xr_spikes_trials.cluID.data if probe_name in id]
+    cluID_probe = [probe_name in id for id in xr_fr_coord.cluID.data]
 
     xr_fr_coord_probe = xr_fr_coord.sel(cluID=cluID_probe)
     fig = plot_firing_rate(xr_fr_coord_probe, xr_session, df_pycontrol, ['hold_for_water', 'spout','bar_off','aborted']);

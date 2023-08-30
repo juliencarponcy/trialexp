@@ -188,8 +188,10 @@ def cellmat2dataframe(cell_metrics):
     
 def plot_firing_rate(xr_fr_coord, xr_session, df_pycontrol, events2plot, xlim=None):
     # xlim should be in milisecond
+    # the xr_fr_coord should already be sorted in pos_y
     
     style_plot()
+    assert all(np.diff(xr_fr_coord.pos_y)>=0), 'Error! Datset must be first sorted by pos_y'
     bin_duration = xr_fr_coord.attrs['bin_duration']
 
     
