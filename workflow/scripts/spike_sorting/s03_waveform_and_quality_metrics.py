@@ -47,7 +47,7 @@ df_quality_metrics = []
 for probe_folder in kilosort_folder.glob('Probe*'):
     
     # Check which recording we should load
-    rec_properties = pd.read_csv(probe_folder/'rec_prop.csv').iloc[0]
+    rec_properties = pd.read_csv(probe_folder/'sorter_output'/'rec_prop.csv').iloc[0]
     recording_path = root_data_path/Path('/'.join(Path(rec_properties.full_path).parts[-10:-3]))
     stream = rec_properties.AP_stream
     segment_num = rec_properties.segment_no

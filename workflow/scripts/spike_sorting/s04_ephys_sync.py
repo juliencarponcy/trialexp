@@ -43,7 +43,7 @@ for probe_dir in  kilosort_folder.glob('Probe*'):
     # event time from open ephys count from the beginning of the acquisition, not recording
     # kilosort time always start from the beginning of the recording
 
-    rec_prop = pd.read_csv(probe_dir/'rec_prop.csv').iloc[0]
+    rec_prop = pd.read_csv(probe_dir/'sorter_output'/rec_prop.csv').iloc[0]
     rsync = create_ephys_rsync(str(pycontrol_path), sync_path, rec_prop.tstart)
     ks3_path = probe_dir /'sorter_output'/'spike_times.npy'
     

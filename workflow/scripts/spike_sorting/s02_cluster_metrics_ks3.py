@@ -33,7 +33,7 @@ session_id = rec_properties_path.parents[1].stem
 # since Cell Explorer probably does very frequent disk I/O via memmap
 sorter_specific_path = Path(os.environ['TEMP_DATA_PATH']) /session_id/ sorter_name
 assert sorter_specific_path.exists(), 'Sorted data do not exist!'
-probe_folders = [str(sorter_specific_path / probe_folder) for probe_folder in os.listdir(sorter_specific_path)]
+probe_folders = [str(sorter_specific_path / probe_folder/'sorter_output') for probe_folder in os.listdir(sorter_specific_path)]
 
 kilosort_path = Path(soutput.kilosort_folder)
 
@@ -55,18 +55,18 @@ for probe_folder in probe_folders:
 
     #TODO: add sessionTemplate_nxp path to matlab instead of relying on copying file
     # need to copy the sessionTemplate_nxp to the cellexplorer folder first
-    cell_exp_session = eng.sessionTemplate_nxp(probe_folder/'sorter_output', 'showGUI', False)
+    cell_exp_session = eng.sessionTemplate_nxp(probe_folder, 'showGUI', False)
 
     # Process Cell Metrics
     # loading spike is the most time-consuming step
-    cell_metrics = eng.ProcessCellMetrics('session', cell_exp_session, \
-        'showGUI', False, 'showWaveforms', False, 'showFigures', False, \
-        'manualAdjustMonoSyn', False, 'summaryFigures', False)
+    # cell_metrics = eng.ProcessCellMetrics('session', cell_exp_session, \
+    #     'showGUI', False, 'showWaveforms', False, 'showFigures', False, \
+    #     'manualAdjustMonoSyn', False, 'summaryFigures', False)
 
     
     # copy the kilosort output and cell metrics back to the session folder
     print('I will now copy the Cell metrics and sorting output back to the session folder')
-    probe_path = Path(probe_folder)
+    probe_path = Path(probe_folder).parent
     shutil.copytree(probe_path, kilosort_path/probe_path.stem, dirs_exist_ok=True)
     
     print('Folders copied. I will now delete the temp folders')
