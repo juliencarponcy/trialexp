@@ -51,7 +51,11 @@ xr_fr_coord = xr_fr.merge(waveform_chan)
 xr_fr_coord.attrs['probe_names'] = xr_spikes_trials.attrs['probe_names']
 xr_fr_coord = xr_fr_coord.sortby('pos_y')
 
-for probe_name in xr_fr_coord.attrs['probe_names']:
+# netCDF flatten length 1 list automatically, 
+probe_names = xr_fr_coord.attrs['probe_names']
+probe_names = [probe_names] if type(probe_names) is str else probe_names
+
+for probe_name in probe_names:
     cluID_probe = [probe_name in id for id in xr_fr_coord.cluID.data]
     pos_y = xr_fr_coord.pos_y.sel(cluID=cluID_probe)
      # plot distribution of cell in depth
@@ -70,7 +74,7 @@ xr_session = xr_session.interp(time=xr_fr_coord.time)
 #%% Firing rate map 
 sns.set_context('paper')
 
-for probe_name in xr_fr_coord.attrs['probe_names']:
+for probe_name in probe_names:
     cluID_probe = [probe_name in id for id in xr_fr_coord.cluID.data]
 
     xr_fr_coord_probe = xr_fr_coord.sel(cluID=cluID_probe)
