@@ -124,9 +124,14 @@ for idx_rec in idx_to_sort:
         
     sorting.save(folder =  output_si_sorted_folder) # very small, can save directly
     
-    # also save the rec_properties for this particular recording
+#     # also save the rec_properties for this particular recording
     record_path = session_path/'kilosort'/probe_name
     if not record_path.exists():
         record_path.mkdir(parents=True)
-    rec_properties.iloc[[idx_rec]].to_csv(record_path/'rec_prop.csv', index=False) #also save the recording property
+        
+    rec2save = rec_properties.iloc[[idx_rec]].copy()
+    rec2save['segment_no'] = segment_no
+    rec2save.to_csv(record_path/'rec_prop.csv', index=False) #also save the recording property
 
+
+# %%

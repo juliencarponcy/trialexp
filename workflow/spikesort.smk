@@ -65,14 +65,17 @@ rule spike_metrics_ks3:
 
 rule waveform_and_quality_metrics:
     input:
+        si_output_folder = '{sessions}/{task_path}/{session_id}/processed/si/kilosort3',
+        kilosort_folder = '{sessions}/{task_path}/{session_id}/processed/kilosort',
         rec_properties = '{sessions}/{task_path}/{session_id}/ephys/rec_properties.csv',
-        sorting_complete = '{sessions}/{task_path}/{session_id}/processed/spike_sorting.done'
+        # sorting_complete = '{sessions}/{task_path}/{session_id}/processed/spike_sorting.done'
     output:
+        df_quality_metrics = '{sessions}/{task_path}/{session_id}/processed/df_quality_metrics.pkl',
         si_quality_complete = touch('{sessions}/{task_path}/{session_id}/processed/si_quality.done')
     threads: 32
     priority: 11
     script:
-        "scripts/spike_sorting/s02b_waveform_and_quality_metrics.py"
+        "scripts/spike_sorting/s03_waveform_and_quality_metrics.py"
 
 
 rule ephys_sync:
@@ -97,15 +100,15 @@ rule cell_metrics_processing:
         "scripts/spike_sorting/s05_cell_metrics_processing.py"
 
 
-rule cell_metrics_aggregation:
-    input:
-        cell_matrics_full= '{sessions}/{task_path}/{session_id}/processed/cell_metrics_full.pkl'
-    output:
-        cell_metrics_aggregation_complete =  touch('{sessions}/{task_path}/{session_id}/processed/cell_metrics_aggregation.done')
-    threads: 32
-    priority: 60
-    script:
-        "scripts/spike_sorting/s06_cell_metrics_aggregation.py"
+# rule cell_metrics_aggregation:
+#     input:
+#         cell_matrics_full= '{sessions}/{task_path}/{session_id}/processed/cell_metrics_full.pkl'
+#     output:
+#         cell_metrics_aggregation_complete =  touch('{sessions}/{task_path}/{session_id}/processed/cell_metrics_aggregation.done')
+#     threads: 32
+#     priority: 60
+#     script:
+#         "scripts/spike_sorting/s06_cell_metrics_aggregation.py"
 
 rule cell_metrics_dim_reduction:
     input:
@@ -184,7 +187,7 @@ rule session_correlations:
         xr_spike_fr = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_fr.nc',
     output:
         df_cross_corr = '{sessions}/{task_path}/{session_id}/processed/df_cross_corr.pkl',
-        corr_plot = '{sessions}/{task_path}/{session_id}/processed/figures/ephys/correlated_cells.png',
+        corr_plot = '{sessions}/{task_path}/{session_id}/processed/ephys/correlated_cells.png',
     threads: 32
     priority: 90
     script:
@@ -194,6 +197,7 @@ rule spikesort_done:
     input:
         corr_plot = session_correlations_input,
         cell_trial_responses_complete = '{sessions}/{task_path}/{session_id}/processed/cell_trial_responses.done',
+        si_quality_complete = '{sessions}/{task_path}/{session_id}/processed/si_quality.done'
     output:
         spike_sort_done = touch('{sessions}/{task_path}/{session_id}/processed/spikesort.done'),
 

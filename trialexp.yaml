@@ -49,8 +49,8 @@ dependencies:
     - ffmpeg-python
     - deeplabcut
     - matlabengine==9.11.19 #for python 3.9 and MATLAB R2021b, change it to the version compatiable with your MATLAB envirnoment
+    - spikeinterface==0.98.2 #need to be using the exact version, spikeinterface breaks API too quickly
     - -e . # if not working execute "pip install -e ." from the top level of this repo
-    # - matlabengine # causing an error
     
 
 

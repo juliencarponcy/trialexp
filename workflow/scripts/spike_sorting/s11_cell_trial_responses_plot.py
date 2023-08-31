@@ -138,5 +138,3 @@ df_chan_coords  = xr_fr_coord[['pos_x','pos_y','maxWaveformCh']].to_dataframe()
 # save
 df_cell_prop = df_tuning.merge(df_chan_coords, on='cluID')
 df_cell_prop.to_pickle(Path(soutput.df_cell_prop))
-
-# %%
