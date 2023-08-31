@@ -112,7 +112,7 @@ defaults.extracellular.srLfp = 2500;         % Sampling rate of LFP data
 defaults.extracellular.nChannels = 384;       % number of channels
 defaults.extracellular.fileName = '';        % (optional) file name of raw data if different from basename.dat
 defaults.extracellular.electrodeGroups.channels = {[1:defaults.extracellular.nChannels]}; %creating a default list of channels. Please change according to your own layout. 
-defaults.extracellular.leastSignificantBit = 0.195; % (in µV) Intan = 0.195, Amplipex = 0.3815
+defaults.extracellular.leastSignificantBit = 0.195; % (in ï¿½V) Intan = 0.195, Amplipex = 0.3815
 defaults.extracellular.probeDepths = 0;
 defaults.extracellular.precision = 'int16';
 
@@ -218,18 +218,19 @@ end
 % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 % if ~isfield(session,'extracellular') || ~isfield(session.extracellular,'chanCoords') 
 %     session.extracellular.chanCoords.layout = 'poly2'; % Probe layout: linear,staggered,poly2,edge,poly3,poly5
-%     session.extracellular.chanCoords.verticalSpacing = 10; % (µm) Vertical spacing between sites.
+%     session.extracellular.chanCoords.verticalSpacing = 10; % (ï¿½m) Vertical spacing between sites.
 % end
 
 %% Load channel ordincates from kilosort file
 
-temp = load(fullfile(basepath,'chanMap.mat'));
-% disp(temp);
+temp = readNPY(fullfile(basepath,'channel_positions.npy'));
+chanIdx = readNPY(fullfile(basepath,'channel_map.npy'))+1; %original is 0 indexing
 session.extracellular.chanCoords.x = nan(session.extracellular.nChannels,1);
 session.extracellular.chanCoords.y = nan(session.extracellular.nChannels,1);
-session.extracellular.chanCoords.x(temp.chanMap) = temp.xcoords(:);
-session.extracellular.chanCoords.y(temp.chanMap) = temp.ycoords(:);
-session.extracellular.chanCoords.source = 'chanMap.mat';
+session.extracellular.chanCoords.x(chanIdx(:)) = temp(:,1);
+session.extracellular.chanCoords.y(chanIdx(:)) = temp(:,2);
+session.extracellular.chanCoords.source = 'channel_positions.npy';
+
 % updateChanCoords;
 % plotChannelMap1
 disp('channel map import successfully');
