@@ -132,3 +132,5 @@ for idx_rec in idx_to_sort:
     rec2save['segment_no'] = segment_no
     rec2save.to_csv(record_path/'rec_prop.csv', index=False) #also save the recording property
 
+
+# %%

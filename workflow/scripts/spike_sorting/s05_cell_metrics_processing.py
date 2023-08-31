@@ -52,7 +52,7 @@ probe_names = []
 for probe_folder in kilosort_path.glob('Probe*'):
     probe_name = probe_folder.stem
 
-    mat_files = list(probe_folder.glob('*.mat'))
+    mat_files = list((probe_folder/'sorter_output').glob('*.mat'))
 
     cell_metrics_path = [mat_file for mat_file in mat_files if ('cell_metrics.cellinfo' in str(mat_file))][0]
     spikes_path = [mat_file for mat_file in mat_files if ('spikes.cellinfo' in str(mat_file))][0]

@@ -120,8 +120,8 @@ def get_cluster_UIDs_from_path(cluster_file: Path):
     # take Path or str
     cluster_file = Path(cluster_file)
     # extract session and probe name from folder structure
-    session_id = cluster_file.parts[-5]
-    probe_name = cluster_file.parts[-2]
+    session_id = cluster_file.parts[-6]
+    probe_name = cluster_file.parts[-3]
 
     # unique cluster nb
     cluster_nbs = np.unique(np.load(cluster_file))

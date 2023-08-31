@@ -45,7 +45,7 @@ for probe_dir in  kilosort_folder.glob('Probe*'):
 
     rec_prop = pd.read_csv(probe_dir/'rec_prop.csv').iloc[0]
     rsync = create_ephys_rsync(str(pycontrol_path), sync_path, rec_prop.tstart)
-    ks3_path = probe_dir /'spike_times.npy'
+    ks3_path = probe_dir /'sorter_output'/'spike_times.npy'
     
     if not rsync:
         raise ValueError('Error: cannot create rsync')

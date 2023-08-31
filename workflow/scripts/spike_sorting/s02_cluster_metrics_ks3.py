@@ -33,7 +33,7 @@ session_id = rec_properties_path.parents[1].stem
 # since Cell Explorer probably does very frequent disk I/O via memmap
 sorter_specific_path = Path(os.environ['TEMP_DATA_PATH']) /session_id/ sorter_name
 assert sorter_specific_path.exists(), 'Sorted data do not exist!'
-probe_folders = [str(sorter_specific_path / probe_folder/'sorter_output') for probe_folder in os.listdir(sorter_specific_path)]
+probe_folders = [str(sorter_specific_path / probe_folder) for probe_folder in os.listdir(sorter_specific_path)]
 
 kilosort_path = Path(soutput.kilosort_folder)
 
@@ -53,8 +53,9 @@ eng.addpath(c, nargout=0)
 
 for probe_folder in probe_folders:
 
+    #TODO: add sessionTemplate_nxp path to matlab instead of relying on copying file
     # need to copy the sessionTemplate_nxp to the cellexplorer folder first
-    cell_exp_session = eng.sessionTemplate_nxp(probe_folder, 'showGUI', False)
+    cell_exp_session = eng.sessionTemplate_nxp(probe_folder/'sorter_output', 'showGUI', False)
 
     # Process Cell Metrics
     # loading spike is the most time-consuming step
