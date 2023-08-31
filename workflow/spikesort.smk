@@ -191,11 +191,11 @@ rule session_correlations:
     threads: 32
     priority: 90
     script:
-        "scripts/spike_sorting/s10_session_correlations.py"
+        "scripts/spike_sorting/s12_session_correlations.py"
 
 rule spikesort_done:
     input:
-        corr_plot = session_correlations_input,
+        # corr_plot = session_correlations_input, 
         cell_trial_responses_complete = '{sessions}/{task_path}/{session_id}/processed/cell_trial_responses.done',
         si_quality_complete = '{sessions}/{task_path}/{session_id}/processed/si_quality.done'
     output:

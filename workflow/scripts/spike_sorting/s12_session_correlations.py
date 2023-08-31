@@ -1,8 +1,8 @@
 '''
 Example script to perform correlations between spikes and photometry
 for the whole session
-
-Work in progress, should not have been commited
+#TODO: too slow and not very informative, probably need to focus on task region only 
+# disabled in workflow for now
 '''
 #%%
 import os
@@ -65,7 +65,7 @@ cross_corr = np.stack(cross_corr)
     
 #%%
 df_cross_corr = pd.DataFrame({
-    'UID': UIDs.values,
+    'cluID': UIDs.values,
     'cross_corr': cross_corr.tolist()
 })
 df_cross_corr.to_pickle(soutput.df_cross_corr)
@@ -76,4 +76,4 @@ fig.savefig(soutput.corr_plot)
 
 # %%
 #TODO: event in specific type of trial
-# snakemake --snakefile workflow/spikesort.smk -n ~/ettin/Julien/Data/head-fixed/by_sessions/reaching_go_spout_bar_nov22/TT004-2023-07-31-145414/processed/spike_workflow.done
+# snakemake --snakefile workflow/spikesort.smk -n ~/ettin/Julien/Data/head-fixed/by_sessions/reaching_go_spout_bar_nov22/kms058-2023-03-25-184034/processed/spike_workflow.done
