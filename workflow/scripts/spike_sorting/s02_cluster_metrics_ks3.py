@@ -33,10 +33,9 @@ session_id = rec_properties_path.parents[1].stem
 # since Cell Explorer probably does very frequent disk I/O via memmap
 sorter_specific_path = Path(os.environ['TEMP_DATA_PATH']) /session_id/ sorter_name
 assert sorter_specific_path.exists(), 'Sorted data do not exist!'
-probe_folders = [str(sorter_specific_path / probe_folder) for probe_folder in os.listdir(sorter_specific_path)]
+probe_folders = [str(sorter_specific_path / probe_folder/'sorter_output') for probe_folder in os.listdir(sorter_specific_path)]
 
-session_path = rec_properties_path.parents[1] /'processed'
-kilosort_path = session_path /'kilosort'
+kilosort_path = Path(soutput.kilosort_folder)
 
 # %% Start Matlab engine and add paths
 eng = matlab.engine.start_matlab()

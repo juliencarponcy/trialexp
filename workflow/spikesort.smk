@@ -33,7 +33,7 @@ def task2analyze(tasks:list=None):
         tasks=['*']
 
     for t in tasks:
-        total_sessions+=expand('{sessions}/processed/spike_workflow.done', sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob(f'{t}/TT*'))        
+        total_sessions+=expand('{sessions}/processed/spike_workflow.done', sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob(f'{t}/TT004*'))        
 
     return total_sessions
 
@@ -46,6 +46,7 @@ rule spike_sorting:
         rec_properties = '{sessions}/{task_path}/{session_id}/ephys/rec_properties.csv',
     output:
         sorting_complete = touch('{sessions}/{task_path}/{session_id}/processed/spike_sorting.done'), 
+        si_output_folder = directory('{sessions}/{task_path}/{session_id}/processed/si/kilosort3'),
     threads: 32
     script:
         "scripts/spike_sorting/s01_sort_ks3.py"
@@ -56,7 +57,8 @@ rule spike_metrics_ks3:
         rec_properties = '{sessions}/{task_path}/{session_id}/ephys/rec_properties.csv',
         sorting_complete = '{sessions}/{task_path}/{session_id}/processed/spike_sorting.done',
     output:
-        metrics_complete = touch('{sessions}/{task_path}/{session_id}/processed/spike_metrics.done')
+        metrics_complete = touch('{sessions}/{task_path}/{session_id}/processed/spike_metrics.done'),
+        kilosort_folder = directory('{sessions}/{task_path}/{session_id}/processed/kilosort'),
     threads: 32
     priority: 10
     script:
@@ -65,9 +67,9 @@ rule spike_metrics_ks3:
 
 rule waveform_and_quality_metrics:
     input:
-        si_output_folder = '{sessions}/{task_path}/{session_id}/processed/si/kilosort3',
         kilosort_folder = '{sessions}/{task_path}/{session_id}/processed/kilosort',
         rec_properties = '{sessions}/{task_path}/{session_id}/ephys/rec_properties.csv',
+        si_output_folder = '{sessions}/{task_path}/{session_id}/processed/si/kilosort3',
         # sorting_complete = '{sessions}/{task_path}/{session_id}/processed/spike_sorting.done'
     output:
         df_quality_metrics = '{sessions}/{task_path}/{session_id}/processed/df_quality_metrics.pkl',

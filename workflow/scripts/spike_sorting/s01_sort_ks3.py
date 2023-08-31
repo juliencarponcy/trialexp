@@ -39,8 +39,8 @@ rec_properties['sorting_error'] = False
 idx_to_sort = rec_properties[(rec_properties.syncable == True) & (rec_properties.longest==True)].index.values
 
 root_data_path = os.environ['SORTING_ROOT_DATA_PATH']
-# si_sorted_folder = Path(os.environ['TEMP_DATA_PATH']) /session_id/ 'si'
 temp_sorter_folder = Path(os.environ['TEMP_DATA_PATH']) /session_id
+output_si_sorted_folder = Path(soutput.si_output_folder)
 
 # %%
 for idx_rec in idx_to_sort:
@@ -60,7 +60,6 @@ for idx_rec in idx_to_sort:
     # Define outputs folder, specific for each probe and sorter
     # output_sorter_specific_folder = sorter_specific_folder / sorter_name / probe_name
     temp_output_sorter_specific_folder = temp_sorter_folder / sorter_name / probe_name
-    output_si_sorted_folder = session_path /'si'/ sorter_name / probe_name
 
     ephys_path = Path(rec_properties.full_path.iloc[idx_rec]).parents[4]
     
@@ -117,12 +116,12 @@ for idx_rec in idx_to_sort:
 #     # this prevent the save method to crash.
     
     # clear any existing folder content
-    if output_si_sorted_folder.exists():
-        shutil.rmtree(output_si_sorted_folder)
+    # if output_si_sorted_folder.exists():
+    #     shutil.rmtree(output_si_sorted_folder)
         
-    output_si_sorted_folder.parent.mkdir(parents=True, exist_ok=True) #make sure the parent directory exist
+    # output_si_sorted_folder.parent.mkdir(parents=True, exist_ok=True) #make sure the parent directory exist
         
-    sorting.save(folder =  output_si_sorted_folder) # very small, can save directly
+    sorting.save(folder =  output_si_sorted_folder/probe_name) # very small, can save directly
     
 #     # also save the rec_properties for this particular recording
     record_path = session_path/'kilosort'/probe_name
@@ -133,5 +132,3 @@ for idx_rec in idx_to_sort:
     rec2save['segment_no'] = segment_no
     rec2save.to_csv(record_path/'rec_prop.csv', index=False) #also save the recording property
 
-
-# %%
