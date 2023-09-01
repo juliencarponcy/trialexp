@@ -10,7 +10,7 @@ sorter_name = 'kilosort3'
 
 def rec_properties_input(wildcards):
     # determine if there is an ephys recording for that folder
-    recording_csv = glob(f'{wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/ephys/rec_properties.csv')
+    recording_csv = glob(f'{wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/ephys/states.npy')
     if len(recording_csv) > 0:
         return f'{wildcards.sessions}/{wildcards.task_path}/{wildcards.session_id}/processed/spikesort.done'
     else:
@@ -85,7 +85,6 @@ rule ephys_sync:
         metrics_complete = '{sessions}/{task_path}/{session_id}/processed/spike_metrics.done'
     output:
         ephys_sync_complete = touch('{sessions}/{task_path}/{session_id}/processed/ephys_sync.done')
-    threads: 32
     priority: 40
     script:
         "scripts/spike_sorting/s04_ephys_sync.py"
@@ -96,7 +95,6 @@ rule cell_metrics_processing:
         ephys_sync_complete = '{sessions}/{task_path}/{session_id}/processed/ephys_sync.done',
     output:
         cell_matrics_full= '{sessions}/{task_path}/{session_id}/processed/cell_metrics_full.nc'
-    threads: 32
     priority: 50
     script:
         "scripts/spike_sorting/s05_cell_metrics_processing.py"
@@ -112,25 +110,25 @@ rule cell_metrics_processing:
 #     script:
 #         "scripts/spike_sorting/s06_cell_metrics_aggregation.py"
 
-rule cell_metrics_dim_reduction:
-    input:
-        cell_metrics_aggregation_complete = '{sessions}/{task_path}/{session_id}/processed/cell_metrics_aggregation.done'
-    output:
-        cell_metrics_dim_reduction_complete =  touch('{sessions}/{task_path}/{session_id}/processed/cell_metrics_dim_reduction.done')
-    threads: 32
-    priority: 70
-    script:
-        "scripts/spike_sorting/s07_cell_metrics_dim_reduction.py"
+# rule cell_metrics_dim_reduction:
+#     input:
+#         cell_metrics_aggregation_complete = '{sessions}/{task_path}/{session_id}/processed/cell_metrics_aggregation.done'
+#     output:
+#         cell_metrics_dim_reduction_complete =  touch('{sessions}/{task_path}/{session_id}/processed/cell_metrics_dim_reduction.done')
+#     threads: 32
+#     priority: 70
+#     script:
+#         "scripts/spike_sorting/s07_cell_metrics_dim_reduction.py"
 
-rule cell_metrics_clustering:
-    input:
-        cell_metrics_dim_reduction_complete = '{sessions}/{task_path}/{session_id}/processed/cell_metrics_dim_reduction.done' 
-    output:
-        cell_metrics_clustering_complete =  touch('{sessions}/{task_path}/{session_id}/processed/cell_metrics_clustering.done')
-    threads: 32
-    priority: 80
-    script:
-        "scripts/spike_sorting/s08_cell_metrics_clustering.py"
+# rule cell_metrics_clustering:
+#     input:
+#         cell_metrics_dim_reduction_complete = '{sessions}/{task_path}/{session_id}/processed/cell_metrics_dim_reduction.done' 
+#     output:
+#         cell_metrics_clustering_complete =  touch('{sessions}/{task_path}/{session_id}/processed/cell_metrics_clustering.done')
+#     threads: 32
+#     priority: 80
+#     script:
+#         "scripts/spike_sorting/s08_cell_metrics_clustering.py"
 
 
 rule cells_to_xarray:
@@ -142,7 +140,6 @@ rule cells_to_xarray:
         xr_spikes_trials = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials.nc',
         xr_spikes_fr = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_fr.nc',
         neo_spike_train = '{sessions}/{task_path}/{session_id}/processed/neo_spiketrain.pkl',
-    threads: 32
     priority: 85
     script:
         "scripts/spike_sorting/s09_cell_to_xarray.py"
@@ -170,8 +167,6 @@ rule cell_trial_responses_plot:
         figures_path = directory('{sessions}/{task_path}/{session_id}/processed/figures/ephys/response_curves'),
         df_cell_prop = '{sessions}/{task_path}/{session_id}/processed/df_cell_prop.pkl',
         cell_trial_responses_complete = touch('{sessions}/{task_path}/{session_id}/processed/cell_trial_responses.done'),
-    threads: 32
-
     script:
         "scripts/spike_sorting/s11_cell_trial_responses_plot.py"
 

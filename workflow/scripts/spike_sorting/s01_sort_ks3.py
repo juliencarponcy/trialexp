@@ -130,7 +130,7 @@ for idx_rec in idx_to_sort:
         
     rec2save = rec_properties.iloc[[idx_rec]].copy()
     rec2save['segment_no'] = segment_no
-    rec2save.to_csv(temp_output_sorter_specific_folder/'rec_prop.csv', index=False) #also save the recording property
+    rec2save.to_csv(temp_output_sorter_specific_folder/'sorter_output'/'rec_prop.csv', index=False) #also save the recording property
 
 
 # %%
