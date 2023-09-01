@@ -59,9 +59,9 @@ for probe_folder in probe_folders:
 
     # Process Cell Metrics
     # loading spike is the most time-consuming step
-    # cell_metrics = eng.ProcessCellMetrics('session', cell_exp_session, \
-    #     'showGUI', False, 'showWaveforms', False, 'showFigures', False, \
-    #     'manualAdjustMonoSyn', False, 'summaryFigures', False)
+    cell_metrics = eng.ProcessCellMetrics('session', cell_exp_session, \
+        'showGUI', False, 'showWaveforms', False, 'showFigures', False, \
+        'manualAdjustMonoSyn', False, 'summaryFigures', False)
 
     
     # copy the kilosort output and cell metrics back to the session folder

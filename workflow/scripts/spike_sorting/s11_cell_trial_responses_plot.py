@@ -11,7 +11,7 @@ import xarray as xr
 from matplotlib import gridspec
 from snakehelper.SnakeIOHelper import getSnake
 from trialexp.process.ephys.spikes_preprocessing import build_evt_fr_xarray
-from trialexp.process.ephys.utils import combine2dataframe, compare_fr_with_random, compute_tuning_prop, get_max_sig_region_size, get_pvalue_random_events, plot_firing_rate
+from trialexp.process.ephys.utils import combine2dataframe, compare_fr_with_random, compute_tuning_prop, diff_permutation_test, get_max_sig_region_size, get_pvalue_random_events, plot_firing_rate
 from trialexp.process.group_analysis.plot_utils import style_plot
 from joblib import Parallel, delayed
 
@@ -84,9 +84,11 @@ for probe_name in probe_names:
     # a zoomed in version
     fig = plot_firing_rate(xr_fr_coord_probe, xr_session, df_pycontrol,
                         ['hold_for_water', 'spout','bar_off','aborted'],
-                        xlim=[180*1000, 240*1000]);
+                        xlim=[10*60*1000, 12*60*1000]);
 
-    fig.savefig(figures_path/f'firing_map_{probe_name}_1min.png',dpi=200)
+    fig.savefig(figures_path/f'firing_map_{probe_name}_2min.png',dpi=200)
+    
+    
 
 #%% compute tuning prop
 var2plot = [x for x in xr_spikes_trials if x.startswith('spikes_FR')]
@@ -142,3 +144,50 @@ df_chan_coords  = xr_fr_coord[['pos_x','pos_y','maxWaveformCh']].to_dataframe()
 # save
 df_cell_prop = df_tuning.merge(df_chan_coords, on='cluID')
 df_cell_prop.to_pickle(Path(soutput.df_cell_prop))
+
+# # %%
+# #TODO: the results seems wrong, need to double check
+# # are we really the correct cells?
+
+# id = ['TT004-2023-07-27-155821_ProbeA_99',
+#       'TT004-2023-07-27-155821_ProbeA_387']
+
+# var_name = 'spikes_FR.first_bar_off'
+# da = xr_spikes_trials[var_name].sel(cluID=id)
+
+# da_rand, pvalues, pvalue_ratio = get_pvalue_random_events(da, xr_fr, trial_window, bin_duration)
+# max_region_size = get_max_sig_region_size(pvalues, p_threshold=0.05)
+
+# # %%
+# df_rand = da_rand.sel(cluID=id[0]).to_dataframe().reset_index()
+# df_rand['type'] = 'random'
+# df = da.sel(cluID=id[0]).to_dataframe().reset_index()
+# df['type'] = 'event'
+
+# df2plot = pd.concat([df_rand, df],axis=0, ignore_index=True)
+# ax = sns.lineplot(df2plot, x='spk_event_time', y=var_name, hue='type')
+# plt.plot(da_rand.spk_event_time, pvalues[0,:])
+# # %%
+# from scipy.stats import ttest_ind, wilcoxon, ranksums
+# from statsmodels.stats.multitest import multipletests
+
+# x = da_rand.sel(cluID=id[0]).data
+# y = da.sel(cluID=id[0]).data
+        
+# # firing rate may not be normally distributed
+# pvalues = ttest_ind(x,y,axis=0, nan_policy='omit').pvalue #Note: can be nan in the data if the event cannot be found
+# # pvalues= ranksums(x,y,axis=0, nan_policy='omit').pvalue #wilcoxon two samples
+# plt.semilogy(da.spk_event_time,pvalues)
+# #
+# rejected,pvalues2,_,alpha_cor = multipletests(pvalues,0.05, method='bonferroni')
+# plt.plot(da.spk_event_time,pvalues2)
+
+# # %%
+# from scipy.stats import bootstrap, permutation_test
+# p = diff_permutation_test(x,y)
+# rejected,pvalues2,_,alpha_cor = multipletests(p,0.05, method='bonferroni')
+# rejected
+# # %%
+
+
+# # %%

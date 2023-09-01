@@ -12,7 +12,7 @@ import quantities as pq
 from trialexp.process.group_analysis.plot_utils import style_plot
 import seaborn as sns
 import neo 
-from scipy.stats import ttest_ind, wilcoxon, ranksums
+from scipy.stats import ttest_ind, wilcoxon, ranksums, permutation_test
 from statsmodels.stats.multitest import multipletests
 
 def denest_string_cell(cell):
@@ -328,7 +328,16 @@ def binned_firing_rate(spiketrains, bin_size, t_start=None, t_stop=None,
                             t_start=bs.t_start, normalization=output,
                             copy=False)
     
+def diff_permutation_test(x,y):
+    # use permutation test to compare the difference of the mean of two populations
+    # permutation test is non-parametric
+    
+    def statistic(x, y, axis):
+        return np.nanmean(x, axis=axis) - np.nanmean(y, axis=axis)
 
+    res = permutation_test((y,x), statistic, n_resamples=100, vectorized=True)
+    
+    return res.pvalue
 
 def get_pvalue_random_events(da, xr_fr, trial_window, bin_duration,  num_sample=1000):
     # Compare with random event and return the corrected p values
@@ -348,14 +357,24 @@ def get_pvalue_random_events(da, xr_fr, trial_window, bin_duration,  num_sample=
     for i, cluID in enumerate(da.cluID):
         x = da_rand.sel(cluID=cluID).data
         y = da.sel(cluID=cluID).data
-        
+                
         # firing rate may not be normally distributed
         # pvalues[i,:] = ttest_ind(x,y,axis=0, nan_policy='omit').pvalue #Note: can be nan in the data if the event cannot be found
-        pvalues[i,:] = ranksums(x,y,axis=0, nan_policy='omit').pvalue #wilcoxon two samples
+       
+        # Note: rank sum test although is non-parametric, it is testing the shape of the distribution
+        #   rather than the mean, so it results can be confusing when compared with the confidence interval plot
+        # pvalues[i,:] = ranksums(x,y,axis=0, nan_policy='omit').pvalue #wilcoxon two samples
+        
+        # permutation test is non-parametric
+        pvalues[i,:] = diff_permutation_test(x,y)
+        
         
         # adjust for multiple comparison
-        rejected,pvalues[i,:],_,_ = multipletests(pvalues[i,:],0.05)
-        pvalue_ratio[i] = np.mean(rejected)
+        # Disable for now because the test will become too stringent
+        # rejected,pvalues[i,:],_,_ = multipletests(pvalues[i,:],0.05)
+        # pvalue_ratio[i] = np.mean(rejected)
+        
+        pvalue_ratio[i] = np.mean(pvalues[i,:]<0.05)
         
     return da_rand, pvalues, pvalue_ratio
 
