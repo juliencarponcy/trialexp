@@ -46,6 +46,7 @@ dependencies:
     - neo
     - elephant    
     - pathworklib
+    - plotnine # required for pathworklib
     - ffmpeg-python
     - deeplabcut
     - matlabengine==9.11.19 #for python 3.9 and MATLAB R2021b, change it to the version compatiable with your MATLAB envirnoment

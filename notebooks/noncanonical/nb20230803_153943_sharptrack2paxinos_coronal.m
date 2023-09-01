@@ -478,8 +478,8 @@ L1 = plot(x, y, DisplayName='Regression');
 plot(xlim, [0 0], 'k:')
 plot([x(find(y >=0,1,"first")), x(find(y >=0,1,"first"))], ylim, 'k:')
 
-L2 = plot(x, x, 'k--',  DisplayName='y = -x');
-legend([L1 L2], Location="northeast", Box ='off');
+L2 = plot(x, x, 'k--',  DisplayName='y = x');
+legend([L1 L2], Location="northwest", Box ='off');
 %%
 fprintf("At y = 0, i.e. the real bregma, SharpTrack AP value is %.3f mm\n", x(find(y >=0,1,"first")));
 fprintf("SharpTrack AP x can be converted to Paxinos AP by y = %.3f * x %+.3f\n", b_AP(2), b_AP(1));
