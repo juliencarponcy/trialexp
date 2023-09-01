@@ -33,7 +33,7 @@ def task2analyze(tasks:list=None):
         tasks=['*']
 
     for t in tasks:
-        total_sessions+=expand('{sessions}/processed/spike_workflow.done', sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob(f'{t}/TT004*'))        
+        total_sessions+=expand('{sessions}/processed/spike_workflow.done', sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob(f'{t}/TT001*'))        
 
     return total_sessions
 
@@ -75,7 +75,6 @@ rule waveform_and_quality_metrics:
         df_quality_metrics = '{sessions}/{task_path}/{session_id}/processed/df_quality_metrics.pkl',
         si_quality_complete = touch('{sessions}/{task_path}/{session_id}/processed/si_quality.done')
     threads: 32
-    priority: 11
     script:
         "scripts/spike_sorting/s03_waveform_and_quality_metrics.py"
 
@@ -85,7 +84,6 @@ rule ephys_sync:
         metrics_complete = '{sessions}/{task_path}/{session_id}/processed/spike_metrics.done'
     output:
         ephys_sync_complete = touch('{sessions}/{task_path}/{session_id}/processed/ephys_sync.done')
-    priority: 40
     script:
         "scripts/spike_sorting/s04_ephys_sync.py"
 
@@ -95,7 +93,6 @@ rule cell_metrics_processing:
         ephys_sync_complete = '{sessions}/{task_path}/{session_id}/processed/ephys_sync.done',
     output:
         cell_matrics_full= '{sessions}/{task_path}/{session_id}/processed/cell_metrics_full.nc'
-    priority: 50
     script:
         "scripts/spike_sorting/s05_cell_metrics_processing.py"
 
@@ -140,7 +137,6 @@ rule cells_to_xarray:
         xr_spikes_trials = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_trials.nc',
         xr_spikes_fr = '{sessions}/{task_path}/{session_id}/processed/xr_spikes_fr.nc',
         neo_spike_train = '{sessions}/{task_path}/{session_id}/processed/neo_spiketrain.pkl',
-    priority: 85
     script:
         "scripts/spike_sorting/s09_cell_to_xarray.py"
 
@@ -186,7 +182,6 @@ rule session_correlations:
         df_cross_corr = '{sessions}/{task_path}/{session_id}/processed/df_cross_corr.pkl',
         corr_plot = '{sessions}/{task_path}/{session_id}/processed/ephys/correlated_cells.png',
     threads: 32
-    priority: 90
     script:
         "scripts/spike_sorting/s12_session_correlations.py"
 
@@ -195,6 +190,7 @@ rule spikesort_done:
         # corr_plot = session_correlations_input, 
         cell_trial_responses_complete = '{sessions}/{task_path}/{session_id}/processed/cell_trial_responses.done',
         si_quality_complete = '{sessions}/{task_path}/{session_id}/processed/si_quality.done'
+    priority: 20
     output:
         spike_sort_done = touch('{sessions}/{task_path}/{session_id}/processed/spikesort.done'),
 
