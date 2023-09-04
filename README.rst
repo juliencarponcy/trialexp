@@ -72,6 +72,7 @@ In the ```/notebooks``` folder, you can then open the different templates notebo
   
 * Or you can create a new python script or notebook and import trialexp modules
 
+* Copy `extern_scripts\sessionTemplate_nxp.m` to the Cell explorer folder `calc_CellMetrics`
 
 Credits
 -------

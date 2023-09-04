@@ -25,7 +25,7 @@ from workflow.scripts import settings
 
 
 #%%
-xr_session = xr.open_dataset(sinput.xr_session)
+xr_session = xr.load_dataset(sinput.xr_session)
 
 figure_dir = soutput.trigger_photo_dir
 

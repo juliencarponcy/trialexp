@@ -20,7 +20,7 @@ import seaborn as sns
   'analyze_movement')
 
 # %% Load data
-xr_session = xr.open_dataset(sinput.xr_dlc)
+xr_session = xr.load_dataset(sinput.xr_dlc)
 
 # %% Calculate movement data
 wrist_loc = xr_session['dlc_markers'].loc[:,'wrist',['x','y','likelihood']]

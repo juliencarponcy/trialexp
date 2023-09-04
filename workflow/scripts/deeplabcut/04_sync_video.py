@@ -24,7 +24,7 @@ df_dlc = pd.read_pickle(sinput.dlc_processed)
 xr_dlc = dlc2xarray(df_dlc)
 
 # %%
-xr_session = xr.open_dataset(sinput.xr_session)
+xr_session = xr.load_dataset(sinput.xr_session)
 
 xr_dlc = xr_dlc.interp(time=xr_session.time)
 xr_session['dlc_markers'] = xr_dlc

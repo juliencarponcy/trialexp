@@ -14,24 +14,27 @@ from trialexp.utils.rsync import *
 def parse_openephys_folder(fn):
     m = split('_', fn)
     if isinstance(m,list) and len(m) >=3:
-        subject_name = m[0]
-        pattern_id = r'(\d+)'
-        id = search(pattern_id, subject_name)
-        if id:
-            subject_id = id.group(1)
-        else:
-            subject_id = None
+        subject_id = m[0]
+
         date_string = m[1]
         time_string = m[2]
         try:
             expt_datetime = datetime.strptime(date_string + '_' + time_string, "%Y-%m-%d_%H-%M-%S")
-            return {'subject_name': subject_name, 
-                'subject_id': subject_id,
+            return {'subject_id': subject_id, 
                 'foldername':fn, 
                 'exp_datetime':expt_datetime}
-        except ValueError('Folder name does not match open-ephys pattern'):
+        except ValueError:
             pass
 
+
+def get_continuous_stream_names(folder_structure):
+    # get the names of the continous stream
+    first_expt_key = list(folder_structure['Record Node 101']['experiments'].keys())[0]
+    first_expt = folder_structure['Record Node 101']['experiments'][first_expt_key]
+    
+    first_recording_key = list(first_expt['recordings'].keys())[0]
+    first_recording = first_expt['recordings'][first_recording_key]
+    return list(first_recording['streams']['continuous'].keys())
 
 
 def get_recordings_properties(ephys_base_path, fn):
@@ -43,11 +46,16 @@ def get_recordings_properties(ephys_base_path, fn):
 
 
     # List continuous streams names
-    continuous_streams = list(folder_structure['Record Node 101']['experiments'][1]['recordings'][1]['streams']['continuous'].keys())
-    # Only select action potentials streams
-    AP_streams = [AP_stream for AP_stream in continuous_streams if 'AP' in AP_stream]
-    print(f'Nb of Experiments (blocks): {nb_block}\nNb of segments per block: {nb_segment_per_block}\nDefault exp name: {experiment_names}\n')
-    print(f'Spike streams:{AP_streams}\n')
+    try:
+        continuous_streams = get_continuous_stream_names(folder_structure)
+        # Only select action potentials streams
+        AP_streams = [AP_stream for AP_stream in continuous_streams if 'AP' in AP_stream]
+        # print(f'Nb of Experiments (blocks): {nb_block}\nNb of segments per block: {nb_segment_per_block}\nDefault exp name: {experiment_names}\n')
+        # print(f'Spike streams:{AP_streams}\n')
+    except KeyError:
+        print('Key error encountered at ', fn)
+        raise KeyError
+
 
     # if len(experiment_names) > 1:
     #     raise NotImplementedError('More than one experiment in the open-ephys folder')
@@ -112,19 +120,21 @@ def get_recording_duration(rec_path: str, sample_rate: int):
     duration = len(timestamps) / sample_rate
     return duration
 
-def create_ephys_rsync(pycontrol_file: str, sync_path: str, rsync_ephys_chan_idx: int = 2):
+def create_ephys_rsync(pycontrol_file: str, sync_path: str, ephys_start_time: float = 0, rsync_ephys_chan_idx: int = 2):
     event_array = np.load(Path(sync_path, 'states.npy'))
-    ts_array = np.load(Path(sync_path, 'timestamps.npy'))
+    ts_array = np.load(Path(sync_path, 'timestamps.npy')) - ephys_start_time
     rsync_ephys_ts = ts_array[event_array == rsync_ephys_chan_idx]
+    # print(rsync_ephys_ts*1000)
     
     with warnings.catch_warnings():
         warnings.simplefilter('ignore')
         data_pycontrol = session_dataframe(pycontrol_file)
 
-        pycontrol_rsync = data_pycontrol[data_pycontrol.name=='rsync'].time
+        pycontrol_rsync = data_pycontrol[data_pycontrol.name=='rsync'].time.values
+        # print(pycontrol_rsync)
         
         try:
             return Rsync_aligner(pulse_times_A= rsync_ephys_ts*1000, 
-            pulse_times_B= pycontrol_rsync, plot=False) #align pycontrol time to pyphotometry time
+            pulse_times_B= pycontrol_rsync, plot=False) 
         except (RsyncError, ValueError) as e:
             return None
