@@ -272,3 +272,7 @@ for task_id, task in enumerate(tasks):
 
             
 # %%
+# idx = [False if df_pycontrol.ephys_folder_name.iloc[i] is None else True for i in range(len(df_pycontrol))]
+# path = df_pycontrol[idx].ephys_folder_name.iloc[0]
+# df = get_recordings_properties(ephys_base_path, str(path))
+# %%
