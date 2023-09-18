@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[67]:
+# In[118]:
 
 
 import os
@@ -423,7 +423,7 @@ ss_d = df_ACh_cue_onset_100.loc[(df_ACh_cue_onset_100['trial_nb_dip_r_value'] * 
 ss_d
 
 
-# In[19]:
+# In[99]:
 
 
 #  Calculate CC or slope
@@ -454,94 +454,91 @@ for ss in ss_d: # go round sessions
 
         ind_success = np.where(xr_session['trial_outcome'].values == 'success')[1] + 1
 
-        dip_suc = xr_photometry['hold_for_water_zscored_df_over_f'].sel(
+        suc_con_dip = xr_photometry['hold_for_water_zscored_df_over_f'].sel(
             event_time=slice(75, 250), trial_nb=ind_success).min(dim='event_time').values
-        dip_suc = dip_suc[~np.isnan(dip_suc)]
-        dip_suc_r, dip_suc_p = pearsonr(-1 * dip_suc, range(1, len(dip_suc) +1))
+        suc_con_dip = suc_con_dip[~np.isnan(suc_con_dip)]
+        suc_con_dip_r, suc_con_dip_p = pearsonr(-1 * suc_con_dip, range(1, len(suc_con_dip) +1)) # negative
         # Y could be trial_nb, range(1, len(x) +1), or timestamps of cue
 
-        reb_suc = xr_photometry['hold_for_water_zscored_df_over_f'].sel(
+        suc_con_reb = xr_photometry['hold_for_water_zscored_df_over_f'].sel(
             event_time=slice(200, 600), trial_nb=ind_success).max(dim='event_time').values
-        reb_suc = reb_suc[~np.isnan(reb_suc)]
-        reb_suc_r, reb_suc_p = pearsonr(reb_suc, range(1, len(reb_suc) + 1))
+        suc_con_reb = suc_con_reb[~np.isnan(suc_con_reb)]
+        suc_con_reb_r, suc_con_reb_p = pearsonr(suc_con_reb, range(1, len(suc_con_reb) + 1))
 
-        lbo_suc = xr_photometry['last_bar_off_zscored_df_over_f'].sel(
+
+        suc_lbo_pek = xr_photometry['last_bar_off_zscored_df_over_f'].sel(
             event_time=slice(0, 150), trial_nb=ind_success).max(dim='event_time').values
-        lbo_suc = lbo_suc[~np.isnan(lbo_suc)]
-        lbo_suc_r, lbo_suc_p = pearsonr(lbo_suc, range(1, len(lbo_suc) + 1))
+        suc_lbo_pek = suc_lbo_pek[~np.isnan(suc_lbo_pek)]
+        suc_lbo_pek_r, suc_lbo_pek_p = pearsonr(suc_lbo_pek, range(1, len(suc_lbo_pek) + 1))
 
-        
+        suc_lbo_tgh = xr_photometry['last_bar_off_zscored_df_over_f'].sel(
+            event_time=slice(150, 350), trial_nb=ind_success).min(dim='event_time').values 
+        suc_lbo_tgh = suc_lbo_tgh[~np.isnan(suc_lbo_tgh)]
+        suc_lbo_tgh_r, suc_lbo_tgh_p = pearsonr(-1 * suc_lbo_tgh, range(1, len(suc_lbo_tgh) + 1)) # negative
 
-        rew_suc = xr_photometry['first_spout_zscored_df_over_f'].sel(
+
+        suc_rew_pek = xr_photometry['first_spout_zscored_df_over_f'].sel(
             event_time=slice(500, 750), trial_nb=ind_success).max(dim='event_time').values
-        rew_suc = rew_suc[~np.isnan(rew_suc)]
-        rew_suc_r, rew_suc_p = pearsonr(rew_suc, range(1, len(rew_suc) + 1))
+        suc_rew_pek = suc_rew_pek[~np.isnan(suc_rew_pek)]
+        suc_rew_pek_r, suc_rew_pek_p = pearsonr(suc_rew_pek, range(1, len(suc_rew_pek) + 1))
 
-        items = [ss, dip_suc, reb_suc, lbo_suc, rew_suc, 
-                dip_suc_r, reb_suc_r, lbo_suc_r, rew_suc_r]
+        suc_rew_tgh = xr_photometry['first_spout_zscored_df_over_f'].sel(
+            event_time=slice(700, 950), trial_nb=ind_success).min(dim='event_time').values 
+        suc_rew_tgh = suc_rew_tgh[~np.isnan(suc_rew_tgh)]
+        suc_rew_tgh_r, suc_rew_tgh_p = pearsonr(-1 * suc_rew_tgh, range(1, len(suc_rew_tgh) + 1)) # negative
+
+
+
+        items = [ss,
+                suc_con_dip, suc_con_reb, 
+                suc_lbo_pek, suc_lbo_tgh,
+                suc_rew_pek, suc_rew_tgh,
+                suc_con_dip_r, suc_con_reb_r, 
+                suc_lbo_pek_r, suc_lbo_tgh_r,
+                suc_rew_pek_r, suc_rew_tgh_r]
+        
     except Exception as e: 
         print(f'{ss}, {e}')
-        items = [ss, np.nan, np.nan, np.nan, np.nan, 
-                np.nan, np.nan, np.nan, np.nan]
+        items = [ss, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan,
+                np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
 
     df_size3 = pd.DataFrame([items])
-    df_size3.columns = ['session_id', 'dip_suc', 'reb_suc', 'lbo_suc', 'rew_suc', 
-                  'dip_suc_r', 'reb_suc_r', 'lbo_suc_r', 'rew__suc_r']
+    df_size3.columns = ['session_id', 'suc_con_dip', 'suc_con_reb',
+                        'suc_lbo_pek','suc_lbo_tgh',
+                        'suc_rew_pek', 'suc_rew_tgh',
+                        'suc_con_dip_r', 'suc_con_reb_r',
+                        'suc_lbo_pek_r', 'suc_lbo_tgh_r', 
+                        'suc_rew_pek_r', 'suc_rew_tgh_r']
     list_size3.append(df_size3)
 
 
 
-
-# In[20]:
-
-
-items
-
-
-# In[21]:
+# In[100]:
 
 
 df_size3_ = pd.concat(list_size3, axis=0)
 
-df_size3_ = df_size3_.dropna(subset=['dip_suc_r'])
+df_size3_ = df_size3_.dropna(subset=['suc_con_dip_r'])
 
 df_size3_['subject_id'] = [re.search('\w+', sid).group(0) for sid in df_size3_['session_id']]
 df_size3_
 
 
-# In[22]:
+# In[101]:
 
 
-df_size3_
-
-
-# In[32]:
-
-
-df_size3__ = df_size3_.loc[:,  ['dip_suc_r', 'reb_suc_r', 'lbo_suc_r', 'rew__suc_r','subject_id']]
+df_size3__ = df_size3_.loc[:,  ['suc_con_dip_r', 'suc_con_reb_r', 'suc_lbo_pek_r', 'suc_lbo_tgh_r', 'suc_rew_pek_r', 'suc_rew_tgh_r', 'subject_id']]
 
 df_melted = df_size3__.melt(id_vars=['subject_id'], var_name='group', value_name='value')
 
 
-# In[31]:
+# In[102]:
 
 
 print(df_size3__.head())
 
 
-# In[24]:
-
-
-ax.get_xlim()
-
-
-# In[25]:
-
-
-ax.get_xlim()
-
-
-# In[27]:
+# In[103]:
 
 
 import seaborn as sns
@@ -554,15 +551,17 @@ sns.swarmplot(x='day', y='total_bill', data=tips, hue='sex')
 plt.show()
 
 
-# In[47]:
+# In[104]:
 
 
-group_for_counting = 'dip_suc_r'
+group_for_counting = 'suc_con_dip_r'
 subject_counts = df_melted[df_melted['group'] == group_for_counting]['subject_id'].value_counts().to_dict()
 subject_counts
 
 
-# In[52]:
+# # ACh, correlation coefficients of response size and successful trial ordinals
+
+# In[105]:
 
 
 group_counts = df_melted.groupby('group')['subject_id'].value_counts().unstack()
@@ -574,30 +573,14 @@ all_consistent = consistent_counts.all()
 print(f"All groups have consistent counts: {all_consistent}")
 
 
-# In[59]:
+# In[117]:
 
 
-palette = sns.color_palette('deep', n_colors=len(unique_subjects))
-
-
-# In[66]:
-
-
-group_counts = df_melted.groupby('group')['subject_id'].value_counts().unstack()
-print(group_counts)
-
-# Check if all columns (i.e., subject_id counts across groups) have the same values
-consistent_counts = group_counts.apply(lambda col: col.nunique() == 1, axis=0)
-all_consistent = consistent_counts.all()
-print(f"All groups have consistent counts: {all_consistent}")
-
-subject_counts = group_counts.loc['dip_suc_r'].to_dict()
+subject_counts = group_counts.loc['suc_con_dip_r'].to_dict()
 
 
 unique_subjects = df_melted['subject_id'].unique()
 palette = sns.color_palette('deep', n_colors=len(unique_subjects))
-#color_mapping = dict(zip(unique_subjects, palette))
-#color_mapping = {f"{subj} (n = {count})": color for subj, color in color_mapping.items() if subj in subject_counts.keys()}
 color_mapping_with_counts = {f"{subj} (n = {count})": color_mapping[subj] for subj, count in subject_counts.items()}
 
 # add new column for subject_id with sample size
@@ -621,7 +604,7 @@ offsets = np.linspace(offset_center - (number_of_offsets - 1) / 2 * offset_inter
                       offset_center + (number_of_offsets - 1) / 2 * offset_interval,
                       number_of_offsets)
 
-group_order = ['dip_suc_r', 'reb_suc_r', 'lbo_suc_r', 'rew__suc_r']  # Order of the groups
+group_order = ['suc_con_dip_r', 'suc_con_reb_r', 'suc_lbo_pek_r', 'suc_lbo_tgh_r', 'suc_rew_pek_r', 'suc_rew_tgh_r']  # Order of the groups
 
 for i, group in enumerate(group_order):
     group_medians = medians[medians['group'] == group]
@@ -634,9 +617,30 @@ for i, group in enumerate(group_order):
 
 plt.axhline(0, ls='--', color='gray')
 plt.ylabel('Correlation coefficient of \nresponse size and successful trial ordinal\nDecreasing — Increasing')
-plt.xticks(range(0, 4), ['Cue onset dip', 'Cue onset rebound',
-           'Last bar_off peak', 'Reward peak'], rotation=60)
-plt.xlim(-0.5, 4.5)
+plt.xticks(range(0, 6), ['Cue onset dip', 'Cue onset rebound',
+           'Last bar_off peak','Last bar_off trough', 'Reward peak', 'Reward trough'], rotation=60, ha='right')
+plt.text(0, 0.40, 'ACh',fontsize=30, fontweight='bold')
+plt.xlim(-0.5, 6)
+
+# make the legend pretty
+
+
+# Get current handles and labels
+handles, labels = plt.gca().get_legend_handles_labels()
+
+# Remove duplicates (as scatter plot might have created multiple entries for the same legend)
+unique_labels = []
+unique_handles = []
+for handle, label in zip(handles, labels):
+    if label not in unique_labels:
+        unique_labels.append(label)
+        unique_handles.append(handle)
+
+# Create a new legend
+plt.legend(unique_handles, unique_labels, title='', bbox_to_anchor=(1.05, 1), loc='upper left')
+
+plt.tight_layout()  # Adjust subplot parameters to make the plot fit the figure area
+plt.show()
 
 
 # In[ ]:
