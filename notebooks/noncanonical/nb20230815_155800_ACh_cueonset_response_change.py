@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[63]:
+# In[67]:
 
 
 import os
@@ -18,6 +18,7 @@ get_ipython().system('jupyter nbconvert "{input_path}" --to="python" --output="{
 # 
 # based on notebooks\noncanonical\nb20230622_215600_ACh_cueonset_2_outcomes.ipynb
 # 
+# 
 # - animals?
 # - troughs for movement and reward?
 # 
@@ -25,7 +26,6 @@ get_ipython().system('jupyter nbconvert "{input_path}" --to="python" --output="{
 # - Calculate the CC and linregress slope for ACh dip, rebound, and DA peak against trial_nb
 # - We should be able to find sessions in which ACh rebound stays while ACh dip goes away.
 # - By detecting slow trough in data, we could also find sessions with recovery
-# - Should we also analyse data around spount? Movement encoding may be more stable.
 # - We can use `lme4` for ACh dip etc.
 # 
 # 
@@ -41,7 +41,7 @@ get_ipython().system('jupyter nbconvert "{input_path}" --to="python" --output="{
 # - lots of abortions
 # 
 
-# In[ ]:
+# In[1]:
 
 
 get_ipython().run_line_magic('reload_ext', 'autoreload')
@@ -77,7 +77,7 @@ from trialexp.process.pyphotometry.utils import measure_ACh_dip_rebound, measure
 # df_events = pd.read_pickle(os.path.join(data_dir, 'df_events_cond.pkl'))
 
 
-# In[ ]:
+# In[2]:
 
 
 by_sessions_dir = r'\\ettina\Magill_Lab\Julien\Data\head-fixed\by_sessions'
@@ -103,7 +103,7 @@ subject_ids = [re.match(r"(\w+)-", ssid).group(1) for ssid in session_ids]
 # # Compute ACh
 # 3 m 47 s for the folder 'reaching_go_spout_bar_nov22' and the 5 mice
 
-# In[ ]:
+# In[3]:
 
 
 subject_ids_ACh = ['TT001','TT002','TT005','RE606', 'RE607']
@@ -111,7 +111,7 @@ subject_ids_ACh = ['TT001','TT002','TT005','RE606', 'RE607']
 ind_ACh = [ind for ind, sbj in enumerate(subject_ids) if sbj in subject_ids_ACh]
 
 
-# In[ ]:
+# In[4]:
 
 
 data = []
@@ -136,7 +136,7 @@ df_ACh_cue_onset.columns = ['session_id', 'subject_id', 'df_trials', 'n_trials',
               'is_success', 'msg', 'data_dir']
 
 
-# In[ ]:
+# In[5]:
 
 
 mask = (df_ACh_cue_onset['n_trials'].notnull()) & (df_ACh_cue_onset['n_trials'] > 100) & df_ACh_cue_onset['is_success']
@@ -148,7 +148,7 @@ df_ACh_cue_onset_100['n_trials']
 # # Compute DA
 # 
 
-# In[ ]:
+# In[6]:
 
 
 subject_ids_DA = ['kms058','kms062','kms063','kms064', 'JC317L']
@@ -204,7 +204,7 @@ df_DA_cue_onset_100['n_trials']
 
 # ## Plotting style
 
-# In[ ]:
+# In[7]:
 
 
 # Define your list of markers
@@ -225,7 +225,7 @@ plt.rcParams['axes.labelsize'] = 12
 
 # # ACh
 
-# In[ ]:
+# In[8]:
 
 
 fig, ax = plt.subplots()
@@ -256,14 +256,14 @@ ax.text(0.4, 0.5, 'Increasing in size', ha = 'right')
 ax.text(-0.8, -0.5, 'Decreasing in size', ha = 'left')
 
 
-# In[ ]:
+# In[9]:
 
 
 np.count_nonzero((df_ACh_cue_onset_100['trial_nb_dip_r_value'] * -1 < 0.1) &
                  (df_ACh_cue_onset_100['trial_nb_rebound_r_value'] > 0.1))
 
 
-# In[ ]:
+# In[10]:
 
 
 # find sessions with CC for dip > 0.1, CC for rebound > 0.1
@@ -275,7 +275,7 @@ ss_dp
 
 
 
-# In[ ]:
+# In[11]:
 
 
 ss_rdp = df_ACh_cue_onset_100.loc[(df_ACh_cue_onset_100['trial_nb_rebound_r_value'] > 0.2), 'session_id']
@@ -283,7 +283,7 @@ ss_rdp = df_ACh_cue_onset_100.loc[(df_ACh_cue_onset_100['trial_nb_rebound_r_valu
 ss_rdp
 
 
-# In[ ]:
+# In[12]:
 
 
 ss_dd = df_ACh_cue_onset_100.loc[(df_ACh_cue_onset_100['trial_nb_dip_r_value'] * -1 < -0.2) &
@@ -291,7 +291,7 @@ ss_dd = df_ACh_cue_onset_100.loc[(df_ACh_cue_onset_100['trial_nb_dip_r_value'] *
 ss_dd
 
 
-# In[ ]:
+# In[13]:
 
 
 fig, ax = plt.subplots()
@@ -321,7 +321,7 @@ plt.ylabel('CC of ACh rebound size and trial_nb')
 plt.title('Average per animal')
 
 
-# In[ ]:
+# In[14]:
 
 
 fig, ax = plt.subplots()
@@ -347,7 +347,7 @@ plt.xticks(range(0,5), subject_ids_)
 plt.ylabel('CC of ACh dip size and trial number')
 
 
-# In[ ]:
+# In[15]:
 
 
 fig, ax = plt.subplots()
@@ -373,7 +373,7 @@ plt.xticks(range(0,5), subject_ids_)
 plt.ylabel('CC of ACh rebound size and trial number')
 
 
-# In[ ]:
+# In[16]:
 
 
 fig, ax = plt.subplots()
@@ -397,7 +397,7 @@ plt.xticks(range(0,5), subject_ids_)
 plt.ylabel('CC of DA peak size and trial number')
 
 
-# In[ ]:
+# In[17]:
 
 
 sbj = 'kms058'
@@ -406,152 +406,9 @@ df_ACh_cue_onset_100.loc[df_ACh_cue_onset_100['subject_id'] == sbj].index
  
 
 
-# In[ ]:
-
-
-subject_ids_ = sorted(list(set(df_ACh_cue_onset_100['subject_id'])))
-
-for sbj in subject_ids_:
-
-    fig, ax = plt.subplots()
-
-    df_ACh_cue_onset_100['subject_id'] == sbj
-
-    ax.set_title(sbj)
-
-    ind = df_ACh_cue_onset_100.loc[df_ACh_cue_onset_100['subject_id'] == sbj].index
-
-    for i in ind:
-        
-        ax.plot(df_ACh_cue_onset_100['df_trials'][i]['trial_nb'], 
-                df_ACh_cue_onset_100['df_trials'][i]['dip'], color = '#1f77b4', alpha = 0.2)
-        ax.plot(df_ACh_cue_onset_100['df_trials'][i]['trial_nb'],
-                df_ACh_cue_onset_100['df_trials'][i]['rebound'], color='#ff7f0e', alpha = 0.2)
-        
-        ax.set_xlabel('Trial number')
-        ax.set_ylabel('Dip/rebound size in z-scored delta F/F')
-
-
-# # DA
-
-# In[ ]:
-
-
-import seaborn as sns
-
-fig, ax = plt.subplots()
-
-subject_ids_ = sorted(list(set(df_DA_cue_onset_100['subject_id'])))
-
-for i, sbj in enumerate(subject_ids_):
-    y = (df_DA_cue_onset_100['trial_nb_pk_r_value']
-         [df_DA_cue_onset_100['subject_id'] == sbj])
-    # y = np.mean(df_DA_cue_onset_100['trial_nb_rebound_r_value']
-    #             [df_DA_cue_onset_100['subject_id'] == sbj])
-
-    sns.swarmplot(x=i, y=y)
-
-    # ax.plot(x, marker=next(markers), linestyle='None',
-    #         fillstyle='none', label=sbj)
-
-
-ax.plot(ax.get_xlim(), [0, 0], '--k')
-
-plt.xticks(range(0,5), subject_ids_)
-
-
-# In[ ]:
-
-
-subject_ids_ = sorted(list(set(df_DA_cue_onset_100['subject_id'])))
-
-for sbj in subject_ids_:
-
-    fig, ax = plt.subplots()
-
-    df_DA_cue_onset_100['subject_id'] == sbj
-
-    ax.set_title(sbj)
-
-    ind = df_DA_cue_onset_100.loc[df_DA_cue_onset_100['subject_id'] == sbj].index
-
-    for i in ind:
-        
-        ax.plot(df_DA_cue_onset_100['df_trials'][i]['trial_nb'], 
-                df_DA_cue_onset_100['df_trials'][i]['peak'], color = '#1f77b4', alpha = 0.2)
-        
-        ax.set_xlabel('Trial number')
-        ax.set_ylabel('Peak size in z-scored delta F/F')
-
-
 # 
-# # Moving average
+# # CC analysis of ACh
 # 
-# Use moving average and detection of slow peak or trough in response size
-# 
-# ```python
-# data['value_smooth'] = data['value'].rolling(window=5).mean()
-# 
-# ```
-# 
-# I hoped to detect large scale change in response sizes, eg. a trough followed by rebound, implying they stopped performing and then engaged in the task again.
-# 
-# It's certainly less noisy, but 
-
-# In[ ]:
-
-
-subject_ids_ = sorted(list(set(df_ACh_cue_onset_100['subject_id'])))
-
-for sbj in subject_ids_:
-
-    ind = df_ACh_cue_onset_100.loc[df_ACh_cue_onset_100['subject_id'] == sbj].index
-
-    for i in ind:
-        df_ACh_cue_onset_100.loc[i, 'df_trials']['dip_smooth20'] = \
-            df_ACh_cue_onset_100.loc[i, 'df_trials']['dip'].rolling(window=20).mean()
-        df_ACh_cue_onset_100.loc[i, 'df_trials']['rebound_smooth20'] = \
-            df_ACh_cue_onset_100.loc[i, 'df_trials']['rebound'].rolling(window=20).mean()
-
-
-# In[ ]:
-
-
-plt.rcParams['font.size']= 16
-plt.rcParams['axes.labelsize'] = 20
-
-subject_ids_ = sorted(list(set(df_ACh_cue_onset_100['subject_id'])))
-
-ax = [None]*6
-for j, sbj in enumerate(subject_ids_):
-
-    ax[j] = pw.Brick(figsize=(6, 6))
-
-
-    ax[j].set_title(sbj + ": after smoothing")
-
-    ind = df_ACh_cue_onset_100.loc[df_ACh_cue_onset_100['subject_id'] == sbj].index
-
-    for i in ind:
-
-        ax[j].plot(df_ACh_cue_onset_100['df_trials'][i]['trial_nb'],
-                df_ACh_cue_onset_100['df_trials'][i]['dip_smooth20'], color='#1f77b4', alpha=0.2)
-        ax[j].plot(df_ACh_cue_onset_100['df_trials'][i]['trial_nb'],
-                df_ACh_cue_onset_100['df_trials'][i]['rebound_smooth20'], color='#ff7f0e', alpha=0.2)
-
-        ax[j].set_xlabel('Trial number')
-        ax[j].set_ylabel('Dip/rebound size in z-scored delta F/F')
-
-ax[5] = pw.Brick(figsize=(3, 3))
-
-ax01 = ax[0] | ax[1] 
-ax23 = ax[2] | ax[3] 
-ax45 = ax[4] | ax[5]
-ax0123 = ax01 / ax23
-ax012345 = ax0123 / ax45
-
-ax012345.savefig()
-
 
 # - trial_outcome
 # - cueonset
@@ -559,54 +416,14 @@ ax012345.savefig()
 # 
 # 
 
-# In[ ]:
+# In[18]:
 
 
 ss_d = df_ACh_cue_onset_100.loc[(df_ACh_cue_onset_100['trial_nb_dip_r_value'] * -1 < -0.3), 'session_id']
 ss_d
 
 
-# In[ ]:
-
-
-ss = 'TT001-2023-06-23-154127'
-datadir = r'\\ettina\Magill_Lab\Julien\Data\head-fixed\by_sessions\reaching_go_spout_bar_nov22' + '\\' + ss + r'\processed'
-
-xr_photometry = xr.open_dataset(os.path.join(datadir, 'xr_photometry.nc'))
-xr_session = xr.open_dataset(os.path.join(datadir, 'xr_session.nc'))
-
-
-# In[ ]:
-
-
-from scipy.stats import pearsonr
-ind_success = np.where(xr_session['trial_outcome'].values == 'success')[1] + 1
-
-dip_suc = xr_photometry['hold_for_water_zscored_df_over_f'].sel(
-    event_time=slice(75, 250), trial_nb=ind_success).min(dim='event_time').values
-dip_suc_r, dip_suc_p = pearsonr(dip_suc, np.arange(1, len(dip_suc) +1))
-
-
-# In[ ]:
-
-
-dip_suc_r
-
-
-# In[ ]:
-
-
-os.path.isfile(os.path.join(datadir, 'xr_photometry.nc'))
-
-
-# In[ ]:
-
-
-dip_suc = xr_photometry['hold_for_water_zscored_df_over_f'].sel(
-    event_time=slice(75, 250), trial_nb=ind_success).min(dim='event_time').values
-
-
-# In[ ]:
+# In[19]:
 
 
 #  Calculate CC or slope
@@ -617,7 +434,7 @@ if 'list_size3' in globals():
     del list_size3
 
 list_size3 = []
-for ss in ss_d:
+for ss in ss_d: # go round sessions
 
     datadir = r'\\ettina\Magill_Lab\Julien\Data\head-fixed\by_sessions\reaching_go_spout_bar_nov22' + '\\' + ss + r'\processed'
 
@@ -653,6 +470,8 @@ for ss in ss_d:
         lbo_suc = lbo_suc[~np.isnan(lbo_suc)]
         lbo_suc_r, lbo_suc_p = pearsonr(lbo_suc, range(1, len(lbo_suc) + 1))
 
+        
+
         rew_suc = xr_photometry['first_spout_zscored_df_over_f'].sel(
             event_time=slice(500, 750), trial_nb=ind_success).max(dim='event_time').values
         rew_suc = rew_suc[~np.isnan(rew_suc)]
@@ -673,7 +492,13 @@ for ss in ss_d:
 
 
 
-# In[ ]:
+# In[20]:
+
+
+items
+
+
+# In[21]:
 
 
 df_size3_ = pd.concat(list_size3, axis=0)
@@ -684,33 +509,137 @@ df_size3_['subject_id'] = [re.search('\w+', sid).group(0) for sid in df_size3_['
 df_size3_
 
 
-# In[46]:
+# In[22]:
 
 
 df_size3_
 
 
-# In[48]:
+# In[32]:
 
 
-df_size3__ = df_size3_.loc[:,  ['dip_suc_r', 'reb_suc_r', 'lbo_suc_r', 'rew__suc_r']]
+df_size3__ = df_size3_.loc[:,  ['dip_suc_r', 'reb_suc_r', 'lbo_suc_r', 'rew__suc_r','subject_id']]
 
-df_melted = df_size3__.melt(var_name='group', value_name='value')
+df_melted = df_size3__.melt(id_vars=['subject_id'], var_name='group', value_name='value')
 
 
-# In[56]:
+# In[31]:
+
+
+print(df_size3__.head())
+
+
+# In[24]:
 
 
 ax.get_xlim()
 
 
-# In[60]:
+# In[25]:
 
 
 ax.get_xlim()
 
 
-# In[62]:
+# In[27]:
+
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Sample data
+tips = sns.load_dataset('tips')
+sns.swarmplot(x='day', y='total_bill', data=tips, hue='sex')
+
+plt.show()
+
+
+# In[47]:
+
+
+group_for_counting = 'dip_suc_r'
+subject_counts = df_melted[df_melted['group'] == group_for_counting]['subject_id'].value_counts().to_dict()
+subject_counts
+
+
+# In[52]:
+
+
+group_counts = df_melted.groupby('group')['subject_id'].value_counts().unstack()
+print(group_counts)
+
+# Check if all columns (i.e., subject_id counts across groups) have the same values
+consistent_counts = group_counts.apply(lambda col: col.nunique() == 1, axis=0)
+all_consistent = consistent_counts.all()
+print(f"All groups have consistent counts: {all_consistent}")
+
+
+# In[59]:
+
+
+palette = sns.color_palette('deep', n_colors=len(unique_subjects))
+
+
+# In[66]:
+
+
+group_counts = df_melted.groupby('group')['subject_id'].value_counts().unstack()
+print(group_counts)
+
+# Check if all columns (i.e., subject_id counts across groups) have the same values
+consistent_counts = group_counts.apply(lambda col: col.nunique() == 1, axis=0)
+all_consistent = consistent_counts.all()
+print(f"All groups have consistent counts: {all_consistent}")
+
+subject_counts = group_counts.loc['dip_suc_r'].to_dict()
+
+
+unique_subjects = df_melted['subject_id'].unique()
+palette = sns.color_palette('deep', n_colors=len(unique_subjects))
+#color_mapping = dict(zip(unique_subjects, palette))
+#color_mapping = {f"{subj} (n = {count})": color for subj, color in color_mapping.items() if subj in subject_counts.keys()}
+color_mapping_with_counts = {f"{subj} (n = {count})": color_mapping[subj] for subj, count in subject_counts.items()}
+
+# add new column for subject_id with sample size
+df_melted['subject_id_with_count'] = df_melted['subject_id'].apply(lambda x: f"{x} (n = {subject_counts[x]})")
+
+medians = df_melted.groupby(['group', 'subject_id']).median().reset_index()
+
+plt.figure(figsize=(10, 6))
+sns.swarmplot(x='group', y='value', data=df_melted, hue='subject_id_with_count',
+              zorder=1, palette=color_mapping_with_counts)  # zorder=1 to be underneath the boxplot
+# zorder=2 to be over the swarmplot
+sns.boxplot(x='group', y='value', data=df_melted, zorder=2,
+            boxprops=dict(alpha=.3), width=0.4, color='gray')
+
+# Plot medians
+offset_center = 0.4
+offset_interval = 0.05
+number_of_offsets = 5
+
+offsets = np.linspace(offset_center - (number_of_offsets - 1) / 2 * offset_interval,
+                      offset_center + (number_of_offsets - 1) / 2 * offset_interval,
+                      number_of_offsets)
+
+group_order = ['dip_suc_r', 'reb_suc_r', 'lbo_suc_r', 'rew__suc_r']  # Order of the groups
+
+for i, group in enumerate(group_order):
+    group_medians = medians[medians['group'] == group]
+    # for offset, (subj, row) in zip(offsets, group_medians.iterrows()):
+    #     plt.scatter(i + offset, row['value'], s=40, color=color_mapping_with_counts[row['subject_id_with_count']], label=row['subject_id_with_count'])
+    for offset, (subj, row) in zip(offsets, group_medians.iterrows()):
+        subject_id_with_count = f"{row['subject_id']} (n = {subject_counts[row['subject_id']]})"
+        plt.scatter(i + offset, row['value'], s=60, marker='+',color=color_mapping_with_counts[subject_id_with_count], label=subject_id_with_count)
+
+
+plt.axhline(0, ls='--', color='gray')
+plt.ylabel('Correlation coefficient of \nresponse size and successful trial ordinal\nDecreasing — Increasing')
+plt.xticks(range(0, 4), ['Cue onset dip', 'Cue onset rebound',
+           'Last bar_off peak', 'Reward peak'], rotation=60)
+plt.xlim(-0.5, 4.5)
+
+
+# In[ ]:
 
 
 plt.figure(figsize=(10, 6))
