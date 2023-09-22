@@ -160,7 +160,7 @@ plt.rcParams['font.family']= 'Arial'
 plt.rcParams['figure.dpi']= 200
 
 
-plt.rcParams['axes.labelsize'] = 12
+plt.rcParams['axes.labelsize'] = 16
 
 
 # 
@@ -262,7 +262,8 @@ for ss in ss_d: # go round sessions
                 np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
 
     df_AChCC = pd.DataFrame([items])
-    df_AChCC.columns = ['session_id', 'suc_con_dip', 'suc_con_reb',
+    df_AChCC.columns = ['session_id', 
+                        'suc_con_dip', 'suc_con_reb',
                         'suc_lbo_pek','suc_lbo_tgh',
                         'suc_rew_pek', 'suc_rew_tgh',
                         'suc_con_dip_r', 'suc_con_reb_r',
@@ -272,7 +273,7 @@ for ss in ss_d: # go round sessions
 
 
 
-# In[11]:
+# In[32]:
 
 
 df_AChCC_ = pd.concat(list_AChCC, axis=0)
@@ -280,15 +281,70 @@ df_AChCC_ = pd.concat(list_AChCC, axis=0)
 df_AChCC_ = df_AChCC_.dropna(subset=['suc_con_dip_r'])
 
 df_AChCC_['subject_id'] = [re.search('\w+', sid).group(0) for sid in df_AChCC_['session_id']]
+df_AChCC_ = df_AChCC_.reset_index(drop=True)
+
 df_AChCC_
-
-
-# In[12]:
-
 
 df_AChCC__ = df_AChCC_.loc[:,  ['suc_con_dip_r', 'suc_con_reb_r', 'suc_lbo_pek_r', 'suc_lbo_tgh_r', 'suc_rew_pek_r', 'suc_rew_tgh_r', 'subject_id']]
 
+
 df_ACh_melted = df_AChCC__.melt(id_vars=['subject_id'], var_name='group', value_name='value')
+
+
+# In[64]:
+
+
+plt.rcParams['axes.labelsize'] = 8
+
+fig, ax = plt.subplots(2,3)
+
+plt.tight_layout()
+
+plt.sca(ax[0,0])
+plt.title('Cue Onset - Rebound', fontsize = 8)
+for i in range(0, df_AChCC_.shape[0]):
+    plt.plot(df_AChCC_.loc[i,'suc_con_reb'], color=[0.1, 0.1, 0.1], linewidth=0.5, alpha=0.1)
+
+
+plt.sca(ax[1,0])
+plt.title('Cue Onset - Dip', fontsize = 8)
+for i in range(0, df_AChCC_.shape[0]):
+    plt.plot(df_AChCC_.loc[i,'suc_con_dip'], color=[0.1, 0.1, 0.1], linewidth=0.5, alpha=0.1)
+
+
+plt.sca(ax[0,1])
+plt.title('Last bar_off - Peak', fontsize = 8)
+for i in range(0, df_AChCC_.shape[0]):
+    plt.plot(df_AChCC_.loc[i,'suc_lbo_pek'], color=[0.1, 0.1, 0.1], linewidth=0.5, alpha=0.1)
+
+plt.sca(ax[1,1])
+plt.title('Last bar_off - Trough', fontsize = 8)
+for i in range(0, df_AChCC_.shape[0]):
+    plt.plot(df_AChCC_.loc[i,'suc_lbo_tgh'], color=[0.1, 0.1, 0.1], linewidth=0.5, alpha=0.1)
+
+plt.sca(ax[0,2])
+plt.title('Reward - Peak', fontsize = 8)
+for i in range(0, df_AChCC_.shape[0]):
+    plt.plot(df_AChCC_.loc[i,'suc_rew_pek'], color=[0.1, 0.1, 0.1], linewidth=0.5, alpha=0.1)
+
+plt.sca(ax[1,2])
+plt.title('Reward - Trough', fontsize = 8)
+for i in range(0, df_AChCC_.shape[0]):
+    plt.plot(df_AChCC_.loc[i,'suc_rew_tgh'], color=[0.1, 0.1, 0.1], linewidth=0.5, alpha=0.1)
+
+
+for j in [0, 1, 2]:
+    for i in [0, 1]:
+        ax[i,j].tick_params(axis='both', which='major', labelsize=8)
+        if i == 0 :
+            if j == 0:
+                ax[i,j].set_ylabel('Peak height')
+        else:
+            if j ==0:
+                ax[i,j].set_ylabel('Trough depth')
+            ax[i,j].set_xlabel('Trials')
+
+
 
 
 # # ACh, correlation coefficients of response size and successful trial ordinals
@@ -305,7 +361,7 @@ all_consistent = consistent_counts.all()
 print(f"All groups have consistent counts: {all_consistent}")
 
 
-# In[15]:
+# In[14]:
 
 
 subject_counts = group_counts.loc['suc_con_dip_r'].to_dict()
@@ -317,7 +373,7 @@ color_mapping = dict(zip(unique_subjects, palette))
 color_mapping_with_counts = {f"{subj} (n = {count})": color_mapping[subj] for subj, count in subject_counts.items()}
 
 # add new column for subject_id with sample size
-df_ACh_melted['subject_id_with_count'] = df_ACh_melted['subject_id'].apply(lambda x: f"{x} (n = {subject_counts[x]})")
+df_DA_melted['subject_id_with_count'] = df_ACh_melted['subject_id'].apply(lambda x: f"{x} (n = {subject_counts[x]})")
 
 medians = df_ACh_melted.groupby(['group', 'subject_id']).median().reset_index()
 
@@ -376,9 +432,12 @@ plt.tight_layout()  # Adjust subplot parameters to make the plot fit the figure 
 plt.show()
 
 
+# It's better to identify outliers and understand what's going wrong.
+# And then remove them accordingly.
+
 # # without outliers
 
-# In[16]:
+# In[21]:
 
 
 # hide a few outliers
@@ -401,7 +460,7 @@ def is_outlier(row):
 df_ACh_melted['is_outlier'] = df_ACh_melted.apply(is_outlier, axis=1)
 
 # Filter out outliers
-df_filtered = df_ACh_melted[~df_ACh_melted['is_outlier']]
+df_ACh_filtered = df_ACh_melted[~df_ACh_melted['is_outlier']]
 
 
 
@@ -419,10 +478,10 @@ df_ACh_melted['subject_id_with_count'] = df_ACh_melted['subject_id'].apply(lambd
 medians = df_ACh_melted.groupby(['group', 'subject_id']).median().reset_index()
 
 plt.figure(figsize=(10, 6))
-sns.swarmplot(x='group', y='value', data=df_filtered, hue='subject_id_with_count',
+sns.swarmplot(x='group', y='value', data=df_ACh_filtered, hue='subject_id_with_count',
               zorder=1, palette=color_mapping_with_counts, size=3)  # zorder=1 to be underneath the boxplot
 # zorder=2 to be over the swarmplot
-sns.boxplot(x='group', y='value', data=df_filtered, zorder=2,
+sns.boxplot(x='group', y='value', data=df_ACh_filtered, zorder=2,
             boxprops=dict(alpha=.3), width=0.4, color='gray', showfliers=False)
 
 # Plot medians
@@ -449,7 +508,7 @@ plt.axhline(0, ls='--', color='gray')
 plt.ylabel('Correlation coefficient of \nresponse size and successful trial ordinal\nDecreasing — Increasing')
 plt.xticks(range(0, 6), ['Cue onset dip', 'Cue onset rebound',
            'Last bar_off peak','Last bar_off trough', 'Reward peak', 'Reward trough'], rotation=60, ha='right')
-plt.text(0, 0.40, 'ACh',fontsize=30, fontweight='bold')
+plt.text(-0.1, 0.37, 'ACh',fontsize=30, fontweight='bold')
 plt.xlim(-0.5, 6)
 
 # make the legend pretty
@@ -476,7 +535,7 @@ plt.show()
 # # Compute DA
 # 
 
-# In[17]:
+# In[22]:
 
 
 subject_ids_DA = ['kms058','kms062','kms063','kms064', 'JC317L']
@@ -484,7 +543,7 @@ subject_ids_DA = ['kms058','kms062','kms063','kms064', 'JC317L']
 ind_DA = [ind for ind, sbj in enumerate(subject_ids) if sbj in subject_ids_DA]
 
 
-# In[18]:
+# In[23]:
 
 
 data = []
@@ -504,7 +563,7 @@ df_DA_sessions = pd.DataFrame(data)
 df_DA_sessions.columns = ['session_id', 'subject_id', 'df_trials', 'n_trials','data_dir']
 
 
-# In[20]:
+# In[24]:
 
 
 mask = (df_DA_sessions['n_trials'].notnull()) & (df_DA_sessions['n_trials'] > 100)  # more than 100 trials & is_success
@@ -513,7 +572,7 @@ df_DA_sessions_100 = df_DA_sessions.loc[mask]
 df_DA_sessions_100['n_trials']
 
 
-# In[21]:
+# In[25]:
 
 
 dass_d = df_DA_sessions_100.loc[:, 'session_id']
@@ -522,7 +581,7 @@ dass_d = df_DA_sessions_100.loc[:, 'session_id']
 dass_d
 
 
-# In[24]:
+# In[26]:
 
 
 #  Calculate CC or slope
@@ -594,7 +653,7 @@ for ss in dass_d: # go round sessions
 
 
 
-# In[26]:
+# In[27]:
 
 
 df_DACC_ = pd.concat(list_DACC, axis=0)
@@ -605,7 +664,7 @@ df_DACC_['subject_id'] = [re.search('\w+', sid).group(0) for sid in df_DACC_['se
 df_DACC_
 
 
-# In[34]:
+# In[28]:
 
 
 df_DACC__ = df_DACC_.loc[:,  ['suc_con_pek_r', 'suc_lbo_pek_r', 'suc_rew_pek_r', 'subject_id']]
@@ -613,7 +672,7 @@ df_DACC__ = df_DACC_.loc[:,  ['suc_con_pek_r', 'suc_lbo_pek_r', 'suc_rew_pek_r',
 df_DA_melted = df_DACC__.melt(id_vars=['subject_id'], var_name='group', value_name='value')
 
 
-# In[35]:
+# In[29]:
 
 
 group_counts = df_DA_melted.groupby('group')['subject_id'].value_counts().unstack()
@@ -625,7 +684,7 @@ all_consistent = consistent_counts.all()
 print(f"All groups have consistent counts: {all_consistent}")
 
 
-# In[43]:
+# In[30]:
 
 
 subject_counts = group_counts.loc['suc_con_pek_r'].to_dict()
@@ -661,8 +720,6 @@ group_order = ['suc_con_pek_r', 'suc_lbo_pek_r',  'suc_rew_pek_r']  # Order of t
 
 for i, group in enumerate(group_order):
     group_medians = medians[medians['group'] == group]
-    # for offset, (subj, row) in zip(offsets, group_medians.iterrows()):
-    #     plt.scatter(i + offset, row['value'], s=40, color=color_mapping_with_counts[row['subject_id_with_count']], label=row['subject_id_with_count'])
     for offset, (subj, row) in zip(offsets, group_medians.iterrows()):
         subject_id_with_count = f"{row['subject_id']} (n = {subject_counts[row['subject_id']]})"
         plt.scatter(i + offset, row['value'], s=60, marker='+',color=color_mapping_with_counts[subject_id_with_count], label=subject_id_with_count)
@@ -673,6 +730,100 @@ plt.ylabel('Correlation coefficient of \nresponse size and successful trial ordi
 plt.xticks(range(0, 3), ['Cue onset peak', 'Last bar_off peak', 'Reward peak'], rotation=60, ha='right')
 plt.text(-0.4, 0.55, 'DA',fontsize=30, fontweight='bold')
 plt.xlim(-0.5, 3)
+
+# make the legend pretty
+
+
+# Get current handles and labels
+handles, labels = plt.gca().get_legend_handles_labels()
+
+# Remove duplicates (as scatter plot might have created multiple entries for the same legend)
+unique_labels = []
+unique_handles = []
+for handle, label in zip(handles, labels):
+    if label not in unique_labels:
+        unique_labels.append(label)
+        unique_handles.append(handle)
+
+# Create a new legend
+plt.legend(unique_handles, unique_labels, title='', bbox_to_anchor=(1.05, 1), loc='upper left')
+
+plt.tight_layout()  # Adjust subplot parameters to make the plot fit the figure area
+plt.show()
+
+
+# In[ ]:
+
+
+# hide a few outliers
+
+Q1 = df_DA_melted.groupby('group')['value'].quantile(0.25)
+Q3 = df_DA_melted.groupby('group')['value'].quantile(0.75)
+IQR = Q3 - Q1
+
+# Define bounds
+lower_bound = Q1 - 1.5 * IQR
+upper_bound = Q3 + 1.5 * IQR
+
+
+# This function will return True for outliers and False for valid data points
+def is_outlier(row):
+    group = row['group']
+    return (row['value'] < lower_bound[group]) or (row['value'] > upper_bound[group])
+
+# Add a new column to indicate outliers
+df_DA_melted['is_outlier'] = df_DA_melted.apply(is_outlier, axis=1)
+
+# Filter out outliers
+df_DA_filtered = df_DA_melted[~df_DA_melted['is_outlier']]
+
+
+
+subject_counts = group_counts.loc['suc_con_dip_r'].to_dict()
+
+
+
+unique_subjects = df_DA_melted['subject_id'].unique()
+palette = sns.color_palette('deep', n_colors=len(unique_subjects))
+color_mapping = dict(zip(unique_subjects, palette))
+color_mapping_with_counts = {f"{subj} (n = {count})": color_mapping[subj] for subj, count in subject_counts.items()}
+
+# add new column for subject_id with sample size
+df_DA_filtered['subject_id_with_count'] = df_DA_filtered['subject_id'].apply(lambda x: f"{x} (n = {subject_counts[x]})")
+
+medians = df_DA_filtered.groupby(['group', 'subject_id']).median().reset_index()
+
+plt.figure(figsize=(10, 6))
+sns.swarmplot(x='group', y='value', data=df_DA_filtered, hue='subject_id_with_count',
+              zorder=1, palette=color_mapping_with_counts, size=3)  # zorder=1 to be underneath the boxplot
+# zorder=2 to be over the swarmplot
+sns.boxplot(x='group', y='value', data=df_DA_filtered, zorder=2,
+            boxprops=dict(alpha=.3), width=0.4, color='gray', showfliers=False)
+
+# Plot medians
+offset_center = 0.4
+offset_interval = 0.05
+number_of_offsets = 5
+
+offsets = np.linspace(offset_center - (number_of_offsets - 1) / 2 * offset_interval,
+                      offset_center + (number_of_offsets - 1) / 2 * offset_interval,
+                      number_of_offsets)
+
+group_order = ['suc_con_pek_r', 'suc_lbo_pek_r',  'suc_rew_pek_r']  # Order of the groups
+
+for i, group in enumerate(group_order):
+    group_medians = medians[medians['group'] == group]
+    for offset, (subj, row) in zip(offsets, group_medians.iterrows()):
+        subject_id_with_count = f"{row['subject_id']} (n = {subject_counts[row['subject_id']]})"
+        plt.scatter(i + offset, row['value'], s=60, marker='+',color=color_mapping_with_counts[subject_id_with_count], label=subject_id_with_count)
+
+
+plt.axhline(0, ls='--', color='gray')
+plt.ylabel('Correlation coefficient of \nresponse size and successful trial ordinal\nDecreasing — Increasing')
+plt.xticks(range(0, 6), ['Cue onset dip', 'Cue onset rebound',
+           'Last bar_off peak','Last bar_off trough', 'Reward peak', 'Reward trough'], rotation=60, ha='right')
+plt.text(-0.1, 0.37, 'ACh',fontsize=30, fontweight='bold')
+plt.xlim(-0.5, 6)
 
 # make the legend pretty
 
