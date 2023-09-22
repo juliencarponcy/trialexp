@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[65]:
 
 
 import os
@@ -347,6 +347,92 @@ for j in [0, 1, 2]:
 
 
 
+# - Is the CC method bullshit? Or does it report some kind of truth?
+# - The fluctuation of the data is in sane that raw data are very difficult to handle.
+# - I can of course create median curves for each group, with 25 and 75 percentiles.
+# - 
+# 
+
+# In[99]:
+
+
+# median, 25 and 75 percentiles for each trial number
+
+# Need to transform the vectors of trials with different lengths into a matrix
+plt.rcParams['axes.labelsize'] = 8
+
+fig, ax = plt.subplots(2,3)
+plt.tight_layout()
+
+max_len = df_AChCC_['suc_con_reb'].apply(len).max()
+
+def plot_median_and_IQR(key_str,i, j, need_x_label =0): 
+
+    plt.sca(ax[i,j])
+    matrix = np.full((max_len, len(df_AChCC_)), np.nan)
+    for k, row in enumerate(df_AChCC_[key_str]):
+        matrix[:len(row), k] = row
+
+    non_nan_counts = np.sum(~np.isnan(matrix), axis=1)
+    threshold = 10
+    valid_indices = np.where(non_nan_counts >= threshold)[0]
+    
+    # Calculate percentiles for each row
+    percentiles_25 = []
+    percentiles_50 = []
+    percentiles_75 = []
+
+    percentiles_25 = [np.percentile(matrix[i, ~np.isnan(matrix[i, :])], 25) if i in valid_indices else np.nan for i in range(matrix.shape[0])]
+    percentiles_50 = [np.percentile(matrix[i, ~np.isnan(matrix[i, :])], 50) if i in valid_indices else np.nan for i in range(matrix.shape[0])]
+    percentiles_75 = [np.percentile(matrix[i, ~np.isnan(matrix[i, :])], 75) if i in valid_indices else np.nan for i in range(matrix.shape[0])]
+
+    indices = range(len(percentiles_25))
+
+    # Plotting filled area between 25th and 75th percentiles
+    plt.fill_between(indices, percentiles_25, percentiles_75, color='skyblue', linewidth=0.5, label='IQR')
+
+    # Plotting the line for the 50th percentile
+    plt.plot(indices, percentiles_50, color='red', marker='', linewidth=0.5, label='Median')
+
+    # Labels, title, and legend
+    if need_x_label:
+        plt.xlabel('Successful Trials #')
+    # plt.legend()
+
+    # Display the plot
+
+
+plot_median_and_IQR('suc_con_reb', 0, 0)
+plt.title('Cue Onset - Rebound', fontsize = 8)
+plt.ylabel('Peak size')
+
+plot_median_and_IQR('suc_con_dip', 1, 0, 1)
+plt.title('Cue Onset - Dip', fontsize = 8)
+plt.ylabel('Trough size')
+
+plot_median_and_IQR('suc_lbo_pek', 0, 1)
+plt.title('Last bar_off - Peak', fontsize = 8)
+plt.ylabel('Peak size')
+
+plot_median_and_IQR('suc_lbo_tgh', 1, 1, 1)
+plt.title('Last bar_off - Trough', fontsize = 8)
+plt.ylabel('Trough size')
+
+plot_median_and_IQR('suc_rew_pek', 0, 2)
+plt.title('Reward - Peak', fontsize = 8)
+plt.ylabel('Peak size')
+
+plot_median_and_IQR('suc_rew_tgh', 1, 2, 1)
+plt.title('Reward - Trough', fontsize = 8)
+plt.ylabel('Trough size')
+
+
+for j in [0, 1, 2]:
+    for i in [0, 1]:
+        ax[i,j].tick_params(axis='both', which='major', labelsize=8)
+
+
+
 # # ACh, correlation coefficients of response size and successful trial ordinals
 
 # In[13]:
@@ -535,7 +621,7 @@ plt.show()
 # # Compute DA
 # 
 
-# In[22]:
+# In[69]:
 
 
 subject_ids_DA = ['kms058','kms062','kms063','kms064', 'JC317L']
@@ -543,7 +629,7 @@ subject_ids_DA = ['kms058','kms062','kms063','kms064', 'JC317L']
 ind_DA = [ind for ind, sbj in enumerate(subject_ids) if sbj in subject_ids_DA]
 
 
-# In[23]:
+# In[70]:
 
 
 data = []
@@ -563,7 +649,7 @@ df_DA_sessions = pd.DataFrame(data)
 df_DA_sessions.columns = ['session_id', 'subject_id', 'df_trials', 'n_trials','data_dir']
 
 
-# In[24]:
+# In[71]:
 
 
 mask = (df_DA_sessions['n_trials'].notnull()) & (df_DA_sessions['n_trials'] > 100)  # more than 100 trials & is_success
@@ -572,7 +658,7 @@ df_DA_sessions_100 = df_DA_sessions.loc[mask]
 df_DA_sessions_100['n_trials']
 
 
-# In[25]:
+# In[72]:
 
 
 dass_d = df_DA_sessions_100.loc[:, 'session_id']
@@ -581,7 +667,7 @@ dass_d = df_DA_sessions_100.loc[:, 'session_id']
 dass_d
 
 
-# In[26]:
+# In[73]:
 
 
 #  Calculate CC or slope
@@ -653,7 +739,7 @@ for ss in dass_d: # go round sessions
 
 
 
-# In[27]:
+# In[75]:
 
 
 df_DACC_ = pd.concat(list_DACC, axis=0)
@@ -661,15 +747,46 @@ df_DACC_ = pd.concat(list_DACC, axis=0)
 df_DACC_ = df_DACC_.dropna(subset=['suc_con_pek'])
 
 df_DACC_['subject_id'] = [re.search('\w+', sid).group(0) for sid in df_DACC_['session_id']]
-df_DACC_
-
-
-# In[28]:
-
+df_DACC_ = df_DACC_.reset_index()
 
 df_DACC__ = df_DACC_.loc[:,  ['suc_con_pek_r', 'suc_lbo_pek_r', 'suc_rew_pek_r', 'subject_id']]
 
 df_DA_melted = df_DACC__.melt(id_vars=['subject_id'], var_name='group', value_name='value')
+
+
+# In[76]:
+
+
+plt.rcParams['axes.labelsize'] = 8
+
+fig, ax = plt.subplots(1,3)
+
+plt.tight_layout()
+
+plt.sca(ax[0])
+plt.title('Cue Onset - Peak', fontsize = 8)
+for i in range(0, df_DACC_.shape[0]):
+    plt.plot(df_DACC_.loc[i,'suc_con_pek'], color=[0.1, 0.1, 0.1], linewidth=0.5, alpha=0.1)
+
+
+plt.sca(ax[1])
+plt.title('Last bar_off - Peak', fontsize = 8)
+for i in range(0, df_DACC_.shape[0]):
+    plt.plot(df_DACC_.loc[i,'suc_lbo_pek'], color=[0.1, 0.1, 0.1], linewidth=0.5, alpha=0.1)
+
+
+plt.sca(ax[2])
+plt.title('Reward - Peak', fontsize = 8)
+for i in range(0, df_DACC_.shape[0]):
+    plt.plot(df_DACC_.loc[i,'suc_rew_pek'], color=[0.1, 0.1, 0.1], linewidth=0.5, alpha=0.1)
+
+
+for j in [0, 1, 2]:
+    ax[j].tick_params(axis='both', which='major', labelsize=8)
+    if j == 0:
+        ax[j].set_ylabel('Peak height')
+        ax[j].set_xlabel('Trials')
+
 
 
 # In[29]:
