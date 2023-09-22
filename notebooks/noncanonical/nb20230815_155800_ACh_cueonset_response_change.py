@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[65]:
+# In[100]:
 
 
 import os
@@ -353,7 +353,7 @@ for j in [0, 1, 2]:
 # - 
 # 
 
-# In[99]:
+# In[ ]:
 
 
 # median, 25 and 75 percentiles for each trial number
@@ -621,7 +621,7 @@ plt.show()
 # # Compute DA
 # 
 
-# In[69]:
+# In[102]:
 
 
 subject_ids_DA = ['kms058','kms062','kms063','kms064', 'JC317L']
@@ -629,7 +629,7 @@ subject_ids_DA = ['kms058','kms062','kms063','kms064', 'JC317L']
 ind_DA = [ind for ind, sbj in enumerate(subject_ids) if sbj in subject_ids_DA]
 
 
-# In[70]:
+# In[103]:
 
 
 data = []
@@ -649,7 +649,7 @@ df_DA_sessions = pd.DataFrame(data)
 df_DA_sessions.columns = ['session_id', 'subject_id', 'df_trials', 'n_trials','data_dir']
 
 
-# In[71]:
+# In[104]:
 
 
 mask = (df_DA_sessions['n_trials'].notnull()) & (df_DA_sessions['n_trials'] > 100)  # more than 100 trials & is_success
@@ -658,7 +658,7 @@ df_DA_sessions_100 = df_DA_sessions.loc[mask]
 df_DA_sessions_100['n_trials']
 
 
-# In[72]:
+# In[105]:
 
 
 dass_d = df_DA_sessions_100.loc[:, 'session_id']
@@ -667,7 +667,7 @@ dass_d = df_DA_sessions_100.loc[:, 'session_id']
 dass_d
 
 
-# In[73]:
+# In[106]:
 
 
 #  Calculate CC or slope
@@ -752,6 +752,73 @@ df_DACC_ = df_DACC_.reset_index()
 df_DACC__ = df_DACC_.loc[:,  ['suc_con_pek_r', 'suc_lbo_pek_r', 'suc_rew_pek_r', 'subject_id']]
 
 df_DA_melted = df_DACC__.melt(id_vars=['subject_id'], var_name='group', value_name='value')
+
+
+# In[110]:
+
+
+# median, 25 and 75 percentiles for each trial number
+
+# Need to transform the vectors of trials with different lengths into a matrix
+plt.rcParams['axes.labelsize'] = 8
+
+fig, ax = plt.subplots(1,3)
+plt.tight_layout()
+
+max_len = df_DACC_['suc_con_pek'].apply(len).max()
+
+def plot_median_and_IQR(key_str,j, need_x_label =0): 
+
+    plt.sca(ax[j])
+    matrix = np.full((max_len, len(df_DACC_)), np.nan)
+    for k, row in enumerate(df_DACC_[key_str]):
+        matrix[:len(row), k] = row
+
+    non_nan_counts = np.sum(~np.isnan(matrix), axis=1)
+    threshold = 10
+    valid_indices = np.where(non_nan_counts >= threshold)[0]
+    
+    # Calculate percentiles for each row
+    percentiles_25 = []
+    percentiles_50 = []
+    percentiles_75 = []
+
+    percentiles_25 = [np.percentile(matrix[i, ~np.isnan(matrix[i, :])], 25) if i in valid_indices else np.nan for i in range(matrix.shape[0])]
+    percentiles_50 = [np.percentile(matrix[i, ~np.isnan(matrix[i, :])], 50) if i in valid_indices else np.nan for i in range(matrix.shape[0])]
+    percentiles_75 = [np.percentile(matrix[i, ~np.isnan(matrix[i, :])], 75) if i in valid_indices else np.nan for i in range(matrix.shape[0])]
+
+    indices = range(len(percentiles_25))
+
+    # Plotting filled area between 25th and 75th percentiles
+    plt.fill_between(indices, percentiles_25, percentiles_75, color='skyblue', linewidth=0.5, label='IQR')
+
+    # Plotting the line for the 50th percentile
+    plt.plot(indices, percentiles_50, color='red', marker='', linewidth=0.5, label='Median')
+
+    # Labels, title, and legend
+    if need_x_label:
+        plt.xlabel('Successful Trials #')
+    # plt.legend()
+
+    # Display the plot
+
+
+plot_median_and_IQR('suc_con_pek', 0, 1)
+plt.title('Cue Onset - Peak', fontsize = 8)
+plt.ylabel('Peak size')
+
+plot_median_and_IQR('suc_lbo_pek', 1, 1)
+plt.title('Last bar_off - Peak', fontsize = 8)
+plt.ylabel('Peak size')
+
+plot_median_and_IQR('suc_rew_pek', 2, 1)
+plt.title('Reward - Peak', fontsize = 8)
+plt.ylabel('Peak size')
+
+
+for j in [0, 1, 2]:
+    ax[j].tick_params(axis='both', which='major', labelsize=8)
+
 
 
 # In[76]:
