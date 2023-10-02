@@ -43,17 +43,17 @@ import inspect #TODO
 # import numpy .... cannot be used
 # GenericDialog does not work
 
-intmin = 0
-intmax = 0
-imp = None
-sld = None
-
 global imp
 global hw
 global intmin
 global intmax
 global sld
 global nf
+
+intmin = 0
+intmax = 0
+imp = None
+sld = None
 
 def checkab(a,b,intmin,intmax):
 
