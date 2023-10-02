@@ -12,15 +12,6 @@
 # 6. You may want to make the file names easily sortable, eg. starting with 001_, 002_ etc.
 # 7. SharpTrack can handle those RGB images.
 
-import os
-from ij import IJ, ImagePlus
-from ij.gui import HistogramWindow, NonBlockingGenericDialog, DialogListener
-import math
-# import re
-# import time
-import inspect #TODO
-
-
 ######### >>>>>>> Prameters to adjust
 
 disp_range = [[], [], [], []]
@@ -32,6 +23,16 @@ disp_range[3] = [0 , 65535]
 LUTs = ["Cyan","Red","Green","Grays"]
 
 ######### <<<<<<<
+
+
+import os
+from ij import IJ, ImagePlus
+from ij.gui import HistogramWindow, NonBlockingGenericDialog, DialogListener
+import math
+# import re
+# import time
+import inspect #TODO
+
 
 assert len(disp_range) == len(LUTs)
 
