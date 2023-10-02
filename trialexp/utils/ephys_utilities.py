@@ -55,64 +55,43 @@ def get_recordings_properties(ephys_base_path, fn):
     except KeyError:
         print('Key error encountered at ', fn)
         raise KeyError
-
-
-    # if len(experiment_names) > 1:
-    #     raise NotImplementedError('More than one experiment in the open-ephys folder')
     
-    recordings_properties = dict()
-
-    for k in exp_dict.keys():
-        recordings_properties[k] = list()
-
-    recordings_properties['AP_stream'] = list()
-    recordings_properties['AP_folder'] = list()
-    recordings_properties['exp_nb'] = list()
-    recordings_properties['rec_nb'] = list()
-    recordings_properties['tstart'] = list()
-    recordings_properties['sample_rate'] = list()
-    recordings_properties['rec_start_datetime'] = list()
-    recordings_properties['full_path'] = list()
-    recordings_properties['sync_path'] = list()
-    recordings_properties['duration'] = list()
-
-    exp_keys = list(folder_structure['Record Node 101']['experiments'].keys())
+    recordings_properties= []
+    # use Neo's indexing logic instead of the folder structure
     
-    for exp_idx, exp_nb in enumerate(exp_keys):
-        
-        rec_keys = list(folder_structure['Record Node 101']['experiments'][exp_nb]['recordings'].keys())
-        for idx, rec_nb in enumerate(rec_keys):
-
+    for block_index in range(nb_block):
+        for seg_index in range(nb_segment_per_block[block_index]):
             for AP_stream in AP_streams:
-                for k, v in exp_dict.items():
-                    recordings_properties[k].append(v)
+                rec_prop = {}
 
-                recordings_properties['AP_stream'].append(AP_stream)
-                recordings_properties['AP_folder'].append(split('#',AP_stream)[1])
+                cur_stream = all_streams[block_index][seg_index]['continuous'][AP_stream]
                 
-                recordings_properties['exp_nb'].append(exp_nb)
-                recordings_properties['rec_nb'].append(rec_nb)
-                recordings_properties['tstart'].append(
-                    folder_structure['Record Node 101']['experiments'][exp_nb]['recordings'][rec_nb]['streams']['continuous'][AP_streams[0]]['t_start']
-                )
-                recordings_properties['sample_rate'].append(
-                    folder_structure['Record Node 101']['experiments'][exp_nb]['recordings'][rec_nb]['streams']['continuous'][AP_streams[0]]['sample_rate']
-                )
-                recordings_properties['rec_start_datetime'].append(
-                    exp_dict['exp_datetime'] + timedelta(0, recordings_properties['tstart'][idx])
-                )
-                recordings_properties['full_path'].append(
-                    Path(ephys_base_path) / fn / 'Record Node 101' / experiment_names[exp_idx] / ('recording' + str(rec_nb)) / 'continuous' / recordings_properties['AP_folder'][idx]
-                )
-
-                recordings_properties['sync_path'].append(
-                    Path(ephys_base_path) / fn / 'Record Node 104' / experiment_names[exp_idx] / ('recording' + str(rec_nb)) / 'events' / 'NI-DAQmx-103.PXIe-6341' / 'TTL'
-                )
-
-                recordings_properties['duration'].append(
-                    get_recording_duration(recordings_properties['full_path'][-1] , recordings_properties['sample_rate'][-1])
-                )
-
+                rec_prop['AP_stream'] = AP_stream
+                rec_prop['AP_folder']= AP_stream.split('#')[1]
+                rec_prop['block_index'] = block_index
+                rec_prop['seg_index'] = seg_index
+                rec_prop['tstart'] = cur_stream['t_start']
+                rec_prop['sample_rate'] = cur_stream['sample_rate']
+                rec_prop['rec_start_datetime'] = exp_dict['exp_datetime'] + timedelta(0, rec_prop['tstart'])
+                rec_prop['full_path'] = Path(cur_stream['raw_filename']).parent
+                
+                sync_path = Path(all_streams[block_index][seg_index]['events']['Record Node 104#TTL']['timestamps_npy']).parents[2]
+                rec_prop['sync_path'] = sync_path/'NI-DAQmx-103.PXIe-6341' / 'TTL'
+                rec_prop['duration'] = int(get_recording_duration(rec_prop['full_path'], cur_stream['sample_rate']))
+                
+                # get the expt_no and recording number from the path
+                rec_nb = int(rec_prop['full_path'].parts[-3].replace('recording',''))
+                exp_nb  = int(rec_prop['full_path'].parts[-4].replace('experiment',''))
+                
+                rec_prop['rec_nb'] = rec_nb
+                rec_prop['exp_nb'] = exp_nb
+                
+                recordings_properties.append(rec_prop)
+                
+    recordings_properties = pd.DataFrame(recordings_properties)
+            
+    for k, v in exp_dict.items():
+        recordings_properties[k] = v
     return pd.DataFrame(recordings_properties)
 
 def get_recording_duration(rec_path: str, sample_rate: int):

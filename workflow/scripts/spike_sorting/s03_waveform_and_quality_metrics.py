@@ -50,7 +50,7 @@ for probe_folder in kilosort_folder.glob('Probe*'):
     rec_properties = pd.read_csv(probe_folder/'sorter_output'/'rec_prop.csv').iloc[0]
     recording_path = root_data_path/Path('/'.join(Path(rec_properties.full_path).parts[-10:-3]))
     stream = rec_properties.AP_stream
-    segment_num = rec_properties.segment_no
+    segment_num = rec_properties.seg_index
     duration = rec_properties.duration
     probe_name = probe_folder.stem
     session_ID = probe_folder.parts[-4]

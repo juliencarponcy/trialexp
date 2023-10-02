@@ -33,7 +33,7 @@ def task2analyze(tasks:list=None):
         tasks=['*']
 
     for t in tasks:
-        total_sessions+=expand('{sessions}/processed/spike_workflow.done', sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob(f'{t}/TT001*'))        
+        total_sessions+=expand('{sessions}/processed/spike_workflow.done', sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob(f'{t}/*'))        
 
     return total_sessions
 
