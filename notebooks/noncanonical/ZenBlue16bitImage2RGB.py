@@ -16,8 +16,8 @@
 
 disp_range = [[], [], [], []]
 disp_range[0] = [0 , 20000] # max 65535
-disp_range[1] = [0 , 20000]
-disp_range[2] = [0 , 20000]
+disp_range[1] = [0 , 15000]
+disp_range[2] = [0 , 30000]
 disp_range[3] = [0 , 65535]
 
 LUTs = ["Cyan","Red","Green","Grays"]
@@ -51,21 +51,21 @@ def doit():
 	# Change LUTs
 	
 	for i in range(0,len(LUTs)):
-	
+		
 		# if imp.isHyperStack(): # not working
-		imp.setC(i+1);
-		IJ.run(imp, LUTs[i], "");
-	
+		imp.setC(i+1); # working
+		print(imp.getC())
+
+		imp.setDisplayRange(disp_range[i][0], disp_range[i][1]) # set Display Range
+		imp.updateAndDraw()
+		# This fails sometimes. Why?
+		
+		IJ.run(imp, LUTs[i], ""); # perhaps the order is important here
 	
 	# Hide TL channel (optional)
 	imp.setDisplayMode(IJ.COMPOSITE);
 	imp.setActiveChannels("1110");
-	
-	
-	# set Display Range
-	
-	for i in range(0,len(LUTs)):
-		imp.setDisplayRange(disp_range[i][0], disp_range[i][1])
+
 	
 		
 	# turn into RGB
