@@ -58,6 +58,9 @@ def add_regions(ax, region_boundary, dv_bins):
     init_x_lim = ax.get_xlim()[1]
     colors = plt.cm.tab20.colors
     
+    unique_region = region_boundary.acronym.unique()
+    color_table = {r:colors[i%len(colors)] for i,r in enumerate(unique_region)}
+    
     for idx, row in region_boundary.iterrows():
         # convert the dv coordinates to the bin coordinates so that the plot looks right
         y = (row.min_mm - dv_bins[0])/dv_bin_size
@@ -65,7 +68,7 @@ def add_regions(ax, region_boundary, dv_bins):
         x = init_x_lim+10+row.layer*5
         region = row.acronym
     
-        rect = patches.Rectangle((x, y), 4.8, height, color=colors[colorIdx%len(colors)])
+        rect = patches.Rectangle((x, y), 4.8, height, color=color_table[region])
         ax.add_patch(rect)
         colorIdx += 1
     
@@ -99,7 +102,7 @@ def draw_region_legend(ax, region_boundary):
     x = ax.get_xlim()[1]+2
     
     for idx, region in region_boundary.iterrows():
-        ax.text(x,y, f'{region.acronym} : {region["name"]}')
+        ax.text(x,y, f'{region.acronym}: {region["name"]}')
         y += 1
     
 
