@@ -4,13 +4,25 @@ import numpy as np
 import matplotlib.pylab as plt
 import seaborn as sns
 
-def get_region_boundary(df_cell):
+def get_region_boundary(df_cell, dep_col,group_method='consecutive'):
+    df_cell = df_cell.sort_values(dep_col)
+    df_cell['group'] = (df_cell['name']!=df_cell['name'].shift()).cumsum() #detect region boundaries
     #Find the region boundaries
-    def get_region_boundary(df):
-        return pd.Series({'min_mm': df.dv_mm.min(),
-                'max_mm': df.dv_mm.max()})
+    def get_boundary(df,method):
+        if method =='consecutive':
+            return pd.Series({'min_mm': df[dep_col].min(),
+                    'max_mm': df[dep_col].max(),
+                    'name':df.iloc[0]['name'],
+                'acronym': df.iloc[0].acronym})
+        else:
+           return pd.Series({'min_mm': df[dep_col].min(),
+                    'max_mm': df[dep_col].max()}) 
     
-    region_boundary = df_cell.groupby('acronym').apply(get_region_boundary)
+    if group_method == 'consecutive':
+        region_boundary = df_cell.groupby(['group']).apply(get_boundary, method=group_method)
+    else:
+        region_boundary = df_cell.groupby(['name','acronym']).apply(get_boundary, method=group_method)
+
     region_boundary = region_boundary.sort_values('min_mm').reset_index()
     return region_boundary
 
@@ -82,14 +94,32 @@ def format_cell4merge(df_cell):
     df_cell['probe']  = df_cell['probe'].str.replace('Probe','')
     return df_cell
 
-def plot_firing_rate_regions(df_cell, depth_col='dv_mm'):
+def draw_region_legend(ax, region_boundary):
+    y = ax.get_ylim()[1] +2
+    x = ax.get_xlim()[1]+2
+    
+    for idx, region in region_boundary.iterrows():
+        ax.text(x,y, f'{region.acronym} : {region["name"]}')
+        y += 1
+    
+
+def plot_firing_rate_regions(df_cell, depth_col='dv_mm', group_method='consecutive'):
     # plot firing rate of brain regions with different depth
     df_cell = df_cell.copy()
     df_cell['depth_group'], dv_bins = pd.cut(df_cell[depth_col],30, retbins=True)
-    region_boundary = get_region_boundary(df_cell)
+    region_boundary = get_region_boundary(df_cell, depth_col,group_method)
     region_boundary = assign_region_layer(region_boundary)
+    # display(region_boundary)
     
-    plt.figure(figsize=(8,len(region_boundary)*1))
+    plt.figure(figsize=(8,max(len(region_boundary)*0.6,12)),dpi=200)
     ax = sns.barplot(df_cell, y='depth_group', x='firingRate')
     ax = add_regions(ax, region_boundary, dv_bins)
-    ax.set(ylabel='dv_mm', xlabel='Firing Rate (Hz)')
+    ax.set(ylabel=depth_col, xlabel='Firing Rate (Hz)')
+    
+    draw_region_legend(ax, region_boundary)
+    
+    
+def get_session_date(session_id):
+    if type(session_id) is str:
+    # only return the date of the session
+        return '-'.join(session_id.split('-')[:-1])
