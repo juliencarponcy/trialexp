@@ -38,6 +38,7 @@ dependencies:
   - python-dotenv
   - umap-learn
   - snakemake
+  - openpyxl
   - pip:
     - git+https://github.com/teristam/snakehelper.git
     - sonpy
