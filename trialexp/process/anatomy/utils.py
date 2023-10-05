@@ -55,8 +55,11 @@ def assign_region_layer(df):
 def add_regions(ax, region_boundary, dv_bins):
     colorIdx = 0
     dv_bin_size = np.mean(np.diff(dv_bins))
-    init_x_lim = ax.get_xlim()[1]
+    xlim = ax.get_xlim()
+    ylim = ax.get_ylim()
+    init_x_lim = xlim[1]
     colors = plt.cm.tab20.colors
+    rect_width = (xlim[1]-xlim[0])*0.2
     
     unique_region = region_boundary.acronym.unique()
     color_table = {r:colors[i%len(colors)] for i,r in enumerate(unique_region)}
@@ -65,19 +68,19 @@ def add_regions(ax, region_boundary, dv_bins):
         # convert the dv coordinates to the bin coordinates so that the plot looks right
         y = (row.min_mm - dv_bins[0])/dv_bin_size
         height = (row.max_mm - row.min_mm)/dv_bin_size
-        x = init_x_lim+10+row.layer*5
+        x = init_x_lim+rect_width+row.layer*rect_width
         region = row.acronym
     
-        rect = patches.Rectangle((x, y), 4.8, height, color=color_table[region])
+        rect = patches.Rectangle((x, y), rect_width, height, color=color_table[region])
         ax.add_patch(rect)
         colorIdx += 1
     
         # also add the region text
-        t = ax.text(x+1, y+height/2, region, fontsize=10)
+        t = ax.text(x+rect_width/4, y+height/2, region, fontsize=10)
 
     # expand the xlim
-    ax.set_xlim([0, init_x_lim+10+(region_boundary.layer.max()+1)*5])
-
+    ax.set_xlim([0, init_x_lim+rect_width*1.2+(region_boundary.layer.max()+1)*rect_width])
+    ax.set_ylim([ylim[0]+1, ylim[1]])
     return ax
 
 
@@ -106,7 +109,7 @@ def draw_region_legend(ax, region_boundary):
         y += 1
     
 
-def plot_firing_rate_regions(df_cell, depth_col='dv_mm', group_method='consecutive'):
+def plot_firing_rate_regions(df_cell, depth_col='depth_mm', group_method='consecutive'):
     # plot firing rate of brain regions with different depth
     df_cell = df_cell.copy()
     df_cell['depth_group'], dv_bins = pd.cut(df_cell[depth_col],30, retbins=True)
@@ -116,11 +119,16 @@ def plot_firing_rate_regions(df_cell, depth_col='dv_mm', group_method='consecuti
     
     plt.figure(figsize=(8,max(len(region_boundary)*0.6,12)),dpi=200)
     ax = sns.barplot(df_cell, y='depth_group', x='firingRate')
+    
+    #set a consistent max rate so that figures from different sessions are comparable
+    max_rate = ax.get_xlim()[1]
+    ax.set_xlim([0,max(40,max_rate)])
+    
     ax = add_regions(ax, region_boundary, dv_bins)
     ax.set(ylabel=depth_col, xlabel='Firing Rate (Hz)')
     
     draw_region_legend(ax, region_boundary)
-    
+    return ax
     
 def get_session_date(session_id):
     if type(session_id) is str:
