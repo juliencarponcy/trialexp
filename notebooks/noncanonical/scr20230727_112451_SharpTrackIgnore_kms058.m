@@ -95,15 +95,15 @@ end
 %   % if the images are already downsampled (use_already_downsampled_image = true), this will allow
 %   % you to adjust the contrast of each channel
 %   %
-%   % Open Histology Viewer figure
-%   try; figure(histology_figure);
-%   catch; histology_figure = figure('Name','Histology Viewer'); end
-%   
-%   warning('off', 'images:initSize:adjustingMag'); warning('off', 'MATLAB:colon:nonIntegerIndex');
-%   
-%   % Function to downsample and adjust histology image
-%   HistologyBrowser(histology_figure, save_folder, image_folder, image_file_names, folder_processed_images, image_files_are_individual_slices, ...
-%               use_already_downsampled_image, microns_per_pixel, microns_per_pixel_after_downsampling, gain)
+% Open Histology Viewer figure
+try; figure(histology_figure);
+catch; histology_figure = figure('Name','Histology Viewer'); end
+
+warning('off', 'images:initSize:adjustingMag'); warning('off', 'MATLAB:colon:nonIntegerIndex');
+
+% Function to downsample and adjust histology image
+HistologyBrowser(histology_figure, save_folder, image_folder, image_file_names, folder_processed_images, image_files_are_individual_slices, ...
+    use_already_downsampled_image, microns_per_pixel, microns_per_pixel_after_downsampling, gain)
 %
 %% 
 % Controls: 
@@ -152,9 +152,9 @@ end
 %   %
 %   % note -- presssing left or right arrow saves the modified image, so be
 %   % sure to do this even after modifying the last slice in the folder
-%   slice_figure = figure('Name','Slice Viewer');
-%   SliceFlipper(slice_figure, folder_processed_images, atlas_reference_size)
-%
+slice_figure = figure('Name','Slice Viewer');
+SliceFlipper(slice_figure, folder_processed_images, atlas_reference_size)
+
 %% 
 % Controls: 
 % 
@@ -296,20 +296,20 @@ end
 % 
 %%
 % 
-%   % create Atlas viewer figure
-%   f1 = figure('Name','Atlas Viewer'); 
-%   
-%   % show histology in Slice Viewer
-%   try; figure(slice_figure_browser); title('');
-%   catch; slice_figure_browser = figure('Name','Slice Viewer'); end
-%   f2 = slice_figure_browser
-%   
-%   reference_size = size(tv_plot);
-%   sliceBrowser(slice_figure_browser, processed_images_folder, f1, reference_size);
-%   
-%   % % use application in Atlas Transform Viewer
-%   % % use this function if you have a processed_images_folder with appropriately processed .tif histology images
-%   AtlasTransformBrowser(f1, tv_plot, av_plot, st, slice_figure_browser, processed_images_folder, probe_save_name_suffix, plane);
+% create Atlas viewer figure
+f1 = figure('Name','Atlas Viewer');
+
+% show histology in Slice Viewer
+try; figure(slice_figure_browser); title('');
+catch; slice_figure_browser = figure('Name','Slice Viewer'); end
+f2 = slice_figure_browser
+
+reference_size = size(tv_plot);
+sliceBrowser(slice_figure_browser, processed_images_folder, f1, reference_size);
+
+% % use application in Atlas Transform Viewer
+% % use this function if you have a processed_images_folder with appropriately processed .tif histology images
+AtlasTransformBrowser(f1, tv_plot, av_plot, st, slice_figure_browser, processed_images_folder, probe_save_name_suffix, plane);
 %   
 %   
 %   
