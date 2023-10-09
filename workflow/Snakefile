@@ -1,0 +1,15 @@
+from dotenv import load_dotenv
+load_dotenv() 
+
+rule all:
+    input: expand('{sessions}/processed/all_workflow.done', sessions = Path(os.environ.get('SESSION_ROOT_DIR')).glob('*/*'))
+
+include: 'spikesort.smk'
+include: 'pycontrol.smk'
+
+rule final:
+    input:
+        pycontrol = '{session_path}/{task}/{session_id}/processed/pycontrol_workflow.done',
+        sorting = '{session_path}/{task}/{session_id}/processed/spike_workflow.done'
+    output:
+        done = touch('{session_path}/{task}/{session_id}/processed/all_workflow.done')

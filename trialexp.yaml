@@ -17,6 +17,7 @@ name: trialexp
 channels:
   - conda-forge
   - defaults
+  - bioconda
 dependencies:
   - python=3.9
   - pip
@@ -25,17 +26,33 @@ dependencies:
   - ipython
   - jupyter
   - matplotlib
-  - nb_conda
-  - pandas
+  - pandas<2.0
   - statsmodels
   - scikit-learn
   - seaborn
   - papermill
   - plotly
   - xarray
+  - neo
+  - spikeinterface
+  - python-dotenv
+  - umap-learn
+  - snakemake
+  - openpyxl
   - pip:
     - git+https://github.com/teristam/snakehelper.git
     - sonpy
     - h5netcdf
-    - snakemake
+    - python-dotenv
+    - neo
+    - elephant    
+    - pathworklib
+    - plotnine # required for pathworklib
+    - ffmpeg-python
+    - deeplabcut
+    - matlabengine==9.11.19 #for python 3.9 and MATLAB R2021b, change it to the version compatiable with your MATLAB envirnoment
+    - spikeinterface==0.98.2 #need to be using the exact version, spikeinterface breaks API too quickly
+    - -e . # if not working execute "pip install -e ." from the top level of this repo
+    
+
 

@@ -7,13 +7,38 @@ to find events timestamps for differential trial alignment.
 
 It is possibly best to store the remaining methods in appropriate modules
 '''
-
+import numpy as np
+import warnings
 from datetime import datetime
 from re import search
 
-import numpy as np
+from trialexp.process.pycontrol.data_import import session_dataframe
 
-
+def parse_pycontrol_fn(fn):
+    pattern = r'(\w+)-(.*)\.txt'
+    m = search(pattern, fn.name)
+    if m:
+        subject_id = m.group(1)
+        date_string = m.group(2)
+        expt_datetime = datetime.strptime(date_string, "%Y-%m-%d-%H%M%S")
+        
+        try:
+            df = session_dataframe(fn)
+            session_length = df.time.iloc[-1]
+            
+            return { 'subject_id': subject_id,
+                    'path': fn,                 
+                    'session_id': fn.stem,
+                    'filename': fn.stem, 
+                    'timestamp': expt_datetime,
+                    'session_length': session_length }
+        except KeyError:
+            return { 'subject_id': subject_id,
+                    'path': fn,                 
+                    'session_id': fn.stem,
+                    'filename': fn.stem, 
+                    'timestamp': expt_datetime,
+                    'session_length': 0 }
 '''
 following is depracted until possible re-use elsewhere
 #----------------------------------------------------------------------------------

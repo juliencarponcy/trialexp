@@ -1,6 +1,8 @@
 # Utility functions for pycontrol and pyphotometry files processing
+from re import search
+from datetime import datetime
+import warnings
 
-import json
 import pandas as pd
 from matplotlib import pyplot as plt
 import numpy as np
@@ -15,6 +17,78 @@ from scipy.optimize import curve_fit
 from scipy.signal import butter, filtfilt, medfilt
 from trialexp.utils.rsync import *
 
+from trialexp.process.pycontrol.data_import import session_dataframe
+from trialexp.process.pyphotometry.utils import import_ppd
+from trialexp.utils.rsync import Rsync_aligner, RsyncError
+
+def create_photo_sync(pycontrol_file, pyphotometry_file):
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore')
+        pyphotometry_file = import_ppd(pyphotometry_file)
+        data_pycontrol = session_dataframe(pycontrol_file)
+
+        photo_rsync = pyphotometry_file['pulse_times_2']
+        pycontrol_rsync = data_pycontrol[data_pycontrol.name=='rsync'].time
+        try:
+            return Rsync_aligner(pulse_times_A= photo_rsync, 
+                pulse_times_B= pycontrol_rsync, plot=False) #align pycontrol time to pyphotometry time
+            
+        except (RsyncError, ValueError) as e:
+            return None
+
+def parse_pyhoto_fn(fn):
+    pattern = r'(\w+)-(.*)\.ppd'
+    m = search(pattern, fn.name)
+    if m:
+        subject_id = m.group(1)
+        date_string = m.group(2)
+        expt_datetime = datetime.strptime(date_string, "%Y-%m-%d-%H%M%S")
+        
+        return {
+                'subject_id': subject_id,
+                'path':fn, 
+                'filename':fn.stem, 
+                'timestamp':expt_datetime}    
+
+def parse_video_fn(fn):
+    # parse the filename of video file and extract its timestamp and direction
+    pattern = r'(.+?)_([\w\d+]+)_Rig_(\d+)_(\w+).mp4'
+    date_format = '%m-%d-%y_%H-%M-%S.%f'    
+    
+    m = search(pattern, fn.name)
+    if m:
+        date_string = m.group(1)
+        subject_id = m.group(2)
+        rig = m.group(3)
+        camera = m.group(4)
+
+        data = {
+            'subject_id': subject_id,
+                'path':fn, 
+                'filename':fn.stem, 
+                'rig' : int(rig),
+                'camera': camera,
+                'start_time': date_string
+            }
+        
+        try:
+            expt_datetime = datetime.strptime(date_string, date_format)
+        
+            data['timestamp']  = expt_datetime
+        except ValueError:
+            data['timestamp']  = None
+    else:
+        data = {
+        'subject_id': None,
+            'path':None, 
+            'filename':None, 
+            'rig' : None,
+            'camera': None,
+            'timestamp': None,
+            'start_time': None
+        } 
+        
+    return data
 #----------------------------------------------------------------------------------
 # Plotting
 #----------------------------------------------------------------------------------

@@ -4,7 +4,9 @@ import itertools
 import json
 import logging
 
+import os
 import numpy as np
+import pandas as pd
 import xarray as xr
 from matplotlib import pyplot as plt
 from scipy.interpolate import interp1d
@@ -59,6 +61,95 @@ def denoise_filter(photometry_dict:dict, lowpass_freq = 20) -> dict:
     
     return photometry_dict
     
+def motion_correction_win(photometry_dict: dict) -> dict:
+
+    if any(['analog_1_filt' not in photometry_dict, 'analog_2_filt' not in photometry_dict]):
+        raise Exception('Analog 1 and Analog 2 must be filtered before motion correction')
+
+
+    try:
+
+        win_size_s = 30
+
+        n_win_size = int(win_size_s * photometry_dict['sampling_rate'])
+        n_overlap = int(n_win_size/2)  # 50% overlap
+
+        def overlapping_chunks(data1, data2, n_win_size: int, n_overlap: int):
+            # if not isinstance(chunk_size, int) or not chunk_size.is_integer():
+            #     raise ValueError("chunk_size must be an integer")
+                
+            x = n_win_size/n_overlap
+
+            if isinstance(x, float) and not x.is_integer():
+                raise ValueError("1/overlap_ratio must be an integer")
+            elif isinstance(x, int):
+                pass
+
+            step_size = n_win_size - int(n_win_size) // int(x)
+            # for i in range(0, len(data1) - n_win_size + 1, step_size): #TODO this will skip the last iteration
+            #     yield i, data1[i:i + n_win_size], data2[i:i + n_win_size]
+            for i in range(0, len(data1), step_size):
+                if i + n_win_size <= len(data1):  # If a full-sized chunk can be taken
+                    yield i, data1[i:i + n_win_size], data2[i:i + n_win_size]
+                else:  # If only a truncated chunk can be taken
+                    yield i, data1[i:], data2[i:]
+
+
+        start_index_chunks = []
+        analog_1_est_motion_chunks = []
+        p_vals = []
+        r_vals = []
+        for start_ind, chunk1, chunk2 in overlapping_chunks(
+                photometry_dict['analog_1_filt'], photometry_dict['analog_2_filt'], 
+                n_win_size, n_overlap):
+            slope, intercept, r_value, p_value, std_err = linregress(chunk2, chunk1)
+
+            start_index_chunks.append(start_ind)
+
+            analog_1_est_motion_chunks.append(slope * chunk2 + intercept)
+            p_vals.append(p_value)
+            r_vals.append(r_value)
+
+        analog_1_est_motion_joined = np.zeros(np.size(photometry_dict['analog_1_filt']))
+
+        step_size = n_win_size - int(n_win_size) // int(n_win_size/n_overlap)
+
+        for i, _ in enumerate(start_index_chunks):
+            ch = analog_1_est_motion_chunks[i]
+            
+            if i == 0:
+                analog_1_est_motion_joined[0:step_size] = ch[0:step_size]
+
+            elif i > 0 and i < len(start_index_chunks) -1:
+                ch_prev = analog_1_est_motion_chunks[i-1]
+                ind_this =  start_index_chunks[i]
+                
+                # average two chunks
+                analog_1_est_motion_joined[ind_this:ind_this + step_size] \
+                    = (ch[0:step_size] + ch_prev[step_size-1:-1])/2
+
+            elif i == len(start_index_chunks) -1 :
+                ind_this =  start_index_chunks[i]
+
+                # copy one chunk
+                analog_1_est_motion_joined[ind_this:ind_this + step_size] = ch
+
+            elif i == len(start_index_chunks):
+                print('should not happen')
+
+        photometry_dict['analog_1_est_motion'] = analog_1_est_motion_joined
+        photometry_dict['analog_1_corrected'] = photometry_dict['analog_1_filt'] - analog_1_est_motion_joined
+        photometry_dict['motion_corrected'] = 1
+
+    except ValueError:
+        print('Motion correction failed. Skipping motion correction')
+        # probably due to saturation , do not do motion correction
+        photometry_dict['analog_1_corrected'] = photometry_dict['analog_1_filt']
+        photometry_dict['motion_corrected'] = 0
+
+    return photometry_dict
+
+
 
 def motion_correction(photometry_dict: dict) -> dict:
     
@@ -69,11 +160,12 @@ def motion_correction(photometry_dict: dict) -> dict:
         slope, intercept, r_value, p_value, std_err = linregress(x=photometry_dict['analog_2_filt'], y=photometry_dict['analog_1_filt'])
         photometry_dict['analog_1_est_motion'] = intercept + slope * photometry_dict['analog_2_filt']
         photometry_dict['analog_1_corrected'] = photometry_dict['analog_1_filt'] - photometry_dict['analog_1_est_motion']
+        photometry_dict['motion_corrected'] = 1
     except ValueError:
         print('Motion correction failed. Skipping motion correction')
         # probably due to saturation , do not do motion correction
         photometry_dict['analog_1_corrected'] = photometry_dict['analog_1_filt']
-
+        photometry_dict['motion_corrected'] = 0
 
     return photometry_dict
 
@@ -84,15 +176,21 @@ def compute_df_over_f(photometry_dict: dict, low_pass_cutoff: float = 0.001) -> 
     
     b,a = butter(2, low_pass_cutoff, btype='low', fs=photometry_dict['sampling_rate'])
     photometry_dict['analog_1_baseline_fluo'] = filtfilt(b,a, photometry_dict['analog_1_filt'], padtype='even')
+    photometry_dict['analog_2_baseline_fluo'] = filtfilt(b,a, photometry_dict['analog_2_filt'], padtype='even')
 
     # Now calculate the dF/F by dividing the motion corrected signal by the time varying baseline fluorescence.
     photometry_dict['analog_1_df_over_f'] = photometry_dict['analog_1_corrected'] / photometry_dict['analog_1_baseline_fluo'] 
+    photometry_dict['analog_2_df_over_f'] = photometry_dict['analog_2_filt'] / photometry_dict['analog_2_baseline_fluo']
     
     return photometry_dict
 
 #----------------------------------------------------------------------------------
 # Filtering 
 #----------------------------------------------------------------------------------
+
+def compute_zscore(photometry_dict):
+    photometry_dict['zscored_df_over_f'] = zscore(photometry_dict['analog_1_df_over_f'])
+    return photometry_dict
 
 def median_filtering(data, medfilt_size: int = 3) -> np.ndarray:
     
@@ -297,6 +395,118 @@ def sync_photometry_file(
     return photometry_rsync
 
 #----------------------------------------------------------------------------------
+# Peak / trough analyses
+#----------------------------------------------------------------------------------
+
+
+def get_trial_numbers_for_sessions(data_dir):
+    """
+
+    ## Output arguments
+    df_trials              pd.DataFrame
+
+    """ 
+
+    dummy_dict = {'slope': np.nan, 'intercept': np.nan, 'r_value': np.nan, 'p_value': np.nan, 'std_err': np.nan}
+    try:
+        xr_photometry = xr.open_dataset(os.path.join(data_dir, 'xr_photometry.nc'))
+    except Exception as e:
+        #print(f"Caught an error: {e}")
+        return [],  dummy_dict, dummy_dict, dummy_dict, False, str(e)
+
+    try:
+        xr_session = xr.open_dataset(os.path.join(data_dir, 'xr_session.nc'))
+    except Exception as e:
+        #print(f"Caught an error: {e}")
+        return [],  dummy_dict, dummy_dict, dummy_dict, False, str(e)
+
+    trial_nb_all = int(max(xr_session.trial_nb))
+
+    # prepare df_trials for dip, rebound
+    new_index = range(1, trial_nb_all+1)
+    df_trials = pd.DataFrame({
+        'trial_nb': list(range(1,trial_nb_all+1)),
+        'outcome': xr_session['trial_outcome'].values.T.flatten(),  # flatten is used to convert (175, 1) to (175,)
+        })
+    df_trials
+
+    return df_trials
+
+
+
+def measure_DA_peak(data_dir):
+    """
+    #TODO refactro with measure_ACh_dip_rebound
+    
+    ## Output arguments
+    df_trials              pd.DataFrame
+    lin_regress_dip        dict
+        dip vs trial_nb
+    lin_regress_rebound    dict
+        rebound vs trial_nb
+    lin_regress_dip_rebound    dict
+        dip vs rebound
+
+        These dictionaries hold the outputs from linregress()
+            'slope', 'intercept', 'r_value', 'p_value', 'std_err'
+    is_success             bool 
+    msg                    str
+    """ 
+
+    dummy_dict = {'slope': np.nan, 'intercept': np.nan, 'r_value': np.nan, 'p_value': np.nan, 'std_err': np.nan}
+    try:
+        xr_photometry = xr.open_dataset(os.path.join(data_dir, 'xr_photometry.nc'))
+    except Exception as e:
+        #print(f"Caught an error: {e}")
+        return [],  dummy_dict, False, str(e)
+
+    try:
+        xr_session = xr.open_dataset(os.path.join(data_dir, 'xr_session.nc'))
+    except Exception as e:
+        #print(f"Caught an error: {e}")
+        return [],  dummy_dict, False, str(e)
+
+    trial_nb_all = int(max(xr_session.trial_nb))
+
+    pk_values = []
+
+    # Loop over trial numbers from 1 to trial_nb_all
+
+    for k in range(1, trial_nb_all+1):
+            try:
+            # Calculate the mean over the specified event_time interval for reb
+                pk = xr_photometry['hold_for_water_zscored_df_over_f'].sel(
+                    trial_nb=k, event_time=slice(75, 250)).mean(dim='event_time')
+            except Exception as e:
+                #print(f"Caught an error: {e}")
+                return [],  dummy_dict, False, str(e)
+            # Append the value to the list
+            pk_values.append(pk.values.max())
+
+    # Convert lists to pandas Series
+    pk_series = pd.Series(pk_values)
+
+    # prepare df_trials for dip, rebound
+    new_index = range(1, trial_nb_all+1)
+    df_trials = pd.DataFrame({
+        'trial_nb': list(range(1,trial_nb_all+1)),
+        'peak': pk_series.reindex(new_index),
+        'outcome': xr_session['trial_outcome'].values.T.flatten(),  # flatten is used to convert (175, 1) to (175,)
+        })
+    df_trials
+
+    df_trials = df_trials.dropna(subset=['peak'])
+
+
+    slope, intercept, r_value, p_value, std_err = linregress(df_trials['trial_nb'], df_trials['peak'])
+    lin_regress_pk = {'slope': slope, 'intercept': intercept,
+                      'r_value': r_value, 'p_value': p_value, 'std_err': std_err}
+
+   
+    return df_trials, lin_regress_pk, True, 'success'
+
+
+#----------------------------------------------------------------------------------
 # From here, legacy methods which will be probably deprecated in the future
 #----------------------------------------------------------------------------------
 
@@ -427,11 +637,11 @@ def compute_PCA(
     
     scaler = StandardScaler()
     pca = PCA(0.7, random_state=33)
-    pca.fit(scaler.fit_transform(X.iloc[past_id]))
+    pca.fit(scaler.fit_transform(data))
     
     Xt = pca.inverse_transform(
         pca.transform(
-            scaler.transform(X.iloc[future_id])
+            scaler.transform(data)
         ))
 
 
@@ -494,18 +704,39 @@ def photometry2xarray(data_photometry, skip_var=None):
     
     return dataset
 
-def resample_event(pyphoto_aligner, ref_time, event_time, event_value, fill_value=-1):
+
+def align_photometry_to_pycontrol(xr_photometry, df_event, pycontrol_aligner):
+    # align the time coordinate
+    new_time = pycontrol_aligner.A_to_B(xr_photometry.time)
+    xr_photometry['time'] = new_time
+    xr_photometry = xr_photometry.sel(time=xr_photometry.time.notnull()) #don't know why but dropna doesn't work here
+
+    # interpolate and add in the trial_nb
+    f = interp1d(df_event.time, df_event.trial_nb, kind = 'previous', 
+            bounds_error=False, fill_value=-1)
+
+    trial = f(xr_photometry.time)
+    trial_xr = xr.DataArray(
+        trial.astype(np.int16), coords={'time':xr_photometry.time}, dims=('time')
+    )
+
+    xr_photometry['trial'] = trial_xr
+    
+    return xr_photometry
+        
+
+def resample_event(aligner, ref_time, event_time, event_value, fill_value=-1):
     """
     Resample an event to a reference time.
 
     Parameters
     ----------
-    pyphoto_aligner : object
+    aligner : object
         An instance of the Rsync_aligner class.
     ref_time : array-like
         Reference time points.
     event_time : array-like
-        Event time points.
+        Event time points to align to the ref_time.
     event_value : array-like
         Event values corresponding to the event time points.
     fill_value : float, optional
@@ -518,14 +749,15 @@ def resample_event(pyphoto_aligner, ref_time, event_time, event_value, fill_valu
         can contain NaN value if there is no overlap data
     """
     
-    new_time = pyphoto_aligner.A_to_B(event_time)
+    new_time = aligner.A_to_B(event_time)
     f = interp1d(new_time, event_value, kind = 'previous', 
                 bounds_error=False, fill_value=fill_value)
     
     return f(ref_time)
 
 
-def extract_event_data(trigger_timestamp, window, aligner, dataArray, sampling_rate, data_len =None, time_tolerance=5):
+def extract_event_data(trigger_timestamp, window, dataArray, sampling_rate, 
+                       data_len =None, time_tolerance=5):
     '''
     Extract continous data around a timestamp. The original timestamp will be
     aligned to the coordinate of the dataArray with aligner
@@ -543,7 +775,6 @@ def extract_event_data(trigger_timestamp, window, aligner, dataArray, sampling_r
             If provided, checks for length of output data
         time_tolerance: int, default=5
             the minimum time difference in ms that must be matched between the trigger stampstamp and the time coordinate of the dataArray
-    
     Returns:
         data : numpy.ndarray
             Array of continuous data around the timestamp
@@ -553,28 +784,39 @@ def extract_event_data(trigger_timestamp, window, aligner, dataArray, sampling_r
     '''
 
     
-    ts = aligner.A_to_B(trigger_timestamp)
+    ts = trigger_timestamp
     ref_time = dataArray.time
     data = []
     event_found = []
     
     for t in ts:
-        d = abs((ref_time-t).data)
-        #Find the most close matched time stamp and extend it both ends 
-        min_time = np.min(d)
-        if min_time < time_tolerance:
+        if t is not None:
+            d = abs((ref_time-t).data)
+            #Find the most close matched time stamp and extend it both ends 
             min_idx = np.argmin(d)
+            min_time = d[min_idx]
             start_idx = min_idx +int(window[0]/1000*sampling_rate)
             end_idx = min_idx + int(window[1]/1000*sampling_rate)
-            data.append(dataArray.data[start_idx:end_idx])
-            event_found.append(True)
+            
+            if min_time < time_tolerance and (start_idx>0) and (end_idx< len(dataArray.time)):
+                min_idx = np.argmin(d)
+                if dataArray.data.ndim == 1:
+                    data.append(dataArray.data[start_idx:end_idx])
+                else:
+                    #TODO: work on the case for multi-dimensional data
+                    data.append(dataArray.data[:,start_idx:end_idx])
+                    
+                event_found.append(True)
+            else:
+                x = np.zeros((int((window[1]-window[0])/1000*sampling_rate),))*np.NaN
+                data.append([x])
+                event_found.append(False)
         else:
-            x = np.zeros((int((window[1]-window[0])/1000*sampling_rate),))
+            x = np.zeros((int((window[1]-window[0])/1000*sampling_rate),))*np.NaN
             data.append([x])
             event_found.append(False)
-            
+        
     # align to the longest element
-    # data =  np.vstack(list(itertools.zip_longest(*data)))
     data  = np.vstack(data)
     
     # if data_len is provide, perform additional check or correct the data length
@@ -681,7 +923,7 @@ def make_rel_time_xr(event_time, windows, pyphoto_aligner, ref_time):
     
     return rel_time
 
-def make_event_xr(event_time, trial_window, pyphoto_aligner,
+def make_event_xr(event_time, trial_window,
                   event_time_coordinate,  dataArray, sampling_rate):
     '''
     Create xarray.DataArray object for the continuous data around provided timestamp. 
@@ -692,12 +934,11 @@ def make_event_xr(event_time, trial_window, pyphoto_aligner,
             it is assumed to have a index corresponds to the trial number
         trial_window : tuple
             Tuple containing minimum and maximum value of time window for which data is to be extracted
-        pyphoto_aligner : Object
-            Object containing A_to_B() method for alignment of timestamp
         event_time_coordinate : array_like
             List of trial numbers corresponding to each event_time
         dataArray : array_like
-            Array containing time and data information
+            Array containing time and data information. note, the time coordinate of the dataArray
+            should be the same as in event_time
             
     Returns:
         da : xarray.DataArray
@@ -706,9 +947,11 @@ def make_event_xr(event_time, trial_window, pyphoto_aligner,
     Note:
         It returns only data from extract_event_data() function ignoring the event_found.
     '''
+    
+   
     assert event_time.index.name =='trial_nb', 'event_time should have a trial_nb index'
-    data, _ = extract_event_data(event_time, trial_window, pyphoto_aligner,
-                                dataArray, sampling_rate)
+    data, _ = extract_event_data(event_time, trial_window, dataArray, sampling_rate)
+
     da = xr.DataArray(
         data, coords={'event_time':event_time_coordinate, 
                       'trial_nb':event_time.index.values},
@@ -716,7 +959,7 @@ def make_event_xr(event_time, trial_window, pyphoto_aligner,
         
     return da
 
-def add_event_data(df_event, filter_func, trial_window, aligner,
+def add_event_data(df_event, filter_func, trial_window,
                    dataset, event_time_coordinate, data_var_name, 
                    event_name, sampling_rate, filter_func_kwargs={}):
     '''
@@ -753,7 +996,7 @@ def add_event_data(df_event, filter_func, trial_window, aligner,
     '''
 
     event_time = extract_event_time(df_event, filter_func, filter_func_kwargs)
-    xr_event_data = make_event_xr(event_time, trial_window, aligner,
+    xr_event_data = make_event_xr(event_time, trial_window,
                                             event_time_coordinate,
                                             dataset[data_var_name], sampling_rate)
     dataset[f'{event_name}_{data_var_name}'] = xr_event_data
