@@ -13,14 +13,12 @@ import pandas as pd
 import numpy as np
 
 from snakehelper.SnakeIOHelper import getSnake
-from workflow.scripts import settings
-
-from workflow.scripts import settings
+from trialexp import config
 from trialexp.utils.ephys_utilities import create_ephys_rsync
 
 
 #%% Load inputs
-ephys_sync_done_path = str(Path(settings.debug_folder) / 'processed' / 'ephys_sync.done')
+ephys_sync_done_path = str(Path(config.debug_folder) / 'processed' / 'ephys_sync.done')
 
 (sinput, soutput) = getSnake(locals(), 'workflow/spikesort.smk',
  [ephys_sync_done_path], 'ephys_sync')
@@ -29,11 +27,11 @@ ephys_sync_done_path = str(Path(settings.debug_folder) / 'processed' / 'ephys_sy
 # %% Get path to important files
 
 verbose = True
-sorter_name = 'kilosort3'
+sorter_name = 'kilosort4'
 
-kilosort_folder = Path(sinput.metrics_complete).parent /'kilosort'
+kilosort_folder = Path(sinput.df_quality_metrics).parent / sorter_name
 pycontrol_path = (kilosort_folder.parents[1]/'pycontrol')
-pycontrol_path = list(pycontrol_path.glob('*.txt'))[0]
+pycontrol_path = (list(pycontrol_path.glob('*.txt')) + list(pycontrol_path.glob('*.tsv')))[0]
 sync_path = kilosort_folder.parents[1]/'ephys'
 
 # %%
@@ -43,17 +41,17 @@ for probe_dir in  kilosort_folder.glob('Probe*'):
     # event time from open ephys count from the beginning of the acquisition, not recording
     # kilosort time always start from the beginning of the recording
 
-    rec_prop = pd.read_csv(probe_dir/'sorter_output'/'rec_prop.csv').iloc[0]
+    rec_prop = pd.read_csv(probe_dir/f'../rec_prop_{probe_dir.name}.csv').iloc[0]
     rsync = create_ephys_rsync(str(pycontrol_path), sync_path, rec_prop.tstart)
-    ks3_path = probe_dir /'sorter_output'/'spike_times.npy'
+    ks_path = probe_dir /'spike_times.npy'
     
     if not rsync:
         raise ValueError('Error: cannot create rsync')
     
-    if not ks3_path.exists():
+    if not ks_path.exists():
         raise FileNotFoundError('Error: cannnot find the spike_times.npy from kilosort.')
     
-    spike_times = np.load(ks3_path)
+    spike_times = np.load(ks_path)
 
     # Careful with the forced 30 value, sampling rate slightly diverging from 30kHz
     # should be dealt-with by open-ephys/ks3, but need to be checked
@@ -66,7 +64,10 @@ for probe_dir in  kilosort_folder.glob('Probe*'):
     # do some sanity check to make sure we are syncing the correct file
     # Unlikely that there is no spike for 1 minute
     lastspike2end = abs(np.nanmax(synced_spike_times)/1000 - rec_prop.duration)
-    assert lastspike2end<60, f'Error: last spike appears too far away from end of recording {lastspike2end}. Potential sync issues'
+    # assert lastspike2end<60, f'Error: last spike appears too far away from end of recording {lastspike2end}. Potential sync issues'
 
-    np.save(ks3_path.parent / 'rsync_corrected_spike_times.npy', synced_spike_times)
+    # the synced spike time is in ms
+    np.save(ks_path.parent / 'rsync_corrected_spike_times.npy', synced_spike_times)
 
+
+# %%

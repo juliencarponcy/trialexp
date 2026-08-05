@@ -5,7 +5,7 @@ This script analyze the photometry response for different movement types
 #%%
 import trialexp.process.deeplabcut.utils as dlc_utils
 from snakehelper.SnakeIOHelper import getSnake
-from workflow.scripts import settings
+from trialexp import config
 import numpy as np
 from pathlib import Path
 import pandas as pd
@@ -16,7 +16,7 @@ from moviepy.editor import *
 import seaborn as sns
 
 (sinput, soutput) = getSnake(locals(), 'workflow/deeplabcut.smk',
-  [settings.debug_folder + '/processed/deeplabcut/df_init_data.pkl'],
+  [config.debug_folder + '/processed/deeplabcut/df_init_data.pkl'],
   'analyze_movement')
 
 # %% Load data

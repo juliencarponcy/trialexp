@@ -17,7 +17,6 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-env/
 build/
 develop-eggs/
 dist/
@@ -80,9 +79,6 @@ target/
 # Jupyter Notebook
 .ipynb_checkpoints
 
-# pyenv
-.python-version
-
 # celery beat schedule file
 celerybeat-schedule
 
@@ -92,7 +88,6 @@ celerybeat-schedule
 # virtualenv
 .venv
 venv/
-ENV/
 
 # Spyder project settings
 .spyderproject
@@ -117,9 +112,16 @@ notebooks/noncanonical/nb20221018_130600_workflow_pyPhot_heatmap.ipynb
 .snakemake/
 reports
 
-output
-.env
 *.mp4
 *.gif
 *.png
 *.nc
+.env
+
+node_modules
+
+.web
+*.eeg-info
+mlruns
+mlflow.db
+cron.log*

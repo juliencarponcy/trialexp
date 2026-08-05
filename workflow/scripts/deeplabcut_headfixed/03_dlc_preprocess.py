@@ -4,7 +4,7 @@ This script clean up the raw coordinates from deeplabcut analysis
 
 #%%
 from trialexp.process.deeplabcut.utils import extract_video_timestamp, preprocess_dlc, filter_and_merge, copy_coords
-from workflow.scripts import settings
+from trialexp import config
 from snakehelper.SnakeIOHelper import getSnake
 import numpy as np
 from pathlib import Path
@@ -12,7 +12,7 @@ import pandas as pd
 import os
 
 (sinput, soutput) = getSnake(locals(), 'workflow/deeplabcut.smk',
-  [settings.debug_folder + '/processed/dlc_results_clean.pkl'],
+  [config.debug_folder + '/processed/dlc_results_clean.pkl'],
   'dlc_preprocess')
 
 # %% load data

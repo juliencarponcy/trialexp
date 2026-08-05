@@ -1,8 +1,6 @@
 '''
-Example script to perform correlations between spikes and photometry
-for the whole session
-#TODO: too slow and not very informative, probably need to focus on task region only 
-# disabled in workflow for now
+Script to perform correlations between spikes and photometry for each event type
+
 '''
 #%%
 import os
@@ -18,62 +16,95 @@ from matplotlib import pyplot as plt
 from plotly.subplots import make_subplots
 from snakehelper.SnakeIOHelper import getSnake
 
-from trialexp.process.ephys.utils import crosscorr_lag_range, plot_correlated_neurons
+from trialexp.process.ephys.utils import calculate_pearson_lags
 from trialexp.process.group_analysis.plot_utils import style_plot
 from trialexp.process.pyphotometry.utils import *
-from workflow.scripts import settings
+from trialexp import config
+import itertools
+from tqdm.auto import tqdm
+from loguru import logger
+import seaborn as sns
+from trialexp.process.ephys.photom_correlation import plot_extrem_corr, get_corr_spatial_distribution, analyze_correlation, plot_extrem_corr_timewarp
 
 #%% Load inputs
 
-
 (sinput, soutput) = getSnake(locals(), 'workflow/spikesort.smk',
-  [settings.debug_folder + r'/processed/df_cross_corr.pkl'],
+  [config.debug_folder + r'/processed/xr_corr.nc'],
   'session_correlations')
 
-# %% Path definitions
-
+#%% Path definitions
 verbose = True
-root_path = Path(os.environ['SESSION_ROOT_DIR'])
+root_path = Path(config.SESSION_ROOT_DIR)
 
-# %% Loading files
-
-xr_spike_fr = xr.load_dataset(sinput.xr_spike_fr)
+#%% Loading files
+xr_spike_trial = xr.open_dataset(sinput.xr_spikes_trials) #file is huge, use lazy loading
 session_root_path = Path(sinput.xr_spike_fr).parent
-
 xr_session = xr.load_dataset(session_root_path/'xr_session.nc')
+xr_spike_fr_interp = xr_spike_trial.interp(spk_event_time=xr_session.event_time)
+df_metrics = pd.read_pickle(sinput.df_quality_metrics)
 
-xr_spike_fr_interp = xr_spike_fr.interp(time=xr_session.time)
-xr_spike_session = xr.merge([xr_session, xr_spike_fr_interp]) # make sure their time coord is the same
 
-df_events_cond = pd.read_pickle(session_root_path/'df_events_cond.pkl')
-df_pycontrol = pd.read_pickle(session_root_path/'df_pycontrol.pkl')
+#%% Calculate cross-correlation between unit activity and photometry signals
+'''
+Some Neurpixels only recoding do not have photometry data
+'''
+photom_vars = ['_zscored_df_over_f', '_zscored_df_over_f_analog_2']
+var = [v.replace(photom_vars[0],'') for v in xr_session.data_vars.keys() if v.endswith(photom_vars[0])]
+trial_outcomes = np.unique(xr_spike_fr_interp.trial_outcome)
+var2analyze = list(itertools.product(var, photom_vars, trial_outcomes))
+evt_time = xr_spike_fr_interp.spk_event_time
+evt_time_step = np.mean(np.diff(evt_time))
+
+
+#%% Calculate the time step for each unit of lag
+evt_time = xr_spike_fr_interp.spk_event_time
+evt_time_step = np.mean(np.diff(evt_time))
+# by default both the firing rate and photom data are averaged before calculating the correlation
+# need to make sure photometry and neuropixels are using the new lick detection method
+results = Parallel(n_jobs=20, verbose=5)(delayed(analyze_correlation)(xr_spike_fr_interp,
+                                                           xr_session,
+                                                           evt_name,
+                                                           sig_name,
+                                                           evt_time_step,
+                                                           xr_spike_trial.cluID,
+                                                           trial_outcome=trial_outcome,
+                                                           average_trial=True) for evt_name, sig_name, trial_outcome in var2analyze)
+
+#%% Save
+xr_corr = xr.merge(results)
+xr_corr.to_netcdf(soutput.xr_corr, engine='h5netcdf')
+xr_spike_trial.close()
+xr_session.close()
+
+#%% Plot the correlation figures
+for evt_name, sig_name,outcome in itertools.product(var, photom_vars, ['success','aborted']):
+    # only plot successful trials
+    idx = xr_session.isel(session_id=0).trial_outcome ==outcome
+    if sum(idx)>0:
+        xr_corr2plot = xr_corr.sel(trial_outcome=outcome)
+        
+        xr_spike2plot = xr_spike_fr_interp.sel(trial_nb = idx)
+        xr_session2plot = xr_session.isel(session_id=0).sel(trial_nb = idx)
+        
+        fig = plot_extrem_corr(xr_corr2plot, xr_spike2plot, xr_session2plot, evt_name, sig_name)
+        fig.savefig(Path(soutput.corr_plots)/f'corr_{evt_name}_{sig_name}_{outcome}.png',dpi=200)
+
+# %% plot the overall distribution
+sig_names = ['_zscored_df_over_f','_zscored_df_over_f_analog_2']
+
+if len(xr_corr)>0:
+    for outcome in trial_outcomes:
+        fig,axes = plt.subplots(1,2,figsize=(10,10),dpi=200)
+
+        for i, sn in enumerate(sig_names):
+            df_meancorr = get_corr_spatial_distribution(xr_corr.sel(trial_outcome=outcome), df_metrics, sn)
+            
+            sns.heatmap(df_meancorr,cmap='vlag',ax=axes[i])
+            axes[i].invert_yaxis()
+            axes[i].set_title(sn)
+            axes[i].set_ylabel('Depth um')
+
+        fig.tight_layout()
+        fig.savefig(Path(soutput.corr_plots)/f'corr_dist_{outcome}.png', dpi=200)
 
 # %%
-#Cross correlation between the firing rate and photometry signal
-lags=np.arange(-50,50,5) #each bin is 10s, 25 bins = 250ms
-
-df_over_f = xr_spike_session.analog_1_df_over_f.to_series()
-UIDs = xr_spike_session.cluID.to_series()
-cross_corr = np.ndarray(shape=(len(UIDs), len(lags)))
-
-def calculate_crosscorr(uid):
-    z_scored_firing = xr_spike_session.spikes_zFR_session[:, xr_spike_session.cluID == uid].to_series()
-    return crosscorr_lag_range(df_over_f, z_scored_firing, lags=lags)
-
-cross_corr = Parallel(n_jobs=20)(delayed(calculate_crosscorr)(uid) for uid in UIDs)
-cross_corr = np.stack(cross_corr)
-    
-#%%
-df_cross_corr = pd.DataFrame({
-    'cluID': UIDs.values,
-    'cross_corr': cross_corr.tolist()
-})
-df_cross_corr.to_pickle(soutput.df_cross_corr)
-#%% Plot the first few cell with maximum cross correlation with photometry
-
-fig = plot_correlated_neurons(cross_corr, xr_spike_session, lags, n_fig=8)
-fig.savefig(soutput.corr_plot)
-
-# %%
-#TODO: event in specific type of trial
-# snakemake --snakefile workflow/spikesort.smk -n ~/ettin/Julien/Data/head-fixed/by_sessions/reaching_go_spout_bar_nov22/kms058-2023-03-25-184034/processed/spike_workflow.done

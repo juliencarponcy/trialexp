@@ -11,14 +11,14 @@ import pandas as pd
 import numpy as np
 from trialexp.process.pycontrol import event_filters
 from trialexp.process.pycontrol.event_filters import extract_clean_trigger_event
-from workflow.scripts import settings
+from trialexp import config
 from pathlib import Path
 import pickle 
 import seaborn as sns
 
 #%% Load inputs
 (sinput, soutput) = getSnake(locals(), 'workflow/pycontrol.smk',
-    [settings.debug_folder + '/processed/log/task_specific_analysis.done'],
+    [config.debug_folder + '/processed/log/task_specific_analysis.done'],
     'task_specifc_analysis')
 
 # %% load data
@@ -29,22 +29,38 @@ trial_window = xr_session.attrs['trial_window']
 
 #%%
 
-add_event_data(df_event, extract_clean_trigger_event, trial_window, xr_photometry, xr_photometry.event_time, 
-               'zscored_df_over_f', 'clean_busy_win', xr_photometry.attrs['sampling_rate'], 
-              filter_func_kwargs = dict(clean_window = [-1000,1000], target_event_name='busy_win'))
+        
+var2add = ['zscored_df_over_f']
+if 'zscored_df_over_f_analog_2' in  xr_photometry:
+    var2add.append('zscored_df_over_f_analog_2')
+    
+if 'zscored_df_over_f_analog_3' in xr_photometry:
+    var2add.append('zscored_df_over_f_analog_3')
+    
+for var in var2add:
 
+    add_event_data(df_event, extract_clean_trigger_event, trial_window, xr_photometry, xr_photometry.event_time, 
+                var, 'clean_busy_win', xr_photometry.attrs['sampling_rate'], 
+                filter_func_kwargs = dict(clean_window = [-500,500], target_event_name='busy_win'))
+
+    add_event_data(df_event, extract_clean_trigger_event, trial_window, xr_photometry, xr_photometry.event_time, 
+                var, 'clean_spout', xr_photometry.attrs['sampling_rate'], 
+                filter_func_kwargs = dict(clean_window = [-500,500], target_event_name='spout', ignore_events=['spout_off','bar_off']))
+
+    # down_sample_ratio = int(xr_photometry.attrs['sampling_rate']/100)
+    # if down_sample_ratio>0:
+    #     dataset_binned = xr_photometry.coarsen(time=down_sample_ratio, event_time=down_sample_ratio, boundary='trim').mean()
+    # else:
+    #     dataset_binned = xr_photometry
+    
+    xr_photometry = xr_photometry.interp(event_time = xr_session.event_time)
+
+    # # add the data back to xr_session
+    xr_session[f'clean_spout_{var}'] = xr_photometry[f'clean_spout_{var}']
+    xr_session[f'clean_busy_win_{var}']  = xr_photometry[f'clean_busy_win_{var}'] 
+    
 #%%
-add_event_data(df_event, extract_clean_trigger_event, trial_window, xr_photometry, xr_photometry.event_time, 
-               'zscored_df_over_f', 'clean_spout', xr_photometry.attrs['sampling_rate'], 
-              filter_func_kwargs = dict(clean_window = [-1000,1000], target_event_name='spout', ignore_events=['spout_off','bar_off']))
+xr_session.to_netcdf(Path(sinput.xr_session).parent/'xr_session_task_specific.nc', engine='h5netcdf')
 
-# %% Re-save the files
 
-dataset_binned = xr_photometry.coarsen(time=10, event_time=10, boundary='trim').mean()
-
-# add the data back to xr_session
-xr_session['clean_spout_zscored_df_over_f'] = dataset_binned['clean_spout_zscored_df_over_f']
-xr_session['clean_busy_win_zscored_df_over_f']  = dataset_binned['clean_busy_win_zscored_df_over_f'] 
-
-xr_photometry.to_netcdf(sinput.xr_photometry, engine='h5netcdf')
-xr_session.to_netcdf(sinput.xr_session, engine='h5netcdf')
+# %%

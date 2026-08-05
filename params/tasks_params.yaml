@@ -1,0 +1,1466 @@
+lick_go_nogo:
+  triggers:
+  - go
+  - nogo
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  conditions:
+  - free_reward
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events: []
+  trial_parameters: []
+lick_go_nogo_unconditionned:
+  triggers:
+  - go
+  - nogo
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  conditions:
+  - free_reward
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events: []
+  trial_parameters: []
+lick_go_nogo_unconditionned_opto:
+  triggers:
+  - go
+  - nogo
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  conditions:
+  - free_reward
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events: []
+  trial_parameters: []
+reaching_go_nogo:
+  triggers:
+  - CS_Go
+  - CS_NoGo
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  conditions:
+  - error bar_off
+  - reward bar_off
+  - error free
+  - reward free
+  - button_press
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events: []
+  trial_parameters: []
+reaching_go_nogo_jc:
+  triggers:
+  - CS_plus
+  - CS_minus
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  conditions:
+  - error bar_off
+  - reward bar_off
+  - error free
+  - reward free
+  - button_press
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events: []
+  trial_parameters: []
+reaching_go_nogo_opto_continuous:
+  triggers:
+  - CS_Go
+  - CS_NoGo
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  conditions:
+  - s_nogo_sham
+  - s_nogo_cs_onset
+  - s_go_sham
+  - s_go_cs_onset
+  - s_go_bar_off
+  - s_go_spout
+  - s_go_error_sham
+  - s_go_error_bar_off
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events: []
+  trial_parameters: []
+reaching_go_nogo_opto_sinusoid:
+  triggers:
+  - CS_Go
+  - CS_NoGo
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  conditions:
+  - s_nogo_sham
+  - s_nogo_cs_onset_2
+  - s_nogo_cs_onset_8
+  - s_nogo_cs_onset_32
+  - s_go_sham
+  - s_go_cs_onset_2
+  - s_go_cs_onset_4
+  - s_go_cs_onset_8
+  - s_go_cs_onset_16
+  - s_go_cs_onset_32
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events: []
+  trial_parameters: []
+reaching_go_nogo_opto_sinusoid_spout:
+  triggers:
+  - CS_Go
+  - CS_NoGo
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  conditions:
+  - s_nogo_sham
+  - s_nogo_cs_onset_2
+  - s_nogo_cs_onset_8
+  - s_nogo_cs_onset_32
+  - s_go_sham
+  - s_go_cs_onset_2
+  - s_go_cs_onset_4
+  - s_go_cs_onset_8
+  - s_go_cs_onset_16
+  - s_go_cs_onset_32
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events: []
+  trial_parameters: []
+reaching_go_nogo_reversal:
+  triggers:
+  - CS_Go
+  - CS_NoGo
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  conditions:
+  - error bar_off
+  - reward bar_off
+  - error free
+  - reward free
+  - button_press
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events: []
+  trial_parameters: []
+reaching_go_nogo_reversal_incentive:
+  triggers:
+  - CS_Go
+  - CS_NoGo
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  conditions:
+  - error bar_off
+  - reward bar_off
+  - error free
+  - reward free
+  - button_press
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events: []
+  trial_parameters: []
+reaching_go_nogo_touch_spout:
+  triggers:
+  - CS_Go
+  - CS_NoGo
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  conditions:
+  - error bar_off
+  - reward bar_off
+  - error free
+  - reward free
+  - button_press
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events: []
+  trial_parameters: []
+reaching_test:
+  triggers:
+  - us_deliver
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  conditions:
+  - free_reward
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events: []
+  trial_parameters: []
+reaching_test_CS:
+  triggers:
+  - CS_plus
+  - CS_minus
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  conditions:
+  - free_reward
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events: []
+  trial_parameters: []
+reaching_yp:
+  triggers:
+  - reward_presentation
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  conditions:
+  - free_reward
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events: []
+  trial_parameters: []
+train_CSgo_US_coterminated:
+  triggers:
+  - Go
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  conditions:
+  - free_reward
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events: []
+  trial_parameters: []
+train_Go_CS-US_pavlovian:
+  triggers:
+  - Go
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  conditions:
+  - free_reward
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events: []
+  trial_parameters: []
+train_Go_CS-US_pavlovian_with_bar:
+  triggers:
+  - CS_Go
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  conditions:
+  - free_reward
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events: []
+  trial_parameters: []
+reaching_go_spout_cued_uncued:
+  triggers:
+  - CS_Go
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  - name: hold_start
+    order: first
+  conditions:
+  - free_reward_timer
+  - reward spout cued
+  - reward bar cued
+  - reward bar_off
+  - reward spout uncued
+  - reward bar uncued
+  - reward free
+  - reward free_uncued
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events: []
+  trial_parameters: []
+pavlovian_nobar_nodelay:
+  triggers:
+  - CS_Go
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  conditions: []
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events: []
+  trial_parameters: []
+cued_uncued_oct22:
+  triggers:
+  - Cued
+  - UnCued
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  - name: reward_delay_timer
+    order: first
+  conditions:
+  - delayed reward spout cued
+  - delayed reward spout uncued
+  - error_trial
+  - reward free_uncued
+  - reward free
+  - reward bar_off
+  - reward bar uncued
+  - button_press
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events: []
+  trial_parameters: []
+go_rewarding_aversive:
+  triggers:
+  - Go_water
+  - Go_air
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  conditions:
+  - free_reward
+  - Go_water spout success
+  - Go_air spout success
+  - Go_air spout miss
+  - Go_water bar success
+  - Go_air bar success
+  - spout
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events: []
+  trial_parameters: []
+reaching_go_spout_nov22:
+  triggers:
+  - busy_win
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  - name: US_end_timer
+    order: first
+  conditions:
+  - US_end_timer
+  - water_on
+  - Success:True
+  - Success:False
+  - busy_win
+  - spout
+  - button_press
+  - hold_timer
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events: []
+  trial_parameters: []
+reaching_go_spout_nov22_timewin:
+  triggers:
+  - hold_for_water
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  - name: button_release
+    order: first
+  - name: US_end_timer
+    order: first
+  conditions:
+  - US_end_timer
+  - water by bar_off
+  - water by spout
+  - water for free
+  - water success
+  - water_on
+  - busy_win_timer
+  - spout
+  - button_press
+  - waiting_for_spout
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events: []
+  trial_parameters: []
+reaching_go_spout_bar_nov22:
+  triggers:
+  - hold_for_water
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  - name: US_end_timer
+    order: first
+  conditions:
+  - break_after_abort
+  - US_end_timer
+  - water_on
+  - water by bar_off
+  - water by spout
+  - water for free
+  - water success
+  - busy_win_timer
+  - spout
+  - button_press
+  - waiting_for_spout
+  trial_window:
+  - '-2000'
+  - '4000'
+  extra_trigger_events: []
+  trial_parameters: []
+reaching_go_spout_bar_dual_dec22:
+  triggers:
+  - hold_for_water
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  - name: US_end_timer
+    order: first
+  conditions:
+  - Go_to_get_water
+  - US_end_timer
+  - break_after_abort
+  - water_on
+  - water by bar_off
+  - water by spout
+  - water for free
+  - water success
+  - button_press
+  - busy_win_timer
+  - spout
+  - waiting_for_spout
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events: []
+  trial_parameters: []
+reaching_go_spout_bar_dual_all_reward_dec22:
+  triggers:
+  - hold_for_water
+  events:
+  - name: bar
+    order: first
+  - name: hold_for_air
+    order: first
+  conditions:
+  - bar
+  - bar_off
+  - spout
+  - US_end_timer
+  - Go_to_get_water
+  - US_end_timer
+  - break_after_abort
+  - water_on
+  - water by bar_off
+  - water by spout
+  - water for free
+  - water success
+  - button_press
+  - error_trial
+  - busy_win_timer
+  - spout
+  - hold_timer
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events: []
+  trial_parameters: []
+reaching_go_spout_incr_break2_nov22:
+  triggers:
+  - busy_win
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  - name: US_end_timer
+    order: first
+  conditions:
+  - spout
+  - US_end_timer
+  - button_press
+  - busy_win
+  trial_window:
+  - '-1000'
+  - '3000'
+  extra_trigger_events:
+  - spout
+  - bar_off
+  - lick
+  trial_parameters: []
+reaching_go_spout_feb23:
+  triggers:
+  - bar_off
+  - spout
+  - US_end_timer
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  - name: US_end_timer
+    order: first
+  conditions:
+  - US_end_timer
+  - water_on
+  - Success:True
+  - Success:False
+  - busy_win
+  - spout
+  - button_press
+  - hold_timer
+  trial_window:
+  - '0'
+  - '1000'
+  extra_trigger_events: []
+  trial_parameters: []
+reaching_go_spout_bar_mar23:
+  triggers:
+  - hold_for_water
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  - name: US_end_timer
+    order: first
+  conditions:
+  - break_after_abort
+  - US_end_timer
+  - water_on
+  - water by bar_off
+  - water by spout
+  - water for free
+  - water success
+  - busy_win_timer
+  - spout
+  - button_press
+  - waiting_for_spout
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events: []
+  trial_parameters: []
+reaching_go_spout_bar_apr23:
+  triggers:
+  - hold_for_water
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  - name: US_end_timer
+    order: first
+  conditions:
+  - Go_to_get_water
+  - US_end_timer
+  - break_after_abort
+  - water_on
+  - water by bar_off
+  - water by spout
+  - water for free
+  - water success
+  - button_press
+  - busy_win_timer
+  - spout
+  - waiting_for_spout
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events: []
+  trial_parameters: []
+pavlovian_spontanous_reaching_march23:
+  triggers:
+  - US_timer
+  events:
+  - name: spout
+    order: first
+  - name: spout_off
+    order: first
+  conditions:
+  - button_press
+  - US_timer
+  - US_end_timer
+  trial_window:
+  - '-2000'
+  - '2000'
+  extra_trigger_events: []
+  trial_parameters: []
+reaching_go_spout_bar_free_water_june28:
+  triggers:
+  - hold_for_water
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  - name: US_end_timer
+    order: first
+  conditions:
+  - Go_to_get_water
+  - US_end_timer
+  - break_after_abort
+  - water_on
+  - water by bar_off
+  - water by spout
+  - water for free
+  - water success
+  - button_press
+  - busy_win_timer
+  - spout
+  - waiting_for_spout
+  - free reward delivered
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events: []
+  trial_parameters: []
+pavlovian_reaching_Oct23:
+  triggers:
+  - US_timer
+  events:
+  - name: US_end_timer
+    order: first
+  - name: button_release
+    order: first
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  conditions:
+  - US_end_timer
+  - button_release
+  - bar
+  - bar_off
+  - spout
+  trial_window:
+  - '-1000'
+  - '2000'
+  extra_trigger_events: []
+  trial_parameters: []
+pavlovian_reaching_Oct09:
+  triggers:
+  - US_timer
+  events:
+  - name: US_end_timer
+    order: first
+  - name: button_release
+    order: first
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  conditions:
+  - US_end_timer
+  - button_release
+  - bar
+  - bar_off
+  - spout
+  trial_window:
+  - '-1000'
+  - '2000'
+  extra_trigger_events: []
+  trial_parameters: []
+pavlovian_reaching_Oct26:
+  triggers:
+  - US_timer
+  events:
+  - name: US_end_timer
+    order: first
+  - name: button_release
+    order: first
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  - name: sound_cue
+    order: first
+  conditions:
+  - US_end_timer
+  - button_release
+  - bar
+  - bar_off
+  - spout
+  trial_window:
+  - '-2000'
+  - '2000'
+  extra_trigger_events:
+  - sound_cue
+  - spout
+  - bar_off
+  trial_parameters: []
+pavlovian_spontanous_reaching_oct23:
+  triggers:
+  - US_timer
+  events:
+  - name: US_end_timer
+    order: first
+  - name: button_release
+    order: first
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  conditions:
+  - US_end_timer
+  - button_release
+  - bar
+  - bar_off
+  - spout
+  trial_window:
+  - '-2000'
+  - '2000'
+  extra_trigger_events:
+  - spout
+  - bar_off
+  - US_end_timer
+  trial_parameters: []
+reaching_go_spout_bar_june05:
+  triggers:
+  - hold_for_water
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  - name: US_end_timer
+    order: first
+  conditions:
+  - Go_to_get_water
+  - US_end_timer
+  - break_after_abort
+  - water_on
+  - water by bar_off
+  - water by spout
+  - water for free
+  - water success
+  - button_press
+  - busy_win_timer
+  - spout
+  - waiting_for_spout
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events:
+  - spout
+  - bar_off
+  - US_end_timer
+  trial_parameters: []
+reaching_go_spout_bar_VR_Dec23:
+  triggers:
+  - hold_for_water
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  - name: US_end_timer
+    order: first
+  - name: lick
+    order: first
+  conditions:
+  - Go_to_get_water
+  - US_end_timer
+  - break_after_abort
+  - water_on
+  - water by bar_off
+  - water by spout
+  - water for free
+  - water success
+  - button_press
+  - busy_win_timer
+  - spout
+  - waiting_for_spout
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events:
+  - spout
+  - bar_off
+  - lick
+  - US_end_timer
+  trial_parameters:
+  - Reward
+  - Extra reward
+reaching_go_spout_incr_break2_April24:
+  triggers:
+  - busy_win
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  - name: US_end_timer
+    order: first
+  - name: lick
+    order: first
+  conditions:
+  - spout
+  - US_end_timer
+  - button_press
+  - busy_win
+  trial_window:
+  - '-1000'
+  - '3000'
+  extra_trigger_events:
+  - spout
+  - bar_off
+  - lick
+  - US_end_timer
+  trial_parameters: []
+reaching_go_spout_bar_VR_April24:
+  triggers:
+  - hold_for_water
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  - name: US_end_timer
+    order: first
+  - name: lick
+    order: first
+  - name: US_delay_timer
+    order: first
+  conditions:
+  - Go_to_get_water
+  - US_end_timer
+  - break_after_abort
+  - water_on
+  - water by bar_off
+  - water by spout
+  - water for free
+  - water success
+  - button_press
+  - busy_win_timer
+  - spout
+  - waiting_for_spout
+  - US_jackpot
+  - US_omission
+  - US_random_water
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events:
+  - spout
+  - bar_off
+  - lick
+  - US_random_water
+  - US_end_timer
+  trial_parameters:
+  - Reward
+  - Extra reward
+reaching_go_spout_bar_VR_April24_v2:
+  triggers:
+  - hold_for_water
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  - name: US_end_timer
+    order: first
+  - name: lick
+    order: first
+  conditions:
+  - Go_to_get_water
+  - US_end_timer
+  - break_after_abort
+  - water_on
+  - water by bar_off
+  - water by spout
+  - water for free
+  - water success
+  - button_press
+  - busy_win_timer
+  - spout
+  - waiting_for_spout
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events:
+  - spout
+  - bar_off
+  - lick
+  - US_end_timer
+  trial_parameters:
+  - Reward
+  - Extra reward
+reaching_go_spout_bar_VR_Dec23_v2:
+  triggers:
+  - hold_for_water
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  - name: US_end_timer
+    order: first
+  - name: lick
+    order: first
+  conditions:
+  - Go_to_get_water
+  - US_end_timer
+  - break_after_abort
+  - water_on
+  - water by bar_off
+  - water by spout
+  - water for free
+  - water success
+  - button_press
+  - busy_win_timer
+  - spout
+  - waiting_for_spout
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events:
+  - spout
+  - bar_off
+  - lick
+  - US_end_timer
+  trial_parameters:
+  - Reward
+  - Extra reward
+pavlovian_spontanous_reaching_April24:
+  triggers:
+  - spout
+  events:
+  - name: US_end_timer
+    order: first
+  - name: button_release
+    order: first
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  - name: lick
+    order: first
+  conditions:
+  - US_end_timer
+  - button_release
+  - bar
+  - bar_off
+  - spout
+  trial_window:
+  - '-2000'
+  - '2000'
+  extra_trigger_events:
+  - spout
+  - bar_off
+  - US_end_timer
+  trial_parameters: []
+pavlovian_spontanous_bar_Sep24:
+  triggers:
+  - spout
+  events:
+  - name: US_end_timer
+    order: first
+  - name: button_release
+    order: first
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  - name: lick
+    order: first
+  conditions:
+  - US_end_timer
+  - button_release
+  - bar
+  - bar_off
+  - spout
+  trial_window:
+  - '-2000'
+  - '2000'
+  extra_trigger_events:
+  - spout
+  - bar_off
+  - US_end_timer
+  trial_parameters: []
+reaching_go_spout_bar_VR_April24_silent:
+  triggers:
+  - hold_for_water
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  - name: US_end_timer
+    order: first
+  - name: lick
+    order: first
+  - name: US_delay_timer
+    order: first
+  conditions:
+  - Go_to_get_water
+  - US_end_timer
+  - break_after_abort
+  - water_on
+  - water by bar_off
+  - water by spout
+  - water for free
+  - water success
+  - button_press
+  - busy_win_timer
+  - spout
+  - waiting_for_spout
+  - US_jackpot
+  - US_omission
+  - US_random_water
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events:
+  - spout
+  - bar_off
+  - lick
+  - US_random_water
+  - US_end_timer
+  trial_parameters:
+  - Reward
+  - Extra reward
+reaching_go_spout_incr_break2_Feb25:
+  triggers:
+  - busy_win
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  - name: US_end_timer
+    order: first
+  - name: lick
+    order: first
+  conditions:
+  - spout
+  - US_end_timer
+  - button_press
+  - busy_win
+  trial_window:
+  - '-1000'
+  - '3000'
+  extra_trigger_events:
+  - spout
+  - bar_off
+  - lick
+  - US_end_timer
+  trial_parameters: []
+reaching_go_spout_bar_VR_Feb25:
+  triggers:
+  - hold_for_water
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  - name: US_end_timer
+    order: first
+  - name: lick
+    order: first
+  - name: US_delay_timer
+    order: first
+  conditions:
+  - Go_to_get_water
+  - US_end_timer
+  - break_after_abort
+  - water_on
+  - water by bar_off
+  - water by spout
+  - water for free
+  - water success
+  - button_press
+  - busy_win_timer
+  - spout
+  - waiting_for_spout
+  - US_jackpot
+  - US_omission
+  - US_random_water
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events:
+  - spout
+  - bar_off
+  - lick
+  - US_random_water
+  - US_end_timer
+  trial_parameters:
+  - Reward
+  - Extra reward
+pavlovian_2s_delay:
+  triggers:
+  - CS_Go
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: reward_delay_timer
+    order: first
+  - name: US_end_timer
+    order: first
+  conditions: []
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events:
+  - bar_off
+  - US_end_timer
+  - CS_Go
+  trial_parameters: []
+cued_and_cued_reward_May25:
+  triggers:
+  - busy_win
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  - name: US_end_timer
+    order: first
+  - name: lick
+    order: first
+  conditions:
+  - spout
+  - US_end_timer
+  - button_press
+  - busy_win
+  trial_window:
+  - '-1000'
+  - '3000'
+  extra_trigger_events:
+  - spout
+  - bar_off
+  - lick
+  - US_end_timer
+  trial_parameters: []
+reaching_go_spout_bar_VR_cued_random_June25:
+  triggers:
+  - hold_for_water
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  - name: US_end_timer
+    order: first
+  - name: lick
+    order: first
+  - name: US_delay_timer
+    order: first
+  conditions:
+  - Go_to_get_water
+  - US_end_timer
+  - break_after_abort
+  - water_on
+  - water by bar_off
+  - water by spout
+  - water for free
+  - water success
+  - button_press
+  - busy_win_timer
+  - spout
+  - waiting_for_spout
+  - US_jackpot
+  - US_omission
+  - US_random_water
+  - cued_random_reward_timer
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events:
+  - spout
+  - bar_off
+  - lick
+  - US_random_water
+  - US_end_timer
+  - cued_random_reward_timer
+  trial_parameters:
+  - Reward
+  - Extra reward
+reaching_go_spout_incr_break2_June25:
+  triggers:
+  - busy_win
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  - name: US_end_timer
+    order: first
+  - name: lick
+    order: first
+  conditions:
+  - spout
+  - US_end_timer
+  - button_press
+  - busy_win
+  trial_window:
+  - '-1000'
+  - '3000'
+  extra_trigger_events:
+  - spout
+  - bar_off
+  - lick
+  - US_end_timer
+  trial_parameters: []
+pavlovian_task_August25:
+  triggers:
+  - hold_for_water
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: US_end_timer
+    order: first
+  - name: US_delay_timer
+    order: first
+  - name: lick
+    order: first
+  - name: US_omission
+    order: first
+  - name: US_jackpot
+    order: first
+  - name: US_random_water
+    order: first
+  conditions:
+  - US_end_timer
+  - break_after_trial
+  - water_on
+  - button_press
+  - waiting_for_bar
+  - US_omission
+  - US_jackpot
+  - US_random_water
+  - lick
+  - US_delay_timer
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events:
+  - bar_off
+  - lick
+  - US_end_timer
+  trial_parameters: []
+opto_sweep_pavlovian_July25:
+  triggers:
+  - stim
+  events:
+  - name: sound_cue_timer
+    order: first
+  - name: US_end_timer
+    order: first
+  - name: sound_cue_off_timer
+    order: first
+  conditions: []
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events:
+  - lick
+  trial_parameters: []
+two_cue_reaching_task_January26:
+  triggers:
+  - hold_for_water
+  events:
+  - name: bar
+    order: first
+  - name: bar_off
+    order: first
+  - name: spout
+    order: first
+  - name: US_end_timer
+    order: first
+  - name: lick
+    order: first
+  - name: US_delay_timer
+    order: first
+  conditions:
+  - Go_to_get_water
+  - US_end_timer
+  - break_after_abort
+  - water_on
+  - water by bar_off
+  - water by spout
+  - water for free
+  - water success
+  - button_press
+  - busy_win_timer
+  - spout
+  - waiting_for_spout
+  - US_omission
+  trial_window:
+  - '-2000'
+  - '3000'
+  extra_trigger_events:
+  - spout
+  - bar_off
+  - lick
+  - US_end_timer
+  trial_parameters: []

@@ -15,12 +15,13 @@ from trialexp.process.ephys.utils import *
 from trialexp.process.group_analysis.plot_utils import style_plot
 from joblib import Parallel, delayed
 
-from workflow.scripts import settings
+from trialexp import config 
+
 #%% Load inputs
 
 
 (sinput, soutput) = getSnake(locals(), 'workflow/spikesort.smk',
-  [settings.debug_folder + r'/processed/cell_overview.done'],
+  [config.debug_folder + r'/processed/cell_overview.done'],
   'cell_overview_plot')
 
 
@@ -36,25 +37,25 @@ figures_path = Path(soutput.figures_path)
 
 xr_spikes_trials = xr.load_dataset(Path(sinput.xr_spikes_trials)) 
 xr_fr = xr.load_dataset(Path(sinput.xr_spikes_fr))
-session_ID = xr_spikes_trials.attrs['session_ID']
+session_ID = xr_spikes_trials.attrs['session_id']
 df_pycontrol = pd.read_pickle(sinput.pycontrol_dataframe)
 
+# only include good units
+good_idx = (xr_spikes_trials.ks_labels=='good')
+xr_spikes_trials = xr_spikes_trials.sel(cluID=good_idx)
+xr_fr = xr_fr.sel(cluID=good_idx)
 
 #%% Overall firing rate plot
 # need to get the channel map and plot them in the correct depth
-waveform_chan = get_chan_coords(xr_spikes_trials)
-waveform_chan = waveform_chan.set_index('cluID')
-xr_fr_coord = xr_fr.merge(waveform_chan)
-xr_fr_coord.attrs['probe_names'] = xr_spikes_trials.attrs['probe_names']
-xr_fr_coord = xr_fr_coord.sortby('pos_y')
+xr_fr_coord = xr_fr.merge(xr_spikes_trials[['ks_chan_pos_x', 'ks_chan_pos_y','probe_name']])
+xr_fr_coord = xr_fr_coord.sortby('ks_chan_pos_y')
 
 # netCDF flatten length 1 list automatically, 
-probe_names = xr_fr_coord.attrs['probe_names']
-probe_names = [probe_names] if type(probe_names) is str else probe_names
+probe_names = np.unique(xr_fr_coord['probe_name'].data)
 
 for probe_name in probe_names:
     cluID_probe = [probe_name in id for id in xr_fr_coord.cluID.data]
-    pos_y = xr_fr_coord.pos_y.sel(cluID=cluID_probe)
+    pos_y = xr_fr_coord.ks_chan_pos_y.sel(cluID=cluID_probe)
      # plot distribution of cell in depth
     fig, ax= plt.subplots(1,1,figsize=(4,4))
     style_plot()
@@ -86,3 +87,4 @@ for probe_name in probe_names:
     fig.savefig(figures_path/f'firing_map_{probe_name}_2min.png',dpi=200)
     
     
+# %%

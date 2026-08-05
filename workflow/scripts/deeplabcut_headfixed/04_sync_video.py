@@ -4,7 +4,7 @@ This script synchronize DLC video with pycontrol and save results as xarray
 
 #%%
 from trialexp.process.deeplabcut.utils import dlc2xarray, make_sync_video, marker2dataframe, plot_event_video
-from workflow.scripts import settings
+from trialexp import config
 from snakehelper.SnakeIOHelper import getSnake
 import numpy as np
 from pathlib import Path
@@ -16,7 +16,7 @@ from moviepy.editor import *
 
 
 (sinput, soutput) = getSnake(locals(), 'workflow/deeplabcut.smk',
-  [settings.debug_folder + '/processed/xr_session_dlc.nc'],
+  [config.debug_folder + '/processed/xr_session_dlc.nc'],
   'sync_video')
 
 # %% load data and convert to xarray DataArray

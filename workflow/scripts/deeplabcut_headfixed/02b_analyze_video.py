@@ -1,5 +1,5 @@
 #%%
-from workflow.scripts import settings
+from trialexp import config
 from snakehelper.SnakeIOHelper import getSnake
 import deeplabcut
 import numpy as np
@@ -11,7 +11,7 @@ import trialexp.process.deeplabcut.utils as dlc_utils
 #%% Load inputs
 
 (sinput, soutput) = getSnake(locals(), 'workflow/deeplabcut.smk',
-  [settings.debug_folder + '/processed/dlc_results.h5'],
+  [config.debug_folder + '/processed/dlc_results.h5'],
   'analyze_video')
 # %%
 path_config_file = os.environ['DLC_CONFIG_PATH']

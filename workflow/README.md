@@ -20,7 +20,9 @@ The workflows are developed using [**snakemake**](https://snakemake.github.io/).
 ## Folder structure
 The snakemake file (`*.smk`) that defines the workflow is in the `workflow` folder, the scripts are in `workflows/scripts`, config files are in `workflows/config`.
 
-## Usage
+
+
+## Advanced Usage
 
 ### Copying files to `by_session` folder
 We first need to copy files to the `by_session` folder. You can do that by

@@ -16,18 +16,18 @@ from trialexp.process.group_analysis.plot_utils import style_plot
 import trialexp.process.figures.plot_utils as plot_utils
 from joblib import Parallel, delayed
 import warnings
-from workflow.scripts import settings
+from trialexp import config
 #%%
 
 (sinput, soutput) = getSnake(locals(), 'workflow/spikesort.smk',
-  [settings.debug_folder + r'/processed/cell_response_comparison.done'],
+  [config.debug_folder + r'/processed/cell_response_comparison.done'],
   'cell_response_comparison')
 
 #%% Load inputs
 
 xr_spikes_trials = xr.load_dataset(Path(sinput.xr_spikes_trials)) 
 xr_fr = xr.load_dataset(Path(sinput.xr_spikes_fr))
-session_ID = xr_spikes_trials.attrs['session_ID']
+session_ID = xr_spikes_trials.attrs['session_id']
 df_pycontrol = pd.read_pickle(sinput.pycontrol_dataframe)
 
 
@@ -36,23 +36,26 @@ var2plot = [x for x in xr_spikes_trials if x.startswith('spikes_FR')]
 bin_duration = xr_fr.attrs['bin_duration']
 trial_window = xr_spikes_trials.attrs['trial_window']
 
-#%%Compare with random response
+#%% Compare with random response
 
 style_plot()
 
 df_list = []
 
 success_trial = xr_spikes_trials.trial_outcome=='success'
-
 if np.sum(success_trial)>0:
     for varname in var2plot:
         print('I will now do the comparison for ', varname)
         da = xr_spikes_trials[varname]
         
         #only select successful trial
-        da = da.sel(trial_nb = success_trial)
+        if 'trial_nb' in da.dims:
+            da = da.sel(trial_nb = success_trial)
         
         da_rand = get_random_evt_data(xr_fr, da, trial_window)
+
+        # Note: it is possible that some recording stopped earlier than the pycontrol,
+        # in that case, the firing rate of the reminding trials will be NaN
 
         def compare_random(id):
             # do a mix anova test with the randomized data
@@ -61,7 +64,7 @@ if np.sum(success_trial)>0:
             data2test = create_comparison_dataframe(da_rand,da, id, varname)
             data2test = data2test[(data2test.spk_event_time>-500 ) & (data2test.spk_event_time<500)]
             comparison_result = do_mix_anova_analysis(data2test)
-            
+        
             # also plot the response curve, depending on a probability
             # because there is no need to plot all the curves
             if comparison_result['interaction_p']<0.05 and np.random.rand()<0.2:
@@ -77,7 +80,7 @@ if np.sum(success_trial)>0:
                 ax.plot(sig_time,[yloc]*len(sig_time),'ro')
             else:
                 fig = None
-                
+            
             return comparison_result, fig
 
         results = Parallel(n_jobs=20, verbose=10)(delayed(compare_random)(id) for id in da.cluID)
@@ -95,8 +98,7 @@ if np.sum(success_trial)>0:
 #%% Combine the comparison results into a dataframe and then save
 if len(df_list)>0:
     df_tuning = pd.concat(df_list)
-    waveform_chan = get_chan_coords(xr_spikes_trials)
-
+    waveform_chan = xr_spikes_trials[['ks_chan_pos_x','ks_chan_pos_y']].to_dataframe()
     df_cell_prop = df_tuning.merge(waveform_chan, on='cluID')
 else:
     df_cell_prop = pd.DataFrame()
